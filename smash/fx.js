@@ -1,4 +1,4 @@
-// Fen Smash effects: synthesized sound (off until the player taps sound on) and particles.
+// Fennsmash effects: synthesized sound (off until the player taps sound on) and particles.
 (function (root) {
   'use strict';
   var FS = root.FS = root.FS || {};
@@ -53,6 +53,9 @@
     ant: function () { if (!gate('ant', 60)) return; noise(0.025, 'highpass', 5000, 7000, 0.12); },
     buzz: function () { if (!gate('buzz', 400)) return; tone(300, 340, 0.4, 'sawtooth', 0.07); },
     meteor: function () { noise(0.7, 'bandpass', 3000, 400, 0.3, 0, 0.8); },
+    whoosh: function () { noise(0.4, 'bandpass', 500, 1800, 0.3, 0, 0.9); tone(200, 120, 0.3, 'triangle', 0.15); },
+    thunder: function () { if (!gate('thunder', 60)) return; noise(0.1, 'highpass', 3000, 6000, 0.6); noise(0.9, 'lowpass', 700, 60, 0.9, 0.04); tone(70, 35, 0.7, 'sine', 0.7); },
+    zap: function () { if (!gate('zap', 40)) return; noise(0.12, 'bandpass', 2500, 5000, 0.35, 0, 3); tone(1800, 300, 0.1, 'sawtooth', 0.1); },
     win: function () { var n = [523, 659, 784, 1046]; for (var i = 0; i < n.length; i++) tone(n[i], n[i], 0.35, 'triangle', 0.25, i * 0.11); },
     fail: function () { tone(330, 150, 0.6, 'sawtooth', 0.2); tone(247, 110, 0.7, 'sawtooth', 0.2, 0.2); },
     ui: function () { tone(660, 880, 0.07, 'sine', 0.15); },

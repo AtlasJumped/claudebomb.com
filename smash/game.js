@@ -1,8 +1,8 @@
-// Fen Smash: level-based tensegrity demolition game (working title; other names floated: Smash Room, Tensegrity Tango).
+// Fennsmash: level-based tensegrity demolition game (Leo's spelling; other names floated: Smash Room, Tensegrity Tango).
 // Plain JavaScript. Physics in sim.js, levels in levels.js, sound and particles in fx.js, special powers in specials.js.
 (function () {
   'use strict';
-  var FS = window.FS, TITLE = 'Fen Smash';
+  var FS = window.FS, TITLE = 'Fennsmash';
   var $ = function (id) { return document.getElementById(id); };
   var cv = $('c'), ctx = cv.getContext('2d', { alpha: false });
   var P = FS.Particles, A = FS.Audio, SP = FS.Specials;
@@ -11,8 +11,9 @@
 
   // ---------------------------------------------------------------- saved progress
   var SAVE_KEY = 'fensmash.v1';
-  var save = { stars: {}, best: {}, maxLevel: 0, meter: 0.4, fun: { g: 1, meteors: false, slow: false, reduce: null }, seenHelp: false, seenHint: false, last: 0 };
-  function loadSave() { try { var s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && typeof s === 'object') { for (var k in s) save[k] = s[k]; save.fun = Object.assign({ g: 1, meteors: false, slow: false, reduce: null }, s.fun || {}); } } catch (e) {} }
+  var save = { stars: {}, best: {}, maxLevel: 0, meter: 0.4, fun: { g: 1, meteors: false, slow: false, reduce: null, explode: false }, seenHelp: false, seenHint: false, last: 0, cleared: null };
+  function loadSave() { try { var s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && typeof s === 'object') { for (var k in s) save[k] = s[k]; save.fun = Object.assign({ g: 1, meteors: false, slow: false, reduce: null, explode: false }, s.fun || {}); } } catch (e) {}
+    if (!save.cleared) { save.cleared = {}; for (var k2 in save.stars) if (save.stars[k2] > 0) save.cleared[k2] = 1; } }
   function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
   loadSave();
   var reduced = save.fun.reduce == null ? !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) : !!save.fun.reduce;
@@ -23,7 +24,9 @@
   var cliffEdge = 170, islandX0 = 600, structCx = 760, launcher = { x: 80, y: 0 };
   var world = null, level = null, levelIdx = 0, mode = 'title', phase = 'aim', paused = false, modal = null;
   var shotsLeft = 3, shotsUsed = 0, score = 0, shownScore = 0, broken = 0, totalLinks = 1, pct = 0, goalMet = false;
-  var weapon = 'sling', aim = { angle: 0.8, power: 0.7, tx: 700, ty: 200 }, dragging = null, precision = false;
+  var weapon = 'sling', aim = { angle: 0.8, power: 0.7, tx: 700, ty: 200 }, dragging = null, panelOpen = true, fxq = [], arcs = [];
+  var SPECIAL_ORDER = ['ants', 'dogs', 'drones', 'dragons'];
+  function earnedSpecials() { return DEBUG_UNLOCK ? 4 : Math.min(4, Math.floor(Object.keys(save.cleared || {}).length / 2)); }
   var meter = save.meter, strikes = [], settleT = 0, endT = 0, shake = 0, combo = 0, comboT = 0, t0 = 0, simT = 0, anyFun = false;
   var spawnMeteorT = 1, resultShown = false, totalFired = false, flashT = 0;
   var quality = 2, emaDt = 1 / 60, slowFrames = 0, fastFrames = 0, fpsFrames = 0, fpsT = 0, fps = 60;
@@ -64,24 +67,23 @@
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
   // ---------------------------------------------------------------- level control
-  function unlockedWeapons() { var o = []; for (var k in FS.WEAPONS) if (DEBUG_UNLOCK || levelIdx >= FS.WEAPONS[k].unlock) o.push(k); return o; }
+  function unlockedWeapons() { return Object.keys(FS.WEAPONS); }
   function canPlay(i) { return DEBUG_UNLOCK || i <= save.maxLevel; }
-  function funOn() { return save.fun.g !== 1 || save.fun.meteors || save.fun.slow; }
+  function funOn() { return save.fun.g !== 1 || save.fun.meteors || save.fun.slow || save.fun.explode; }
 
   function startLevel(i, quiet) {
     levelIdx = Math.max(0, Math.min(FS.LEVELS.length - 1, i)); level = FS.LEVELS[levelIdx]; G.level = level; save.last = levelIdx;
     world = new FS.World(); G.world = world; world.platforms = [{ x0: -500, x1: cliffEdge }, { x0: islandX0, x1: viewW + 500 }]; world.bounds = { x0: -400, x1: viewW + 600 };
     world.gScale = save.fun.g; P.clear(); SP.stop(); strikes = [];
-    world.cb.onBreak = onBreak; world.cb.onHit = onHit; world.cb.onExplode = onExplode; world.cb.onSplash = onSplash; world.cb.onGround = onGround; world.cb.onThud = function () { A.play('thud'); };
+    world.cb.onBreak = onBreak; world.cb.onHit = onHit; world.cb.onExplode = onExplode; world.cb.onSplash = onSplash; world.cb.onGround = onGround; world.cb.onThud = function () { A.play('thud'); }; world.cb.onThunder = onThunder; fxq = []; arcs = [];
     FS.buildStructure(world, level.spec, level.mat, structCx, level.hs);
     totalLinks = world.links.length; broken = 0; pct = 0; score = 0; shownScore = 0; shotsLeft = 3; shotsUsed = 0; goalMet = false; combo = 0; settleT = 0; endT = 0; resultShown = false; totalFired = false;
     phase = 'aim'; anyFun = funOn(); spawnMeteorT = 1.5; world.t = 0;
-    var ws = unlockedWeapons(); if (ws.indexOf(weapon) < 0) weapon = ws[0]; if (levelIdx === 0) weapon = 'sling';
-    setWeapon(weapon, true); buildWeaponBar(); defaultAim(); closeModals(); updateHud(true);
+    var ws = unlockedWeapons(); if (ws.indexOf(weapon) < 0) weapon = ws[0];     setWeapon(weapon, true); buildWeaponBar(); defaultAim(); closeModals(); updateHud(true);
     $('lvlTitle').textContent = 'Level ' + (levelIdx + 1) + ': ' + level.name; $('dgoal').style.left = level.goal + '%';
     if (!quiet) say('Level ' + (levelIdx + 1) + ', ' + level.name + '. Destroy ' + level.goal + ' percent in three shots.');
     $('hint').hidden = true;
-    if (!save.seenHint && levelIdx === 0) { $('hint').textContent = 'Drag back anywhere to aim, then let go to fire.'; $('hint').hidden = false; }
+    if (!save.seenHint && levelIdx === 0) { $('hint').textContent = 'Drag back anywhere to aim and let go to fire, or use the sliders and Fire.'; $('hint').hidden = false; }
   }
   function defaultAim() {
     aim.angle = 0.75; aim.power = 0.72; aim.tx = structCx; aim.ty = 150; syncSliders();
@@ -130,13 +132,14 @@
     sling: '<svg viewBox="0 0 32 32"><path d="M16 29V16M16 16L7 5M16 16l9-11" stroke="#d9a35e" stroke-width="3.2" stroke-linecap="round" fill="none"/><path d="M7 5q9 7 18 0" stroke="#fff" stroke-width="1.6" fill="none"/><circle cx="16" cy="10" r="3.4" fill="#9fb0d6"/></svg>',
     cannon: '<svg viewBox="0 0 32 32"><path d="M6 20l17-9 4 7-17 9z" fill="#9fb0d6"/><circle cx="11" cy="25" r="4.4" fill="#d9a35e"/><circle cx="26" cy="10" r="2.4" fill="#ffb547"/></svg>',
     rocket: '<svg viewBox="0 0 32 32"><path d="M8 24L24 8c2 5 0 10-4 14z" fill="#e7efff"/><path d="M8 24l-3 3M11 21l-3 5M11 27l-1 3" stroke="#ff9d4a" stroke-width="2.4" stroke-linecap="round"/><circle cx="19" cy="13" r="2.2" fill="#4fe3c1"/></svg>',
+    hammer: '<svg viewBox="0 0 32 32"><path d="M8 27L21 12" stroke="#c28a4a" stroke-width="3.4" stroke-linecap="round"/><rect x="15" y="4" width="14" height="9" rx="1.5" transform="rotate(40 22 9)" fill="#9fb0d6"/><path d="M10 3l-3 6h4l-2 6" stroke="#ffd24a" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>',
     drone: '<svg viewBox="0 0 32 32"><rect x="11" y="13" width="10" height="6" rx="2" fill="#9fb0d6"/><path d="M3 11h10M19 11h10" stroke="#4fe3c1" stroke-width="2.6" stroke-linecap="round"/><path d="M16 20v8" stroke="#ff6b5c" stroke-width="3" stroke-linecap="round"/></svg>'
   };
   function buildWeaponBar() {
     var h = '', ws = unlockedWeapons();
     for (var k in FS.WEAPONS) {
       var u = ws.indexOf(k) >= 0, nm = FS.WEAPONS[k].name;
-      h += '<button class="wpn" data-w="' + k + '" aria-pressed="false" ' + (u ? '' : 'disabled') + ' aria-label="' + nm + (u ? '' : ', unlocks at level ' + (FS.WEAPONS[k].unlock + 1)) + '">' + ICONS[k] + '<span>' + (u ? (k === 'drone' ? 'Drone' : nm) : 'Lv ' + (FS.WEAPONS[k].unlock + 1)) + '</span></button>';
+      h += '<button class="wpn" data-w="' + k + '" aria-pressed="false" ' + (u ? '' : 'disabled') + ' aria-label="' + nm + (u ? '' : ', unlocks at level ' + (FS.WEAPONS[k].unlock + 1)) + '">' + ICONS[k] + '<span>' + (k === 'drone' ? 'Drone' : k === 'hammer' ? 'Thunder' : nm) + '</span></button>';
     }
     $('wpns').innerHTML = h;
     var bs = document.querySelectorAll('.wpn'); for (var i = 0; i < bs.length; i++) bs[i].onclick = function () { if (!busy()) setWeapon(this.dataset.w); };
@@ -152,21 +155,23 @@
   function launchSpeed() { return vmax(weapon) * (0.28 + 0.72 * aim.power); }
   function makeProj(k) {
     var W_ = FS.WEAPONS[k], mz = muzzle(k), sp = launchSpeed(), pm = level.pm, o = { x: mz.x, y: mz.y, vx: Math.cos(aim.angle) * sp, vy: Math.sin(aim.angle) * sp, r: W_.r, m: W_.m, kind: k === 'sling' ? 'stone' : k === 'cannon' ? 'ball' : 'rocket', pm: pm, life: 7, rot: 0, hits: 0, pierce: W_.pierce || 1, slow: W_.slow || 0.5 };
+    if (k === 'hammer') { o.kind = 'hammer'; o.expl = true; o.R = W_.R; o.D = 0; o.imp = 0; o.pierce = 1; }
+    else if (save.fun.explode && k !== 'rocket') { o.expl = true; o.R = k === 'sling' ? 52 : 70; o.D = (k === 'sling' ? 1.7 : 2.8) * pm; o.imp = k === 'sling' ? 300 : 420; }
     if (k === 'rocket') { o.expl = true; o.R = W_.R * (1 + 0.04 * levelIdx); o.D = W_.D * pm; o.imp = W_.imp; o.thr = W_.thr; o.acc = W_.acc; o.gm = 0.55; }
     return o;
   }
-  function busy() { return world.proj.length > 0 || strikes.length > 0 || SP.active() || phase !== 'aim'; }
-  function canFire() { return mode === 'play' && !paused && !modal && phase === 'aim' && shotsLeft > 0 && world.proj.length === 0 && strikes.length === 0 && !SP.active(); }
+  function busy() { return world.proj.length > 0 || strikes.length > 0 || fxq.length > 0 || SP.active() || phase !== 'aim'; }
+  function canFire() { return mode === 'play' && !paused && !modal && phase === 'aim' && shotsLeft > 0 && world.proj.length === 0 && strikes.length === 0 && fxq.length === 0 && !SP.active(); }
   function fire() {
     if (!canFire()) return false;
-    if (!A.on) {} A.play(weapon === 'sling' ? 'sling' : weapon === 'cannon' ? 'cannon' : weapon === 'rocket' ? 'rocket' : 'drone');
+    if (!A.on) {} A.play(weapon === 'sling' ? 'sling' : weapon === 'cannon' ? 'cannon' : weapon === 'rocket' ? 'rocket' : weapon === 'hammer' ? 'whoosh' : 'drone');
     shotsLeft--; shotsUsed++; combo = 0;
     if (weapon === 'drone') {
       var top = 330; for (var i = 0; i < 3; i++) strikes.push({ x: -60 - i * 46, y: top - i * 14, off: (i - 1) * 40, dropped: false, tx: aim.tx });
     } else {
       world.proj.push(makeProj(weapon)); var mz = muzzle(weapon);
       for (var j = 0; j < 8; j++) P.smoke(mz.x, mz.y, 7, 0.8);
-      if (weapon === 'cannon') { shake = Math.min(14, shake + 6); P.boom(mz.x, mz.y, 14, true); }
+      if (weapon === 'cannon' || weapon === 'hammer') { shake = Math.min(14, shake + 6); P.boom(mz.x, mz.y, 14, true); }
     }
     save.seenHint = true; $('hint').hidden = true; phase = 'flight'; settleT = 0; fireRecoil = 1; updateHud(); say('Fired. ' + shotsLeft + ' shots left.');
     return true;
@@ -177,6 +182,48 @@
     var x = structCx + (Math.random() - 0.5) * 360 + 140, y = 620;
     world.proj.push({ x: x, y: y, vx: -220 - Math.random() * 160, vy: -480 - Math.random() * 160, r: 12, m: 3, kind: 'meteor', expl: true, R: 50, D: 1.9 * level.pm, imp: 300, pm: level.pm, life: 5, rot: 0, gm: 0.2, pierce: 1, slow: 1, meteor: true });
     A.play('meteor');
+  }
+
+
+  // ---------------------------------------------------------------- thunder hammer
+  function jag(x0, y0, x1, y1, n, amp) {
+    var pts = [{ x: x0, y: y0 }], i; for (i = 1; i < n; i++) { var t = i / n; pts.push({ x: x0 + (x1 - x0) * t + (Math.random() - 0.5) * amp, y: y0 + (y1 - y0) * t + (Math.random() - 0.5) * amp * 0.5 }); } pts.push({ x: x1, y: y1 }); return pts;
+  }
+  function aliveNodes() {
+    var o = [], seen = {}; world.links.forEach(function (l) { if (!l.broken) [l.a, l.b].forEach(function (n) { if (!seen[n.id] && !n.dead && !n.fixed) { seen[n.id] = 1; o.push(n); } }); }); return o;
+  }
+  function zapAt(x, y, r, amt) {
+    var i, l, d; for (i = 0; i < world.links.length; i++) { l = world.links[i]; if (l.broken) continue; d = FS.segDist(l, x, y); if (d.d < r) { world.damage(l, amt * (1 - d.d / r * 0.5), 'bolt'); l.heat = 1; } }
+    for (i = 0; i < world.nodes.length; i++) { var n = world.nodes[i]; if (n.dead || n.inv === 0) continue; var dd = Math.hypot(n.x - x, n.y - y); if (dd < r * 1.5) world.impulse(n, (n.x - x) / (dd || 1) * 220, 160, 1 / 120); }
+    for (i = 0; i < (reduced ? 4 : 12); i++) P.spark(x, y, Math.random() * 6.3, 120 + Math.random() * 300, 0.45, '#c8ecff');
+    P.add({ kind: 'flash', x: x, y: y, vx: 0, vy: 0, life: 0.18, max: 0.18, size: 34, rot: 0 });
+  }
+  function onThunder(x, y) {
+    var W_ = FS.WEAPONS.hammer, pm = level.pm, R = W_.R * (1 + 0.04 * levelIdx), near = aliveNodes().filter(function (n) { return Math.hypot(n.x - x, n.y - y) < R; });
+    P.boom(x, y, 14, true); A.play('thud'); shake = Math.min(14, shake + 5);
+    if (!near.length) { P.text(x, y + 20, 'No structure in reach', '#dfeeff', false); return; }
+    near.sort(function (a, b) { return Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y); });
+    var targets = [], pool = near.slice(), nb = Math.min(W_.bolts + Math.floor(levelIdx / 4), pool.length), i;
+    for (i = 0; i < nb; i++) targets.push(pool.splice(Math.floor(Math.random() * Math.min(pool.length, 6)), 1)[0]);
+    var visited = {};
+    targets.forEach(function (n, k) {
+      visited[n.id] = 1;
+      fxq.push({ delay: 0.1 + k * 0.13, run: function () {
+        arcs.push({ pts: jag(n.x + (Math.random() - 0.5) * 60, 760, n.x, n.y, 14, 38), life: 0.32, max: 0.32, w: 3.2 });
+        zapAt(n.x, n.y, 34, W_.D * pm * 1.3); flashT = reduced ? 0 : Math.min(0.22, flashT + 0.1); shake = Math.min(14, shake + 3); A.play('thunder');
+      } });
+    });
+    var from = targets[targets.length - 1], t0 = 0.1 + targets.length * 0.13 + 0.05, hop;
+    for (hop = 0; hop < W_.chain; hop++) {
+      fxq.push({ delay: t0 + hop * 0.085, run: function () {
+        var best = null, bd = 120, nodes = aliveNodes(), j;
+        for (j = 0; j < nodes.length; j++) { var q = nodes[j]; if (visited[q.id]) continue; var d = Math.hypot(q.x - from.x, q.y - from.y); if (d < bd) { bd = d; best = q; } }
+        if (!best) return; visited[best.id] = 1;
+        arcs.push({ pts: jag(from.x, from.y, best.x, best.y, 7, 14), life: 0.28, max: 0.28, w: 2.4 });
+        world.links.forEach(function (l) { if (!l.broken && ((l.a === from && l.b === best) || (l.b === from && l.a === best))) world.damage(l, 1.6 * pm * 1.4, 'arc'); });
+        zapAt(best.x, best.y, 22, W_.D * pm * 0.8); A.play('zap'); from = best;
+      } });
+    }
   }
 
   // ---------------------------------------------------------------- aiming input
@@ -201,7 +248,7 @@
     if (!ptr || (e && e.pointerId !== ptr.id)) return; var p = ptr; ptr = null; dragging = false;
     if (!p.moved) return;
     if (weapon !== 'drone' && (p.len || 0) < 16) return;
-    if (!precision) fire();
+    fire();
   }
   cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', function () { ptr = null; dragging = false; });
   cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
@@ -214,7 +261,7 @@
   $('rA').oninput = function () { if (weapon === 'drone') aim.tx = +this.value; else aim.angle = this.value / 57.2958; syncSliders(); };
   $('rP').oninput = function () { aim.power = this.value / 100; syncSliders(); };
   $('bFire').onclick = function () { fire(); };
-  $('bPrec').onclick = function () { precision = !precision; this.setAttribute('aria-pressed', precision); $('prec').hidden = !precision; syncSliders(); say(precision ? 'Precision aim on. Use the sliders and the Fire button.' : 'Precision aim off.'); };
+  $('bPrec').onclick = function () { panelOpen = !panelOpen; this.setAttribute('aria-pressed', panelOpen); $('prec').hidden = !panelOpen; syncSliders(); say(panelOpen ? 'Aim panel shown. Use the sliders and the Fire button.' : 'Aim panel hidden.'); };
 
   document.addEventListener('keydown', function (e) {
     if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range') return;
@@ -227,7 +274,7 @@
     else if (k === 'ArrowRight') { aim.power = Math.min(1, aim.power + 0.02 * sh); syncSliders(); e.preventDefault(); }
     else if (k === 'ArrowLeft') { aim.power = Math.max(0.05, aim.power - 0.02 * sh); syncSliders(); e.preventDefault(); }
     else if (k === ' ' || k === 'Enter') { if (document.activeElement && document.activeElement.tagName === 'BUTTON') return; fire(); e.preventDefault(); }
-    else if (k >= '1' && k <= '4') { var ws = unlockedWeapons(), kk = Object.keys(FS.WEAPONS)[+k - 1]; if (ws.indexOf(kk) >= 0 && !busy()) setWeapon(kk); }
+    else if (k >= '1' && k <= '5') { var ws = unlockedWeapons(), kk = Object.keys(FS.WEAPONS)[+k - 1]; if (ws.indexOf(kk) >= 0 && !busy()) setWeapon(kk); }
     else if (k === 's' || k === 'S') openPicker();
     else if (k === 'r' || k === 'R') startLevel(levelIdx);
     else if (k === 'm' || k === 'M') toggleSound();
@@ -235,14 +282,19 @@
 
   // ---------------------------------------------------------------- special powers
   function openPicker() {
-    if (meter < 1 || SP.active() || mode !== 'play' || phase === 'done') { if (meter < 1) toast('Fill the meter with points first'); return; }
-    var h = '', keys = Object.keys(FS.SPECIALS), i;
+    if (SP.active() || mode !== 'play' || phase === 'done') return;
+    var earned = earnedSpecials();
+    if (earned === 0) { toast('Beat 2 levels to earn your first special power'); return; }
+    if (meter < 1) { toast('Fill the meter with points first'); return; }
+    var h = '', keys = SPECIAL_ORDER, i;
     for (i = 0; i < keys.length; i++) {
       var d = FS.SPECIALS[keys[i]], eff = Math.round(Math.min(1, (d.mult[level.mat] || 1) / 3.2) * 100);
+      var locked = i >= earned;
+      if (locked) { h += '<button class="pk" disabled aria-label="' + d.name + ', locked. Beat ' + (2 * (i + 1) - Object.keys(save.cleared).length) + ' more levels to earn it"><b>' + d.name + '</b><span>Locked. Beat ' + (2 * (i + 1) - Object.keys(save.cleared).length) + ' more levels.</span></button>'; continue; }
       h += '<button class="pk" data-k="' + keys[i] + '" aria-label="' + d.name + '. ' + d.blurb + '. ' + eff + ' percent effective against ' + FS.MATS[level.mat].name + '"><b>' + d.name + '</b><span>' + d.blurb + '. ' + d.best + '.</span><div class="eff" title="Effect against ' + FS.MATS[level.mat].name + '"><i style="width:' + eff + '%"></i></div></button>';
     }
     $('pkGrid').innerHTML = h; var bs = $('pkGrid').querySelectorAll('.pk'); for (i = 0; i < bs.length; i++) bs[i].onclick = function () { startSpecial(this.dataset.k); };
-    openModal('picker', bs[0]);
+    openModal('picker', $('pkGrid').querySelector('.pk:not([disabled])'));
   }
   function startSpecial(k) {
     closeModals(); paused = false; meter = 0; SP.start(k, G); phase = phase === 'aim' ? 'flight' : phase; settleT = 0; toast(FS.SPECIALS[k].name + '!'); updateHud();
@@ -256,14 +308,17 @@
     var total = pct >= 97, win = pct >= level.goal, bonusShots = win ? shotsLeft * 400 : 0, bonusTotal = total ? 2500 : 0, finalScore = score + bonusShots + bonusTotal;
     var stars = win ? (total ? 3 : (shotsLeft >= 1 || pct >= 88 ? 2 : 1)) : 0;
     if (anyFun && stars > 1) stars = 1;
+    var earnedBefore = earnedSpecials();
     if (win) {
+      save.cleared[levelIdx] = 1;
       if (!anyFun) { save.stars[levelIdx] = Math.max(save.stars[levelIdx] || 0, stars); save.best[levelIdx] = Math.max(save.best[levelIdx] || 0, finalScore); }
       save.maxLevel = Math.max(save.maxLevel, Math.min(FS.LEVELS.length - 1, levelIdx + 1)); A.play(total ? 'total' : 'win');
     } else A.play('fail');
+    var newSp = earnedSpecials() > earnedBefore ? FS.SPECIALS[SPECIAL_ORDER[earnedSpecials() - 1]].name : null;
     save.meter = meter; persist();
     $('rsTitle').textContent = total ? 'Total destruction' : win ? 'Level cleared' : 'Not this time';
     var st = ''; for (var i = 0; i < 3; i++) st += '<span class="' + (i < stars ? '' : 'off') + '">★</span>'; $('stars').innerHTML = win ? st : '';
-    $('rsMsg').textContent = win ? (total ? 'Nothing left standing. Bonus awarded.' : 'You reached the goal of ' + level.goal + ' percent.') : 'You reached ' + pct + ' percent and needed ' + level.goal + '. Retry as often as you like.' + (levelIdx < 4 && !win ? ' Aim for the poles and the guy lines.' : '');
+    $('rsMsg').textContent = win ? (total ? 'Nothing left standing. Bonus awarded.' : 'You reached the goal of ' + level.goal + ' percent.') : 'You reached ' + pct + ' percent and needed ' + level.goal + '. Retry as often as you like.' + (levelIdx < 4 && !win ? ' Aim for the poles and the guy lines.' : '') + (newSp ? ' New special power: ' + newSp + '.' : '');
     $('rsStats').innerHTML = '<dt>Destroyed</dt><dd>' + pct + '%</dd><dt>Points</dt><dd>' + score + '</dd>' + (win ? '<dt>Shots left bonus</dt><dd>+' + bonusShots + '</dd>' : '') + (total ? '<dt>Total destruction</dt><dd>+2500</dd>' : '') + '<dt>Final score</dt><dd>' + finalScore + '</dd>' + (anyFun ? '<dt>Fun option on</dt><dd>stars capped</dd>' : '');
     $('bNext').hidden = !(win && levelIdx < FS.LEVELS.length - 1);
     setTimeout(function () { if (mode === 'play' && phase === 'done') { openModal('result', win && !$('bNext').hidden ? $('bNext') : $('bRetry')); say($('rsTitle').textContent + '. ' + $('rsMsg').textContent); } }, 450);
@@ -287,7 +342,7 @@
   function show(m) {
     mode = m; $('title').hidden = m !== 'title'; $('levels').hidden = m !== 'levels'; $('hud').hidden = m !== 'play'; $('bar').hidden = m !== 'play';
     if (m !== 'play') { $('prec').hidden = true; $('hint').hidden = true; $('toast').hidden = true; }
-    else $('prec').hidden = !precision;
+    else $('prec').hidden = !panelOpen;
   }
   function openPause() { if (mode !== 'play') return; openModal('pause', $('bResume')); }
   function toggleSound() {
@@ -324,10 +379,11 @@
   $('bDone').onclick = function () { if (!busy() || phase === 'aim') { endT = 0; shotsLeft = 0; updateHud(); } };
   function syncFunUi() {
     var bs = $('gSeg').querySelectorAll('button'); for (var i = 0; i < bs.length; i++) bs[i].setAttribute('aria-pressed', Math.abs(+bs[i].dataset.g - save.fun.g) < 0.001);
-    $('fMet').checked = save.fun.meteors; $('fSlow').checked = save.fun.slow; $('fRed').checked = reduced;
+    $('fMet').checked = save.fun.meteors; $('fExp').checked = !!save.fun.explode; $('fSlow').checked = save.fun.slow; $('fRed').checked = reduced;
   }
   $('gSeg').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; save.fun.g = +b.dataset.g; if (world) world.gScale = save.fun.g; syncFunUi(); persist(); A.play('ui'); say('Gravity set to ' + b.textContent); };
   $('fMet').onchange = function () { save.fun.meteors = this.checked; persist(); };
+  $('fExp').onchange = function () { save.fun.explode = this.checked; persist(); };
   $('fSlow').onchange = function () { save.fun.slow = this.checked; persist(); };
   $('fRed').onchange = function () { reduced = this.checked; G.reduced = reduced; save.fun.reduce = reduced; document.body.classList.toggle('rm', reduced); persist(); };
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEvt = e; $('bInstall').hidden = false; });
@@ -343,9 +399,9 @@
     $('score').textContent = Math.round(shownScore); var d = $('dbar'); d.classList.toggle('met', goalMet); $('dfill').style.width = pct + '%'; $('dpct').textContent = pct + '%'; d.setAttribute('aria-valuenow', pct);
     var sh = ''; for (var i = 0; i < 3; i++) sh += '<i class="' + (i < shotsUsed ? 'used' : '') + '"></i>'; if ($('shots').dataset.n !== sh) { $('shots').innerHTML = sh; $('shots').dataset.n = sh; }
     $('shots').setAttribute('aria-label', shotsLeft + ' shots left');
-    var sp = $('bSpec'), ready = meter >= 1 && !SP.active(); sp.disabled = !ready; sp.classList.toggle('ready', ready);
-    $('specArc').style.strokeDasharray = Math.round(meter * 100) + ' 100'; $('specTxt').textContent = meter >= 1 ? 'READY' : Math.round(meter * 100) + '%';
-    sp.setAttribute('aria-label', ready ? 'Special power ready. Choose a power' : 'Special power meter ' + Math.round(meter * 100) + ' percent');
+    var sp = $('bSpec'), earnedN = earnedSpecials(), ready = meter >= 1 && !SP.active() && earnedN > 0; sp.disabled = SP.active(); sp.classList.toggle('ready', ready);
+    $('specArc').style.strokeDasharray = Math.round(meter * 100) + ' 100'; $('specTxt').textContent = earnedN === 0 ? 'Locked' : meter >= 1 ? 'READY' : Math.round(meter * 100) + '%';
+    sp.setAttribute('aria-label', earnedN === 0 ? 'Special powers locked. Beat 2 levels to earn the first one' : ready ? 'Special power ready. Choose a power' : 'Special power meter ' + Math.round(meter * 100) + ' percent');
     $('bDone').hidden = !(goalMet && shotsLeft > 0 && phase === 'aim');
     document.querySelectorAll('.wpn').forEach(function (b) { if (!b.disabled) b.style.opacity = busy() ? 0.6 : 1; });
   }
@@ -366,24 +422,28 @@
     for (i = 0; i < world.proj.length; i++) {
       var p = world.proj[i];
       if (p.kind === 'rocket' || p.kind === 'meteor') { if (!reduced || Math.random() < 0.5) { P.fire(p.x - p.vx * 0.01, p.y - p.vy * 0.01, -p.vx * 0.1 + (Math.random() - 0.5) * 40, -p.vy * 0.1 + (Math.random() - 0.5) * 40, p.kind === 'meteor' ? 12 : 6, 0.35); } if (Math.random() < 0.5) P.smoke(p.x, p.y, p.kind === 'meteor' ? 10 : 5, 0.9); }
+      else if (p.kind === 'hammer') { if (Math.random() < 0.7) P.spark(p.x, p.y, Math.random() * 6.3, 60, 0.3, '#bfe6ff'); }
+      else if ((p.kind === 'ball' || p.kind === 'stone') && p.expl) { P.fire(p.x, p.y, (Math.random() - 0.5) * 30, 20, 5, 0.3); }
       else if (p.kind === 'ball' && Math.random() < 0.4) P.smoke(p.x, p.y, 3.5, 0.5);
     }
     for (i = 0; i < world.links.length; i++) {
       var l = world.links[i]; if (l.broken) continue;
       if (l.burn > 0) { l.burn -= dt; if (Math.random() < dt * 14 && P.list.length < P.cap * 0.8) P.fire(l.a.x + (l.b.x - l.a.x) * Math.random(), l.a.y + (l.b.y - l.a.y) * Math.random(), (Math.random() - 0.5) * 20, 40 + Math.random() * 50, 5, 0.5); if (l.M.flam > 0.3) world.damage(l, 0.22 * dt * l.M.flam * 1.5, 'fire'); }
     }
+    for (i = fxq.length - 1; i >= 0; i--) { fxq[i].delay -= dt; if (fxq[i].delay <= 0) { var job = fxq.splice(i, 1)[0]; job.run(); } }
+    for (i = arcs.length - 1; i >= 0; i--) { arcs[i].life -= dt; if (arcs[i].life <= 0) arcs.splice(i, 1); }
     if (comboT > 0) { comboT -= dt; if (comboT <= 0) combo = 0; }
     if (save.fun.meteors && mode === 'play') { spawnMeteorT -= dt; if (spawnMeteorT <= 0) { spawnMeteor(); spawnMeteorT = reduced ? 1.6 : 0.5 + Math.random() * 0.7; } }
     if (mode !== 'play') return;
     // level flow
-    if (phase === 'flight' && world.proj.length === 0 && strikes.length === 0 && !SP.active()) {
+    if (phase === 'flight' && world.proj.length === 0 && strikes.length === 0 && fxq.length === 0 && !SP.active()) {
       if (FS.settled(world)) settleT += dt; else settleT += dt * 0.25;
       if (settleT > 1.1) { phase = 'aim'; settleT = 0; }
     }
     if (phase === 'aim' && shotsLeft === 0 && !SP.active() && world.proj.length === 0 && strikes.length === 0) { endT += dt; if (endT > 0.9 && (FS.settled(world) || endT > 4)) judge(); }
     else if (phase === 'flight' && shotsLeft === 0) { /* wait */ }
     if (pct >= 97 && !resultShown && !SP.active() && world.proj.length === 0 && strikes.length === 0) { endT += dt; if (endT > 1.4) judge(); }
-    if (shotsLeft === 0 && phase === 'flight' && world.proj.length === 0 && strikes.length === 0 && !SP.active() && settleT > 1) { phase = 'aim'; }
+    if (shotsLeft === 0 && phase === 'flight' && world.proj.length === 0 && strikes.length === 0 && !fxq.length && !SP.active() && settleT > 1) { phase = 'aim'; }
   }
 
   // ---------------------------------------------------------------- rendering helpers
@@ -567,6 +627,10 @@
       c.fillStyle = g2; c.fillRect(-22 - rc, -9, 52, 18); c.fillStyle = '#ff6b5c'; c.fillRect(24, -9, 6, 18); c.fillStyle = '#12182a'; c.beginPath(); c.arc(30, 0, 8, -1.57, 1.57); c.fill();
       if (canFire()) { c.fillStyle = '#4fe3c1'; c.beginPath(); c.arc(-6, -9, 2.4, 0, 6.3); c.fill(); }
       c.restore();
+    } else if (weapon === 'hammer') {
+      c.fillStyle = '#6d7488'; c.fillRect(lx - 18, 0, 36, 18); c.fillStyle = '#8a92a8'; c.fillRect(lx - 18, 16, 36, 4);
+      c.save(); c.translate(lx, 26); c.rotate(a + 1.1 + (fireRecoil * -1.2)); c.strokeStyle = '#5a3b1d'; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 46); c.stroke(); c.strokeStyle = '#c28a4a'; c.lineWidth = 3.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 46); c.stroke();
+      var hg2 = c.createLinearGradient(-12, 0, 12, 0); hg2.addColorStop(0, '#c9d2e0'); hg2.addColorStop(1, '#59647d'); c.fillStyle = hg2; c.fillRect(-13, 44, 26, 16); c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(-13, 50); c.lineTo(13, 50); c.moveTo(-13, 55); c.lineTo(13, 55); c.stroke(); c.restore();
     } else { // drone strike controller: a launch pad with a docked drone
       c.fillStyle = '#39445f'; c.fillRect(lx - 26, 0, 52, 8); c.fillStyle = '#4fe3c1'; c.fillRect(lx - 26, 7, 52, 1.5);
       c.fillStyle = '#9fb0d6'; c.fillRect(lx - 10, 12 + Math.sin(t * 3) * 1.5, 20, 8); c.strokeStyle = '#4fe3c1'; c.lineWidth = 3; c.beginPath(); c.moveTo(lx - 24, 24 + Math.sin(t * 3) * 1.5); c.lineTo(lx - 6, 24 + Math.sin(t * 3) * 1.5); c.moveTo(lx + 6, 24 + Math.sin(t * 3) * 1.5); c.lineTo(lx + 24, 24 + Math.sin(t * 3) * 1.5); c.stroke();
@@ -614,6 +678,9 @@
       } else if (p.kind === 'rocket') {
         c.rotate(Math.atan2(p.vy, p.vx)); var g2 = c.createLinearGradient(0, -6, 0, 6); g2.addColorStop(0, '#fff'); g2.addColorStop(1, '#8d9ab8'); c.fillStyle = g2; c.beginPath(); c.moveTo(14, 0); c.quadraticCurveTo(8, -7, -10, -6); c.lineTo(-10, 6); c.quadraticCurveTo(8, 7, 14, 0); c.fill();
         c.fillStyle = '#ff6b5c'; c.beginPath(); c.moveTo(14, 0); c.quadraticCurveTo(10, -4, 6, -5.5); c.lineTo(6, 5.5); c.quadraticCurveTo(10, 4, 14, 0); c.fill(); c.fillStyle = '#4fe3c1'; c.beginPath(); c.moveTo(-10, -6); c.lineTo(-17, -11); c.lineTo(-4, -6); c.fill(); c.beginPath(); c.moveTo(-10, 6); c.lineTo(-17, 11); c.lineTo(-4, 6); c.fill();
+      } else if (p.kind === 'hammer') {
+        c.rotate(p.rot * 1.2); c.strokeStyle = '#5a3b1d'; c.lineWidth = 5; c.lineCap = 'round'; c.beginPath(); c.moveTo(-16, 0); c.lineTo(16, 0); c.stroke(); c.strokeStyle = '#c28a4a'; c.lineWidth = 3; c.beginPath(); c.moveTo(-16, 0); c.lineTo(16, 0); c.stroke();
+        var hg = c.createLinearGradient(0, -9, 0, 9); hg.addColorStop(0, '#c9d2e0'); hg.addColorStop(1, '#59647d'); c.fillStyle = hg; c.fillRect(8, -9, 15, 18); c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(8, -3); c.lineTo(23, -3); c.moveTo(8, 3); c.lineTo(23, 3); c.stroke(); c.fillStyle = '#6ee7e0'; c.fillRect(10, -1, 11, 2);
       } else if (p.kind === 'bomb') {
         c.rotate(Math.atan2(p.vy, p.vx)); c.fillStyle = '#313a52'; c.beginPath(); c.ellipse(0, 0, 11, 6, 0, 0, 6.3); c.fill(); c.fillStyle = '#ff6b5c'; c.fillRect(4, -6, 3, 12); c.fillStyle = '#9fb0d6'; c.beginPath(); c.moveTo(-9, -3); c.lineTo(-15, -8); c.lineTo(-12, 0); c.lineTo(-15, 8); c.lineTo(-9, 3); c.fill();
       } else { // meteor
@@ -637,6 +704,7 @@
       else if (p.kind === 'spark') { c.strokeStyle = p.col; c.globalAlpha = a; c.lineWidth = 1.6; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x - p.vx * 0.03, p.y - p.vy * 0.03); c.stroke(); c.globalAlpha = 1; }
       else if (p.kind === 'flash') { var fg = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size); fg.addColorStop(0, 'rgba(255,255,230,' + a + ')'); fg.addColorStop(1, 'rgba(255,200,100,0)'); c.fillStyle = fg; c.beginPath(); c.arc(p.x, p.y, p.size, 0, 6.3); c.fill(); }
     }
+    for (i = 0; i < arcs.length; i++) { var ar = arcs[i], aa = ar.life / ar.max; c.lineJoin = 'round'; c.lineCap = 'round'; [[ar.w * 4, 'rgba(120,180,255,' + (0.25 * aa) + ')'], [ar.w, 'rgba(235,248,255,' + aa + ')']].forEach(function (pr2) { c.lineWidth = pr2[0]; c.strokeStyle = pr2[1]; c.beginPath(); c.moveTo(ar.pts[0].x, ar.pts[0].y); for (var q = 1; q < ar.pts.length; q++) c.lineTo(ar.pts[q].x, ar.pts[q].y); c.stroke(); }); }
     c.globalCompositeOperation = 'source-over';
     for (i = 0; i < L.length; i++) {
       p = L[i]; a = p.life / p.max;

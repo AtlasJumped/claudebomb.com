@@ -1,4 +1,4 @@
-// Fen Smash physics: a small 2.5D position-based solver.
+// Fennsmash physics: a small 2.5D position-based solver.
 // Struts are rigid (they resist compression and stretch). Cables are tension only (they pull, never push).
 // Everything breaks when its strain or accumulated damage passes a threshold set by its material.
 (function (root) {
@@ -7,22 +7,22 @@
 
   var MATS = {
     tent:   { name: 'Tent', strutName: 'bamboo pole', cableName: 'rope', strut: '#e0c27a', strutDark: '#8d6a2c', cable: '#f4efe2',
-              hp: 0.55, cableHp: 0.32, sb: 0.075, cb: 0.12, mass: 0.55, flam: 1.0, value: 10, w: 6, fabric: 'rgba(240,120,84,0.62)', fabric2: 'rgba(255,200,120,0.5)' },
+              cask: 7, hp: 0.55, cableHp: 0.32, sb: 0.13, cb: 0.12, mass: 0.55, flam: 1.0, value: 10, w: 6, fabric: 'rgba(240,120,84,0.62)', fabric2: 'rgba(255,200,120,0.5)' },
     wood:   { name: 'Wood', strutName: 'timber', cableName: 'hemp rope', strut: '#c08a52', strutDark: '#6a4524', cable: '#e2d3a8',
-              hp: 1.35, cableHp: 0.8, sb: 0.06, cb: 0.1, mass: 1.0, flam: 0.9, value: 20, w: 8, fabric: null },
+              cask: 10.5, hp: 1.35, cableHp: 0.8, sb: 0.11, cb: 0.1, mass: 1.0, flam: 0.9, value: 20, w: 8, fabric: null },
     steel:  { name: 'Steel and cable', strutName: 'steel beam', cableName: 'steel cable', strut: '#b4bfcc', strutDark: '#47515e', cable: '#e6edf5',
-              hp: 2.9, cableHp: 1.9, sb: 0.05, cb: 0.085, mass: 1.8, flam: 0.15, value: 35, w: 7, fabric: null },
+              cask: 10.5, hp: 2.9, cableHp: 1.9, sb: 0.1, cb: 0.085, mass: 1.8, flam: 0.15, value: 35, w: 7, fabric: null },
     carbon: { name: 'Carbon', strutName: 'carbon tube', cableName: 'carbon cable', strut: '#39424f', strutDark: '#0c1016', cable: '#6ee7e0',
-              hp: 4.4, cableHp: 3.2, sb: 0.045, cb: 0.075, mass: 0.8, flam: 0.05, value: 55, w: 7, fabric: 'rgba(110,231,224,0.16)', fabric2: 'rgba(110,231,224,0.3)' }
+              cask: 10.5, hp: 4.4, cableHp: 3.2, sb: 0.09, cb: 0.075, mass: 0.8, flam: 0.05, value: 55, w: 7, fabric: 'rgba(110,231,224,0.16)', fabric2: 'rgba(110,231,224,0.3)' }
   };
   FS.MATS = MATS;
 
-  var DAMP = 0.9988, ITER = 8, SUB = 3, WATER_Y = -34;
+  var CASK = 11, CBF = 1, DAMP = 0.9988, ITER = 8, SUB = 3, WATER_Y = -34;
   FS.WATER_Y = WATER_Y;
 
   function World() {
     this.nodes = []; this.links = []; this.panels = []; this.platforms = []; this.proj = [];
-    this.g = 900; this.gScale = 1; this.t = 0; this.grace = 0.8; this.cb = {}; this.bounds = { x0: -300, x1: 1600 };
+    this.queue = []; this.g = 900; this.gScale = 1; this.t = 0; this.grace = 0.8; this.cb = {}; this.bounds = { x0: -300, x1: 1600 };
   }
   World.prototype.node = function (x, y, inv, fixed, r) {
     var n = { x: x, y: y, px: x, py: y, inv: fixed ? 0 : inv, r: r || 5, fixed: !!fixed, dead: false, gt: 0, id: this.nodes.length };
@@ -30,7 +30,7 @@
   };
   World.prototype.link = function (a, b, type, M, hs, pre) {
     var d = Math.hypot(a.x - b.x, a.y - b.y);
-    var l = { a: a, b: b, type: type, rest: d * (type === 'cable' ? (pre || 0.97) : 1), len0: d, M: M, hs: hs,
+    var l = { a: a, b: b, type: type, rest: d * (type === 'cable' ? (pre || 0.97) : 1), pre: type === 'cable' ? (pre || 0.97) : 1, len0: d, M: M, hs: hs,
       hp: (type === 'cable' ? M.cableHp : M.hp) * hs, dmg: 0, broken: false, burn: 0, heat: 0, w: type === 'cable' ? 2.4 : M.w, id: this.links.length, tension: 0 };
     this.links.push(l); return l;
   };
@@ -40,6 +40,14 @@
   };
   World.prototype.breakLink = function (l, cause) {
     if (l.broken) return; l.broken = true;
+    if (l.type === 'cable' && !l.a.dead && !l.b.dead) { // stored tension snaps back: the ends whip toward each other
+      var dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.hypot(dx, dy) || 1, e = Math.min(0.5, Math.max(0, l.tension) + (1 / (l.pre || 1) - 1)) * 2400;
+      this.impulse(l.a, dx / d * e, dy / d * e, 1 / 180); this.impulse(l.b, -dx / d * e, -dy / d * e, 1 / 180);
+    }
+    if (cause !== 'sink' && cause !== 'cascade0') { // stored energy is released into every neighbor, a moment later
+      var e = l.type === 'cable' ? Math.max(l.pre < 0.985 ? 0.1 : 0.03, (1 / l.pre - 1) + Math.max(0, l.tension)) : 0.11, i, q;
+      for (i = 0; i < this.links.length; i++) { q = this.links[i]; if (q.broken || q === l) continue; if (q.a === l.a || q.a === l.b || q.b === l.a || q.b === l.b) this.queue.push({ t: this.t + 0.045 + Math.random() * 0.04, l: q, f: Math.min(1, e * l.M.cask * (l.type === 'cable' ? 1 : 1.2)) }); }
+    }
     if (this.cb.onBreak) this.cb.onBreak(l, cause);
   };
   World.prototype.damage = function (l, amount, cause) {
@@ -60,6 +68,7 @@
 
   World.prototype.explode = function (x, y, R, D, imp, kind) {
     var i, l, s, k;
+    if (kind === 'hammer') { if (this.cb.onThunder) this.cb.onThunder(x, y); return; }
     for (i = 0; i < this.links.length; i++) {
       l = this.links[i]; if (l.broken) continue;
       s = segDist(l, x, y); if (s.d > R) continue;
@@ -79,6 +88,7 @@
   };
 
   World.prototype.sub = function (h) {
+    if (this.queue.length) { for (var qi = this.queue.length - 1; qi >= 0; qi--) { var qq = this.queue[qi]; if (qq.t <= this.t) { this.queue.splice(qi, 1); if (!qq.l.broken) { qq.l.dmg += qq.f; if (qq.l.dmg >= 1) this.breakLink(qq.l, 'cascade'); } } } }
     var g = this.g * this.gScale, nodes = this.nodes, links = this.links, i, n, l, it, dx, dy, d, st;
     for (i = 0; i < nodes.length; i++) {
       n = nodes[i]; if (n.inv === 0 || n.dead) continue;
@@ -93,7 +103,7 @@
         dx = l.b.x - l.a.x; dy = l.b.y - l.a.y; d = Math.sqrt(dx * dx + dy * dy) || 1e-6; st = (d - l.rest) / l.rest; l.tension = st;
         if (l.heat > 0) l.heat = Math.max(0, l.heat - h * 0.4);
         var cap = 1 - Math.min(0.5, l.dmg * 0.5);
-        if (l.type === 'cable') { if (st > l.M.cb * l.hs0 * cap) this.breakLink(l, 'strain'); }
+        if (l.type === 'cable') { if (st > (l.M.cb * CBF * l.hs0 * cap + (1 / l.pre - 1))) this.breakLink(l, 'strain'); }
         else if (Math.abs(st) > l.M.sb * l.hs0 * cap) this.breakLink(l, 'strain');
       }
     }
@@ -103,7 +113,7 @@
         if (l.a.dead || l.b.dead) { this.breakLink(l, 'sink'); continue; }
         dx = l.b.x - l.a.x; dy = l.b.y - l.a.y; d = Math.sqrt(dx * dx + dy * dy) || 1e-6;
         var diff;
-        if (l.type === 'cable') { if (d <= l.rest) continue; diff = (d - l.rest) / d * 0.55; } else diff = (d - l.rest) / d;
+        if (l.type === 'cable') { if (d <= l.rest) continue; diff = (d - l.rest) / d * 0.7; } else diff = (d - l.rest) / d;
         var wa = l.a.inv, wb = l.b.inv, ws = wa + wb; if (ws === 0) continue;
         var ka = wa / ws, kb = wb / ws;
         l.a.x += dx * diff * ka; l.a.y += dy * diff * ka; l.b.x -= dx * diff * kb; l.b.y -= dy * diff * kb;
@@ -181,24 +191,42 @@
   Builder.prototype.C = function (a, b, pre) { var l = this.w.link(a, b, 'cable', this.M, this.hs, pre); l.hs0 = this.hs; this.links.push(l); return l; };
   Builder.prototype.panel = function (nodes, links) { this.w.panels.push({ nodes: nodes, links: links }); };
 
+  // A tower is a grid of X modules: cols bays wide and n modules tall. Struts are the crossing diagonals of each bay.
   Builder.prototype.tower = function (sp) {
-    var n = sp.n, W = sp.w, H = sp.h, tp = sp.taper || 0, x0 = sp.x || 0, L = [], R = [], y = 6, i;
-    for (i = 0; i <= n; i++) { var wi = W * (1 - tp * i / n); L.push(this.N(x0 - wi / 2, y)); R.push(this.N(x0 + wi / 2, y)); y += H; }
-    for (i = 0; i < n; i++) {
-      var s1 = this.S(L[i], R[i + 1]), s2 = this.S(R[i], L[i + 1]);
-      var c1 = this.C(L[i], L[i + 1], 0.975), c2 = this.C(R[i], R[i + 1], 0.975);
-      var c3 = this.C(L[i], R[i], 0.955);
-      this.panel([L[i], R[i], R[i + 1], L[i + 1]], [s1, s2, c1, c2, c3]);
+    var n = sp.n, W = sp.w, H = sp.h, tp = sp.taper || 0, x0 = sp.x || 0, cols = sp.cols || 1, X = [], y = 6, i, j, P = sp.pre || 1;
+    for (i = 0; i <= n; i++) { var row = [], wi = W * (1 - tp * i / n); for (j = 0; j <= cols; j++) row.push(this.N(x0 - wi / 2 + wi * j / cols, y)); X.push(row); y += H; }
+    for (i = 0; i < n; i++) for (j = 0; j < cols; j++) {
+      var s1 = this.S(X[i][j], X[i + 1][j + 1]), s2 = this.S(X[i][j + 1], X[i + 1][j]);
+      var cL = this.C(X[i][j], X[i + 1][j], 0.955 * P), cR = this.C(X[i][j + 1], X[i + 1][j + 1], 0.955 * P), cB = this.C(X[i][j], X[i][j + 1], 0.9 * P);
+      this.panel([X[i][j], X[i][j + 1], X[i + 1][j + 1], X[i + 1][j]], [s1, s2, cL, cR, cB]);
     }
-    this.C(L[n], R[n], 0.955);
-    for (i = 0; i + 2 <= n; i++) { this.C(L[i], L[i + 2], 0.985); this.C(R[i], R[i + 2], 0.985); }
+    for (j = 0; j < cols; j++) this.C(X[n][j], X[n][j + 1], 0.9 * P);
+    for (i = 0; i + 2 <= n; i++) for (j = 0; j <= cols; j++) this.C(X[i][j], X[i + 2][j], 0.95 * P);
+    for (i = 1; i < n; i++) for (j = 0; j < cols; j++) { this.C(X[i][j], X[i + 1][j + 1], 0.96 * P); }
     var g = sp.guys == null ? 1 : sp.guys;
     for (i = 1; i <= g; i++) {
-      var k = Math.max(1, Math.round(n * i / g)); var gx = (W * (1 - tp * k / n)) / 2 + 22 + 6 * k;
+      var k = Math.max(1, Math.round(n * i / g)), wk = W * (1 - tp * k / n), gx = wk / 2 + 22 + 6 * k;
       var sl = this.stake(x0 - gx - 14), sr = this.stake(x0 + gx + 14);
-      this.C(L[k], sl, 0.99); this.C(R[k], sr, 0.99);
+      this.C(X[k][0], sl, 0.99); this.C(X[k][cols], sr, 0.99);
     }
-    return { L: L, R: R };
+    return { L: X.map(function (r) { return r[0]; }), R: X.map(function (r) { return r[cols]; }) };
+  };
+
+  // A dome: an outer and an inner ring of nodes along a half circle, X struts in every bay, cable rings, radial cables.
+  Builder.prototype.dome = function (sp) {
+    var m = sp.m, R = sp.R, T = sp.t || 36, x0 = sp.x || 0, O = [], I = [], k, P = sp.pre || 1;
+    for (k = 0; k <= m; k++) { var a = Math.PI * k / m, c = Math.cos(a), sn = Math.sin(a); O.push(this.N(x0 + R * c, 6 + (R * 0.85) * sn)); I.push(this.N(x0 + (R - T) * c, 6 + ((R - T) * 0.85) * sn)); }
+    for (k = 0; k < m; k++) {
+      var s1 = this.S(O[k], I[k + 1]), s2 = this.S(O[k + 1], I[k]);
+      var c1 = this.C(O[k], O[k + 1], 0.93 * P), c2 = this.C(I[k], I[k + 1], 0.93 * P);
+      this.panel([O[k], O[k + 1], I[k + 1], I[k]], [s1, s2, c1, c2]);
+    }
+    for (k = 1; k < m; k++) this.C(O[k], I[k], 0.95 * P);
+    for (k = 0; k + 2 <= m; k++) { this.C(O[k], O[k + 2], 0.95 * P); this.C(I[k], I[k + 2], 0.95 * P); }
+    this.C(I[0], I[m], 0.985); this.C(O[0], I[0], 0.98); this.C(O[m], I[m], 0.98);
+    var sl = this.stake(x0 + R + 30), sr = this.stake(x0 - R - 30);
+    this.C(O[0], sl, 0.99); this.C(O[m], sr, 0.99);
+    return { O: O, I: I };
   };
 
   Builder.prototype.tents = function (sp) {
@@ -206,9 +234,9 @@
     for (i = 0; i <= n; i++) b.push(this.N(x0 - n * W / 2 + i * W, 6));
     for (i = 0; i < n; i++) a.push(this.N(x0 - n * W / 2 + i * W + W / 2, H));
     for (i = 0; i < n; i++) {
-      var s1 = this.S(b[i], a[i]), s2 = this.S(b[i + 1], a[i]), c = this.C(b[i], b[i + 1], 0.93);
+      var s1 = this.S(b[i], a[i]), s2 = this.S(b[i + 1], a[i]), c = this.C(b[i], b[i + 1], 0.9);
       this.panel([b[i], a[i], b[i + 1]], [s1, s2, c]);
-      if (i > 0) this.C(a[i - 1], a[i], 0.97);
+      if (i > 0) { this.C(a[i - 1], a[i], 0.94); this.C(b[i], a[i - 1], 0.96); this.C(b[i], a[i], 0.96); }
       var tip = this.N(x0 - n * W / 2 + i * W + W / 2, H + 34); this.S(a[i], tip); this.C(tip, b[i], 0.985); this.C(tip, b[i + 1], 0.985);
     }
     var sl = this.stake(x0 - n * W / 2 - 38), sr = this.stake(x0 + n * W / 2 + 38);
@@ -218,18 +246,18 @@
   };
 
   Builder.prototype.twin = function (sp) {
-    var gap = sp.gap, i, A = this.tower({ n: sp.n, w: sp.w, h: sp.h, taper: sp.taper, x: -gap / 2, guys: 0 });
-    var B = this.tower({ n: sp.n, w: sp.w, h: sp.h, taper: sp.taper, x: gap / 2, guys: 0 });
-    for (i = 1; i <= sp.n; i++) this.C(A.R[i], B.L[i], 0.985);
+    var gap = sp.gap, i, A = this.tower({ n: sp.n, w: sp.w, h: sp.h, taper: sp.taper, cols: sp.cols, x: -gap / 2, guys: 0 });
+    var B = this.tower({ n: sp.n, w: sp.w, h: sp.h, taper: sp.taper, cols: sp.cols, x: gap / 2, guys: 0 });
+    for (i = 1; i <= sp.n; i++) this.C(A.R[i], B.L[i], 0.94);
     var wTop = sp.w * (1 - (sp.taper || 0));
     var sl = this.stake(-gap / 2 - wTop / 2 - 34), sr = this.stake(gap / 2 + wTop / 2 + 34);
     this.C(A.L[sp.n], sl, 0.99); this.C(B.R[sp.n], sr, 0.99);
-    for (i = 1; i < sp.n; i++) this.C(A.R[i], B.L[i + 1], 0.99);
+    for (i = 1; i < sp.n; i++) this.C(A.R[i], B.L[i + 1], 0.96);
   };
 
   FS.buildStructure = function (world, spec, matKey, cx, hs) {
     var M = MATS[matKey], b = new Builder(world, M, cx, hs);
-    if (spec.type === 'tents') b.tents(spec); else if (spec.type === 'twin') b.twin(spec); else b.tower(spec);
+    if (spec.type === 'tents') b.tents(spec); else if (spec.type === 'twin') b.twin(spec); else if (spec.type === 'dome') b.dome(spec); else b.tower(spec);
     return b.links;
   };
 

@@ -1,4 +1,4 @@
-// Fen Smash special powers: three dragons, a dog pack, an ant army, a drone swarm.
+// Fennsmash special powers: three dragons, a dog pack, an ant army, a drone swarm.
 // Drawing happens in world units (y up). Every character is an original design for this game.
 (function (root) {
   'use strict';

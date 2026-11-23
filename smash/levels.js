@@ -1,4 +1,4 @@
-// Fen Smash levels: 4 materials, 4 levels each. Power of every weapon and strength of every structure rise with the level number.
+// Fennsmash levels: 4 materials, 4 levels each. Power of every weapon and strength of every structure rise with the level number.
 (function (root) {
   'use strict';
   var FS = root.FS = root.FS || {};
@@ -9,26 +9,26 @@
     { key: 'carbon', name: 'Carbon', blurb: 'Carbon tubes and tension films', sky: ['#050b1d', '#0b2440', '#124a5a'], hill: ['#14344a', '#0d2536', '#081a28'], sun: '#bff6f2' }
   ];
   var L = [
-    // world 1: tents
-    { name: 'First Tent', spec: { type: 'tents', n: 1, w: 110, h: 90 }, goal: 50 },
-    { name: 'Two Tents', spec: { type: 'tents', n: 2, w: 92, h: 82 }, goal: 55 },
-    { name: 'Ridge Tower', spec: { type: 'tower', n: 2, w: 74, h: 62, guys: 1 }, goal: 55 },
-    { name: 'Big Top', spec: { type: 'tower', n: 3, w: 84, h: 56, taper: 0.2, guys: 2 }, goal: 60 },
+    // world 1: tents (already multi-bay from level 1)
+    { name: 'First Dome', spec: { type: 'dome', m: 5, R: 92, t: 34 }, goal: 50 },
+    { name: 'Camp Row', spec: { type: 'tents', n: 3, w: 78, h: 82 }, goal: 55 },
+    { name: 'Ridge Tower', spec: { type: 'tower', n: 3, w: 78, h: 58, guys: 2 }, goal: 55 },
+    { name: 'Big Top', spec: { type: 'tower', n: 3, w: 130, h: 52, cols: 2, taper: 0.15, guys: 2 }, goal: 60 },
     // world 2: wood
-    { name: 'Timber Mast', spec: { type: 'tower', n: 3, w: 80, h: 56, guys: 1 }, goal: 55 },
-    { name: 'Log Gate', spec: { type: 'twin', n: 2, w: 62, h: 58, gap: 116 }, goal: 60 },
-    { name: 'Palisade', spec: { type: 'tower', n: 4, w: 84, h: 50, taper: 0.25, guys: 2 }, goal: 60 },
-    { name: 'Twin Spires', spec: { type: 'twin', n: 3, w: 56, h: 48, gap: 128, taper: 0.2 }, goal: 62 },
+    { name: 'Timber Mast', spec: { type: 'tower', n: 4, w: 78, h: 52, guys: 2 }, goal: 55 },
+    { name: 'Log Gate', spec: { type: 'twin', n: 3, w: 60, h: 54, gap: 118 }, goal: 60 },
+    { name: 'Timber Dome', spec: { type: 'dome', m: 6, R: 108, t: 38 }, goal: 60 },
+    { name: 'Palisade', spec: { type: 'tower', n: 4, w: 140, h: 48, cols: 2, taper: 0.25, guys: 2 }, goal: 62 },
     // world 3: steel and cable
-    { name: 'Steel Mast', spec: { type: 'tower', n: 3, w: 80, h: 56, guys: 1 }, goal: 60 },
-    { name: 'Cable Gate', spec: { type: 'twin', n: 3, w: 60, h: 52, gap: 124 }, goal: 62 },
-    { name: 'Crane Frame', spec: { type: 'tower', n: 5, w: 92, h: 48, taper: 0.35, guys: 0 }, goal: 65 },
-    { name: 'Suspension', spec: { type: 'twin', n: 4, w: 56, h: 46, gap: 136, taper: 0.25 }, goal: 65 },
+    { name: 'Steel Mast', spec: { type: 'tower', n: 5, w: 80, h: 48, guys: 1 }, goal: 60 },
+    { name: 'Cable Gate', spec: { type: 'twin', n: 4, w: 58, h: 48, gap: 124 }, goal: 62 },
+    { name: 'Geodesic', spec: { type: 'dome', m: 8, R: 118, t: 38 }, goal: 65 },
+    { name: 'Crane Frame', spec: { type: 'tower', n: 5, w: 140, h: 46, cols: 2, taper: 0.15, guys: 1 }, goal: 65 },
     // world 4: carbon
-    { name: 'Carbon Needle', spec: { type: 'tower', n: 4, w: 70, h: 54, taper: 0.2, guys: 1 }, goal: 65 },
-    { name: 'Weave Gate', spec: { type: 'twin', n: 3, w: 62, h: 56, gap: 120 }, goal: 66 },
-    { name: 'Spine Spire', spec: { type: 'tower', n: 6, w: 80, h: 46, taper: 0.4, guys: 0 }, goal: 68 },
-    { name: 'Fen Citadel', spec: { type: 'twin', n: 4, w: 64, h: 50, gap: 140, taper: 0.25 }, goal: 70 }
+    { name: 'Carbon Needle', spec: { type: 'tower', n: 6, w: 70, h: 46, taper: 0.2, guys: 1 }, goal: 65 },
+    { name: 'Weave Gate', spec: { type: 'twin', n: 5, w: 56, h: 46, gap: 126, taper: 0.15 }, goal: 66 },
+    { name: 'Carbon Dome', spec: { type: 'dome', m: 10, R: 122, t: 40 }, goal: 68 },
+    { name: 'Citadel', spec: { type: 'twin', n: 4, w: 84, h: 48, cols: 2, gap: 156, taper: 0.2 }, goal: 70 }
   ];
   L.forEach(function (l, i) {
     l.world = Math.floor(i / 4); l.mat = FS.WORLDS[l.world].key; l.index = i;
@@ -39,9 +39,10 @@
   // weapons unlock by level
   FS.WEAPONS = {
     sling:  { name: 'Slingshot', unlock: 0, speed: 880, m: 1.0, r: 7, pierce: 2, slow: 0.55 },
-    cannon: { name: 'Cannon', unlock: 1, speed: 980, m: 3.2, r: 10, pierce: 3, slow: 0.82 },
-    rocket: { name: 'Rocket', unlock: 4, speed: 520, m: 2, r: 8, acc: 950, thr: 0.55, R: 78, D: 3.3, imp: 520 },
-    drone:  { name: 'Drone strike', unlock: 8, bombs: 3, R: 58, D: 2.3, imp: 380 }
+    cannon: { name: 'Cannon', unlock: 0, speed: 980, m: 3.2, r: 10, pierce: 3, slow: 0.82 },
+    rocket: { name: 'Rocket', unlock: 0, speed: 520, m: 2, r: 8, acc: 950, thr: 0.55, R: 78, D: 3.3, imp: 520 },
+    hammer: { name: 'Thunder hammer', unlock: 0, speed: 840, m: 3, r: 12, R: 190, D: 1.7, chain: 7, bolts: 5 },
+    drone:  { name: 'Drone strike', unlock: 0, bombs: 3, R: 58, D: 2.3, imp: 380 }
   };
   FS.SPECIALS = {
     dragons: { name: 'Three dragons', blurb: 'Fire from the sky', best: 'Best against tents and wood', mult: { tent: 3.2, wood: 2.6, steel: 1.0, carbon: 0.6 } },

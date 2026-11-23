@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <!--
-  Fen Smash (working title).
+  Fennsmash (working title).
   Other names Leo floated: Smash Room, Tensegrity Tango. Swap TITLE in game.js and the <title> and manifest to rename.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>Fen Smash | tensegrity demolition</title>
+<title>Fennsmash | tensegrity demolition</title>
 <meta name="description" content="Aim, fire, and bring down tensegrity structures that get stronger every level. Works offline.">
 <meta name="theme-color" content="#0b1020">
 <link rel="manifest" href="manifest.webmanifest">
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Fen Smash">
+<meta name="apple-mobile-web-app-title" content="Fennsmash">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -28,6 +28,7 @@
     <button id="bMenu" class="ib" aria-label="Pause and menu"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg></button>
     <div id="lvlTitle" class="lt">Level 1</div>
     <div class="sp"></div>
+    <button id="bPrec" class="ib sm" aria-pressed="true" aria-label="Show or hide the aim panel"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     <button id="bFun" class="ib" aria-label="Fun options" aria-haspopup="dialog"><svg viewBox="0 0 24 24"><path d="M12 3l2.4 5.6 6 .6-4.6 4 1.4 6-5.2-3.2L6.8 19l1.4-6-4.6-4 6-.6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
     <button id="bSnd" class="ib" aria-pressed="false" aria-label="Sound is off. Turn sound on"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path id="sndWave" d="M16 9c1.6 1.6 1.6 4.4 0 6M18.5 6.5c3 3 3 8 0 11" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path id="sndX" d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </div>
@@ -50,7 +51,6 @@
 <div id="bar" hidden>
   <div id="wpns" class="wpns" role="group" aria-label="Weapons"></div>
   <div class="side">
-    <button id="bPrec" class="ib sm" aria-pressed="false" aria-label="Precision aim"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     <button id="bDone" class="btn mini" hidden>Finish</button>
     <button id="bSpec" class="spec" aria-label="Special power meter" disabled><span class="ring"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" class="trk"/><circle id="specArc" cx="24" cy="24" r="20" class="arc" pathLength="100"/></svg><svg class="bolt" viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 9-13h-6z" fill="currentColor"/></svg></span><em id="specTxt">0%</em></button>
   </div>
@@ -58,7 +58,7 @@
 
 <section id="title" class="scr" aria-labelledby="tTitle">
   <div class="card">
-    <h1 id="tTitle">Fen Smash</h1>
+    <h1 id="tTitle">Fennsmash</h1>
     <p class="sub">Tensegrity demolition. Aim, fire, and bring it down.</p>
     <div class="col">
       <button id="bPlay" class="btn go">Play</button>
@@ -86,9 +86,9 @@
       <li>Drag back anywhere on the field to aim, then let go to fire. The dotted line shows where the shot will go.</li>
       <li>You get three shots per level. Reach the goal mark on the destruction bar to clear it. If you miss, retry as often as you like.</li>
       <li>Struts push and cables pull. Cut the cables or snap the struts and the whole thing falls. Total destruction scores the most.</li>
-      <li>Points fill the special meter. When it is full, pick a power: dragons, dogs, ants, or drones.</li>
-      <li>Each level makes your weapons stronger and the structure tougher. Tents come first, then wood, steel cable, and carbon.</li>
-      <li>Keyboard: arrows aim, Space fires, 1 to 4 pick weapons, S opens special powers, R retries, M toggles sound.</li>
+      <li>Points fill the special meter. When it is full, pick an earned power: ants, dogs, drones, or dragons.</li>
+      <li>Every weapon is open from the start, including the Thunder hammer, which calls lightning down on nearby structure. Each level makes weapons stronger and structures tougher. Special powers are earned: one for every 2 levels you beat.</li>
+      <li>Keyboard: arrows aim, Space fires, 1 to 5 pick weapons, S opens special powers, R retries, M toggles sound.</li>
     </ul>
     <button id="bHowOk" class="btn go">Got it</button>
   </div>
@@ -97,13 +97,14 @@
 <section id="fun" class="scr" hidden role="dialog" aria-modal="true" aria-labelledby="fnTitle">
   <div class="card">
     <h2 id="fnTitle">Fun options</h2>
-    <p class="fine">These change the rules for fun. Stars are not saved while a fun option is on.</p>
+    <p class="fine">These change the rules for fun. Stars above one are not saved while a fun option is on.</p>
     <fieldset><legend>Gravity</legend>
       <div class="seg" id="gSeg" role="group" aria-label="Gravity">
         <button data-g="0.3" aria-pressed="false">Moon</button><button data-g="1" aria-pressed="true">Earth</button><button data-g="1.8" aria-pressed="false">Heavy</button><button data-g="0.08" aria-pressed="false">Float</button>
       </div>
     </fieldset>
     <label class="tg"><input type="checkbox" id="fMet"><span>Meteor shower</span></label>
+    <label class="tg"><input type="checkbox" id="fExp"><span>Exploding shots</span></label>
     <label class="tg"><input type="checkbox" id="fSlow"><span>Slow motion</span></label>
     <label class="tg"><input type="checkbox" id="fRed"><span>Reduce motion and shaking</span></label>
     <button id="bFunOk" class="btn go">Done</button>
@@ -144,7 +145,7 @@
   </div>
 </section>
 
-<noscript><p style="color:#fff;padding:2em">Fen Smash needs JavaScript.</p></noscript>
+<noscript><p style="color:#fff;padding:2em">Fennsmash needs JavaScript.</p></noscript>
 <script src="sim.js"></script>
 <script src="levels.js"></script>
 <script src="fx.js"></script>
