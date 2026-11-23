@@ -76,7 +76,7 @@ section.dark .panel .small{color:#3d3934}section.dark .panel .price small{color:
 <a class="skip" href="#main">Skip to content</a>
 <div class="banner" role="region" aria-label="Concept notice">Concept. Not for sale. No campaign is live.</div>
 <div class="wrap">
-<header class="top"><a class="logo" href="#top">Mote<i>.</i></a><nav aria-label="Main"><a href="#problem">Problem</a><a href="#how">How it works</a><a href="#connect">What it connects</a><a href="#makers">Makers</a><a href="#roadmap">Roadmap</a><a href="#open">Open questions</a></nav></header>
+<header class="top"><a class="logo" href="#top">Mote<i>.</i></a><nav aria-label="Main"><a href="#problem">Problem</a><a href="#how">How it works</a><a href="#for">What it is for</a><a href="#buttons">No more buttons</a><a href="#cost">Cost</a><a href="#connect">What it connects</a><a href="#makers">Makers</a><a href="#roadmap">Roadmap</a><a href="#open">Open questions</a></nav></header>
 </div>
 <main id="main">
 <div class="wrap"><div class="hero" id="top">
@@ -97,11 +97,12 @@ section.dark .panel .small{color:#3d3934}section.dark .panel .price small{color:
 <section id="how" class="dark"><div class="wrap"><p class="eyebrow">How it works</p><h2>A chip in the device, a cube on the surface</h2>
 <div class="steps">
 <div class="step"><div><h3>A tiny standard chip</h3><p>The maker builds in a small, cheap, standard chip near the surface of the device. We suggest an FPGA-like universal chip, plus a small metal plate. One design could serve a microwave, a car, and everything between.</p></div></div>
-<div class="step"><div><h3>The cube attaches</h3><p>Three ways to connect, so makers can choose what fits.</p></div></div>
+<div class="step"><div><h3>The cube attaches</h3><p>There are three ways to connect, so makers can choose what fits. A magnet holds the cube onto a metal plate over the chip. An adhesive pad holds it where a magnet will not work. Or a small plug links the two for a firm connection. Details are just below.</p></div></div>
 <div class="step"><div><h3>The device introduces itself</h3><p>It sends a name, a model, a device number, and a list of what it can and cannot do.</p></div></div>
 <div class="step"><div><h3>Your assistant takes over</h3><p>The cube relays that list to the AI assistant you prefer and to your life dashboard. You ask. It acts, within what the device says it can do.</p></div></div>
 </div>
-<div class="grid"><div class="card"><span class="tag">Preferred</span><h3>Magnet</h3><p>The cube sticks to a metal plate over the chip. No ports, no wear, works on any size of device.</p></div><div class="card"><span class="tag">Option</span><h3>Adhesive</h3><p>A sticky pad holds the cube where a magnet will not work.</p></div><div class="card"><span class="tag">Option</span><h3>Plug</h3><p>A small male and female connector for devices that need a firm link.</p></div></div>
+<h3 style="margin-top:28px">The three ways to attach</h3>
+<div class="grid" style="margin-top:12px"><div class="card"><span class="tag">Preferred</span><h3>Magnet</h3><p>The cube sticks to a metal plate over the chip. No ports, no wear, works on any size of device.</p></div><div class="card"><span class="tag">Option</span><h3>Adhesive</h3><p>A sticky pad holds the cube where a magnet will not work.</p></div><div class="card"><span class="tag">Option</span><h3>Plug</h3><p>A small male and female connector for devices that need a firm link.</p></div></div>
 <pre aria-label="Example capability list">{
   "name": "Countertop air fryer",
   "model": "AF-200",
@@ -110,6 +111,37 @@ section.dark .panel .small{color:#3d3934}section.dark .panel .price small{color:
   "cannot": ["open_door", "add_food", "clean"]
 }</pre>
 <p class="small">Illustrative only. The real format is not designed yet.</p></div></section>
+
+<section id="for"><div class="wrap"><p class="eyebrow">What it is for</p><h2>What would you do with it</h2>
+<p class="lead">Take an air fryer. Today you may have to search the web for the right settings, then stand by it. With a cube on it, this could change.</p>
+<div class="grid">
+<div class="card"><h3>Tell it what you are cooking</h3><p>Say to your AI assistant what you are making, and the air fryer sets itself to the right temperature and time.</p></div>
+<div class="card"><h3>Photograph the box</h3><p>Take a photo of the food box. Computer vision reads it and the right settings are chosen.</p></div>
+<div class="card"><h3>Get told when it is done</h3><p>Your phone tells you when the food is ready. A microwave meal that needs stirring after three minutes could send you a text message.</p></div>
+<div class="card"><h3>Switch things on from far away</h3><p>Turn on a space heater or an air filter before you get home.</p></div>
+<div class="card"><h3>A home robot cooks for you</h3><p>Long term, a home robot could cook you a meal at a set time while every device runs on its own.</p></div></div>
+<p class="small" style="margin-top:20px"><strong>An honest limit.</strong> Waking up to a hot meal needs more than this. Some food cannot sit overnight in an oven. Frozen food and yogurt are examples. A cube can run a device, but it cannot make unsafe food safe to leave out.</p></div></section>
+
+<section id="buttons"><div class="wrap"><p class="eyebrow">No more buttons</p><h2>Skip the buttons and go straight to the software</h2>
+<p class="lead">The buttons and knobs on a microwave or air fryer only send signals to the device's software. A universal connector could talk to that software directly. Then you would not need to press the buttons. You would tell your AI assistant what you want.</p>
+<div class="grid"><div class="card"><h3>What makers could drop</h3><p>Buttons, knobs, a custom app, and their own smart features. The hardware could be made on purpose simpler.</p></div><div class="card"><h3>The downside</h3><p>If the cube fails, the device has no other control. A fallback is wise: a basic button, or a second path to the device.</p></div></div>
+<p class="small" style="margin-top:20px">This is a long-range idea. Early products would keep their buttons.</p></div></section>
+
+<section id="models"><div class="wrap"><p class="eyebrow">Two models</p><h2>One cube per device, or one per room</h2>
+<div class="grid"><div class="card"><span class="tag">Simplest</span><h3>One to one</h3><p>One cube sits on each device. Simple to explain and to build. A first product might start here.</p></div><div class="card"><span class="tag">Also possible</span><h3>Room node</h3><p>One cube within about 5 to 10 meters of several devices serves them all, such as one cube for a kitchen. Real range depends on the radio used and on walls and other obstacles. We have not tested it.</p></div></div></div></section>
+
+<section id="cost"><div class="wrap"><p class="eyebrow">Cost</p><h2>What it might cost a maker</h2>
+<p class="lead">We have not costed a cube. Here is one real data point.</p>
+<div class="grid">
+<div class="card"><h3>A real part today</h3><p>The Espressif ESP32-C6 MINI module already supports Wi-Fi 6, Bluetooth LE, Thread, Zigbee, and Matter. It sells for $2.50 each at retail (<a href="https://www.sparkfun.com/products/24807">SparkFun listing</a>).</p></div>
+<div class="card"><h3>Volume and simpler chips</h3><p>Prices for manufacturers buying in volume are typically lower. We have no quote, so we give no number. The chip built into a device could also be simpler than a full module.</p></div>
+<div class="card"><h3>The five dollar cube</h3><p>This is a target, not a quote. The cube also needs a case, a magnet, and power, which this part alone does not cover.</p></div></div>
+<h3 style="margin-top:28px">Why cost matters more for small devices</h3>
+<p>Suppose adding this costs fifty cents, a dollar, or five dollars. On an expensive device the extra cost is easy to justify. On a small, cheap device it is harder, so that market would be the hardest to win. We want to get this right.</p>
+<h3 style="margin-top:20px">What the maker gets back</h3>
+<p>We are asking makers to add something, but they receive a feature in return. They would not need to build smart features, an app, or even buttons.</p>
+<h3 style="margin-top:20px">How this differs from Matter</h3>
+<p>Matter, running over Thread and other radios, already lets devices from many brands work together. That is real, shipping work. This concept differs in one way: it offers one physical connector for devices that have no smart features of their own.</p></div></section>
 
 <section id="connect"><div class="wrap"><p class="eyebrow">What it could connect</p><h2>Anything of any size</h2>
 <div class="grid">
