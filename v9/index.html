@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>claudebomb.com | End game: Blueprint</title>
+<meta name="description" content="A vision for the end game: one dashboard for your whole life. The ten-year vision, the path, and the flagship we are building now.">
+<meta name="theme-color" content="#0a2463">
+<meta name="robots" content="noindex">
+<style>:root{--bg:#0a2463;--fg:#eaf2ff;--mut:#a9c0ee;--line:rgba(234,242,255,.34);--card:rgba(7,28,88,.86);--field:rgba(255,255,255,.07);--acc:#ffe066;--accfg:#0a2463;--hdrbg:#0a2463;--wbg:#0b2b7a;--wfg:#eaf2ff;--ring:255,224,102;--disp:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--dw:600;--trk:-.04em;--r:0px;--br:0px;}
+*{box-sizing:border-box}
+html{font-size:100%;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html.fz-big{font-size:122%}
+html.fz-silly{--disp:"Comic Sans MS","Chalkboard SE","Marker Felt",cursive;--body:"Comic Sans MS","Chalkboard SE","Marker Felt",cursive}
+html.fz-hue #main,html.fz-hue .hdr,html.fz-hue #bg{filter:hue-rotate(140deg) saturate(1.2)}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 1.0625rem/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html.modal-open body{overflow:hidden}
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--disp);font-weight:var(--dw,600);letter-spacing:var(--trk,-.02em);margin:0;line-height:1.08}
+p{margin:0 0 .9rem}
+ul,ol{margin:0;padding:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--fg);color:var(--bg);padding:.5rem 1rem;z-index:200}
+.skip:focus{left:8px}
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-events:none}
+main,.foot{position:relative;z-index:2}
+.w{display:inline-block}
+.wobble{animation:wob .65s ease-in-out 4}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-.8deg) skewX(1deg)}75%{transform:rotate(.8deg) skewX(-1deg)}}
+.wrap{max-width:72rem;margin:0 auto}
+.mut{color:var(--mut)}
+.small{font-size:.875rem}
+.fine{color:var(--mut);font-size:.9rem;max-width:40rem;margin-top:1.6rem}
+.label{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 0 .5rem;font-weight:600}
+.eyebrow{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:600;margin:0 0 1rem}
+.eyebrow .no{margin-right:.6rem;opacity:.8}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:.28rem .7rem;border-radius:99px;border:1px solid var(--acc);color:var(--acc);vertical-align:middle}
+.tag.warm{background:var(--acc);color:var(--accfg)}
+.tag.soft{border-color:var(--line);color:var(--mut)}
+.tag.small{font-size:.66rem;letter-spacing:.06em;text-transform:none;border-color:var(--line);color:var(--mut);font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.9rem;padding:0 1.5rem;border-radius:var(--br,99px);border:1px solid var(--acc);background:var(--acc);color:var(--accfg);font-weight:600;font-size:.95rem;text-decoration:none;cursor:pointer;transition:transform .2s,background .2s,color .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--acc)}
+.btn.small{min-height:2.4rem;padding:0 1.1rem;font-size:.85rem}
+.btn.big{width:100%;min-height:3.4rem;font-size:1.05rem;margin-top:.6rem}
+.btn:disabled{opacity:.6;cursor:default;transform:none}
+.link{display:inline-block;margin-top:.4rem;color:var(--acc);font-weight:600;text-decoration:none;border-bottom:1px solid currentColor}
+/* header */
+.hdr{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:1.25rem;padding:.85rem clamp(1rem,4vw,2.5rem);background:var(--hdrbg);border-bottom:1px solid var(--line)}
+.logo{font:var(--dw,600) 1.2rem/1 var(--disp);letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
+.logo b{color:var(--acc);font-weight:inherit}
+.nav{display:flex;gap:1.4rem;margin-left:auto}
+.nav a{text-decoration:none;color:var(--mut);font-size:.92rem}
+.nav a:hover{color:var(--fg)}
+.menubtn{display:none;margin-left:auto;min-height:2.5rem;padding:0 1rem;border-radius:99px;border:1px solid var(--line);background:transparent;cursor:pointer;font-weight:600;font-size:.9rem}
+section[id]{scroll-margin-top:4.5rem}
+/* hero */
+.hero{min-height:calc(100svh - 4rem);display:grid;align-content:center;padding:5rem clamp(1rem,4vw,2.5rem)}
+.hero .wrap{width:100%}
+.hero h1{font-size:clamp(2.6rem,8.4vw,7rem);max-width:12ch;margin-bottom:1.6rem}
+.hero .sub{font-size:clamp(1.1rem,2vw,1.5rem);color:var(--mut);max-width:34em;margin-bottom:2rem}
+.cta{display:flex;flex-wrap:wrap;gap:.75rem}
+/* sections */
+.sec{padding:clamp(3.5rem,8vw,7rem) clamp(1rem,4vw,2.5rem)}
+.shead{margin-bottom:2.6rem}
+h2{font-size:clamp(2rem,5vw,4rem);margin-bottom:1.2rem;max-width:20ch}
+.lead{font-size:clamp(1.05rem,1.6vw,1.3rem);color:var(--mut);max-width:44rem}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2.4rem}
+.chips>span{padding:.45rem .95rem;border:1px solid var(--line);border-radius:99px;font-size:.9rem;color:var(--fg)}
+.cards{display:grid;gap:1rem;margin-bottom:2rem}
+.c3{grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5rem),1fr))}
+.c4{grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.5rem}
+.card h3{font-size:1.3rem;margin-bottom:.7rem}
+.card p,.card li{color:var(--mut);font-size:.98rem}
+.card ul{list-style:none;display:grid;gap:.5rem}
+.card li{padding-left:1.1rem;position:relative}
+.card li::before{content:"";position:absolute;left:0;top:.7em;width:.4rem;height:.4rem;border-radius:50%;background:var(--acc)}
+.card.hl{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.fw{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch;margin:2rem 0}
+.fw .side{border:1px solid var(--line);background:var(--card);padding:1.4rem;border-radius:var(--r)}
+.fw .side h3{margin-bottom:.4rem}
+.fw .side p{margin:0;color:var(--mut)}
+.fw .wall{display:grid;place-items:center;width:3.4rem;position:relative}
+.fw .wall::before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed var(--acc)}
+.fw .wall>span{position:relative;writing-mode:vertical-rl;background:var(--bg);padding:.7rem .2rem;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.note{border:1px solid var(--line);border-left:3px solid var(--acc);padding:1.5rem 1.6rem;border-radius:var(--r);background:var(--card);max-width:50rem}
+.note h3{margin-bottom:.7rem}
+/* timeline */
+.tl{list-style:none;display:grid;gap:0;border-top:1px solid var(--line)}
+.tl li{display:grid;grid-template-columns:9rem 1fr;gap:1.5rem;padding:1.6rem 0;border-bottom:1px solid var(--line)}
+.tl .yr{font:600 .9rem var(--mono);color:var(--acc);padding-top:.35rem}
+.tl h3{margin-bottom:.4rem;font-size:1.4rem}
+.tl p{margin:0;color:var(--mut);max-width:42rem}
+/* steps */
+.steps{list-style:none;display:grid;gap:.9rem;margin-bottom:2.4rem;counter-reset:s}
+.steps li{display:grid;grid-template-columns:3rem 1fr;gap:1rem;align-items:start}
+.sn{width:2.6rem;height:2.6rem;border-radius:50%;border:1px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-weight:700}
+.steps h3{font-size:1.2rem;margin:.2rem 0 .2rem}
+.steps p{margin:0;color:var(--mut)}
+.demo{display:grid;grid-template-columns:1.4fr 1fr;gap:1rem}
+.demo>div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.5rem}
+.gnum{font-family:var(--disp)}
+.gnum b{font-size:3.6rem;line-height:1;font-weight:var(--dw,600)}
+.gnum span{color:var(--mut);font-size:1.2rem}
+.gbar{height:.6rem;background:var(--line);border-radius:99px;margin:.8rem 0 1.2rem;overflow:hidden}
+.gbar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .5s ease}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+legend{padding:0;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:600;margin-bottom:.6rem}
+.conn label,.pick label{display:block;padding:.55rem 0;border-top:1px solid var(--line);cursor:pointer;font-size:.95rem}
+.conn em{color:var(--mut);font-style:normal;font-size:.85rem}
+input[type=checkbox]{accent-color:var(--acc);width:1.05rem;height:1.05rem;margin:0 .4rem 0 0;flex:none;transform:translateY(.15rem)}
+.urlbar{border:1px solid var(--line);border-radius:99px;padding:.55rem 1rem;font:.85rem var(--mono);color:var(--mut);margin-bottom:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+select,input[type=text],textarea{width:100%;background:var(--field);border:1px solid var(--line);border-radius:calc(var(--r)*.6);padding:.7rem .9rem;min-height:2.9rem}
+select{cursor:pointer}
+textarea{resize:vertical;line-height:1.5}
+.sel,.wform label,.wbody>label,.compose>label{display:block;font-size:.85rem;font-weight:600;color:var(--mut);margin:1rem 0 .35rem}
+.refresh{margin-top:1rem;font-weight:600}
+/* benefits */
+.ben .card.hl{grid-column:span 1}
+/* family */
+.fam{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fam .tree{grid-column:1/-1}
+.tree svg{max-width:32rem;display:block;margin:0 auto}
+.famcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.5rem}
+.famcard h3{margin-bottom:.8rem}
+.tree svg{width:100%;height:auto;color:var(--mut)}
+.tree .nodes circle{fill:var(--acc);opacity:.9}
+.tree .lbl text{fill:var(--fg)}
+.bd{list-style:none;margin-bottom:1rem}
+.bd li{display:flex;justify-content:space-between;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line);font-size:.95rem}
+.bd em{font-style:normal;color:var(--acc);font-size:.88rem}
+.pick{margin-bottom:1.2rem}
+/* workflows */
+.wf{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:1rem}
+.wcard{display:flex;flex-direction:column;gap:.6rem;text-align:left;padding:1.4rem;background:var(--card);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;transition:transform .25s,border-color .25s}
+.wcard:hover{transform:translateY(-4px);border-color:var(--acc)}
+.wcard .wn{width:2rem;height:2rem;border-radius:50%;background:var(--acc);color:var(--accfg);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.wcard b{font:var(--dw,600) 1.2rem/1.2 var(--disp)}
+.wcard span:not(.wn){color:var(--mut);font-size:.92rem;flex:1}
+.wcard i{font-style:normal;color:var(--acc);font-weight:600;font-size:.9rem}
+/* social */
+.soc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}
+.mockbox{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.5rem}
+.mockbox h3{margin-bottom:.5rem}
+.bigtog{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.8rem 0}
+.bigtog>span{color:var(--mut);font-size:.9rem;margin-left:.3rem}
+.sws{list-style:none;margin:.5rem 0 1rem}
+.sws li{border-top:1px solid var(--line)}
+.sws label{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.65rem 0;cursor:pointer;font-size:.95rem}
+.sw{position:relative;width:2.8rem;height:1.6rem;flex:none}
+.sw input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;transform:none}
+.sw i{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:background .2s}
+.sw i::after{content:"";position:absolute;left:.2rem;top:.2rem;width:1.2rem;height:1.2rem;border-radius:50%;background:var(--fg);transition:transform .2s}
+.sw input:checked+i{background:var(--acc)}
+.sw input:checked+i::after{transform:translateX(1.2rem);background:var(--accfg)}
+.sw input:focus-visible+i{outline:2px solid var(--acc);outline-offset:3px}
+.rings{position:relative;width:min(100%,15rem);aspect-ratio:1;margin:1rem auto}
+.rings i{position:absolute;border-radius:50%;border:1px solid var(--line);left:50%;top:50%;transform:translate(-50%,-50%)}
+.rings .r1{width:22%;height:22%;background:var(--acc);border-color:var(--acc)}
+.rings .r2{width:46%;height:46%}.rings .r3{width:72%;height:72%}.rings .r4{width:98%;height:98%;border-style:dashed}
+.legend{list-style:none;display:grid;gap:.3rem;margin:0 0 1rem;font-size:.88rem;color:var(--mut)}
+.legend li{display:flex;align-items:center;gap:.6rem}
+.legend i{width:.9rem;height:.9rem;border-radius:50%;border:1px solid var(--mut);flex:none}
+.legend .k1{background:var(--acc);border-color:var(--acc)}.legend .k4{border-style:dashed}
+.outcome{padding:.7rem .9rem;border-radius:calc(var(--r)*.6);border:1px solid var(--line);margin-top:.8rem;font-size:.95rem}
+.outcome.free{border-color:var(--acc)}
+/* contribute */
+.allmeter,.prof-box,.wform{max-width:56rem}
+.allmeter{margin-bottom:1.6rem}
+.meter{height:.5rem;background:var(--line);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--acc);transition:width .4s}
+.pchips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.4rem}
+.pchips button{padding:.5rem 1rem;border-radius:99px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:.9rem;min-height:2.4rem}
+.pchips button:hover{border-color:var(--acc)}
+.pchips button[aria-checked=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.ppanel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.5rem;margin-bottom:2.4rem}
+.phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.6rem;margin-bottom:1rem}
+.count{margin:.7rem 0 1rem;color:var(--mut)}
+.empty{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem 1rem;border:1px dashed var(--line);border-radius:calc(var(--r)*.7);padding:1rem 1.2rem}
+.empty>span{color:var(--mut);flex:1}
+.wform{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.6rem}
+.wform h3{margin-bottom:.4rem}
+.emeter{margin:1.4rem 0}
+.row{display:flex;flex-wrap:wrap;gap:.7rem;margin-bottom:1rem}
+.foot{padding:5rem clamp(1rem,4vw,2.5rem) 8rem;border-top:1px solid var(--line)}
+.foot h2{max-width:none}
+/* mic */
+.mic-wrap{position:relative}
+.mic-wrap>textarea,.mic-wrap>input{padding-right:3rem}
+.mic-wrap>textarea.wide-pad{padding-top:3rem;padding-right:.9rem}
+.mic-bar{position:absolute;top:.4rem;right:.4rem;display:flex;gap:.3rem}
+.mic-wrap.one .mic-bar{top:.4rem}
+.mic{display:inline-flex;align-items:center;gap:.35rem;min-width:2.1rem;height:2.1rem;padding:0 .55rem;justify-content:center;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;font-size:.78rem;font-weight:600}
+.mic:not(.lab){width:2.1rem;padding:0}
+.mic:hover{border-color:var(--acc);color:var(--acc)}
+.mic.on{background:#d92d3d;border-color:#d92d3d;color:#fff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 .5rem rgba(217,45,61,.2)}}
+.mic-live{font-size:.8rem;color:var(--mut);min-height:0}
+.mic-live:empty{display:none}
+.mic-help{position:absolute;z-index:5;top:3rem;right:0;width:min(22rem,100%);background:var(--wbg);color:var(--wfg);border:1px solid var(--acc);border-radius:calc(var(--r)*.6);padding:1rem;font-size:.85rem;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.mic-help p{margin:0 0 .6rem}
+.mic-help button{border:1px solid var(--line);background:transparent;border-radius:99px;padding:.3rem .9rem;cursor:pointer}
+.ai-note{font-size:.85rem;color:var(--acc);margin-top:.4rem}
+.ai-note:empty{display:none}
+/* funzies */
+.fz{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:55;display:flex;flex-direction:column;align-items:center;gap:.6rem;width:max-content;max-width:calc(100vw - 1.5rem)}
+.fzbtn{min-height:3rem;padding:0 1.8rem;border-radius:99px;border:0;background:var(--fzbg,var(--acc));color:var(--fzfg,var(--accfg));font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.35);letter-spacing:.02em;transition:transform .2s}
+.fzbtn:hover{transform:scale(1.06) rotate(-2deg)}
+.fzpanel{order:-1;width:min(23rem,calc(100vw - 1.5rem));background:var(--wbg);color:var(--wfg);border:1px solid var(--line);border-radius:var(--r);padding:1.2rem;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.fzpanel[hidden]{display:none}
+.fzh{font-weight:600;margin-bottom:.6rem}
+.fzs{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:.9rem 0 .4rem;font-weight:700}
+.fzrow{display:flex;flex-wrap:wrap;gap:.4rem}
+.fzrow button,.fzreset{padding:.45rem .9rem;border-radius:99px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:.85rem;min-height:2.2rem}
+.fzrow button:hover,.fzreset:hover{border-color:var(--acc)}
+.fzrow button[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.fzlink{display:block;padding:.6rem 0;color:var(--acc);font-weight:600}
+.fzreset{margin-top:.4rem}
+/* window */
+.win-ov{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.6)}
+.win-ov[hidden]{display:none}
+.win{width:min(56rem,100%);max-height:calc(100svh - 2rem);overflow:auto;background:var(--wbg);color:var(--wfg);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 30px 90px rgba(0,0,0,.5);animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}}
+.win h2{font-size:1.6rem;margin:0}
+.win h3{font-size:1.1rem;margin:1.2rem 0 .5rem}
+.whead{display:flex;justify-content:space-between;align-items:start;gap:1rem;padding:1.2rem 1.4rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--wbg);z-index:3}
+.whead p{margin:.2rem 0 0}
+.wclose{border:1px solid var(--line);background:transparent;border-radius:99px;padding:.45rem 1.1rem;cursor:pointer;font-weight:600;min-height:2.4rem}
+.wclose:hover{border-color:var(--acc)}
+.wbody{padding:1.2rem 1.4rem 1.5rem}
+.wfoot{display:flex;justify-content:flex-end;align-items:center;gap:.7rem;margin-top:1.2rem}
+.wfoot .mut{margin-right:auto}
+.selall{display:flex;gap:1.2rem;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--line);font-weight:600;font-size:.9rem}
+.selall span{margin-right:auto}
+.selall label{display:flex;align-items:center;cursor:pointer}
+.emlist{list-style:none;margin-bottom:1rem}
+.emlist li{padding:1rem 0;border-bottom:1px solid var(--line)}
+.emlist li.off{opacity:.5}
+.emlist li.drag{opacity:.35}
+.emtop{display:flex;gap:.7rem;align-items:center}
+.grab{color:var(--mut);cursor:grab;letter-spacing:-.2em;user-select:none}
+.ord{width:1.7rem;height:1.7rem;border-radius:50%;background:var(--acc);color:var(--accfg);display:grid;place-items:center;font-size:.8rem;font-weight:700;flex:none}
+.emmain{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:.1rem .7rem}
+.emmain .subj{color:var(--mut)}
+.emctl{display:flex;gap:.3rem}
+.ib{border:1px solid var(--line);background:transparent;border-radius:99px;padding:0 .7rem;min-height:2.1rem;font-size:.78rem;cursor:pointer}
+.ib:disabled{opacity:.35;cursor:default}
+.sum{margin:.6rem 0 .6rem 3.4rem;color:var(--mut);font-size:.95rem}
+.emchk{display:flex;gap:1.2rem;margin-left:3.4rem;font-size:.9rem}
+.emchk label{display:flex;align-items:center;cursor:pointer}
+.cp-row{display:flex;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.cp-row span{width:4.5rem;color:var(--mut)}
+.ctx{margin-top:1.2rem;padding:1rem;border-left:3px solid var(--line);color:var(--mut);font-size:.92rem}
+.ctx p{margin:0}
+.done{text-align:center;padding:2rem 0}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(6rem,1fr));gap:.7rem;margin-bottom:.6rem}
+.metrics div{border:1px solid var(--line);border-radius:calc(var(--r)*.6);padding:.9rem}
+.metrics b{display:block;font:var(--dw,600) 2rem/1 var(--disp)}
+.metrics span{font-size:.82rem;color:var(--mut)}
+.doing{list-style:none;margin-top:1rem}
+.doing li{padding:.55rem 0 .55rem 1.8rem;border-top:1px solid var(--line);color:var(--mut);position:relative}
+.doing li::before{content:"";position:absolute;left:.2rem;top:.95rem;width:.7rem;height:.7rem;border-radius:50%;border:1px solid var(--mut)}
+.doing li.ok{color:var(--wfg)}
+.doing li.ok::before{background:var(--acc);border-color:var(--acc)}
+.tvset{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+.tvset label{display:flex;align-items:center;cursor:pointer;font-size:.95rem}
+.tvset .btn{margin-left:auto}
+.tvcols{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.tvcols ol{list-style:none;max-height:20rem;overflow:auto;border:1px solid var(--line);border-radius:calc(var(--r)*.6)}
+.tvcols li{display:flex;gap:.7rem;padding:.55rem .8rem;border-bottom:1px solid var(--line);font-size:.92rem}
+.tvcols li:last-child{border-bottom:0}
+.tvcols li span{color:var(--acc);font-weight:700;width:1.4rem;flex:none}
+.air{list-style:none}
+.air li{display:grid;grid-template-columns:1fr auto;gap:.4rem 1rem;align-items:center;padding:.7rem 0;border-top:1px solid var(--line)}
+.air b{display:block}.air div span{color:var(--mut);font-size:.9rem}
+.air .rc{grid-column:1/-1;margin:0;color:var(--mut);font-size:.92rem}
+.cal{display:grid;gap:.4rem;margin-bottom:.8rem}
+.calrow,.calhead{display:grid;grid-template-columns:5.5rem repeat(4,1fr);gap:.4rem;align-items:center}
+.calrow i{height:1.6rem;border-radius:.4rem;background:var(--line);display:block}
+.calrow i.busy{background:repeating-linear-gradient(45deg,var(--line),var(--line) 4px,transparent 4px,transparent 8px)}
+.calrow i.free{background:var(--acc)}
+.calhead span{font-size:.75rem;color:var(--mut);text-align:center}
+.cost{width:100%;border-collapse:collapse;margin:1rem 0 .4rem}
+.cost td{padding:.55rem 0;border-top:1px solid var(--line)}
+.cost td:last-child{text-align:right}
+.cost .tot td{font-weight:700;font-size:1.1rem}
+.toast{position:fixed;left:50%;bottom:5.5rem;transform:translate(-50%,20px);z-index:90;background:var(--fg);color:var(--bg);padding:.7rem 1.2rem;border-radius:99px;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;max-width:calc(100vw - 2rem);text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:60rem){
+.nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;background:var(--hdrbg);border-bottom:1px solid var(--line);display:none;margin:0;padding:.5rem clamp(1rem,4vw,2.5rem) 1rem}
+.nav.open{display:flex}
+.nav a{padding:.7rem 0;font-size:1.05rem}
+.menubtn{display:inline-flex;align-items:center}
+.hdr-cta{display:none}
+.demo,.fam{grid-template-columns:1fr}
+.tl li{grid-template-columns:1fr;gap:.3rem}
+}
+@media(max-width:34rem){
+.fw{grid-template-columns:1fr}
+.fw .wall{width:auto;height:3rem}
+.fw .wall::before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed var(--acc)}
+.fw .wall>span{writing-mode:horizontal-tb;padding:.2rem .7rem}
+.tvcols{grid-template-columns:1fr}
+.sum,.emchk{margin-left:0}
+.emtop{flex-wrap:wrap}
+.emctl{margin-left:auto}
+.wfoot{flex-wrap:wrap}
+.hero h1{max-width:none}
+}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+#wtitle:focus{outline:none}
+
+
+body{background-image:linear-gradient(rgba(234,242,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(234,242,255,.08) 1px,transparent 1px),linear-gradient(rgba(234,242,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(234,242,255,.04) 1px,transparent 1px);background-size:96px 96px,96px 96px,24px 24px,24px 24px;background-attachment:fixed}
+.hdr{border-bottom:2px solid var(--fg);display:grid;grid-template-columns:auto 1fr auto;padding:0;gap:0}
+.hdr>.menubtn{display:none}
+.hdr>*{padding:.9rem 1.3rem;border-right:1px solid var(--line);align-self:stretch;display:flex;align-items:center}
+.hdr>.hdr-cta{border-right:0;margin:.5rem 1rem;padding:0 1.1rem;align-self:center}
+.nav{margin:0;gap:1.2rem;font-family:var(--mono)}
+.nav a{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
+.hero{align-content:end;padding-bottom:6rem}
+.hero .wrap{border-left:2px solid var(--acc);padding-left:clamp(1rem,3vw,2.4rem)}
+.hero h1{font-size:clamp(2.4rem,7vw,5.8rem);max-width:13ch;letter-spacing:-.06em}
+.sec .wrap{border:1px solid var(--line);padding:clamp(1.2rem,3.4vw,3.2rem);position:relative;background:rgba(10,36,99,.55)}
+.sec .wrap::before,.sec .wrap::after{content:"";position:absolute;width:1.1rem;height:1.1rem;border:2px solid var(--acc)}
+.sec .wrap::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+.sec .wrap::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+h2{font-size:clamp(1.8rem,4.2vw,3.2rem);letter-spacing:-.05em}
+.eyebrow,.label,.tag,legend,.yr{font-family:var(--mono)}
+.eyebrow .no{border:1px solid var(--acc);padding:.1rem .5rem}
+.tag,.chips>span,.pchips button,.mic,.ib,.wclose,.fzrow button,.fzreset,.btn,.sw i,.sw i::after,.gbar,.gbar i,.meter,.meter i,.urlbar{border-radius:0!important}
+.chips>span{font-family:var(--mono);font-size:.78rem}
+.card,.famcard,.mockbox,.demo>div,.ppanel,.wform,.fw .side,.note,.wcard{border-style:solid}
+.card h3,.famcard h3,.mockbox h3{border-bottom:1px dashed var(--line);padding-bottom:.6rem}
+.fzbtn{border-radius:0}
+.fzpanel,.win,.toast,.mic-help{border-radius:0}
+.fw .wall>span{background:rgba(10,36,99,1)}
+@media(max-width:60rem){.hdr{grid-template-columns:1fr auto}.hdr>*{border-right:0}.hdr .logo{padding-left:1rem}.hdr>.menubtn{display:inline-flex;margin:.5rem 1rem;padding:0 1rem;align-self:center}.hdr>.nav{display:none}.hdr>.nav.open{display:flex}.hdr>.hdr-cta{display:none}}
+</style></head>
+<body class="blue">
+<canvas id="bg" aria-hidden="true"></canvas><canvas id="fx" aria-hidden="true"></canvas>
+<a class="skip" href="#vision">Skip to content</a>
+<header class="hdr" id="top">
+<a class="logo" href="#top">claude<b>bomb</b></a>
+<button type="button" class="menubtn" aria-expanded="false" aria-controls="nav">Menu</button>
+<nav class="nav" id="nav" aria-label="Main">
+<a href="#vision">Vision</a><a href="#path">Path</a><a href="#now">Now</a><a href="#benefits">Benefits</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#social">Social</a><a href="#contribute">Contribute</a>
+</nav>
+<a class="btn small hdr-cta" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe</a>
+</header>
+
+<main id="main">
+
+<section class="hero" id="hero"><div class="wrap">
+<p class="eyebrow">A vision for the end game</p>
+<h1>Here's a vision for end game</h1>
+<p class="sub">One dashboard, on your computer and your phone, connected to everything you use. Here is where we think humanity's technology can be in ten years, how we get there, and what you can try today.</p>
+<div class="cta"><a class="btn" href="#now">Try the flagship</a><a class="btn ghost" href="#vision">See the vision</a></div>
+<p class="fine">Three parts: the vision, the path, and what exists now. We label each one so you always know which is which.</p>
+</div></section>
+
+<section class="sec" id="vision"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">01</span> The end game</p>
+<h2>Ten years from now, one screen does the rest</h2>
+<p class="lead">Open a computer or a phone and see your whole life in one calm place. Every account you use is connected. Every chore that can be a button is a button. Nothing here is built yet, so read it as a vision.</p>
+<p><span class="tag">Vision</span></p></div>
+
+<div class="chips" aria-label="Things the dashboard connects to">
+<span>Email from every provider, in one inbox</span><span>Calendars</span><span>Work chat such as Slack</span><span>Bank accounts and subscriptions</span><span>Streaming services</span><span>Music</span><span>Phone and computer</span><span>Smart lights and plugs</span><span>Thermostat</span><span>Door locks</span><span>Garage door</span><span>Cameras and microphones, if you want them</span><span>A home robot</span>
+</div>
+
+<div class="cards c3">
+<article class="card"><h3>Your phone, under your command</h3><p>Say "make my home screen about productivity" and the apps rearrange. Say "delete apps I have not opened in six months" and you get a list to approve first.</p></article>
+<article class="card"><h3>A firewall between personal and work</h3><p>Your personal and work lives sit in one dashboard, with a wall between them. Your company decides what may leave and enter its side. You decide what your employer may see of yours, such as which calendar entries.</p></article>
+<article class="card"><h3>Subscriptions you control</h3><p>With your accounts connected, you see every recurring charge. Press one button to stop paying, and the dashboard tells the vendor you have canceled. No hoops.</p></article>
+<article class="card"><h3>A house that listens, if you want</h3><p>Pick your own wake word and talk to the room. "Turn on the TV" turns on the one in the room you are in, and the other one switches off to save energy. Say you had a hard day and it suggests dinner, a show, or a few minutes of meditation.</p></article>
+<article class="card"><h3>Care that keeps going</h3><p>Air quality sensors and filters, lights that go off in empty rooms, and a thermostat that learns. If you travel and a pet feeder jams, the cameras notice and the house acts.</p></article>
+<article class="card"><h3>A robot with hands</h3><p>Imagine a home robot that opens the door for your food delivery, plates the meal, sets a tray in front of you, and cleans up after. That is the far edge of this vision, and it is only a picture today.</p></article>
+</div>
+
+<div class="fw" role="img" aria-label="Personal and work are separate zones, with a firewall between them that each side controls">
+<div class="side"><h3>Personal</h3><p>Home, family, money, fun. You set what the work side may see.</p></div>
+<div class="wall"><span>Firewall</span></div>
+<div class="side"><h3>Work</h3><p>Your company sets what may leave and enter its side.</p></div>
+</div>
+
+<div class="note"><h3>The home box</h3>
+<p>In this vision, your home runs on a small box that is not connected to the internet. It talks only to your home network. Cameras, microphones, and speakers send what they hear and see to that box, and your home data stays on it.</p>
+<p><strong>Not for everyone, and that is fine.</strong> If you do not want cameras or microphones, you still get the full dashboard without them. They are an option, never a requirement.</p>
+<p class="mut">The vision also assumes the hard security problems are solved by then. They are not solved today, and we will say so plainly as we build.</p></div>
+</div></section>
+
+<section class="sec" id="path"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">02</span> How we get there</p>
+<h2>A ten-year path, if everyone starts today</h2>
+<p class="lead">If enough people jump on this now, here is the year-by-year picture we hope for. Each step builds on the one before. The path is a vision too, so read the dates as hopes.</p>
+<p><span class="tag">Vision</span></p></div>
+<ol class="tl">
+<li><span class="yr">Year 1</span><div><h3>Flagship, in the open</h3><p>One file, free connectors, and a dashboard link that refreshes. People share workflows by profession, and the best ones become defaults for everyone.</p></div></li>
+<li><span class="yr">Years 2 to 3</span><div><h3>Dashboards that talk</h3><p>Family and friend circles, profile pages, trust-based messaging, and the work firewall. Early groups of friends test the privacy rules and tell us what feels right.</p></div></li>
+<li><span class="yr">Years 4 to 5</span><div><h3>A standard for smart homes</h3><p>Plugs, lights, locks, thermostats, and garage doors speak one open language. Homes get the local box that never touches the internet.</p></div></li>
+<li><span class="yr">Years 6 to 8</span><div><h3>Everything gets an adapter</h3><p>A small, cheap, open adapter helps older appliances and devices join in. Optional cameras and microphones arrive on the home box, with a wake word you choose.</p></div></li>
+<li><span class="yr">Years 9 to 10</span><div><h3>The house runs itself, you stay in charge</h3><p>Home robots, a dashboard that handles the routine, and the time you get back for people and places you care about.</p></div></li>
+</ol>
+</div></section>
+
+<section class="sec" id="now"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">03</span> What we have now</p>
+<h2>The flagship: one file you drop into your AI assistant</h2>
+<p class="lead">The first product is small on purpose. You download one file and drop it into an AI assistant such as Claude. It looks at what it can reach, tells you how complete your setup is, and builds your dashboard.</p>
+<p><span class="tag warm">In build</span> We are making it now. Subscribe and we will tell you when it is ready to try. Nothing to download yet.</p></div>
+
+<ol class="steps">
+<li><span class="sn">1</span><div><h3>Download one file</h3><p>A single file, free and open. It carries all the first-time setup instructions inside.</p></div></li>
+<li><span class="sn">2</span><div><h3>Drop it into your assistant</h3><p>Your assistant surveys what it can reach and what it cannot, then writes a short report in plain language.</p></div></li>
+<li><span class="sn">3</span><div><h3>See your rating from 1 to 100</h3><p>100 means everything is connected. A 10 means you have barely started. Try the sample meter below.</p></div></li>
+<li><span class="sn">4</span><div><h3>Add free connectors</h3><p>You get a list of free connectors, each with what it unlocks. Connect them in a couple of minutes and the rating goes up.</p></div></li>
+<li><span class="sn">5</span><div><h3>Get your dashboard link</h3><p>The assistant builds your dashboard as a link you can bookmark. It refreshes at a rate you choose and shows when it was last refreshed.</p></div></li>
+</ol>
+
+<div class="demo" aria-label="Sample setup rating and refresh controls">
+<div class="gauge-box"><p class="label">Sample setup rating <span class="tag small">Sample, not real</span></p>
+<div class="gauge"><div class="gnum"><b id="score">12</b><span> / 100</span></div><div class="gbar" role="img" aria-label="Setup rating bar"><i id="gfill" style="width:12%"></i></div></div>
+<fieldset class="conn"><legend>Try connecting things</legend>
+<label><input type="checkbox" data-pts="18"> Email, every provider <em>unlocks reply workflows</em></label>
+<label><input type="checkbox" data-pts="14"> Calendars <em>unlocks agenda and trip planning</em></label>
+<label><input type="checkbox" data-pts="10"> Team chat <em>unlocks one-button reports</em></label>
+<label><input type="checkbox" data-pts="6"> Music <em>unlocks discovery</em></label>
+<label><input type="checkbox" data-pts="8"> A questionnaire about your streaming services <em>unlocks the new-only TV screen</em></label>
+<label><input type="checkbox" data-pts="10"> Notes and files <em>unlocks your voice journal</em></label>
+<label><input type="checkbox" data-pts="14"> Read-only money view <em>unlocks subscription review</em></label>
+<label><input type="checkbox" data-pts="8"> Smart home hub <em>unlocks lights and thermostat</em></label>
+</fieldset></div>
+<div class="link-box"><p class="label">Your bookmarkable link</p>
+<div class="urlbar" aria-hidden="true"><span>yourname.example/dashboard</span></div>
+<label class="sel" for="rate">Refresh rate</label>
+<select id="rate"><option value="15">Every 15 minutes</option><option value="60" selected>Every hour</option><option value="1440">Once a day</option><option value="0">Only when I open it</option></select>
+<p class="refresh" id="refresh" aria-live="polite"></p>
+<p class="mut small">Sample only. The real dashboard shows its own refresh time.</p></div>
+</div>
+</div></section>
+
+<section class="sec" id="benefits"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">04</span> Why it matters</p>
+<h2>Seven ways it pays you back</h2>
+<p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p></div>
+<div class="cards c4 ben">
+<article class="card"><h3>Save money</h3><ul><li>Lights and thermostat turn off when rooms are empty.</li><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li></ul></article>
+<article class="card"><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul></article>
+<article class="card"><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funzies below.</li></ul></article>
+<article class="card hl"><h3>Forge family bonds</h3><ul><li>A family tree and inherited contacts.</li><li>Birthdays before they sneak up on you.</li><li>One button to message every cousin.</li></ul><a class="link" href="#family">See the family view</a></article>
+<article class="card"><h3>Explore places</h3><ul><li>A trip suggestion when your budget, calendar, and friends line up.</li><li>Events near you that match what you like.</li><li>Group plans without the group chat chaos.</li></ul></article>
+<article class="card"><h3>Try new activities</h3><ul><li>"Here is what people like you are trying. Want to try it?"</li><li>Ideas matched to your free time.</li><li>You always choose.</li></ul></article>
+<article class="card"><h3>Gains</h3><p class="mut small">Become better: health, reading, learning.</p><ul><li>Air quality, sleep, and meals tracked quietly.</li><li>A reading and learning plan you set.</li><li>A voice journal each night, kept private by default.</li></ul></article>
+</div>
+</div></section>
+
+<section class="sec" id="family"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">05</span> Family</p>
+<h2>The people who matter, one button away</h2>
+<p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it. Reaching the whole family takes one click.</p>
+<p><span class="tag">Vision</span> <span class="tag small">Mock screen, sample data</span></p></div>
+<div class="fam">
+<div class="famcard tree">
+<h3>Family tree</h3>
+<svg viewBox="0 0 320 214" role="img" aria-label="A sample family tree with grandparents, parents, and children">
+<g fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"><path d="M80 40V70H240V40M160 70V100M70 100V130M70 130H110M250 100V130M250 130H210M110 130V150M210 130V150"/><path d="M110 150V170M210 150V170"/></g>
+<g class="nodes"><circle cx="80" cy="30" r="14"/><circle cx="240" cy="30" r="14"/><circle cx="160" cy="112" r="14"/><circle cx="70" cy="112" r="12"/><circle cx="250" cy="112" r="12"/><circle cx="110" cy="182" r="14"/><circle cx="210" cy="182" r="14"/></g>
+<g class="lbl" font-size="12" text-anchor="middle"><text x="80" y="58">Grandma</text><text x="240" y="58">Grandpa</text><text x="160" y="136">You</text><text x="70" y="136">Aunt</text><text x="250" y="136">Uncle</text><text x="110" y="206">Cousin</text><text x="210" y="206">Cousin</text></g></svg>
+<p class="mut small">Each person decides how much of their branch is public.</p>
+</div>
+<div class="famcard">
+<h3>Message your cousins</h3>
+<fieldset class="pick"><legend>Who should get it</legend>
+<label><input type="checkbox" checked data-name="Cousin Dev"> Cousin Dev</label>
+<label><input type="checkbox" checked data-name="Cousin Mina"> Cousin Mina</label>
+<label><input type="checkbox" checked data-name="Cousin Theo"> Cousin Theo</label>
+<label><input type="checkbox" checked data-name="Cousin Ana"> Cousin Ana</label>
+</fieldset>
+<button type="button" class="btn" data-open="cousins">Message all selected cousins</button>
+</div>
+<div class="famcard">
+<h3>Birthdays and gift ideas</h3>
+<ul class="bd">
+<li><span>Grandma</span><em>Birthday in 9 days</em></li>
+<li><span>Cousin Mina</span><em>Birthday in 3 weeks</em></li>
+<li><span>Uncle</span><em>Birthday next month</em></li>
+</ul>
+<p class="mut small">Sample gift ideas for Grandma: a framed family photo, a handwritten recipe book, or a call with the whole family on video.</p>
+<button type="button" class="btn ghost" data-open="gift">Send a gift idea with a note</button>
+</div>
+</div>
+</div></section>
+
+<section class="sec" id="workflows"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">06</span> Workflows</p>
+<h2>Press a button, finish a chore</h2>
+<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Open each mock screen to see how it feels.</p>
+<p><span class="tag">Vision</span> <span class="tag small">Mock screens, sample data</span></p></div>
+<div class="wf">
+<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open the mock</i></button>
+<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open the mock</i></button>
+<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open the mock</i></button>
+<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open the mock</i></button>
+<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open the mock</i></button>
+</div>
+</div></section>
+
+<section class="sec" id="social"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">07</span> Social</p>
+<h2>Your page, your circles, your rules</h2>
+<p class="lead">The dashboard can double as a page about you, so you never need to buy a domain. You choose what is public, who can message you, and who can see where you are.</p>
+<p><span class="tag">Vision</span> <span class="tag small">Mock screens</span></p></div>
+<div class="soc">
+<div class="mockbox" id="prof"><h3>Your profile page</h3>
+<p class="mut small">Public or private, by category. Big switches first, details after.</p>
+<div class="bigtog"><button type="button" class="btn small" data-all="1">All on</button><button type="button" class="btn small ghost" data-all="0">All off</button><span id="pubcount" aria-live="polite">0 of 7 public</span></div>
+<ul class="sws">
+<li><label><span>About me</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Family tree</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Free and busy calendar</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Interests and hobbies</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Music taste and expert badges</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Photos</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Look and layout themes</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+</ul>
+<p class="mut small">Pick from hundreds of customizations, the way old social pages let you express yourself.</p></div>
+<div class="mockbox"><h3>Who can message whom</h3>
+<div class="rings" role="img" aria-label="Circles: you, close trusted friends, their close friends, everyone else"><i class="r4"></i><i class="r3"></i><i class="r2"></i><i class="r1"></i></div>
+<ul class="legend"><li><i class="k1"></i>You</li><li><i class="k2"></i>Close trusted friends</li><li><i class="k3"></i>Their close friends</li><li><i class="k4"></i>Everyone else, needs permission</li></ul>
+<p>Messages are free between close trusted friends and their close friends. Anything wider needs permission, with a reason attached.</p>
+<label class="sel" for="who">Try it: who are you messaging?</label>
+<select id="who"><option value="free">A close trusted friend</option><option value="free">A close friend of a close friend</option><option value="ask">A friend of a friend, two steps out</option><option value="ask">Someone outside your circles</option></select>
+<p class="outcome" id="outcome" aria-live="polite"></p>
+<p class="mut small">The dashboard may also suggest who to reach out to, such as a friend who loves music.</p></div>
+<div class="mockbox"><h3>Share location with best friends</h3>
+<p class="mut small">Optional. Off by default. Turn it on person by person.</p>
+<ul class="sws">
+<li><label><span>Best friend 1</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Best friend 2</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Best friend 3</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Best friend 4</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>Best friend 5</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+</ul>
+<p class="mut small" id="locnote" aria-live="polite">Sharing with nobody.</p>
+<p class="mut small">The idea: close friends know you are safe and feel connected. You pick how long history is kept, and only the friends you choose can ever open it.</p></div>
+</div>
+</div></section>
+
+<section class="sec" id="contribute"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">08</span> Build it with us</p>
+<h2>Tell us how your work really works</h2>
+<p class="lead">The dashboard gets better with every workflow people share. Pick your profession, then record or type how you do your job: the tools, the routines, what slows you down, and what already works. We start with recruiting.</p></div>
+
+<div class="allmeter"><p class="label" id="allm">Professions with at least one entry: 0 of 0</p><div class="meter" role="img" aria-label="Overall completeness"><i style="width:0%"></i></div></div>
+
+<div class="prof-box">
+<p class="label" id="proflabel">Choose a profession</p>
+<div class="pchips" id="pchips" role="radiogroup" aria-labelledby="proflabel"></div>
+<div class="ppanel" id="ppanel" aria-live="polite"></div>
+</div>
+
+<form class="wform" id="wform" novalidate>
+<h3>Record or type your workflow</h3>
+<p class="mut small">Press the microphone in any box and talk. Your words land where the cursor is. You can also type.</p>
+<label for="f-prof">Profession</label>
+<select id="f-prof" name="prof"></select>
+<label for="f-tools">Tools you use</label>
+<input type="text" id="f-tools" name="tools" placeholder="For example: an applicant tracking system, a calendar, a chat app">
+<label for="f-week">Walk us through a typical week</label>
+<textarea id="f-week" name="week" rows="4" placeholder="What do you do first, then next?"></textarea>
+<label for="f-hard">What makes it harder than it should be</label>
+<textarea id="f-hard" name="hard" rows="3"></textarea>
+<label for="f-good">What already works well</label>
+<textarea id="f-good" name="good" rows="3"></textarea>
+<div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
+<div class="row"><button type="submit" class="btn">Send by email</button><a class="btn ghost" href="mailto:leo@universemodel.ai?subject=Suggest%20a%20profession%20for%20claudebomb.com">Suggest a profession</a></div>
+<p class="mut small">This opens your email app with your words ready to send to leo@universemodel.ai. Nothing is stored on this page.</p>
+</form>
+</div></section>
+
+</main>
+
+<footer class="foot" id="subscribe"><div class="wrap">
+<h2>Follow the build</h2>
+<p class="lead">We will email when the flagship file is ready. Free and open source, for people and companies.</p>
+<div class="cta"><a class="btn" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe for updates</a><a class="btn ghost" href="#contribute">Contribute</a><a class="btn ghost" href="../">All previews</a></div>
+<p class="mut small">Preview design. Works with AI assistants such as Claude. Not affiliated with, or endorsed by, any AI company. Everything on this page is either labeled a vision, labeled in build, or a mock screen with sample data.</p>
+</div></footer>
+
+<div class="fz" id="fz">
+<button type="button" class="fzbtn" id="fzbtn" aria-expanded="false" aria-controls="fzpanel">Funzies</button>
+<div class="fzpanel" id="fzpanel" role="group" aria-label="Funzies" hidden>
+<p class="fzh">Does nothing useful. Pure fun.</p>
+<p class="fzs">For a moment</p>
+<div class="fzrow"><button type="button" data-fx="confetti">Confetti</button><button type="button" data-fx="meteors">Meteors</button><button type="button" data-fx="wobble">Wobble</button><button type="button" data-fx="tsunami">Big wave</button></div>
+<p class="fzs">Until you reload</p>
+<div class="fzrow"><button type="button" data-fx="hue" aria-pressed="false">Shift colors</button><button type="button" data-fx="big" aria-pressed="false">Giant type</button><button type="button" data-fx="spark" aria-pressed="false">Sparkle trail</button><button type="button" data-fx="silly" aria-pressed="false">Silly font</button></div>
+<p class="fzs">Somewhere else</p>
+<a class="fzlink" href="https://universemodel.ai/fun.html" target="_blank" rel="noopener">Enter the tensegrity smash room</a>
+<button type="button" class="fzreset" data-fx="reset">Undo all the fun</button>
+</div>
+</div>
+
+<div class="win-ov" id="winov" hidden><div class="win" id="win" role="dialog" aria-modal="true" aria-labelledby="wtitle" tabindex="-1"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<template id="tpl-emails">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Family emails</h2><p class="mut small">Mock screen, sample data. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody" id="em-list-view">
+<p class="mut">We found 6 family emails that may need a reply. Uncheck what you want to skip, drag to reorder, then press Let's go.</p>
+<div class="selall"><span>Select all</span><label><input type="checkbox" id="sa-reply" checked> Reply</label><label><input type="checkbox" id="sa-ai" checked> AI draft</label></div>
+<ol class="emlist" id="emlist"></ol>
+<label for="em-ctx">Tell us what to say, before any draft is written</label>
+<textarea id="em-ctx" rows="4" placeholder="Talk through the emails in order. For example: I can't make that weekend, say it kindly."></textarea>
+<div class="wfoot"><span class="mut small" id="em-count"></span><button type="button" class="btn" id="em-go">Let's go</button></div>
+</div>
+<div class="wbody" id="em-comp-view" hidden></div>
+</template>
+
+<template id="tpl-report">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Weekly recruiting recap</h2><p class="mut small">Mock screen, sample data. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody">
+<div class="metrics"><div><b>12</b><span>Open roles</span></div><div><b>31</b><span>Interviews held</span></div><div><b>4</b><span>Offers out</span></div><div><b>2</b><span>Accepted</span></div></div>
+<p class="mut small">Sample numbers. In the real dashboard they come live from the systems you connect.</p>
+<label for="rp-ch">Post to</label>
+<input type="text" id="rp-ch" value="#hiring-managers">
+<div class="compose"><label for="rp-body">Message</label>
+<textarea id="rp-body" rows="9" data-mic="compose">Hi team, here is this week's recruiting recap.
+
+Open roles: 12. Interviews held: 31. Offers out: 4. Accepted: 2.
+
+Biggest blocker: scheduling final rounds. If you have openings next week, please add them to your calendar so we can move candidates quickly.
+
+Thanks for the partnership.</textarea><div class="ai-note" aria-live="polite"></div></div>
+<div class="wfoot"><button type="button" class="btn ghost" data-close>Cancel</button><button type="button" class="btn" id="rp-send">Send to Slack</button></div>
+</div>
+</template>
+
+<template id="tpl-ooo">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Out of office</h2><p class="mut small">Mock screen. Nothing is changed.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody">
+<label for="oo-when">When</label>
+<select id="oo-when"><option>This Friday to next Monday</option><option>Next week, all week</option><option>Two weeks from Monday</option></select>
+<label for="oo-note">Note for your team</label>
+<textarea id="oo-note" rows="3">I'm out for a few days. For anything urgent, please reach out to the backup listed in the handoff list.</textarea>
+<button type="button" class="btn big" id="oo-go">I'm going out of office</button>
+<ul class="doing" id="oo-steps" aria-live="polite">
+<li data-s>Setting your email auto-reply</li><li data-s>Telling your team in chat</li><li data-s>Handing off open items to your backup</li><li data-s>Blocking your calendar</li>
+</ul>
+</div>
+</template>
+
+<template id="tpl-tv">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Watch something new</h2><p class="mut small">Mock screen, sample data. Titles are generic on purpose.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody">
+<div class="tvset"><label><input type="checkbox" checked id="tv-new"> Only new things</label><label><input type="checkbox" id="tv-re"> Open to rewatching</label><button type="button" class="btn small" id="tv-pick">Pick for me</button></div>
+<p class="mut small" id="tv-msg" aria-live="polite">Showing your top 10 new picks for each side. Scroll inside a list.</p>
+<div class="tvcols"><div><h3>Movies</h3><ol id="tv-m"></ol></div><div><h3>Shows</h3><ol id="tv-s"></ol></div></div>
+<h3>Still airing</h3>
+<ul class="air" id="tv-air"></ul>
+</div>
+</template>
+
+<template id="tpl-trip">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Plan a trip</h2><p class="mut small">Mock screen, sample data. Nothing is booked.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody">
+<p class="mut">Your budget looks good, work is usually slower this time of year, and you have said you want to go. Two friends in your close circle have the same week free.</p>
+<div class="cal" role="img" aria-label="Sample calendars: you and two friends all free in week 3"><div class="calrow"><b>You</b><i></i><i></i><i class="free"></i><i></i></div><div class="calrow"><b>Friend A</b><i class="busy"></i><i></i><i class="free"></i><i></i></div><div class="calrow"><b>Friend B</b><i></i><i class="busy"></i><i class="free"></i><i class="busy"></i></div><div class="calhead"><span></span><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div></div>
+<label for="tr-n">People going</label>
+<select id="tr-n"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select>
+<table class="cost"><tbody><tr><td>Flights, each</td><td>$820</td></tr><tr><td>Stay, shared, 7 nights</td><td id="tr-stay">$1,260</td></tr><tr class="tot"><td>Per person</td><td id="tr-per">$1,240</td></tr></tbody></table>
+<p class="mut small">Sample prices only.</p>
+<div class="compose"><label for="tr-msg">Suggested group message</label>
+<textarea id="tr-msg" rows="5" data-mic="compose">Hey all, I noticed our calendars are all free in week 3. I found a place to stay and it comes to about $1,240 each with flights. Want me to set up a group chat to plan it?</textarea><div class="ai-note" aria-live="polite"></div></div>
+<div class="wfoot"><button type="button" class="btn ghost" data-close>Not now</button><button type="button" class="btn" id="tr-send">Start the group chat</button></div>
+</div>
+</template>
+
+<template id="tpl-compose">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1"></h2><p class="mut small">Mock screen. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody" id="cp-body"></div>
+</template>
+
+<script></script>
+<script>(function(){
+'use strict';
+var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+/* toast */
+var toastT;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on')},3200)}
+
+/* header menu */
+var mb=$('.menubtn'),nav=$('#nav');
+mb.addEventListener('click',function(){var o=nav.classList.toggle('open');mb.setAttribute('aria-expanded',o)});
+$$('a',nav).forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');mb.setAttribute('aria-expanded','false')})});
+
+/* ---------- dictation ---------- */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var MIC='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var LOWER=/^(the|a|an|and|but|or|so|to|of|in|on|at|for|with|my|we|he|she|it|they|you|this|that|these|those|is|are|was|were|will|would|can|could|should|have|has|had|do|does|did|not|no|yes|if|when|then|because|just|also|thanks|thank|please|let|let's|i'm|i'll|i've|i'd|i|our|your|his|her|their|be|been|as|by|from|up|out|about|what|how|why|where|who|there|here|maybe|sure|great|really|very)$/i;
+function voiceCmds(t){
+  t=t.replace(/\s*\b(new paragraph)\b\s*/gi,'\n\n').replace(/\s*\b(new line)\b\s*/gi,'\n');
+  t=t.replace(/\s+\b(question mark)\b/gi,'?').replace(/\s+\b(exclamation (point|mark))\b/gi,'!').replace(/\s+\b(full stop)\b/gi,'.').replace(/\s+\bcomma\b/gi,',').replace(/\s+period\s*$/i,'.');
+  return t;
+}
+function fmt(before,after,raw){
+  var t=String(raw).replace(/\s+/g,' ').trim();
+  if(!t)return null;
+  t=voiceCmds(t);
+  var b=before.replace(/[ \t]+$/,'');
+  var atStart=b===''||/[.!?]["')\]]*$/.test(b)||/\n$/.test(b);
+  var first=t.split(/[\s,.;:!?]/)[0];
+  if(atStart){t=t.charAt(0).toUpperCase()+t.slice(1)}
+  else if(LOWER.test(first)&&first!=='I'&&!/^I['’]/.test(first)){t=t.charAt(0).toLowerCase()+t.slice(1)}
+  var startsPunct=/^[.,!?;:)\]]/.test(t);
+  var lead='';
+  if(before&&!/[\s(\[{"'“\/\n]$/.test(before)&&!startsPunct)lead=' ';
+  if(before&&/\n$/.test(before))lead='';
+  var trail='';
+  if(after&&!/^[\s.,!?;:)\]}"'”]/.test(after)&&!/\n$/.test(t))trail=' ';
+  return lead+t+trail;
+}
+window.__fmt=fmt;
+
+function insertText(el,raw){
+  var v=el.value,touched=el.dataset.touched==='1';
+  var s=touched?el.selectionStart:v.length,e=touched?el.selectionEnd:v.length;
+  var out=fmt(v.slice(0,s),v.slice(e),raw);
+  if(out===null)return;
+  el.value=v.slice(0,s)+out+v.slice(e);
+  var p=s+out.length;
+  if(/ $/.test(out)&&v.slice(e)&&/^\S/.test(v.slice(e)))p=p-0;
+  try{el.setSelectionRange(p,p)}catch(x){}
+  el.dataset.touched='1';
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+}
+
+var cur=null;
+function setOn(btn,on){btn.classList.toggle('on',on);btn.setAttribute('aria-pressed',on?'true':'false')}
+function stopCur(){if(cur){try{cur.rec.stop()}catch(e){}setOn(cur.btn,false);var l=cur.live;if(l)l.textContent='';cur=null}}
+function helpText(kind,ai){
+  var base;
+  if(kind==='denied')base="The browser blocked the microphone. Allow microphone access for this page in your browser's site settings, then try again. You can also use your own system's dictation: on Windows press the Windows key and H, on a Mac choose Edit then Start Dictation, and on a phone tap the microphone on your keyboard.";
+  else if(kind==='error')base='Dictation stopped. Check your connection and microphone, then try again.';
+  else base="Speech recognition is not available in this browser. Use your own system's dictation instead: on Windows press the Windows key and H, on a Mac choose Edit then Start Dictation, and on a phone tap the microphone on your keyboard. Click in the box first, and your words land where the cursor is.";
+  if(ai)base+=' The Ask AI microphone is a mock that connects to your own AI assistant, such as Claude.';
+  return base;
+}
+function showHelp(wrap,kind,ai){
+  var old=$('.mic-help',wrap);if(old)old.remove();
+  var d=document.createElement('div');d.className='mic-help';d.setAttribute('role','status');
+  d.innerHTML='<p>'+esc(helpText(kind,ai))+'</p><button type="button">Got it</button>';
+  $('button',d).addEventListener('click',function(){d.remove()});
+  wrap.appendChild(d);
+}
+function labelOf(el){
+  var l=el.getAttribute('aria-label');if(l)return l;
+  if(el.id){var lb=document.querySelector('label[for="'+el.id+'"]');if(lb)return lb.textContent.trim()}
+  return 'this box';
+}
+function makeBtn(el,wrap,kind,labeled,live){
+  var b=document.createElement('button');b.type='button';b.className='mic'+(labeled?' lab':'');
+  var name=kind==='ai'?'Ask AI by voice (mock)':(labeled?'Verbatim dictation':'Dictate');
+  b.setAttribute('aria-label',name+': '+labelOf(el));b.setAttribute('aria-pressed','false');
+  b.innerHTML=MIC+(labeled?'<span>'+(kind==='ai'?'Ask AI':'Verbatim')+'</span>':'');
+  b.title=kind==='ai'?'Ask AI (mock): talk to your own AI assistant':'Dictate into this box';
+  b.addEventListener('click',function(ev){
+    ev.stopPropagation();
+    if(cur&&cur.btn===b){stopCur();return}
+    stopCur();
+    if(!SR){showHelp(wrap,'none',kind==='ai');return}
+    var rec;try{rec=new SR()}catch(x){showHelp(wrap,'none',kind==='ai');return}
+    rec.continuous=true;rec.interimResults=true;rec.lang=document.documentElement.lang||navigator.language||'en-US';
+    rec.onresult=function(e){
+      var interim='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        var r=e.results[i];
+        if(r.isFinal){
+          if(kind==='ai'){var n=wrap.parentNode.querySelector('.ai-note')||wrap.querySelector('.ai-note');if(n)n.textContent='Heard: "'+r[0].transcript.trim()+'". Mock only: your own AI assistant would now rewrite the message.'}
+          else insertText(el,r[0].transcript);
+        }else interim+=r[0].transcript;
+      }
+      live.textContent=interim?'Hearing: '+interim:'Listening';
+    };
+    rec.onerror=function(e){
+      if(e.error==='not-allowed'||e.error==='service-not-allowed')showHelp(wrap,'denied',kind==='ai');
+      else if(e.error!=='no-speech'&&e.error!=='aborted')showHelp(wrap,'error',kind==='ai');
+      stopCur();
+    };
+    rec.onend=function(){if(cur&&cur.rec===rec){setOn(b,false);live.textContent='';cur=null}};
+    try{rec.start()}catch(x){showHelp(wrap,'error',kind==='ai');return}
+    cur={rec:rec,btn:b,live:live};setOn(b,true);live.textContent='Listening';
+  });
+  return b;
+}
+function enhance(root){
+  $$('textarea,input',root).forEach(function(el){
+    if(el.dataset.micDone)return;
+    if(el.tagName==='INPUT'&&['text','search','url','tel'].indexOf(el.type)<0)return;
+    if(el.dataset.mic==='none')return;
+    el.dataset.micDone='1';
+    ['focus','click','keyup','select'].forEach(function(ev){el.addEventListener(ev,function(){el.dataset.touched='1'})});
+    var wrap=document.createElement('div');wrap.className='mic-wrap'+(el.tagName==='INPUT'?' one':'');
+    el.parentNode.insertBefore(wrap,el);wrap.appendChild(el);
+    var live=document.createElement('div');live.className='mic-live';live.setAttribute('aria-live','polite');
+    var bar=document.createElement('div');bar.className='mic-bar';
+    var comp=el.dataset.mic==='compose';
+    bar.appendChild(makeBtn(el,wrap,'v',comp,live));
+    if(comp){bar.appendChild(makeBtn(el,wrap,'ai',true,live));el.classList.add('wide-pad')}
+    wrap.appendChild(bar);wrap.appendChild(live);
+  });
+}
+enhance(document);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){stopCur();$$('.mic-help').forEach(function(h){h.remove()})}});
+
+/* ---------- windows ---------- */
+var ov=$('#winov'),win=$('#win'),lastFocus=null;
+function focusables(){return $$('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex="0"]',win).filter(function(x){return x.offsetParent!==null})}
+function openWin(id,init){
+  lastFocus=document.activeElement;
+  var t=document.getElementById('tpl-'+id);
+  win.innerHTML='';win.appendChild(t.content.cloneNode(true));
+  ov.hidden=false;document.documentElement.classList.add('modal-open');
+  if(init)init(win);
+  enhance(win);
+  var h=$('#wtitle',win);if(h)h.focus({preventScroll:true});
+  win.scrollTop=0;
+}
+function closeWin(){
+  stopCur();ov.hidden=true;win.innerHTML='';document.documentElement.classList.remove('modal-open');
+  if(lastFocus&&lastFocus.focus)lastFocus.focus({preventScroll:true});
+}
+ov.addEventListener('mousedown',function(e){if(e.target===ov)closeWin()});
+win.addEventListener('click',function(e){if(e.target.closest('[data-close]'))closeWin()});
+document.addEventListener('keydown',function(e){
+  if(ov.hidden)return;
+  if(e.key==='Escape'){closeWin();return}
+  if(e.key==='Tab'){
+    var f=focusables();if(!f.length)return;
+    var a=document.activeElement,i=f.indexOf(a);
+    if(e.shiftKey&&(i<=0||a===win)){e.preventDefault();f[f.length-1].focus()}
+    else if(!e.shiftKey&&(i===f.length-1)){e.preventDefault();f[0].focus()}
+  }
+});
+$$('[data-open]').forEach(function(b){b.addEventListener('click',function(){OPEN[b.dataset.open](b)})});
+
+function composeHTML(o){
+  return '<div class="cp-row"><span>To</span><b>'+esc(o.to)+'</b></div>'+
+  '<div class="cp-row"><span>Subject</span><b>'+esc(o.subj)+'</b></div>'+
+  (o.tag?'<p class="tag small">'+esc(o.tag)+'</p>':'')+
+  '<div class="compose"><label for="cp-text">Message</label><textarea id="cp-text" rows="8" data-mic="compose">'+esc(o.body)+'</textarea><div class="ai-note" aria-live="polite"></div></div>'+
+  (o.ctx?'<div class="ctx"><p class="label">Original message</p><p>'+esc(o.ctx)+'</p></div>':'')+
+  '<div class="wfoot">'+(o.skip?'<button type="button" class="btn ghost" id="cp-skip">Skip</button>':'<button type="button" class="btn ghost" data-close>Cancel</button>')+'<button type="button" class="btn" id="cp-send">'+(o.send||'Send')+'</button></div>';
+}
+function composeWindow(o){
+  openWin('compose',function(w){
+    $('#wtitle',w).textContent=o.title;
+    $('#cp-body',w).innerHTML=composeHTML(o);
+    $('#cp-send',w).addEventListener('click',function(){closeWin();toast(o.done)});
+  });
+}
+
+/* ---------- emails ---------- */
+var EM=[
+ {from:'Aunt Rosa',subj:'Reunion dates this summer',sum:'Rosa is choosing dates for the family reunion and has two weekends in mind. She wants to know which one works for you. She also asks if you can bring a side dish. A reply by Friday helps her book the park.'},
+ {from:'Cousin Dev',subj:'Grandma birthday card idea',sum:'Dev wants everyone to sign one big card for Grandma. He is collecting short notes and photos this week. He asks if you can send a favorite memory. He plans to mail it on Monday.'},
+ {from:'Mom',subj:'Holiday plans',sum:'Mom is asking where you will be for the holidays. She mentions the guest room is free and that your brother may visit. She would like to know your travel dates soon. She also asks if you want her to book anything.'},
+ {from:'Uncle Marcus',subj:'Old photos found',sum:'Marcus found a box of old family photos and is scanning them. He asks if you can help identify people in a few pictures. He may share the folder with the whole family. He would love a quick call this month.'},
+ {from:'Cousin Mina',subj:'Moving to a new city',sum:'Mina is moving next month and has a new address to share. She asks if you know anyone in her new city. She wants to set up a video call with the cousins. She also mentions a housewarming in the fall.'},
+ {from:'Grandma',subj:'Thank you for the call',sum:'Grandma says she loved your last call and kept the photos you sent. She asks how work is going. She mentions a recipe she wants to pass down to you. She would like another call on Sunday.'}
+];
+function initEmails(w){
+  var list=$('#emlist',w),st=EM.map(function(e,i){return {i:i,reply:true,ai:true}});
+  function sync(){
+    var n=st.filter(function(s){return s.reply}).length;
+    $('#em-count',w).textContent=n+' of '+st.length+' will get a reply';
+    var sr=$('#sa-reply',w),sa=$('#sa-ai',w);
+    sr.checked=n===st.length;sr.indeterminate=n>0&&n<st.length;
+    var na=st.filter(function(s){return s.reply&&s.ai}).length;
+    sa.checked=n>0&&na===n;sa.indeterminate=na>0&&na<n;
+  }
+  function render(){
+    list.innerHTML='';
+    st.forEach(function(s,k){
+      var e=EM[s.i],li=document.createElement('li');li.draggable=true;li.dataset.k=k;
+      li.className=s.reply?'':'off';
+      li.innerHTML='<div class="emtop"><span class="grab" aria-hidden="true">&#8942;&#8942;</span><span class="ord">'+(k+1)+'</span><div class="emmain"><b>'+esc(e.from)+'</b><span class="subj">'+esc(e.subj)+'</span></div><div class="emctl"><button type="button" class="ib" data-mv="-1" aria-label="Move '+esc(e.from)+' up"'+(k===0?' disabled':'')+'>Up</button><button type="button" class="ib" data-mv="1" aria-label="Move '+esc(e.from)+' down"'+(k===st.length-1?' disabled':'')+'>Down</button></div></div><p class="sum">'+esc(e.sum)+'</p><div class="emchk"><label><input type="checkbox" data-f="reply"'+(s.reply?' checked':'')+'> Reply</label><label><input type="checkbox" data-f="ai"'+(s.ai?' checked':'')+(s.reply?'':' disabled')+'> AI draft</label></div>';
+      list.appendChild(li);
+    });
+    sync();
+  }
+  list.addEventListener('click',function(e){
+    var b=e.target.closest('[data-mv]');if(!b)return;
+    var k=+b.closest('li').dataset.k,d=+b.dataset.mv,j=k+d;if(j<0||j>=st.length)return;
+    var t=st[k];st[k]=st[j];st[j]=t;render();
+    var nb=$('li:nth-child('+(j+1)+') [data-mv="'+d+'"]',list);if(nb)nb.focus();
+  });
+  list.addEventListener('change',function(e){
+    var c=e.target.closest('[data-f]');if(!c)return;
+    var s=st[+c.closest('li').dataset.k];s[c.dataset.f]=c.checked;
+    if(c.dataset.f==='reply'&&!c.checked){}
+    render();
+  });
+  var dragK=null;
+  list.addEventListener('dragstart',function(e){var li=e.target.closest('li');if(!li)return;dragK=+li.dataset.k;e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',String(dragK))}catch(x){}li.classList.add('drag')});
+  list.addEventListener('dragover',function(e){if(dragK!==null){e.preventDefault()}});
+  list.addEventListener('drop',function(e){
+    e.preventDefault();var li=e.target.closest('li');if(!li||dragK===null)return;
+    var to=+li.dataset.k;if(to!==dragK){var m=st.splice(dragK,1)[0];st.splice(to,0,m);render()}dragK=null;
+  });
+  list.addEventListener('dragend',function(){dragK=null;$$('li',list).forEach(function(l){l.classList.remove('drag')})});
+  $('#sa-reply',w).addEventListener('change',function(e){st.forEach(function(s){s.reply=e.target.checked});render()});
+  $('#sa-ai',w).addEventListener('change',function(e){st.forEach(function(s){if(s.reply)s.ai=e.target.checked});render()});
+  render();
+  $('#em-go',w).addEventListener('click',function(){
+    var q=st.filter(function(s){return s.reply});
+    if(!q.length){toast('Check at least one email to reply to.');return}
+    var ctx=$('#em-ctx',w).value.trim(),n=0;
+    $('#em-list-view',w).hidden=true;var cv=$('#em-comp-view',w);cv.hidden=false;
+    function step(){
+      if(n>=q.length){cv.innerHTML='<div class="done"><h3>That was the last one</h3><p class="mut">Mock only. In the real dashboard, each reply goes out from the right inbox, with that provider\'s formatting.</p><button type="button" class="btn" data-close>Back to the dashboard</button></div>';return}
+      var s=q[n],e=EM[s.i],first=e.from.replace(/^(Aunt|Uncle|Cousin)\s+/,'');
+      var body=s.ai?('Hi '+first+',\n\nThank you for writing about "'+e.subj+'". '+(ctx?'Here is what I want to say, based on my notes: '+ctx.slice(0,160)+(ctx.length>160?'...':'')+'\n\n':'I will get back to you with details soon.\n\n')+'Love,\nYou'):'';
+      cv.innerHTML='<p class="label">Reply '+(n+1)+' of '+q.length+'</p>'+composeHTML({to:e.from,subj:'Re: '+e.subj,body:body,ctx:e.sum,skip:true,send:n+1<q.length?'Send, then next':'Send',tag:s.ai?'Mock AI draft. Your own assistant would write the real one.':''});
+      enhance(cv);
+      $('#cp-send',cv).addEventListener('click',function(){toast('Sent (mock)');n++;step();var h=$('.label',cv)||cv;win.scrollTop=0});
+      $('#cp-skip',cv).addEventListener('click',function(){n++;step()});
+    }
+    step();win.scrollTop=0;
+  });
+}
+
+/* ---------- other windows ---------- */
+function initReport(w){$('#rp-send',w).addEventListener('click',function(){closeWin();toast('Sent to Slack (mock). You are back on the dashboard.')})}
+function initOoo(w){
+  var steps=$$('[data-s]',w),go=$('#oo-go',w);
+  go.addEventListener('click',function(){
+    go.disabled=true;
+    steps.forEach(function(s,i){setTimeout(function(){s.classList.add('ok')},RM?0:i*600)});
+    setTimeout(function(){go.textContent='You are out of office (mock)'},RM?0:steps.length*600);
+  });
+}
+var MOV=['A heist caper on a space station','A quiet drama about a lighthouse keeper','A road-trip comedy for the whole family','A sweeping fantasy quest','A courtroom thriller','A documentary about deep oceans','A heartfelt sports story','A sci-fi mystery in a small town','An animated adventure with dragons','A gentle romance in a bakery'];
+var SHW=['A fantasy series, new this week','A detective show set in the 1960s','A cooking competition, new season','A sci-fi anthology','A sitcom about neighbors','A mini-series about a historic voyage','A nature series, episode 1','A teen mystery, new this week','A space opera, season 1','A home-renovation show'];
+var AIR=[['A fantasy series','Season 3 returns in March','Last time: the heroes split up after a failed rescue, and a rival gained a powerful ally. Expect a reunion in the first episode.'],['A medical drama','New episodes every Thursday','Last time: a hospital merger forced two teams to share one floor. The new chief makes a surprise announcement.'],['A sci-fi series','Final season returns in the fall','Last time: the crew reached the edge of known space. A signal changed everything. The final season answers where it came from.'],['A crime documentary series','New season in two weeks','Last time: a cold case reopened after a new witness came forward. The new season follows that lead.']];
+function initTv(w){
+  function fill(sel,arr){$(sel,w).innerHTML=arr.map(function(t,i){return '<li><span>'+(i+1)+'</span>'+esc(t)+'</li>'}).join('')}
+  fill('#tv-m',MOV);fill('#tv-s',SHW);
+  $('#tv-air',w).innerHTML=AIR.map(function(a,i){return '<li><div><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div><button type="button" class="btn small ghost" aria-expanded="false" data-rc="'+i+'">Recap</button><p class="rc" hidden>'+esc(a[2])+'</p></li>'}).join('');
+  $('#tv-air',w).addEventListener('click',function(e){var b=e.target.closest('[data-rc]');if(!b)return;var p=b.parentNode.querySelector('.rc');var o=p.hidden;p.hidden=!o;b.setAttribute('aria-expanded',o)});
+  $('#tv-new',w).addEventListener('change',function(e){$('#tv-msg',w).textContent=e.target.checked?'Showing only things you have not watched.':'Showing everything, including things you have watched.'});
+  $('#tv-pick',w).addEventListener('click',function(){$('#tv-msg',w).textContent='Picked for you: "'+MOV[Math.floor(Math.random()*3)]+'". Playing now (mock).'});
+}
+function initTrip(w){
+  var n=$('#tr-n',w);
+  function calc(){var p=+n.value,stay=1260,flights=820;$('#tr-stay',w).textContent='$'+stay.toLocaleString('en-US');$('#tr-per',w).textContent='$'+Math.round(flights+stay/p).toLocaleString('en-US');
+    var m=$('#tr-msg',w);if(m)m.value=m.value.replace(/about \$[\d,]+ each/,'about $'+Math.round(flights+stay/p).toLocaleString('en-US')+' each')}
+  n.addEventListener('change',calc);calc();
+  $('#tr-send',w).addEventListener('click',function(){closeWin();toast('Group chat started (mock). Nothing was sent.')});
+}
+var OPEN={
+  emails:function(){openWin('emails',initEmails)},
+  report:function(){openWin('report',initReport)},
+  ooo:function(){openWin('ooo',initOoo)},
+  tv:function(){openWin('tv',initTv)},
+  trip:function(){openWin('trip',initTrip)},
+  cousins:function(){
+    var names=$$('.pick input:checked').map(function(i){return i.dataset.name});
+    if(!names.length){toast('Check at least one cousin first.');return}
+    composeWindow({title:'Message your cousins',to:names.join(', '),subj:'Hello from the family dashboard',body:'Hi everyone,\n\nI was thinking of you and wanted to say hello. How are you doing? Let\'s plan a video call soon.',done:'Sent to '+names.length+' cousin'+(names.length>1?'s':'')+' (mock)',send:'Send to all'});
+  },
+  gift:function(){composeWindow({title:'Gift idea for Grandma',to:'Cousin Dev, Cousin Mina, Mom',subj:'Gift idea for Grandma',body:'Hi all,\n\nFor Grandma\'s birthday, how about a framed family photo with a handwritten note from each of us? I can collect the photos if you send them to me.',tag:'Mock draft with a gift idea and a note.',done:'Gift idea sent with a note (mock)',send:'Send with note'})}
+};
+
+/* ---------- flagship demo ---------- */
+(function(){
+  var base=12,sc=$('#score'),gf=$('#gfill'),boxes=$$('.conn input');
+  function upd(){var s=base;boxes.forEach(function(b){if(b.checked)s+=+b.dataset.pts});sc.textContent=s;gf.style.width=s+'%'}
+  boxes.forEach(function(b){b.addEventListener('change',upd)});
+  var rate=$('#rate'),rf=$('#refresh');
+  function r(){var v=+rate.value;rf.textContent=v?'Last refreshed: just now. Next refresh in '+(v>=1440?'a day':v>=60?'an hour':'15 minutes')+'.':'Last refreshed: when you opened it.'}
+  rate.addEventListener('change',r);r();
+  var who=$('#who'),oc=$('#outcome');
+  function w(){var ask=who.value==='ask';oc.textContent=ask?'Needs permission first. They get a short request with your reason, and they can say no.':'Free to send. No request needed.';oc.className='outcome '+(ask?'ask':'free')}
+  who.addEventListener('change',w);w();
+  var sw=$$('#prof .sw input'),pc=$('#pubcount');
+  function pu(){pc.textContent=sw.filter(function(s){return s.checked}).length+' of '+sw.length+' public'}
+  sw.forEach(function(s){s.addEventListener('change',pu)});
+  $$('[data-all]').forEach(function(b){b.addEventListener('click',function(){sw.forEach(function(s){s.checked=b.dataset.all==='1'});pu()})});
+  var loc=$$('.soc .mockbox:nth-child(3) .sw input'),ln=$('#locnote');
+  loc.forEach(function(s){s.addEventListener('change',function(){var n=loc.filter(function(x){return x.checked}).length;ln.textContent=n?'Sharing with '+n+' best friend'+(n>1?'s':'')+'. You can stop any time.':'Sharing with nobody.'})});
+})();
+
+/* ---------- professions ---------- */
+var PROF=['Recruiting','Software engineering','Product management','Design','Data and analytics','Sales','Marketing','Customer support','Operations','Finance and accounting','Human resources','Legal','Nursing and healthcare','Teaching and education','Skilled trades','Construction','Retail','Restaurants and hospitality','Real estate','Logistics and transportation','Manufacturing','Public service','Nonprofit work','Science and research','Writing and journalism','Film, music, and arts','Farming and agriculture','Caregiving and parenting','Students','Small business owners','Freelancers','Something else'];
+(function(){
+  var box=$('#pchips'),pn=$('#ppanel'),sel=$('#f-prof');
+  PROF.forEach(function(p,i){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.setAttribute('aria-checked',i===0?'true':'false');b.tabIndex=i===0?0:-1;b.textContent=p;b.dataset.i=i;box.appendChild(b);
+    var o=document.createElement('option');o.textContent=p;sel.appendChild(o);
+  });
+  $('#allm').textContent='Professions with at least one entry: 0 of '+PROF.length;
+  function show(i){
+    $$('button',box).forEach(function(b,k){b.setAttribute('aria-checked',k===i?'true':'false');b.tabIndex=k===i?0:-1});
+    sel.selectedIndex=i;
+    var p=PROF[i],rec=i===0;
+    pn.innerHTML='<div class="phead"><h3>'+esc(p)+'</h3><span class="tag'+(rec?'':' soft')+'">'+(rec?'Open now, first in line':'Open for the first entry')+'</span></div>'+
+    '<div class="meter" role="img" aria-label="0 of 10 contributors so far"><i style="width:0%"></i></div>'+
+    '<p class="count"><strong>0 contributors so far.</strong> Goal: 10 to feel complete.</p>'+
+    (rec?'<p>We want to hear about your tools: an applicant tracking system such as Greenhouse, a CRM, outbound tools such as LinkedIn and Gem, and AI assistants such as Claude. We know least about how offers get approved and what happens after a candidate is hired.</p>':'<p>Tell us your tools, your weekly routines, what slows you down, and what already works well in '+esc(p.toLowerCase())+'.</p>')+
+    '<div class="empty"><strong>No entries yet</strong><span>Be the first.</span><a class="btn" href="#wform" data-go>Add the first entry</a></div>';
+    $('[data-go]',pn).addEventListener('click',function(){setTimeout(function(){$('#f-tools').focus({preventScroll:true})},400)});
+  }
+  box.addEventListener('click',function(e){var b=e.target.closest('button');if(b)show(+b.dataset.i)});
+  box.addEventListener('keydown',function(e){
+    var k=['ArrowRight','ArrowDown','ArrowLeft','ArrowUp'].indexOf(e.key);if(k<0)return;e.preventDefault();
+    var cur=+$('[aria-checked="true"]',box).dataset.i,n=PROF.length,nx=(k<2)?(cur+1)%n:(cur-1+n)%n;show(nx);$$('button',box)[nx].focus();
+  });
+  sel.addEventListener('change',function(){show(sel.selectedIndex)});
+  show(0);
+  var ids=['f-tools','f-week','f-hard','f-good'],fill=$('#emfill'),lab=$('#emlabel');
+  function em(){var n=ids.filter(function(i){return $('#'+i).value.trim().length>0}).length,pc=Math.round(n/ids.length*100);fill.style.width=pc+'%';lab.textContent='Your entry is '+pc+'% complete'}
+  ids.forEach(function(i){$('#'+i).addEventListener('input',em)});
+  $('#wform').addEventListener('submit',function(e){
+    e.preventDefault();
+    var g=function(i){return $('#'+i).value.trim()};
+    var body='Profession: '+sel.value+'\n\nTools I use:\n'+g('f-tools')+'\n\nA typical week:\n'+g('f-week')+'\n\nWhat makes it harder:\n'+g('f-hard')+'\n\nWhat already works:\n'+g('f-good')+'\n';
+    location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Workflow: '+sel.value)+'&body='+encodeURIComponent(body);
+  });
+  enhance(document);
+})();
+
+/* ---------- water surface ---------- */
+var fx=$('#fx'),fc=fx.getContext('2d'),DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0;
+function size(){W=innerWidth;H=innerHeight;fx.width=W*DPR;fx.height=H*DPR;fc.setTransform(DPR,0,0,DPR,0,0)}
+size();
+var words=[],dirty=true,ripples=[],parts=[],running=false,lastT=0;
+var SKIP='SCRIPT,STYLE,TEXTAREA,SELECT,OPTION,BUTTON,SVG,TEMPLATE,NOSCRIPT,INPUT,CANVAS,TABLE';
+function wrap(root){
+  var tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+    if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+    for(var p=n.parentNode;p&&p!==root;p=p.parentNode){if(p.nodeType===1&&(SKIP.indexOf(p.tagName.toUpperCase())>-1||p.classList.contains('w')||p.hasAttribute('data-nowater')))return NodeFilter.FILTER_REJECT}
+    return NodeFilter.FILTER_ACCEPT}});
+  var list=[];while(tw.nextNode()){var pn=tw.currentNode.parentNode,dsp=getComputedStyle(pn).display;if(dsp.indexOf('flex')>-1||dsp.indexOf('grid')>-1)continue;list.push(tw.currentNode)}
+  list.forEach(function(n){
+    var parts=n.nodeValue.split(/(\s+)/),f=document.createDocumentFragment();
+    parts.forEach(function(s){if(!s)return;if(/^\s+$/.test(s))f.appendChild(document.createTextNode(s));else{var sp=document.createElement('span');sp.className='w';sp.textContent=s;f.appendChild(sp)}});
+    n.parentNode.replaceChild(f,n);
+  });
+}
+if(!RM){wrap($('#main'));wrap($('.foot'))}
+function measure(){
+  var sx=scrollX,sy=scrollY;
+  words=$$('.w').map(function(el){var r=el.getBoundingClientRect();return {el:el,x:r.left+r.width/2+sx,y:r.top+r.height/2+sy,tx:0,ty:0}});
+  dirty=false;
+}
+try{new ResizeObserver(function(){dirty=true}).observe(document.body)}catch(e){}
+addEventListener('resize',function(){size();dirty=true});
+function ring(x,y,amp,life,speed){ripples.push({x:x+scrollX,y:y+scrollY,t:performance.now(),amp:amp,life:life,speed:speed||360});kick()}
+function kick(){if(!running){running=true;lastT=performance.now();requestAnimationFrame(loop)}}
+function loop(now){
+  var sx=scrollX,sy=scrollY;
+  fc.clearRect(0,0,W,H);
+  var rc=getComputedStyle(document.documentElement).getPropertyValue('--ring').trim()||'255,255,255';
+  ripples=ripples.filter(function(r){return now-r.t<r.life*1000});
+  ripples.forEach(function(r){
+    var a=Math.max(0,(now-r.t)/1000),k=1-a/r.life,rad=r.speed*a*0.55;
+    fc.beginPath();fc.arc(r.x-sx,r.y-sy,rad,0,6.2832);
+    fc.strokeStyle='rgba('+rc+','+(Math.min(.5,r.amp/40)*k*k)+')';fc.lineWidth=1+r.amp/12*k;fc.stroke();
+  });
+  if(ripples.length&&!RM){
+    if(dirty)measure();
+    var vh=innerHeight;
+    words.forEach(function(w){
+      var vy=w.y-sy;
+      if(vy<-80||vy>vh+80){if(w.tx||w.ty){w.el.style.transform='';w.tx=w.ty=0}return}
+      var dx=0,dy=0;
+      for(var i=0;i<ripples.length;i++){
+        var r=ripples[i],a=Math.max(0,(now-r.t)/1000),ddx=w.x-r.x,ddy=w.y-r.y,d=Math.sqrt(ddx*ddx+ddy*ddy)+.01;
+        var front=r.speed*a,u=(d-front)/(46+a*60);
+        if(u>3||u<-3)continue;
+        var life=1-a/r.life;if(life<=0)continue;
+        var amp=r.amp*life*life*Math.exp(-u*u)*Math.cos(u*2.4)/(1+d/500);
+        dy+=amp;dx+=amp*(ddx/d)*.5;
+      }
+      if(dx||dy){w.el.style.transform='translate('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px)';w.tx=dx;w.ty=dy}
+      else if(w.tx||w.ty){w.el.style.transform='';w.tx=w.ty=0}
+    });
+  }else if(words.length){words.forEach(function(w){if(w.tx||w.ty){w.el.style.transform='';w.tx=w.ty=0}})}
+  /* particles */
+  parts=parts.filter(function(p){return p.life>0});
+  parts.forEach(function(p){
+    p.life-=(now-lastT)/1000;p.x+=p.vx*(now-lastT)/1000;p.y+=p.vy*(now-lastT)/1000;p.vy+=p.g*(now-lastT)/1000;
+    fc.globalAlpha=Math.max(0,Math.min(1,p.life*1.5));
+    if(p.kind==='m'){fc.strokeStyle=p.c;fc.lineWidth=2;fc.beginPath();fc.moveTo(p.x,p.y);fc.lineTo(p.x-p.vx*.07,p.y-p.vy*.07);fc.stroke()}
+    else{fc.fillStyle=p.c;fc.save();fc.translate(p.x,p.y);fc.rotate(p.life*6);fc.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6);fc.restore()}
+  });
+  fc.globalAlpha=1;
+  lastT=now;
+  if(ripples.length||parts.length||trailOn){requestAnimationFrame(loop)}else{running=false;fc.clearRect(0,0,W,H);words.forEach(function(w){if(w.tx||w.ty){w.el.style.transform='';w.tx=w.ty=0}})}
+}
+var EMPTYSKIP='a,button,input,textarea,select,label,summary,[role=tab],[role=radio],[role=switch],.fz,.win-ov,.hdr,.mic-help,[data-open],.wcard,li[draggable]';
+var lastMove={x:-999,y:-999,t:0},down=null,holdTimer=null;
+document.addEventListener('pointermove',function(e){
+  if(RM||e.pointerType==='touch')return;
+  if(trailOn)sparkle(e.clientX,e.clientY);
+  var dx=e.clientX-lastMove.x,dy=e.clientY-lastMove.y,n=performance.now();
+  if(dx*dx+dy*dy>900&&n-lastMove.t>45&&ov.hidden){lastMove={x:e.clientX,y:e.clientY,t:n};ring(e.clientX,e.clientY,3.2,1.1,300)}
+},{passive:true});
+document.addEventListener('pointerdown',function(e){
+  if(e.button>0||RM)return;
+  if(e.target.closest(EMPTYSKIP)||!ov.hidden)return;
+  down={t:performance.now(),x:e.clientX,y:e.clientY};
+  ring(e.clientX,e.clientY,8,1.6,380);
+  clearInterval(holdTimer);
+  holdTimer=setInterval(function(){
+    if(!down)return;var h=performance.now()-down.t;
+    ring(down.x,down.y,Math.min(26,8+h/70),2.2,420+h/6);
+  },160);
+});
+function release(){
+  clearInterval(holdTimer);
+  if(down){var h=performance.now()-down.t;if(h>350)ring(down.x,down.y,Math.min(46,16+h/40),3.2,560+Math.min(h,1800)/4);down=null}
+}
+document.addEventListener('pointerup',release);document.addEventListener('pointercancel',release);
+
+/* ---------- funzies ---------- */
+var fz=$('#fz'),fzb=$('#fzbtn'),fzp=$('#fzpanel'),trailOn=false;
+function fzOpen(o){fzp.hidden=!o;fzb.setAttribute('aria-expanded',o?'true':'false')}
+fzb.addEventListener('click',function(){fzOpen(fzp.hidden)});
+document.addEventListener('click',function(e){if(!fzp.hidden&&!e.target.closest('#fz'))fzOpen(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!fzp.hidden){fzOpen(false);fzb.focus()}});
+var COL=['#ff5d73','#ffd166','#06d6a0','#4cc9f0','#b388ff','#ffffff'];
+function confetti(){for(var i=0;i<140;i++)parts.push({kind:'c',x:W/2+(Math.random()-.5)*W*.3,y:H*.9,vx:(Math.random()-.5)*900,vy:-500-Math.random()*700,g:900,life:2.4+Math.random(),s:6+Math.random()*6,c:COL[i%COL.length]});kick()}
+function meteors(){for(var i=0;i<26;i++)(function(i){setTimeout(function(){parts.push({kind:'m',x:Math.random()*W*1.2,y:-20,vx:-420-Math.random()*300,vy:520+Math.random()*300,g:0,life:1.6,s:4,c:'#ffd9a0'});kick()},i*110)})(i)}
+function sparkle(x,y){parts.push({kind:'c',x:x,y:y,vx:(Math.random()-.5)*80,vy:(Math.random()-.5)*80,g:140,life:.7,s:4+Math.random()*4,c:COL[Math.floor(Math.random()*5)]});kick()}
+var root=document.documentElement;
+function toggleP(btn,cls){var on=!root.classList.contains(cls);root.classList.toggle(cls,on);btn.setAttribute('aria-pressed',on);dirty=true}
+fzp.addEventListener('click',function(e){
+  var b=e.target.closest('[data-fx]');if(!b)return;var k=b.dataset.fx;
+  if(k==='confetti'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');confetti()}
+  else if(k==='meteors'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');meteors()}
+  else if(k==='wobble'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');var m=$('#main');m.classList.add('wobble');setTimeout(function(){m.classList.remove('wobble')},2600)}
+  else if(k==='tsunami'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');for(var i=0;i<4;i++)(function(i){setTimeout(function(){ring(W/2,H/2,40,3.4,520+i*80)},i*260)})(i)}
+  else if(k==='hue')toggleP(b,'fz-hue');
+  else if(k==='big')toggleP(b,'fz-big');
+  else if(k==='silly')toggleP(b,'fz-silly');
+  else if(k==='spark'){trailOn=!trailOn;b.setAttribute('aria-pressed',trailOn);if(trailOn&&RM)toast('Motion is reduced on your device, so the trail stays off.'),trailOn=false,b.setAttribute('aria-pressed','false')}
+  else if(k==='reset'){['fz-hue','fz-big','fz-silly'].forEach(function(c){root.classList.remove(c)});trailOn=false;$$('[aria-pressed]',fzp).forEach(function(x){x.setAttribute('aria-pressed','false')});dirty=true;toast('All the fun, undone.')}
+});
+
+/* ---------- theme background ---------- */
+if(window.__bg)window.__bg({rm:RM});
+})();
+</script>
+</body></html>
