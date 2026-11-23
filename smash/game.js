@@ -332,7 +332,7 @@
   }
   function closeModals(keep) {
     ['how', 'fun', 'picker', 'result', 'pause'].forEach(function (id) { $(id).hidden = true; });
-    if (!keep) { modal = null; if (lastFocus && lastFocus.focus && document.body.contains(lastFocus)) { try { lastFocus.focus(); } catch (e) {} } }
+    if (!keep) { modal = null; paused = false; if (lastFocus && lastFocus.focus && document.body.contains(lastFocus)) { try { lastFocus.focus(); } catch (e) {} } }
   }
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Tab' || !modal) return; var m = $(modal), f = m.querySelectorAll('button:not([disabled]),input,[tabindex]'); if (!f.length) return;
