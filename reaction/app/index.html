@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Reaction App prototype</title>
+<meta name="description" content="Watch a short clip, capture your reaction on this device, and keep a side-by-side reaction card. Nothing is uploaded.">
+<meta name="theme-color" content="#1b1033">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reaction">
+<link rel="stylesheet" href="app.css">
+</head><body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="app" id="app">
+  <nav class="nav" id="nav" aria-label="Main">
+    <a class="brand" href="../" aria-label="Reaction App website"><img src="icons/icon-192.png" width="36" height="36" alt=""><span>Reaction App</span></a>
+    <button data-go="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg><span>React</span></button>
+    <button data-go="inbox"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3zM3 13h5l1 2h6l1-2h5"/></svg><span>Inbox</span></button>
+    <button data-go="friends"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-4 3-6 6.5-6s6.5 2 6.5 6M17 5.5a3 3 0 010 5.5M18 14c2.5.5 3.5 2.5 3.5 5"/></svg><span>Friends</span></button>
+    <button data-go="feed"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M9 9l6 3-6 3z"/></svg><span>Feed</span></button>
+    <button data-go="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>Me</span></button>
+  </nav>
+
+  <main id="main" class="main" tabindex="-1">
+
+    <!-- HOME: pick a clip -->
+    <section class="screen on" id="s-home" aria-labelledby="h-home">
+      <header class="top"><h1 id="h-home">Pick a clip</h1><span class="pill">Prototype: runs on this device only</span></header>
+      <p class="lead">Choose a short clip, then watch it while we capture your reaction. Clips are 10 seconds or less.</p>
+      <ul class="clips" id="clipList" aria-label="Clips"></ul>
+      <div class="row2">
+        <button class="btn ghost" id="btnOwn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h12v10H3zM15 11l6-4v10l-6-4"/></svg>Record your own</button>
+        <label class="btn ghost" for="fileIn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v4h16v-4"/></svg>Choose a file</label>
+        <input id="fileIn" type="file" accept="video/*" hidden>
+      </div>
+      <p class="fine" id="fileMsg" role="status"></p>
+      <p class="fine">All clips here are original and made with code. The real app would use clips people record, licensed libraries, or embeds where a platform allows it. We do not copy videos from other sites.</p>
+      <button class="btn ghost small" id="btnInstall" hidden>Install this app</button>
+      <p class="fine" id="iosHint" hidden>On iPhone or iPad: tap Share, then Add to Home Screen.</p>
+    </section>
+
+    <!-- READY -->
+    <section class="screen" id="s-ready" aria-labelledby="h-ready">
+      <header class="top"><button class="back" data-go="home" aria-label="Back to clips">&#8592;</button><h1 id="h-ready">Ready?</h1></header>
+      <div class="sq"><canvas id="readyCv" width="720" height="720" aria-label="Clip preview"></canvas></div>
+      <p class="clipname" id="readyName"></p>
+      <div class="stack">
+        <button class="btn primary" id="btnReact">React to this</button>
+        <button class="btn ghost" id="btnSendSoon">Send to a friend <em class="soon">coming soon</em></button>
+      </div>
+      <p class="fine">Tapping React shows a notice first. Your camera stays off until you tap Start.</p>
+    </section>
+
+    <!-- CONSENT -->
+    <section class="screen" id="s-consent" aria-labelledby="h-consent">
+      <header class="top"><button class="back" id="consentBack" aria-label="Back">&#8592;</button><h1 id="h-consent">Before we start</h1></header>
+      <div class="notice" role="note">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h12v10H3zM15 11l6-4v10l-6-4"/></svg>
+        <ul>
+          <li><b>When you tap Start,</b> your camera and microphone record you while the clip plays.</li>
+          <li><b>You will not see your own face.</b> The recording is for the reaction card only.</li>
+          <li><b>Nothing is uploaded.</b> It stays on this device until you download or share it.</li>
+          <li><b>You can skip.</b> Watch without recording, or stop and discard at any time.</li>
+        </ul>
+      </div>
+      <div class="stack">
+        <button class="btn primary" id="btnStart">Start with camera</button>
+        <button class="btn ghost" id="btnWatchOnly">Watch without recording</button>
+      </div>
+      <p class="err" id="camErr" role="alert" hidden></p>
+      <p class="fine">Public posting and minors: a real version needs clear consent rules before any reaction leaves your device, including parent or guardian consent for children. This prototype posts nothing.</p>
+    </section>
+
+    <!-- WATCH -->
+    <section class="screen" id="s-watch" aria-label="Watching">
+      <div class="sq stage"><canvas id="watchCv" width="720" height="720" aria-label="Clip playing"></canvas><div class="count" id="count" aria-live="assertive"></div></div>
+      <div class="rec" id="recPanel">
+        <div class="recline"><span class="dot" id="recDot"></span><span id="recText" role="status">Recording</span><span class="tm" id="recTime">0.0 s</span></div>
+        <p class="fine mid" id="recNote">Your camera is on. We are not showing your face. Just watch and react.</p>
+        <button class="btn ghost" id="btnDiscard">Stop and discard</button>
+      </div>
+    </section>
+
+    <!-- CARD -->
+    <section class="screen" id="s-card" aria-labelledby="h-card">
+      <header class="top"><h1 id="h-card">Your reaction card</h1></header>
+      <div class="card" id="card">
+        <div class="pane"><canvas id="cardClip" width="540" height="540" aria-label="The clip"></canvas><span class="tag">Clip</span></div>
+        <div class="pane"><video id="cardVid" playsinline></video><span class="tag">You</span></div>
+        <div class="strip"><img src="icons/icon-192.png" width="22" height="22" alt=""><b>Reaction App</b><span id="cardMeta"></span></div>
+      </div>
+      <p class="fine mid" id="noRec" hidden>You chose not to record, so there is no reaction to show.</p>
+      <div class="stack" id="cardBtns">
+        <button class="btn primary" id="btnReplay">Replay</button>
+        <button class="btn mint" id="btnDownload">Download card</button>
+        <button class="btn ghost" id="btnShare">Share card</button>
+        <button class="btn ghost" id="btnDlRaw">Download reaction only</button>
+        <button class="btn ghost" id="btnSend">Send back to sender <em class="soon">coming soon</em></button>
+      </div>
+      <p class="fine mid" id="cardMsg" role="status"></p>
+      <div class="row2"><button class="btn ghost" id="btnAgain">React again</button><button class="btn ghost" id="btnDelete">Delete reaction</button></div>
+    </section>
+
+    <!-- RECORD OWN CLIP -->
+    <section class="screen" id="s-own" aria-labelledby="h-own">
+      <header class="top"><button class="back" id="ownBack" aria-label="Back">&#8592;</button><h1 id="h-own">Record your own clip</h1></header>
+      <div class="sq stage"><video id="ownVid" playsinline muted></video><div class="count" id="ownCount"></div></div>
+      <p class="lead mid" id="ownNote">Your camera turns on only after you tap Start. Up to 10 seconds. Nothing is uploaded. Point it at something that will get a reaction.</p>
+      <div class="stack">
+        <button class="btn primary" id="ownStart">Start camera and record</button>
+        <button class="btn ghost" id="ownStop" hidden>Stop recording</button>
+      </div>
+      <p class="err" id="ownErr" role="alert" hidden></p>
+    </section>
+
+    <!-- COMING SOON SCREENS -->
+    <section class="screen" id="s-inbox" aria-labelledby="h-inbox">
+      <header class="top"><h1 id="h-inbox">Inbox</h1><span class="pill soonpill">Coming soon</span></header>
+      <div class="empty"><div class="mock"><span></span><span></span><span></span></div>
+        <h2>Clips from friends land here</h2>
+        <p>Open one and it plays at the top while the front camera records your reaction. Your face is never shown to you. The reaction goes back to the sender when it ends. Sending needs a server, and we have not built one yet.</p>
+        <button class="btn primary" data-go="home">Try a clip on this device</button></div>
+    </section>
+
+    <section class="screen" id="s-friends" aria-labelledby="h-friends">
+      <header class="top"><h1 id="h-friends">Friends and groups</h1><span class="pill soonpill">Coming soon</span></header>
+      <div class="empty"><div class="mock"><span></span><span></span><span></span></div>
+        <h2>No friends list yet</h2>
+        <p>Friends need accounts, and accounts need a server. In the real app you will add friends and build groups here. We show no sample people, because there are none.</p></div>
+      <h2 class="sub">How a group will watch</h2>
+      <p class="fine mid">Everyone watches. When the last person finishes, one combined video of every reaction goes out to the whole group. Phones show a grid of 1 or 4. Desktop can show more.</p>
+      <div class="grids" aria-label="Planned layouts">
+        <figure><div class="g g1"><i></i></div><figcaption>Phone, 1 up</figcaption></figure>
+        <figure><div class="g g4"><i></i><i></i><i></i><i></i></div><figcaption>Phone, 4 up</figcaption></figure>
+        <figure><div class="g g9"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><figcaption>Desktop, more</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="screen" id="s-feed" aria-labelledby="h-feed">
+      <header class="top"><h1 id="h-feed">Feed</h1><span class="pill soonpill">Coming soon</span></header>
+      <div class="empty"><div class="mock"><span></span><span></span><span></span></div>
+        <h2>Public reactions, with thumbs up</h2>
+        <p>Only reactions that people choose to make public will appear here. Everything is private by default, and public posting will need clear consent, with extra rules for minors. This screen is empty on purpose: nothing has been posted anywhere.</p></div>
+    </section>
+
+    <section class="screen" id="s-me" aria-labelledby="h-me">
+      <header class="top"><h1 id="h-me">Me</h1><span class="pill soonpill">Profile coming soon</span></header>
+      <div class="panel">
+        <h2 class="sub">Reaction privacy</h2>
+        <fieldset class="seg"><legend class="sr">Who can see my reactions</legend>
+          <label><input type="radio" name="priv" checked disabled><span>Private</span></label>
+          <label><input type="radio" name="priv" disabled><span>Public</span></label>
+        </fieldset>
+        <p class="fine">Private is the only mode today, because nothing leaves your device. In the real app you will choose for each reaction, and Private will stay the default.</p>
+      </div>
+      <div class="panel">
+        <h2 class="sub">Your data on this device</h2>
+        <p class="fine">The prototype keeps no account and stores nothing. A reaction exists only until you leave the card screen or delete it.</p>
+        <p class="fine">Storage plan: free to start. Saving lots of reactions will later need a paid membership, because storing video costs money.</p>
+      </div>
+      <div class="panel">
+        <h2 class="sub">App stores</h2>
+        <p class="fine">Today this installs from your browser. An App Store release needs an Apple Developer Program membership held by the app's owner (99 USD per year). A Google Play release needs a Google Play developer account.</p>
+      </div>
+    </section>
+
+    <!-- SEND MOCK SHEET -->
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="h-sheet" hidden>
+      <div class="sheetbox">
+        <h2 id="h-sheet">Sending is coming soon</h2>
+        <p>Sending to friends, ping pong, and groups all need a server and accounts. We have not built those yet, so nothing is sent from here. What works today is the reaction card on this device.</p>
+        <ul class="plan"><li><b>Friend:</b> they open it, watch, and the reaction comes back to you.</li><li><b>Ping pong:</b> reactions to reactions, back and forth.</li><li><b>Group:</b> everyone watches, then one combined video goes to all.</li></ul>
+        <button class="btn primary" id="sheetClose">Got it</button>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="clips.js"></script>
+<script src="app.js"></script>
+</body></html>
