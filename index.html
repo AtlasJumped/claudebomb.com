@@ -216,6 +216,22 @@ textarea{resize:vertical;line-height:1.5}
 .fzrow button[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
 .fzlink{display:block;padding:.6rem 0;color:var(--acc);font-weight:600}
 .fzreset{margin-top:.4rem}
+
+.note-opt{padding:.8rem 1rem;border:1px solid var(--acc);border-radius:calc(var(--r)*.6);margin:.6rem 0 1rem;font-size:.95rem}
+.oo-future{font-size:.95rem}.oo-future a{color:var(--acc);font-weight:600;text-decoration:underline}
+.sws li{display:flex;align-items:center;gap:.6rem}.sws li>label{flex:1}.sws li>.ib{flex:none}
+.mi{vertical-align:-.15em;margin-left:.3rem}
+.web{position:relative;width:min(100%,26rem);aspect-ratio:1;margin:1rem auto}
+.web svg{position:absolute;inset:0;width:100%;height:100%}
+.web .pp{position:absolute;transform:translate(-50%,-50%);min-height:2.2rem;padding:.2rem .7rem;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;font-size:.8rem;font-weight:600}
+.web .pp.far{border-style:dashed;color:var(--mut)}
+.web .pp:hover,.web .pp[aria-pressed=true]{border-color:var(--acc);color:var(--acc)}
+.web .me{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:.4rem .8rem;border-radius:99px;background:var(--acc);color:var(--accfg);font-weight:700;font-size:.8rem}
+.ppick{margin-top:1rem;padding:1rem;border:1px solid var(--line);border-radius:calc(var(--r)*.6)}
+.ppick:empty{display:none}
+.pub{display:flex;align-items:center;gap:.8rem;margin:1rem 0}
+.yn{display:flex;gap:.6rem;margin-top:.6rem}
+.srch-res{list-style:none;margin:.4rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
 /* window */
 .win-ov{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.6)}
 .win-ov[hidden]{display:none}
@@ -406,13 +422,13 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <ol class="steps">
 <li><span class="sn">1</span><div><h3>Download one file</h3><p>A single file, free and open. It carries all the first-time setup instructions inside. Drop it into a new chat and say "Set up my dashboard."</p></div></li>
 <li><span class="sn">2</span><div><h3>Drop it into your assistant</h3><p>Your assistant surveys what it can reach and what it cannot, then writes a short report in plain language.</p></div></li>
-<li><span class="sn">3</span><div><h3>See your rating from 1 to 100</h3><p>100 means everything is connected. A 10 means you have barely started. Try the sample meter below.</p></div></li>
+<li><span class="sn">3</span><div><h3>See your rating from 1 to 100</h3><p>100 means everything is connected. A 10 means you have barely started. Try the meter below.</p></div></li>
 <li><span class="sn">4</span><div><h3>Add free connectors</h3><p>You get a list of free connectors, each with what it unlocks. Connect them in a couple of minutes and the rating goes up.</p></div></li>
 <li><span class="sn">5</span><div><h3>Get your dashboard link</h3><p>The assistant builds your dashboard as a link you can bookmark. It refreshes at a rate you choose and shows when it was last refreshed.</p></div></li>
 </ol>
 
-<div class="demo" aria-label="Sample setup rating and refresh controls">
-<div class="gauge-box"><p class="label">Sample setup rating <span class="tag small">Sample, not real</span></p>
+<div class="demo" aria-label="Setup rating and refresh controls">
+<div class="gauge-box"><p class="label">Your setup rating</p>
 <div class="gauge"><div class="gnum"><b id="score">12</b><span> / 100</span></div><div class="gbar" role="img" aria-label="Setup rating bar"><i id="gfill" style="width:12%"></i></div></div>
 <fieldset class="conn"><legend>Try connecting things</legend>
 <label><input type="checkbox" data-pts="18"> Email, every provider <em>unlocks reply workflows</em></label>
@@ -429,7 +445,7 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <label class="sel" for="rate">Refresh rate</label>
 <select id="rate"><option value="15">Every 15 minutes</option><option value="60" selected>Every hour</option><option value="1440">Once a day</option><option value="0">Only when I open it</option></select>
 <p class="refresh" id="refresh" aria-live="polite"></p>
-<p class="mut small">Sample only. The real dashboard shows its own refresh time.</p></div>
+<p class="mut small">Your real dashboard shows its own refresh time.</p></div>
 </div>
 </div></section>
 
@@ -437,14 +453,14 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <div class="shead"><p class="eyebrow"><span class="no">02</span> The vision</p>
 <h2>Where this could be in 2036</h2>
 <p class="lead">If enough people start today, one dashboard could run the routine of a whole life: family, friends, work, money, and fun, with a privacy firewall between work and home. We built a separate site that shows a day in that life.</p>
-<p><span class="tag">Vision</span> <span class="tag small">Not built yet</span></p>
 <div class="cta"><a class="btn" href="https://endgame.life">See life in 2036 at endgame.life</a></div></div>
 </div></section>
 
 <section class="sec" id="benefits"><div class="wrap">
 <div class="shead"><p class="eyebrow"><span class="no">03</span> Why it matters</p>
 <h2>Seven ways it pays you back</h2>
-<p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p></div>
+<p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p>
+<p class="lead"><strong>It is good now and keeps getting better. The more you put in, the more it pays you back.</strong></p></div>
 <div class="cards c4 ben">
 <article class="card"><h3>Save money</h3><ul><li>Lights and thermostat turn off when rooms are empty.</li><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li></ul></article>
 <article class="card"><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul></article>
@@ -460,11 +476,11 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <div class="shead"><p class="eyebrow"><span class="no">04</span> Family</p>
 <h2>The people who matter, one button away</h2>
 <p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it. Reaching the whole family takes one click.</p>
-<p><span class="tag">Vision</span> <span class="tag small">Mock screen, sample data</span></p></div>
+</div>
 <div class="fam">
 <div class="famcard tree">
 <h3>Family tree</h3>
-<svg viewBox="0 0 320 214" role="img" aria-label="A sample family tree with grandparents, parents, and children">
+<svg viewBox="0 0 320 214" role="img" aria-label="A family tree with grandparents, parents, and children">
 <g fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"><path d="M80 40V70H240V40M160 70V100M70 100V130M70 130H110M250 100V130M250 130H210M110 130V150M210 130V150"/><path d="M110 150V170M210 150V170"/></g>
 <g class="nodes"><circle cx="80" cy="30" r="14"/><circle cx="240" cy="30" r="14"/><circle cx="160" cy="112" r="14"/><circle cx="70" cy="112" r="12"/><circle cx="250" cy="112" r="12"/><circle cx="110" cy="182" r="14"/><circle cx="210" cy="182" r="14"/></g>
 <g class="lbl" font-size="12" text-anchor="middle"><text x="80" y="58">Grandma</text><text x="240" y="58">Grandpa</text><text x="160" y="136">You</text><text x="70" y="136">Aunt</text><text x="250" y="136">Uncle</text><text x="110" y="206">Cousin</text><text x="210" y="206">Cousin</text></g></svg>
@@ -487,7 +503,7 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <li><span>Cousin Mina</span><em>Birthday in 3 weeks</em></li>
 <li><span>Uncle</span><em>Birthday next month</em></li>
 </ul>
-<p class="mut small">Sample gift ideas for Grandma: a framed family photo, a handwritten recipe book, or a call with the whole family on video.</p>
+<p class="mut small">Gift ideas for Grandma: a framed family photo, a handwritten recipe book, or a call with the whole family on video.</p>
 <button type="button" class="btn ghost" data-open="gift">Send a gift idea with a note</button>
 </div>
 </div>
@@ -496,14 +512,14 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <section class="sec" id="workflows"><div class="wrap">
 <div class="shead"><p class="eyebrow"><span class="no">05</span> Workflows</p>
 <h2>Press a button, finish a chore</h2>
-<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Open each mock screen to see how it feels.</p>
-<p><span class="tag">Vision</span> <span class="tag small">Mock screens, sample data</span></p></div>
+<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Click any tile and go through the whole workflow.</p>
+</div>
 <div class="wf">
-<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open the mock</i></button>
-<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open the mock</i></button>
-<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open the mock</i></button>
-<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open the mock</i></button>
-<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open the mock</i></button>
+<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open</i></button>
 </div>
 </div></section>
 
@@ -511,28 +527,29 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <div class="shead"><p class="eyebrow"><span class="no">06</span> Social</p>
 <h2>Your page, your circles, your rules</h2>
 <p class="lead">The dashboard can double as a page about you, so you never need to buy a domain. You choose what is public, who can message you, and who can see where you are.</p>
-<p><span class="tag">Vision</span> <span class="tag small">Mock screens</span></p></div>
+</div>
 <div class="soc">
 <div class="mockbox" id="prof"><h3>Your profile page</h3>
-<p class="mut small">Public or private, by category. Big switches first, details after.</p>
+<p class="mut small">Public or private, by category. Big switches first, details after. Click Open on any row to fill it in.</p>
 <div class="bigtog"><button type="button" class="btn small" data-all="1">All on</button><button type="button" class="btn small ghost" data-all="0">All off</button><span id="pubcount" aria-live="polite">0 of 7 public</span></div>
 <ul class="sws">
-<li><label><span>About me</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
-<li><label><span>Family tree</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
-<li><label><span>Free and busy calendar</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
-<li><label><span>Interests and hobbies</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
-<li><label><span>Music taste and expert badges</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
-<li><label><span>Photos</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
-<li><label><span>Look and layout themes</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
+<li><label><span>About me</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="0" aria-label="Open About me">Open</button></li>
+<li><label><span>Family tree</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="1" aria-label="Open Family tree">Open</button></li>
+<li><label><span>Free and busy calendar</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="2" aria-label="Open Free and busy calendar">Open</button></li>
+<li><label><span>Interests and hobbies</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="3" aria-label="Open Interests and hobbies">Open</button></li>
+<li><label><span>Music taste and expert badges</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="4" aria-label="Open Music taste and expert badges">Open</button></li>
+<li><label><span>Photos</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="5" aria-label="Open Photos">Open</button></li>
+<li><label><span>Look and layout themes</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label><button type="button" class="ib" data-open="prof" data-i="6" aria-label="Open Look and layout themes">Open</button></li>
 </ul>
 <p class="mut small">Pick from hundreds of customizations, the way old social pages let you express yourself.</p></div>
 <div class="mockbox"><h3>Who can message whom</h3>
 <div class="rings" role="img" aria-label="Circles: you, close trusted friends, their close friends, everyone else"><i class="r4"></i><i class="r3"></i><i class="r2"></i><i class="r1"></i></div>
 <ul class="legend"><li><i class="k1"></i>You</li><li><i class="k2"></i>Close trusted friends</li><li><i class="k3"></i>Their close friends</li><li><i class="k4"></i>Everyone else, needs permission</li></ul>
-<p>Messages are free between close trusted friends and their close friends. Anything wider needs permission, with a reason attached.</p>
+<p>Messages go straight through between close trusted friends and their close friends. Anything wider needs permission, with a reason attached.</p>
 <label class="sel" for="who">Try it: who are you messaging?</label>
 <select id="who"><option value="free">A close trusted friend</option><option value="free">A close friend of a close friend</option><option value="ask">A friend of a friend, two steps out</option><option value="ask">Someone outside your circles</option></select>
 <p class="outcome" id="outcome" aria-live="polite"></p>
+<button type="button" class="btn" data-open="msg">Type message <svg class="mi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
 <p class="mut small">The dashboard may also suggest who to reach out to, such as a friend who loves music.</p></div>
 <div class="mockbox"><h3>Share location with best friends</h3>
 <p class="mut small">Optional. Off by default. Turn it on person by person.</p>
@@ -544,6 +561,7 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <li><label><span>Best friend 5</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
 </ul>
 <p class="mut small" id="locnote" aria-live="polite">Sharing with nobody.</p>
+<p class="mut small">If you listen to <a href="https://crimejunkiepodcast.com" target="_blank" rel="noopener">true crime</a>, you know it's wise to have at least one person who always knows where you are. Share your location with a best friend here, and they will have your history if the police ever need it.</p>
 <p class="mut small">The idea: close friends know you are safe and feel connected. You pick how long history is kept, and only the friends you choose can ever open it.</p></div>
 </div>
 </div></section>
@@ -563,11 +581,18 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 
 <form class="wform" id="wform" novalidate>
 <h3>Record or type your workflow</h3>
-<p class="mut small">Press the microphone in any box and talk. Your words land where the cursor is. You can also type.</p>
-<label for="f-prof">Profession</label>
+<p class="note-opt">Everything here is optional. Fill in as much or as little as you like. More detail helps, including your company for possible future collaboration, but leave blank anything you'd rather not share. We read every comment.</p>
+<p class="mut small">Press the microphone next to a box and talk. Your words go into that box. You can also type.</p>
+<label for="f-prof">Profession category</label>
 <select id="f-prof" name="prof"></select>
-<label for="f-tools">Tools you use</label>
-<input type="text" id="f-tools" name="tools" placeholder="For example: an applicant tracking system, a calendar, a chat app">
+<label for="f-sug">Suggest a profession that isn't on this list</label>
+<input type="text" id="f-sug" name="sug">
+<label for="f-title">Job title</label>
+<input type="text" id="f-title" name="title">
+<label for="f-co">Company</label>
+<input type="text" id="f-co" name="company">
+<label for="f-tools">Name the tools you use</label>
+<input type="text" id="f-tools" name="tools" placeholder="For example: Slack, Outlook, Gmail, Microsoft Teams, Zoom, Jira, Salesforce, Workday">
 <label for="f-week">Walk us through a typical week</label>
 <textarea id="f-week" name="week" rows="4" placeholder="What do you do first, then next?"></textarea>
 <label for="f-hard">What makes it harder than it should be</label>
@@ -575,7 +600,7 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <label for="f-good">What already works well</label>
 <textarea id="f-good" name="good" rows="3"></textarea>
 <div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
-<div class="row"><button type="submit" class="btn">Send by email</button><a class="btn ghost" href="mailto:leo@universemodel.ai?subject=Suggest%20a%20profession%20for%20claudebomb.com">Suggest a profession</a></div>
+<div class="row"><button type="submit" class="btn">Send by email</button></div>
 <p class="mut small">This opens your email app with your words ready to send to leo@universemodel.ai. Nothing is stored on this page.</p>
 </form>
 </div></section>
@@ -586,7 +611,7 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <h2>Follow the build</h2>
 <p class="lead">We will email when a new version of the file ships. Free and open source, for people and companies.</p>
 <div class="cta"><a class="btn" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe for updates</a><a class="btn ghost" href="#contribute">Contribute</a><a class="btn ghost" href="/smash/">Play Fennsmash</a><a class="btn ghost" href="/reaction/">Reaction App</a><a class="btn ghost" href="/previews/">Design previews</a><a class="btn ghost" href="https://endgame.life">endgame.life</a></div>
-<p class="mut small">Works with AI assistants such as Claude. Not affiliated with, or endorsed by, any AI company. Everything on this page is either labeled a vision, labeled in build, or a mock screen with sample data.</p>
+<p class="mut small">Works with AI assistants such as Claude. Not affiliated with, or endorsed by, any AI company. Some screens on this page are demos that send nothing.</p>
 </div></footer>
 
 <div class="fz" id="fz">
@@ -609,7 +634,7 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <template id="tpl-emails">
-<div class="whead"><div><h2 id="wtitle" tabindex="-1">Family emails</h2><p class="mut small">Mock screen, sample data. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Family emails</h2><p class="mut small">Demo only. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody" id="em-list-view">
 <p class="mut">We found 6 family emails that may need a reply. Uncheck what you want to skip, drag to reorder, then press Let's go.</p>
 <div class="selall"><span>Select all</span><label><input type="checkbox" id="sa-reply" checked> Reply</label><label><input type="checkbox" id="sa-ai" checked> AI draft</label></div>
@@ -622,10 +647,10 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 </template>
 
 <template id="tpl-report">
-<div class="whead"><div><h2 id="wtitle" tabindex="-1">Weekly recruiting recap</h2><p class="mut small">Mock screen, sample data. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Weekly recruiting recap</h2><p class="mut small">Demo only. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody">
 <div class="metrics"><div><b>12</b><span>Open roles</span></div><div><b>31</b><span>Interviews held</span></div><div><b>4</b><span>Offers out</span></div><div><b>2</b><span>Accepted</span></div></div>
-<p class="mut small">Sample numbers. In the real dashboard they come live from the systems you connect.</p>
+<p class="mut small">In the real dashboard these numbers come live from the systems you connect.</p>
 <label for="rp-ch">Post to</label>
 <input type="text" id="rp-ch" value="#hiring-managers">
 <div class="compose"><label for="rp-body">Message</label>
@@ -641,8 +666,9 @@ Thanks for the partnership.</textarea><div class="ai-note" aria-live="polite"></
 </template>
 
 <template id="tpl-ooo">
-<div class="whead"><div><h2 id="wtitle" tabindex="-1">Out of office</h2><p class="mut small">Mock screen. Nothing is changed.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Out of office</h2><p class="mut small">Demo only. Nothing is changed.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody">
+<p class="mut oo-future">In the future, when this is fully connected to your work, setting your out of office gives your coworker access to a dashboard you preset. They may not read every word of your email unless you allow it. AI can watch for signs that someone is in distress and alert you with a short note and that person's contact. One click, and your coworker takes over. Peace of mind to leave the office, without losing any productivity. <a href="https://endgame.life" target="_blank" rel="noopener">See where this is going at endgame.life</a></p>
 <label for="oo-when">When</label>
 <select id="oo-when"><option>This Friday to next Monday</option><option>Next week, all week</option><option>Two weeks from Monday</option></select>
 <label for="oo-note">Note for your team</label>
@@ -655,7 +681,7 @@ Thanks for the partnership.</textarea><div class="ai-note" aria-live="polite"></
 </template>
 
 <template id="tpl-tv">
-<div class="whead"><div><h2 id="wtitle" tabindex="-1">Watch something new</h2><p class="mut small">Mock screen, sample data. Titles are generic on purpose.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Watch something new</h2><p class="mut small">Demo only. Titles are generic on purpose.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody">
 <div class="tvset"><label><input type="checkbox" checked id="tv-new"> Only new things</label><label><input type="checkbox" id="tv-re"> Open to rewatching</label><button type="button" class="btn small" id="tv-pick">Pick for me</button></div>
 <p class="mut small" id="tv-msg" aria-live="polite">Showing your top 10 new picks for each side. Scroll inside a list.</p>
@@ -666,22 +692,27 @@ Thanks for the partnership.</textarea><div class="ai-note" aria-live="polite"></
 </template>
 
 <template id="tpl-trip">
-<div class="whead"><div><h2 id="wtitle" tabindex="-1">Plan a trip</h2><p class="mut small">Mock screen, sample data. Nothing is booked.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="whead"><div><h2 id="wtitle" tabindex="-1">Plan a trip</h2><p class="mut small">Demo only. Nothing is booked.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody">
 <p class="mut">Your budget looks good, work is usually slower this time of year, and you have said you want to go. Two friends in your close circle have the same week free.</p>
-<div class="cal" role="img" aria-label="Sample calendars: you and two friends all free in week 3"><div class="calrow"><b>You</b><i></i><i></i><i class="free"></i><i></i></div><div class="calrow"><b>Friend A</b><i class="busy"></i><i></i><i class="free"></i><i></i></div><div class="calrow"><b>Friend B</b><i></i><i class="busy"></i><i class="free"></i><i class="busy"></i></div><div class="calhead"><span></span><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div></div>
+<div class="cal" role="img" aria-label="Calendars: you and two friends all free in week 3"><div class="calrow"><b>You</b><i></i><i></i><i class="free"></i><i></i></div><div class="calrow"><b>Friend A</b><i class="busy"></i><i></i><i class="free"></i><i></i></div><div class="calrow"><b>Friend B</b><i></i><i class="busy"></i><i class="free"></i><i class="busy"></i></div><div class="calhead"><span></span><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div></div>
 <label for="tr-n">People going</label>
 <select id="tr-n"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select>
 <table class="cost"><tbody><tr><td>Flights, each</td><td>$820</td></tr><tr><td>Stay, shared, 7 nights</td><td id="tr-stay">$1,260</td></tr><tr class="tot"><td>Per person</td><td id="tr-per">$1,240</td></tr></tbody></table>
-<p class="mut small">Sample prices only.</p>
+<p class="mut small">Example prices.</p>
 <div class="compose"><label for="tr-msg">Suggested group message</label>
 <textarea id="tr-msg" rows="5" data-mic="compose">Hey all, I noticed our calendars are all free in week 3. I found a place to stay and it comes to about $1,240 each with flights. Want me to set up a group chat to plan it?</textarea><div class="ai-note" aria-live="polite"></div></div>
 <div class="wfoot"><button type="button" class="btn ghost" data-close>Not now</button><button type="button" class="btn" id="tr-send">Start the group chat</button></div>
 </div>
 </template>
 
+<template id="tpl-flow">
+<div class="whead"><div><h2 id="wtitle" tabindex="-1"></h2><p class="mut small" id="flow-note">Demo only. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="wbody" id="flow-body"></div>
+</template>
+
 <template id="tpl-compose">
-<div class="whead"><div><h2 id="wtitle" tabindex="-1"></h2><p class="mut small">Mock screen. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
+<div class="whead"><div><h2 id="wtitle" tabindex="-1"></h2><p class="mut small">Demo only. Nothing is sent.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody" id="cp-body"></div>
 </template>
 
@@ -732,7 +763,7 @@ window.__fmt=fmt;
 
 function insertText(el,raw){
   var v=el.value,touched=el.dataset.touched==='1';
-  var s=touched?el.selectionStart:v.length,e=touched?el.selectionEnd:v.length;
+  var s=v.length,e=v.length;
   var out=fmt(v.slice(0,s),v.slice(e),raw);
   if(out===null)return;
   el.value=v.slice(0,s)+out+v.slice(e);
@@ -750,8 +781,8 @@ function helpText(kind,ai){
   var base;
   if(kind==='denied')base="The browser blocked the microphone. Allow microphone access for this page in your browser's site settings, then try again. You can also use your own system's dictation: on Windows press the Windows key and H, on a Mac choose Edit then Start Dictation, and on a phone tap the microphone on your keyboard.";
   else if(kind==='error')base='Dictation stopped. Check your connection and microphone, then try again.';
-  else base="Speech recognition is not available in this browser. Use your own system's dictation instead: on Windows press the Windows key and H, on a Mac choose Edit then Start Dictation, and on a phone tap the microphone on your keyboard. Click in the box first, and your words land where the cursor is.";
-  if(ai)base+=' The Ask AI microphone is a mock that connects to your own AI assistant, such as Claude.';
+  else base="Speech recognition is not available in this browser. Use your own system's dictation instead: on Windows press the Windows key and H, on a Mac choose Edit then Start Dictation, and on a phone tap the microphone on your keyboard. Press the microphone next to the box you want to fill.";
+  if(ai)base+=' The Ask AI microphone is a demo that connects to your own AI assistant, such as Claude.';
   return base;
 }
 function showHelp(wrap,kind,ai){
@@ -768,10 +799,10 @@ function labelOf(el){
 }
 function makeBtn(el,wrap,kind,labeled,live){
   var b=document.createElement('button');b.type='button';b.className='mic'+(labeled?' lab':'');
-  var name=kind==='ai'?'Ask AI by voice (mock)':(labeled?'Verbatim dictation':'Dictate');
+  var name=kind==='ai'?'Ask AI by voice (demo)':(labeled?'Verbatim dictation':'Dictate');
   b.setAttribute('aria-label',name+': '+labelOf(el));b.setAttribute('aria-pressed','false');
   b.innerHTML=MIC+(labeled?'<span>'+(kind==='ai'?'Ask AI':'Verbatim')+'</span>':'');
-  b.title=kind==='ai'?'Ask AI (mock): talk to your own AI assistant':'Dictate into this box';
+  b.title=kind==='ai'?'Ask AI (demo): talk to your own AI assistant':'Dictate into this box';
   b.addEventListener('click',function(ev){
     ev.stopPropagation();
     if(cur&&cur.btn===b){stopCur();return}
@@ -784,11 +815,11 @@ function makeBtn(el,wrap,kind,labeled,live){
       for(var i=e.resultIndex;i<e.results.length;i++){
         var r=e.results[i];
         if(r.isFinal){
-          if(kind==='ai'){var n=wrap.parentNode.querySelector('.ai-note')||wrap.querySelector('.ai-note');if(n)n.textContent='Heard: "'+r[0].transcript.trim()+'". Mock only: your own AI assistant would now rewrite the message.'}
+          if(kind==='ai'){var n=wrap.parentNode.querySelector('.ai-note')||wrap.querySelector('.ai-note');if(n)n.textContent='Heard: "'+r[0].transcript.trim()+'". Demo only: your own AI assistant would now rewrite the message.'}
           else insertText(el,r[0].transcript);
         }else interim+=r[0].transcript;
       }
-      live.textContent=interim?'Hearing: '+interim:'Listening';
+      if(cur&&cur.rec===rec)live.textContent=interim?'Hearing: '+interim:'Listening';
     };
     rec.onerror=function(e){
       if(e.error==='not-allowed'||e.error==='service-not-allowed')showHelp(wrap,'denied',kind==='ai');
@@ -797,7 +828,7 @@ function makeBtn(el,wrap,kind,labeled,live){
     };
     rec.onend=function(){if(cur&&cur.rec===rec){setOn(b,false);live.textContent='';cur=null}};
     try{rec.start()}catch(x){showHelp(wrap,'error',kind==='ai');return}
-    cur={rec:rec,btn:b,live:live};setOn(b,true);live.textContent='Listening';
+    cur={rec:rec,btn:b,live:live};setOn(b,true);live.textContent='Listening';el.dataset.touched='';
   });
   return b;
 }
@@ -926,12 +957,12 @@ function initEmails(w){
     var ctx=$('#em-ctx',w).value.trim(),n=0;
     $('#em-list-view',w).hidden=true;var cv=$('#em-comp-view',w);cv.hidden=false;
     function step(){
-      if(n>=q.length){cv.innerHTML='<div class="done"><h3>That was the last one</h3><p class="mut">Mock only. In the real dashboard, each reply goes out from the right inbox, with that provider\'s formatting.</p><button type="button" class="btn" data-close>Back to the dashboard</button></div>';return}
+      if(n>=q.length){cv.innerHTML='<div class="done"><h3>That was the last one</h3><p class="mut">Demo only. In the real dashboard, each reply goes out from the right inbox, with that provider\'s formatting.</p><button type="button" class="btn" data-close>Back to the dashboard</button></div>';return}
       var s=q[n],e=EM[s.i],first=e.from.replace(/^(Aunt|Uncle|Cousin)\s+/,'');
       var body=s.ai?('Hi '+first+',\n\nThank you for writing about "'+e.subj+'". '+(ctx?'Here is what I want to say, based on my notes: '+ctx.slice(0,160)+(ctx.length>160?'...':'')+'\n\n':'I will get back to you with details soon.\n\n')+'Love,\nYou'):'';
-      cv.innerHTML='<p class="label">Reply '+(n+1)+' of '+q.length+'</p>'+composeHTML({to:e.from,subj:'Re: '+e.subj,body:body,ctx:e.sum,skip:true,send:n+1<q.length?'Send, then next':'Send',tag:s.ai?'Mock AI draft. Your own assistant would write the real one.':''});
+      cv.innerHTML='<p class="label">Reply '+(n+1)+' of '+q.length+'</p>'+composeHTML({to:e.from,subj:'Re: '+e.subj,body:body,ctx:e.sum,skip:true,send:n+1<q.length?'Send, then next':'Send',tag:s.ai?'Demo AI draft. Your own assistant would write the real one.':''});
       enhance(cv);
-      $('#cp-send',cv).addEventListener('click',function(){toast('Sent (mock)');n++;step();var h=$('.label',cv)||cv;win.scrollTop=0});
+      $('#cp-send',cv).addEventListener('click',function(){toast('Demo only. Nothing was sent.');n++;step();var h=$('.label',cv)||cv;win.scrollTop=0});
       $('#cp-skip',cv).addEventListener('click',function(){n++;step()});
     }
     step();win.scrollTop=0;
@@ -939,13 +970,13 @@ function initEmails(w){
 }
 
 /* ---------- other windows ---------- */
-function initReport(w){$('#rp-send',w).addEventListener('click',function(){closeWin();toast('Sent to Slack (mock). You are back on the dashboard.')})}
+function initReport(w){$('#rp-send',w).addEventListener('click',function(){closeWin();toast('Demo only, nothing was sent. You are back on the dashboard.')})}
 function initOoo(w){
   var steps=$$('[data-s]',w),go=$('#oo-go',w);
   go.addEventListener('click',function(){
     go.disabled=true;
     steps.forEach(function(s,i){setTimeout(function(){s.classList.add('ok')},RM?0:i*600)});
-    setTimeout(function(){go.textContent='You are out of office (mock)'},RM?0:steps.length*600);
+    setTimeout(function(){go.textContent='You are out of office (demo)'},RM?0:steps.length*600);
   });
 }
 var MOV=['A heist caper on a space station','A quiet drama about a lighthouse keeper','A road-trip comedy for the whole family','A sweeping fantasy quest','A courtroom thriller','A documentary about deep oceans','A heartfelt sports story','A sci-fi mystery in a small town','An animated adventure with dragons','A gentle romance in a bakery'];
@@ -957,16 +988,81 @@ function initTv(w){
   $('#tv-air',w).innerHTML=AIR.map(function(a,i){return '<li><div><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div><button type="button" class="btn small ghost" aria-expanded="false" data-rc="'+i+'">Recap</button><p class="rc" hidden>'+esc(a[2])+'</p></li>'}).join('');
   $('#tv-air',w).addEventListener('click',function(e){var b=e.target.closest('[data-rc]');if(!b)return;var p=b.parentNode.querySelector('.rc');var o=p.hidden;p.hidden=!o;b.setAttribute('aria-expanded',o)});
   $('#tv-new',w).addEventListener('change',function(e){$('#tv-msg',w).textContent=e.target.checked?'Showing only things you have not watched.':'Showing everything, including things you have watched.'});
-  $('#tv-pick',w).addEventListener('click',function(){$('#tv-msg',w).textContent='Picked for you: "'+MOV[Math.floor(Math.random()*3)]+'". Playing now (mock).'});
+  $('#tv-pick',w).addEventListener('click',function(){$('#tv-msg',w).textContent='Picked for you: "'+MOV[Math.floor(Math.random()*3)]+'". Playing now (demo).'});
 }
 function initTrip(w){
   var n=$('#tr-n',w);
   function calc(){var p=+n.value,stay=1260,flights=820;$('#tr-stay',w).textContent='$'+stay.toLocaleString('en-US');$('#tr-per',w).textContent='$'+Math.round(flights+stay/p).toLocaleString('en-US');
     var m=$('#tr-msg',w);if(m)m.value=m.value.replace(/about \$[\d,]+ each/,'about $'+Math.round(flights+stay/p).toLocaleString('en-US')+' each')}
   n.addEventListener('change',calc);calc();
-  $('#tr-send',w).addEventListener('click',function(){closeWin();toast('Group chat started (mock). Nothing was sent.')});
+  $('#tr-send',w).addEventListener('click',function(){closeWin();toast('Demo only. No group chat was started.')});
+}
+
+/* ---------- profile and message windows ---------- */
+var PNAMES=['About me','Family tree','Free and busy calendar','Interests and hobbies','Music taste and expert badges','Photos','Look and layout themes'];
+var PHINT=['Tell us about yourself in a few sentences.','Tell us who is in your family: parents, grandparents, siblings, cousins.','Tell us when you are usually free or busy.','Tell us what you love to do.','Tell us what you listen to and what you could teach others.','Describe the photos you would like to show.','Describe the look you want for your page.'];
+function flowWindow(title,note,html,init){
+  openWin('flow',function(w){
+    $('#wtitle',w).textContent=title;$('#flow-note',w).textContent=note||'Demo only. Nothing is sent.';
+    $('#flow-body',w).innerHTML=html;if(init)init(w);
+  });
+}
+function openProf(btn){
+  var i=+btn.dataset.i,name=PNAMES[i],row=btn.closest('li'),sw=$('input',row);
+  flowWindow(name,'Demo only. Nothing is saved.',
+    '<p class="mut">'+esc(PHINT[i])+' Press the microphone and talk, or type.</p>'+
+    '<div class="compose"><label for="pf-text">'+esc(name)+'</label><textarea id="pf-text" rows="6"></textarea></div>'+
+    '<div class="pub"><span id="pf-lab">Visibility</span><span class="sw"><input type="checkbox" role="switch" id="pf-pub" aria-labelledby="pf-lab pf-state"><i></i></span><b id="pf-state">Private</b></div>'+
+    '<div id="pf-extra"></div>'+
+    '<div class="wfoot"><button type="button" class="btn ghost" data-close>Cancel</button><button type="button" class="btn" id="pf-save">Save</button></div>',
+    function(w){
+      var pub=$('#pf-pub',w);pub.checked=sw.checked;
+      function st(){$('#pf-state',w).textContent=pub.checked?'Public':'Private'}st();pub.addEventListener('change',st);
+      var ex=$('#pf-extra',w);
+      if(i===1){
+        ex.innerHTML='<div class="ppick" id="pf-find"><p>We found someone with your last name who lives near you. Are they part of your family tree?</p><p class="mut small">Demo only: Jamie Example is an invented person, not a real one.</p><div class="yn"><button type="button" class="btn small" data-yn="y">Yes</button><button type="button" class="btn small ghost" data-yn="n">No</button></div></div>';
+        ex.addEventListener('click',function(e){var b=e.target.closest('[data-yn]');if(!b)return;$('#pf-find',w).innerHTML='<p>'+(b.dataset.yn==='y'?'Added to your family tree (demo). We would ask Jamie to confirm first.':'Got it. We will not suggest Jamie again (demo).')+'</p>'});
+      }
+      $('#pf-save',w).addEventListener('click',function(){sw.checked=pub.checked;sw.dispatchEvent(new Event('change',{bubbles:true}));closeWin();toast(name+' saved as '+(pub.checked?'public':'private')+' (demo)')});
+    });
+}
+var PPL=[['Priya',1,20],['Marco',1,110],['Jun',1,200],['Dana',1,290],['Theo',2,45],['Lena',2,100],['Omar',2,160],['Nora',2,225],['Iris',2,275],['Felix',2,335],['Rowan',3,20],['Isla',3,75],['Kofi',3,140],['Nia',3,200],['Leif',3,255],['Zara',3,315]];
+function openMsg(){
+  flowWindow('Type message','Demo only. Nothing is sent.',
+    '<p class="mut">Search for a name, or pick someone on the web. You are in the middle. Closer people can be messaged right away. People farther out need permission first. The people shown are invented.</p>'+
+    '<label for="ms-q">Search for a person</label><input type="text" id="ms-q" data-mic="none" autocomplete="off" placeholder="Start typing a name"><ul class="srch-res" id="ms-res"></ul>'+
+    '<div class="web" id="ms-web"></div><div class="ppick" id="ms-pick" aria-live="polite"></div>',
+    function(w){
+      var web=$('#ms-web',w),R={1:.2,2:.34,3:.46},h='<svg viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" opacity=".35" stroke-width=".4"><circle cx="50" cy="50" r="20"/><circle cx="50" cy="50" r="34"/><circle cx="50" cy="50" r="46" stroke-dasharray="2 2"/>';
+      var pos=PPL.map(function(p){var a=p[2]*Math.PI/180,r=R[p[1]]*100;return [50+r*Math.cos(a),50+r*Math.sin(a)]});
+      PPL.forEach(function(p,k){h+='<line x1="50" y1="50" x2="'+pos[k][0].toFixed(1)+'" y2="'+pos[k][1].toFixed(1)+'"/>'});
+      h+='</svg><span class="me">You</span>';
+      PPL.forEach(function(p,k){h+='<button type="button" class="pp'+(p[1]===3?' far':'')+'" data-k="'+k+'" aria-pressed="false" style="left:'+pos[k][0].toFixed(1)+'%;top:'+pos[k][1].toFixed(1)+'%">'+p[0]+'</button>'});
+      web.innerHTML=h;
+      var pick=$('#ms-pick',w);
+      function choose(k){
+        var p=PPL[k];$$('.pp',web).forEach(function(b){b.setAttribute('aria-pressed',String(+b.dataset.k===k))});
+        if(p[1]<3){
+          pick.innerHTML='<h3>Message '+esc(p[0])+'</h3><div class="compose"><label for="ms-text">Message</label><textarea id="ms-text" rows="4"></textarea></div><div class="wfoot"><button type="button" class="btn" id="ms-send">Send message</button></div>';
+          enhance(pick);$('#ms-send',pick).addEventListener('click',function(){closeWin();toast('Demo only. Nothing was sent.')});
+        }else{
+          pick.innerHTML='<h3>'+esc(p[0])+'</h3><p>This person isn\'t closely connected with you yet. Send a request for permission?</p><div class="wfoot"><button type="button" class="btn" id="ms-req">Send request</button></div>';
+          $('#ms-req',pick).addEventListener('click',function(){closeWin();toast('Demo only. No request was sent.')});
+        }
+      }
+      web.addEventListener('click',function(e){var b=e.target.closest('.pp');if(b)choose(+b.dataset.k)});
+      var q=$('#ms-q',w),res=$('#ms-res',w);
+      function srch(){var v=q.value.trim().toLowerCase();res.innerHTML='';if(!v)return;
+        var m=PPL.map(function(p,k){return [p,k]}).filter(function(x){return x[0][0].toLowerCase().indexOf(v)===0});
+        if(!m.length){res.innerHTML='<li class="mut small">No one by that name.</li>';return}
+        m.forEach(function(x){var li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='btn small ghost';b.textContent=x[0][0];b.addEventListener('click',function(){choose(x[1])});li.appendChild(b);res.appendChild(li)})}
+      q.addEventListener('input',srch);
+      q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var b=$('button',res);if(b)b.click()}});
+    });
 }
 var OPEN={
+  prof:function(b){openProf(b)},
+  msg:function(){openMsg()},
   emails:function(){openWin('emails',initEmails)},
   report:function(){openWin('report',initReport)},
   ooo:function(){openWin('ooo',initOoo)},
@@ -975,9 +1071,9 @@ var OPEN={
   cousins:function(){
     var names=$$('.pick input:checked').map(function(i){return i.dataset.name});
     if(!names.length){toast('Check at least one cousin first.');return}
-    composeWindow({title:'Message your cousins',to:names.join(', '),subj:'Hello from the family dashboard',body:'Hi everyone,\n\nI was thinking of you and wanted to say hello. How are you doing? Let\'s plan a video call soon.',done:'Sent to '+names.length+' cousin'+(names.length>1?'s':'')+' (mock)',send:'Send to all'});
+    composeWindow({title:'Message your cousins',to:names.join(', '),subj:'Hello from the family dashboard',body:'Hi everyone,\n\nI was thinking of you and wanted to say hello. How are you doing? Let\'s plan a video call soon.',done:'Sent to '+names.length+' cousin'+(names.length>1?'s':'')+' (demo)',send:'Send to all'});
   },
-  gift:function(){composeWindow({title:'Gift idea for Grandma',to:'Cousin Dev, Cousin Mina, Mom',subj:'Gift idea for Grandma',body:'Hi all,\n\nFor Grandma\'s birthday, how about a framed family photo with a handwritten note from each of us? I can collect the photos if you send them to me.',tag:'Mock draft with a gift idea and a note.',done:'Gift idea sent with a note (mock)',send:'Send with note'})}
+  gift:function(){composeWindow({title:'Gift idea for Grandma',to:'Cousin Dev, Cousin Mina, Mom',subj:'Gift idea for Grandma',body:'Hi all,\n\nFor Grandma\'s birthday, how about a framed family photo with a handwritten note from each of us? I can collect the photos if you send them to me.',tag:'Demo draft with a gift idea and a note.',done:'Gift idea sent with a note (demo)',send:'Send with note'})}
 };
 
 /* ---------- flagship demo ---------- */
@@ -989,7 +1085,7 @@ var OPEN={
   function r(){var v=+rate.value;rf.textContent=v?'Last refreshed: just now. Next refresh in '+(v>=1440?'a day':v>=60?'an hour':'15 minutes')+'.':'Last refreshed: when you opened it.'}
   rate.addEventListener('change',r);r();
   var who=$('#who'),oc=$('#outcome');
-  function w(){var ask=who.value==='ask';oc.textContent=ask?'Needs permission first. They get a short request with your reason, and they can say no.':'Free to send. No request needed.';oc.className='outcome '+(ask?'ask':'free')}
+  function w(){var ask=who.value==='ask';oc.textContent=ask?'Needs permission first. They get a short request with your reason, and they can say no.':'Goes straight through. No request needed.';oc.className='outcome '+(ask?'ask':'free')}
   who.addEventListener('change',w);w();
   var sw=$$('#prof .sw input'),pc=$('#pubcount');
   function pu(){pc.textContent=sw.filter(function(s){return s.checked}).length+' of '+sw.length+' public'}
@@ -1026,13 +1122,13 @@ var PROF=['Recruiting','Software engineering','Product management','Design','Dat
   });
   sel.addEventListener('change',function(){show(sel.selectedIndex)});
   show(0);
-  var ids=['f-tools','f-week','f-hard','f-good'],fill=$('#emfill'),lab=$('#emlabel');
+  var ids=$$('#wform select, #wform input, #wform textarea').map(function(x){return x.id}),fill=$('#emfill'),lab=$('#emlabel');
   function em(){var n=ids.filter(function(i){return $('#'+i).value.trim().length>0}).length,pc=Math.round(n/ids.length*100);fill.style.width=pc+'%';lab.textContent='Your entry is '+pc+'% complete'}
-  ids.forEach(function(i){$('#'+i).addEventListener('input',em)});
+  ids.forEach(function(i){$('#'+i).addEventListener('input',em);$('#'+i).addEventListener('change',em)});em();
   $('#wform').addEventListener('submit',function(e){
     e.preventDefault();
     var g=function(i){return $('#'+i).value.trim()};
-    var body='Profession: '+sel.value+'\n\nTools I use:\n'+g('f-tools')+'\n\nA typical week:\n'+g('f-week')+'\n\nWhat makes it harder:\n'+g('f-hard')+'\n\nWhat already works:\n'+g('f-good')+'\n';
+    var body='Profession category: '+sel.value+'\nSuggested profession: '+g('f-sug')+'\nJob title: '+g('f-title')+'\nCompany: '+g('f-co')+'\n\nTools I use:\n'+g('f-tools')+'\n\nA typical week:\n'+g('f-week')+'\n\nWhat makes it harder:\n'+g('f-hard')+'\n\nWhat already works:\n'+g('f-good')+'\n';
     location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Workflow: '+sel.value)+'&body='+encodeURIComponent(body);
   });
   enhance(document);
