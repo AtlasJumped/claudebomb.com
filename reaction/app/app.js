@@ -10,11 +10,12 @@
   function show(name) {
     current = name;
     $$('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + name));
-    const tabs = { home: 'home', ready: 'home', consent: 'home', watch: 'home', card: 'home', own: 'home', inbox: 'inbox', friends: 'friends', feed: 'feed', me: 'me' };
+    const tabs = { home: 'home', ready: 'home', send: 'home', consent: 'home', watch: 'home', card: 'home', own: 'home', community: 'community', thread: 'community', leaders: 'leaders', inbox: 'inbox', friends: 'me', me: 'me' };
     $$('.nav button').forEach(b => b.classList.toggle('on', b.dataset.go === tabs[name]));
     $('#nav').classList.toggle('hide', name === 'watch' || (name === 'own' && ownBusy));
     $('#main').scrollTop = 0;
     document.documentElement.dataset.screen = name;
+    document.dispatchEvent(new CustomEvent('rxscreen', { detail: name }));
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-go]');
@@ -45,18 +46,6 @@
   function instance(clip, withSound) { return clip.kind === 'video' ? videoInstance(clip, withSound) : genInstance(clip); }
 
   /* ---------- home ---------- */
-  const list = $('#clipList');
-  CLIPS.forEach(clip => {
-    const li = document.createElement('li');
-    li.innerHTML = '<button type="button"><canvas width="360" height="360"></canvas><b></b><span></span></button>';
-    li.querySelector('b').textContent = clip.title;
-    li.querySelector('span').textContent = clip.note + ', ' + clip.dur + ' s';
-    clip.draw(li.querySelector('canvas').getContext('2d'), clip.thumbT, 360);
-    li.querySelector('button').setAttribute('aria-label', 'Choose ' + clip.title);
-    li.querySelector('button').addEventListener('click', () => choose(clip));
-    list.appendChild(li);
-  });
-
   let chosen = null, previewRAF = 0, previewInst = null;
   function choose(clip) {
     chosen = clip;
@@ -118,7 +107,7 @@
   let session = null;
   $('#btnReact').addEventListener('click', () => { $('#camErr').hidden = true; show('consent'); });
   $('#consentBack').addEventListener('click', () => show('ready'));
-  $('#btnSendSoon').addEventListener('click', openSheet);
+  $('#btnSendSoon').addEventListener('click', () => show('send'));
   $('#btnSend').addEventListener('click', openSheet);
   function openSheet() { const s = $('#sheet'); s.hidden = false; $('#sheetClose').focus(); }
   $('#sheetClose').addEventListener('click', () => { $('#sheet').hidden = true; });
@@ -186,9 +175,21 @@
   });
 
   /* ---------- card ---------- */
+  const FEELS = ['Laughed', 'Shocked', 'Touched', 'Disgusted', 'Angry'];
+  let tags = new Set();
+  const tagRow = $('#tagRow');
+  FEELS.forEach(f => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = f; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      tags.has(f) ? tags.delete(f) : tags.add(f); b.setAttribute('aria-pressed', tags.has(f));
+      builtCard = null; $('#cardMeta').textContent = metaText();
+    });
+    tagRow.appendChild(b);
+  });
+  function metaText() { return reaction ? reaction.clip.title + (tags.size ? ' | ' + [...tags].join(', ') : '') : ''; }
   let reaction = null, cardInst = null, cardRAF = 0, builtCard = null, building = null;
   function showCard(blob, clip) {
-    cleanupCard();
+    cleanupCard(); tags = new Set(); $$('#tagRow button').forEach(b => b.setAttribute('aria-pressed', 'false'));
     reaction = blob ? { blob, url: URL.createObjectURL(blob), clip } : null;
     builtCard = null; building = null;
     const card = $('#card'), vid = $('#cardVid');
@@ -199,7 +200,7 @@
     $('#cardMsg').textContent = '';
     $('#btnShare').hidden = !blob || !canShareFiles();
     card.dataset.bytes = blob ? blob.size : 0; card.dataset.type = blob ? blob.type : '';
-    $('#cardMeta').textContent = clip.title + (blob ? ', ' + (blob.size / 1024).toFixed(0) + ' KB' : '');
+    $('#tagBox').hidden = !blob; $('#cardMeta').textContent = clip.title;
     document.documentElement.dataset.reactionBytes = blob ? blob.size : 0;
     show('card');
     if (blob) { vid.src = reaction.url; vid.muted = false; }
@@ -272,7 +273,7 @@
         const vw = v.videoWidth, vh = v.videoHeight;
         if (vw) { const s = Math.max(S / vw, S / vh), dw = vw * s, dh = vh * s; g.save(); g.translate(W, 0); g.scale(-1, 1); g.beginPath(); g.rect(0, 0, S, S); g.clip(); g.drawImage(v, (S - dw) / 2, (S - dh) / 2, dw, dh); g.restore(); }
         g.fillStyle = '#fff7e6'; g.font = '900 26px ui-sans-serif,Arial,sans-serif'; g.textBaseline = 'middle'; g.fillText('Reaction App', 24, S + 30);
-        g.font = '600 20px ui-sans-serif,Arial,sans-serif'; g.fillStyle = '#cfc6e6'; g.textAlign = 'right'; g.fillText(clip.title, W - 24, S + 30); g.textAlign = 'left';
+        g.font = '600 20px ui-sans-serif,Arial,sans-serif'; g.fillStyle = '#cfc6e6'; g.textAlign = 'right'; g.fillText(clip.title + (tags.size ? ' | ' + [...tags].join(', ') : ''), W - 24, S + 30); g.textAlign = 'left';
       };
       const timer = setInterval(() => { if (!ended) draw(); }, 33);
       const end = () => { if (ended) return; ended = true; clearInterval(timer); draw(); setTimeout(() => { try { rec.stop(); } catch (e) {} v.pause(); inst.stop(); }, 200); };
@@ -337,5 +338,7 @@
   $('#btnInstall').addEventListener('click', async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; $('#btnInstall').hidden = true; });
   if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.matchMedia('(display-mode: standalone)').matches) $('#iosHint').hidden = false;
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  window.RX = { show, choose, $, $$, openSheet };
+  window.RX_chosen = () => chosen;
   show('home');
 })();

@@ -13,7 +13,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="hdr"><div class="wrap hrow">
   <a class="logo" href="./"><img src="face.svg" width="40" height="40" alt=""><span>Reaction App</span></a>
-  <nav aria-label="Sections" class="links"><a href="#how">How it works</a><a href="#pingpong">Ping pong</a><a href="#groups">Groups</a><a href="#family">Family</a><a href="#privacy">Privacy</a><a href="#roadmap">Roadmap</a></nav>
+  <nav aria-label="Sections" class="links"><a href="#how">How it works</a><a href="#pingpong">Ping pong</a><a href="#community">Community</a><a href="#groups">Groups</a><a href="#family">Family</a><a href="#privacy">Privacy</a><a href="#takes">What it takes</a><a href="#roadmap">Roadmap</a></nav>
   <a class="btn sm" href="app/">Try it</a>
 </div></header>
 
@@ -24,7 +24,7 @@
     <h1>Send a clip.<br>Get back <span class="hl">the look on their face.</span></h1>
     <p class="lede">People love watching other people react. Reaction App turns that into a game between friends and family: pick a short clip, send it, and watch the reaction come back.</p>
     <div class="cta"><a class="btn big" href="app/">Try the prototype</a><a class="btn big ghost" href="#how">See how it works</a></div>
-    <p class="note">Works in your browser on phones and desktops. It runs fully on your device, and nothing is uploaded.</p>
+    <p class="note">Free, on phones and desktops. It runs fully on your device, and nothing is uploaded.</p>
   </div>
   <div class="phonewrap" aria-hidden="true">
     <div class="phone">
@@ -50,17 +50,29 @@
 <section id="how" class="sec tint"><div class="wrap">
   <p class="eyebrow">How it works</p><h2>Three steps</h2>
   <ol class="steps">
-    <li><span class="n">1</span><h3>Pick a clip</h3><p>Choose something short and sensational, or record your own. Short clips keep the reaction fresh.</p></li>
-    <li><span class="n">2</span><h3>Send it</h3><p>A friend opens it. The clip plays in a square taking up about half the phone, held upright. After a clear notice and a tap to start, the front camera records. They do not see their own face, so nobody gets self-conscious.</p></li>
+    <li><span class="n">1</span><h3>Pick a clip</h3><p>Browse a library sorted by how people react, or record your own. Short, sensational clips keep the reaction fresh.</p></li>
+    <li><span class="n">2</span><h3>Send it</h3><p>Choose friends in the app or people from your phone contacts. A friend opens it. The clip plays in a square taking up about half the phone, held upright. After a clear notice and a tap to start, the front camera records. They do not see their own face, so nobody gets self-conscious.</p></li>
     <li><span class="n">3</span><h3>Get the look back</h3><p>When the clip ends, the reaction goes back to you automatically, side by side with the clip. They can always skip recording.</p></li>
   </ol>
-  <p class="fine">Steps 2 and 3 across two phones need a server. The prototype does the whole loop on one device, so you can feel it today.</p>
+  <p class="fine">Steps 2 and 3 across two phones need a server. The prototype does the whole loop on one device, so you can feel it today. Choosing from phone contacts uses the Contact Picker API, which works in Chrome and other Chromium browsers on Android. Elsewhere you can type a name or number, or share a link.</p>
 </div></section>
 
 <section id="pingpong" class="sec"><div class="wrap two rev">
   <div class="pp" aria-hidden="true"><div class="ppc a">Clip</div><div class="ppc b">Reaction</div><div class="ppc c">Reaction to the reaction</div><svg viewBox="0 0 300 40"><path d="M10 20h260m-20-14l20 14-20 14" fill="none" stroke="#1b1033" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div><p class="eyebrow">Ping pong</p><h2>Reactions to reactions</h2>
     <div class="prose"><p>You send a clip. They react. Now you watch their reaction, and your reaction goes back to them. Then theirs comes to you again.</p><p>Most rounds end after a couple of turns. If the faces stay funny, it keeps going. You choose when to stop.</p></div></div>
+</div></section>
+
+<section id="community" class="sec comm"><div class="wrap">
+  <p class="eyebrow">Community</p><h2>The Reaction Wall</h2>
+  <div class="prose"><p>The heart of Reaction App is a public board of reactions that people chose to share. Every one has a thumbs up, and every one can be reacted to. React to a reaction, then react to that, and the thread grows.</p></div>
+  <ul class="cgrid">
+    <li><span class="badge">Library</span><h3>Find the clip</h3><p>Sort by Top rated, your Favorites, Most reactions, Most laughed, Most disgusted, Most angry, Shocked, or Touched.</p></li>
+    <li><span class="badge">Feelings</span><h3>Tag the feeling</h3><p>After you react, tap how it felt. Viewers can add tags too, so the library learns what each clip does to people.</p></li>
+    <li><span class="badge">Threads</span><h3>Reactions to reactions</h3><p>Open any public reaction and add your own. Threads show who reacted to whom.</p></li>
+    <li><span class="badge">Leaderboards</span><h3>Climb the board</h3><p>Most watched reactions, most reacted-to clips, and top per feeling. See today, this week, and all time.</p></li>
+  </ul>
+  <p class="fine light">The prototype has Library, Community, Leaderboard, and Thread screens as a design preview. They show no people and no numbers, only Example and n/a, because a server is needed before real users exist. The app is free to use on phones and desktops.</p>
 </div></section>
 
 <section id="groups" class="sec tint"><div class="wrap two">
@@ -92,11 +104,22 @@
   <p class="fine light">About clips: we do not pull videos from YouTube or other platforms, because their terms generally do not allow re-hosting. The real app would use clips people record themselves, licensed libraries, or embeds where a platform allows it. The prototype's clips are original and drawn with code.</p>
 </div></section>
 
+<section id="takes" class="sec"><div class="wrap">
+  <p class="eyebrow">What it takes</p><h2>An honest list before a public board can open</h2>
+  <ul class="need">
+    <li><h3>A server, storage, and bandwidth</h3><p>A public board needs a server, video storage, and bandwidth. These cost money even when the app is free to use.</p></li>
+    <li><h3>Moderation and reporting</h3><p>App stores require reporting and moderation tools for apps with user posts. We have to build them before launch.</p></li>
+    <li><h3>A minimum age of 13</h3><p>Public accounts will need users to be at least 13, with clear sign-up rules.</p></li>
+    <li><h3>Consent from the person shown</h3><p>The person in a reaction must agree before it goes public. Private stays the default.</p></li>
+    <li><h3>A copyright takedown process</h3><p>Uploaded clips can infringe copyright, so we need a way for owners to report a clip and have it removed fast.</p></li>
+  </ul>
+</div></section>
+
 <section id="today" class="sec"><div class="wrap">
   <p class="eyebrow">Honest status</p><h2>What works today, and what does not</h2>
   <div class="status">
-    <div class="yes"><h3>Works in the prototype</h3><ul><li>Choose an original clip, pick a video file, or record your own</li><li>Watch it while the front camera records you, with your face hidden from you</li><li>A side-by-side reaction card you can download or share where your browser allows</li><li>Install it from your browser as an app</li></ul></div>
-    <div class="no"><h3>Coming soon, not built</h3><ul><li>Sending to friends, inbox, and friends list</li><li>Ping pong and group videos</li><li>Profiles, public feed, and thumbs up</li><li>Paid storage</li></ul></div>
+    <div class="yes"><h3>Works in the prototype</h3><ul><li>Browse a small library of original clips, pick a video file, or record your own</li><li>Tag how the reaction felt, and save favorites on your device</li><li>Watch it while the front camera records you, with your face hidden from you</li><li>A side-by-side reaction card you can download or share where your browser allows</li><li>Install it from your browser as an app</li></ul></div>
+    <div class="no"><h3>Coming soon, not built</h3><ul><li>Sending to friends or contacts, inbox, and friends list</li><li>Ping pong and group videos</li><li>The public board, leaderboards, threads, and thumbs up counts (design preview only)</li><li>Paid storage</li></ul></div>
   </div>
   <p class="fine">Those screens exist in the prototype only as labeled mock screens. We show no sample people and no sample posts, because none exist.</p>
 </div></section>
