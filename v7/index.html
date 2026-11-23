@@ -203,7 +203,7 @@ textarea{resize:vertical;line-height:1.5}
 .mic-help button{border:1px solid var(--line);background:transparent;border-radius:99px;padding:.3rem .9rem;cursor:pointer}
 .ai-note{font-size:.85rem;color:var(--acc);margin-top:.4rem}
 .ai-note:empty{display:none}
-/* funzies */
+/* funsies */
 .fz{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:55;display:flex;flex-direction:column;align-items:center;gap:.6rem;width:max-content;max-width:calc(100vw - 1.5rem)}
 .fzbtn{min-height:3rem;padding:0 1.8rem;border-radius:99px;border:0;background:var(--fzbg,var(--acc));color:var(--fzfg,var(--accfg));font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.35);letter-spacing:.02em;transition:transform .2s}
 .fzbtn:hover{transform:scale(1.06) rotate(-2deg)}
@@ -445,7 +445,7 @@ h3{font-weight:400}
 <div class="cards c4 ben">
 <article class="card"><h3>Save money</h3><ul><li>Lights and thermostat turn off when rooms are empty.</li><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li></ul></article>
 <article class="card"><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul></article>
-<article class="card"><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funzies below.</li></ul></article>
+<article class="card"><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funsies below.</li></ul></article>
 <article class="card hl"><h3>Forge family bonds</h3><ul><li>A family tree and inherited contacts.</li><li>Birthdays before they sneak up on you.</li><li>One button to message every cousin.</li></ul><a class="link" href="#family">See the family view</a></article>
 <article class="card"><h3>Explore places</h3><ul><li>A trip suggestion when your budget, calendar, and friends line up.</li><li>Events near you that match what you like.</li><li>Group plans without the group chat chaos.</li></ul></article>
 <article class="card"><h3>Try new activities</h3><ul><li>"Here is what people like you are trying. Want to try it?"</li><li>Ideas matched to your free time.</li><li>You always choose.</li></ul></article>
@@ -587,13 +587,15 @@ h3{font-weight:400}
 </div></footer>
 
 <div class="fz" id="fz">
-<button type="button" class="fzbtn" id="fzbtn" aria-expanded="false" aria-controls="fzpanel">Funzies</button>
-<div class="fzpanel" id="fzpanel" role="group" aria-label="Funzies" hidden>
+<button type="button" class="fzbtn" id="fzbtn" aria-expanded="false" aria-controls="fzpanel">Funsies</button>
+<div class="fzpanel" id="fzpanel" role="group" aria-label="Funsies" hidden>
 <p class="fzh">Does nothing useful. Pure fun.</p>
-<p class="fzs">For a moment</p>
-<div class="fzrow"><button type="button" data-fx="confetti">Confetti</button><button type="button" data-fx="meteors">Meteors</button><button type="button" data-fx="wobble">Wobble</button><button type="button" data-fx="tsunami">Big wave</button></div>
-<p class="fzs">Until you reload</p>
-<div class="fzrow"><button type="button" data-fx="hue" aria-pressed="false">Shift colors</button><button type="button" data-fx="big" aria-pressed="false">Giant type</button><button type="button" data-fx="spark" aria-pressed="false">Sparkle trail</button><button type="button" data-fx="silly" aria-pressed="false">Silly font</button></div>
+<p class="fzs">Big moments</p>
+<div class="fzrow"><button type="button" data-fx="meteors">Meteor shower</button><button type="button" data-fx="burn">Burn the page</button><button type="button" data-fx="quake">Earthquake</button><button type="button" data-fx="lightning">Lightning</button><button type="button" data-fx="tornado">Tornado</button></div>
+<p class="fzs">Little moments</p>
+<div class="fzrow"><button type="button" data-fx="confetti">Confetti</button><button type="button" data-fx="wobble">Wobble</button><button type="button" data-fx="tsunami">Big wave</button></div>
+<p class="fzs">Until you reset</p>
+<div class="fzrow"><button type="button" data-fx="spark" aria-pressed="false">Sparkle trail</button><button type="button" data-fx="hue" aria-pressed="false">Shift colors</button><button type="button" data-fx="big" aria-pressed="false">Giant type</button><button type="button" data-fx="silly" aria-pressed="false">Silly font</button></div>
 <p class="fzs">Somewhere else</p>
 <a class="fzlink" href="https://universemodel.ai/fun.html" target="_blank" rel="noopener">Enter the tensegrity smash room</a>
 <button type="button" class="fzreset" data-fx="reset">Undo all the fun</button>
@@ -1154,7 +1156,7 @@ function release(){
 }
 document.addEventListener('pointerup',release);document.addEventListener('pointercancel',release);
 
-/* ---------- funzies ---------- */
+/* ---------- funsies ---------- */
 var fz=$('#fz'),fzb=$('#fzbtn'),fzp=$('#fzpanel'),trailOn=false;
 function fzOpen(o){fzp.hidden=!o;fzb.setAttribute('aria-expanded',o?'true':'false')}
 fzb.addEventListener('click',function(){fzOpen(fzp.hidden)});
@@ -1162,20 +1164,17 @@ document.addEventListener('click',function(e){if(!fzp.hidden&&!e.target.closest(
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!fzp.hidden){fzOpen(false);fzb.focus()}});
 var COL=['#ff5d73','#ffd166','#06d6a0','#4cc9f0','#b388ff','#ffffff'];
 function confetti(){for(var i=0;i<140;i++)parts.push({kind:'c',x:W/2+(Math.random()-.5)*W*.3,y:H*.9,vx:(Math.random()-.5)*900,vy:-500-Math.random()*700,g:900,life:2.4+Math.random(),s:6+Math.random()*6,c:COL[i%COL.length]});kick()}
-function meteors(){for(var i=0;i<26;i++)(function(i){setTimeout(function(){parts.push({kind:'m',x:Math.random()*W*1.2,y:-20,vx:-420-Math.random()*300,vy:520+Math.random()*300,g:0,life:1.6,s:4,c:'#ffd9a0'});kick()},i*110)})(i)}
 function sparkle(x,y){parts.push({kind:'c',x:x,y:y,vx:(Math.random()-.5)*80,vy:(Math.random()-.5)*80,g:140,life:.7,s:4+Math.random()*4,c:COL[Math.floor(Math.random()*5)]});kick()}
 var root=document.documentElement;
 function toggleP(btn,cls){var on=!root.classList.contains(cls);root.classList.toggle(cls,on);btn.setAttribute('aria-pressed',on);dirty=true}
 fzp.addEventListener('click',function(e){
   var b=e.target.closest('[data-fx]');if(!b)return;var k=b.dataset.fx;
   if(k==='confetti'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');confetti()}
-  else if(k==='meteors'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');meteors()}
   else if(k==='wobble'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');var m=$('#main');m.classList.add('wobble');setTimeout(function(){m.classList.remove('wobble')},2600)}
   else if(k==='tsunami'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');for(var i=0;i<4;i++)(function(i){setTimeout(function(){ring(W/2,H/2,40,3.4,520+i*80)},i*260)})(i)}
   else if(k==='hue')toggleP(b,'fz-hue');
   else if(k==='big')toggleP(b,'fz-big');
   else if(k==='silly')toggleP(b,'fz-silly');
-  else if(k==='spark'){trailOn=!trailOn;b.setAttribute('aria-pressed',trailOn);if(trailOn&&RM)toast('Motion is reduced on your device, so the trail stays off.'),trailOn=false,b.setAttribute('aria-pressed','false')}
   else if(k==='reset'){['fz-hue','fz-big','fz-silly'].forEach(function(c){root.classList.remove(c)});trailOn=false;$$('[aria-pressed]',fzp).forEach(function(x){x.setAttribute('aria-pressed','false')});dirty=true;toast('All the fun, undone.')}
 });
 
@@ -1183,4 +1182,5 @@ fzp.addEventListener('click',function(e){
 if(window.__bg)window.__bg({rm:RM});
 })();
 </script>
+<script src="../v6/funsies.js?v=1" defer></script>
 </body></html>
