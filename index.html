@@ -900,6 +900,195 @@ input[type=radio]{accent-color:var(--acc);width:1.05rem;height:1.05rem}
 .dz-rate{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin:0 0 .8rem}
 .dz-rate button{min-height:2.4rem;border:1px solid #111;border-radius:99px;background:#fff;color:#111;font-weight:600;font-size:.82rem;cursor:pointer;padding:0 .5rem;box-shadow:none;text-transform:none;letter-spacing:0}
 .dz-rate button[aria-checked=true]{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+
+/* ===== cx: opening, setup, previews, nine ways, contribute ===== */
+html{scroll-behavior:smooth}
+.cx-rv{opacity:0;transform:translateY(16px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.cx-rv.in{opacity:1;transform:none}
+.btn:hover{transform:translateY(-1px)}
+.wcard:hover,a.card.uc:hover,button.card.uc:hover{transform:translateY(-2px)}
+body .hero h1.cx-h1{font-size:clamp(2rem,5.4vw,4.6rem);max-width:19ch;line-height:1.02;margin-bottom:1.2rem;letter-spacing:var(--trk,-.03em)}
+.hero .sub{max-width:44rem}
+.cx-after{margin-top:-.4rem}
+.hero .cta{margin-bottom:1.6rem}
+.cx-trio{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem;margin:0 0 1.4rem;padding:0}
+.cx-trio .card{position:relative;padding-top:1.4rem}
+.cx-n,.cx-bn{display:inline-grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:var(--acc);color:var(--accfg);font-weight:700;font-size:.9rem;margin-bottom:.8rem}
+.cx-curve{margin:1.4rem 0 1.6rem;border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:.5rem .6rem .4rem;overflow:hidden}
+.cx-curve svg{display:block;width:100%;height:auto;max-height:24rem}
+.cx-lab{font:600 11px var(--body);fill:var(--mut);letter-spacing:.02em}
+.cx-cap2{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;font-size:.92rem;color:var(--mut);padding:.2rem .4rem .3rem}
+.cx-two{margin-top:1.2rem;max-width:44rem;color:var(--mut)}
+.cx-banner{font:var(--dw,700) clamp(1.5rem,4vw,2.8rem)/1.1 var(--disp);letter-spacing:var(--trk,-.02em);margin:0 0 1.4rem;color:var(--fg)}
+.cx-banner{border-left:5px solid var(--acc);padding-left:1rem}
+.cx-note{margin:1rem 0 .4rem;color:var(--mut);font-style:italic;max-width:40rem}
+.cx-copy{display:flex;gap:.6rem;align-items:stretch;margin:.8rem 0}
+.cx-copy pre{flex:1;margin:0;min-width:0;background:var(--field);border:1px solid var(--line);border-radius:calc(var(--r)*.5);padding:.7rem .9rem;overflow-x:auto;font:500 .9rem/1.45 var(--mono);white-space:pre-wrap;word-break:break-word}
+.cx-copy code{font:inherit}
+.cx-copy .btn{align-self:flex-start;flex:none}
+.pastebox{font:.8rem/1.45 var(--mono)}
+.cx-more{margin-top:1.4rem;border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.2rem;background:var(--card)}
+.cx-more>summary{cursor:pointer;font-weight:600;min-height:2.4rem;display:flex;align-items:center}
+.cx-more[open]>summary{margin-bottom:1rem}
+.cx-h3{font-size:1.5rem;margin:2rem 0 .6rem}
+.cx-sub{margin-top:3rem}
+.cx-player{scroll-margin-top:5rem}
+.cx-ol{list-style:none;counter-reset:o;display:grid;gap:.6rem}
+.cx-ol li{counter-increment:o;position:relative;padding-left:2rem;color:var(--mut);font-size:.98rem}
+.cx-ol li::before{content:counter(o);position:absolute;left:0;top:.1rem;width:1.4rem;height:1.4rem;border-radius:50%;background:var(--acc);color:var(--accfg);display:grid;place-items:center;font-size:.75rem;font-weight:700}
+/* level qualifier */
+.cx-qual{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.2,.7,.2,1),margin .45s;margin:0}
+.cx-qual.on{grid-template-rows:1fr;margin:1.2rem 0}
+.cx-qual>div{overflow:hidden;min-height:0}
+.cx-qual .card{margin:0}
+.cx-qual h3{margin-bottom:.5rem}
+.cx-qual .cta{margin-top:.8rem}
+.tier .cx-hint{display:block;margin-top:.5rem;font-size:.8rem;color:var(--acc);font-weight:600}
+/* players */
+.cx-player{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:1rem}
+.cx-bar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:.8rem}
+.cx-skip{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-left:auto}
+.cx-stage{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:.8rem;height:30rem}
+.cx-win{display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);border-radius:calc(var(--r)*.6);background:var(--bg);overflow:hidden}
+.cx-wh{display:flex;align-items:center;gap:.35rem;padding:.5rem .7rem;border-bottom:1px solid var(--line);background:var(--card);font-size:.8rem;color:var(--mut)}
+.cx-wh i{width:.6rem;height:.6rem;border-radius:50%;background:var(--line);opacity:.5}
+.cx-wh>span{margin-left:.4rem}
+.cx-chat{flex:1;min-height:0;overflow:auto;padding:.8rem;display:flex;flex-direction:column;gap:.55rem}
+.cx-msg{max-width:92%;padding:.55rem .8rem;border-radius:1rem;font-size:.9rem;line-height:1.45;animation:cxin .35s ease both}
+.cx-msg.u{align-self:flex-end;background:var(--acc);color:var(--accfg);border-bottom-right-radius:.3rem}
+.cx-msg.a{align-self:flex-start;background:var(--card);border:1px solid var(--line);color:var(--fg);border-bottom-left-radius:.3rem}
+.cx-msg .cx-dots::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:cxdots 1.2s steps(4) infinite}
+@keyframes cxdots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+@keyframes cxin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cx-input{display:flex;gap:.5rem;align-items:center;margin:.5rem;padding:.4rem .5rem .4rem .8rem;border:1px solid var(--line);border-radius:99px;background:var(--card);font-size:.85rem;color:var(--mut);min-height:2.6rem}
+.cx-typed{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-sendb{padding:.3rem .8rem;border-radius:99px;background:var(--line);color:var(--bg);font-size:.78rem;font-weight:700;transition:background .2s}
+.cx-sendb.on{background:var(--acc);color:var(--accfg)}
+.cx-nar{flex:1;min-height:0;overflow:auto;padding:.9rem;position:relative}
+.cx-nar>.cx-v{animation:cxin .45s ease both}
+.cx-nar h4{font:var(--dw,700) 1.1rem/1.2 var(--disp);margin:0 0 .5rem}
+.cx-nar p{font-size:.92rem;color:var(--mut)}
+.cx-big{font:var(--dw,700) 2.2rem/1 var(--disp);color:var(--acc);margin:.2rem 0 .6rem}
+.cx-scan{height:.4rem;border-radius:99px;background:var(--line);overflow:hidden;margin:.8rem 0}
+.cx-scan i{display:block;height:100%;width:35%;background:var(--acc);border-radius:99px;animation:cxscan 1.4s ease-in-out infinite}
+@keyframes cxscan{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+.cx-tree,.cx-tree ul{list-style:none;margin:0;padding:0}
+.cx-tree ul{margin-left:1.1rem;border-left:1px dashed var(--line);padding-left:.7rem}
+.cx-tree li{font:.84rem/1.7 var(--mono);color:var(--fg);opacity:0;transform:translateX(-6px);transition:opacity .35s,transform .35s;white-space:normal;word-break:break-word}
+.cx-tree li.in{opacity:1;transform:none}
+.cx-tree li.d::before{content:"\25B8  ";color:var(--acc)}
+.cx-tree li.f{color:var(--mut)}
+.cx-tree li.f.pick{color:var(--fg);background:rgba(255,90,54,.16);border-radius:.3rem;padding:0 .3rem}
+.cx-readme{border:1px solid var(--line);border-radius:.6rem;padding:.7rem .9rem;background:var(--card);font-size:.86rem}
+.cx-readme ol{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+.cx-readme li{opacity:0;transform:translateY(4px);transition:opacity .35s,transform .35s;color:var(--mut)}
+.cx-readme li.in{opacity:1;transform:none}
+.cx-readme li b{color:var(--fg)}
+.cx-rt{margin-top:.6rem;font-size:.82rem;color:var(--acc);font-weight:600}
+.cx-rows{display:grid;gap:.3rem;margin:.4rem 0}
+.cx-row{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border:1px solid var(--line);border-radius:.5rem;font-size:.82rem;background:var(--bg)}
+.cx-row .k{width:1.05rem;height:1.05rem;border:1.5px solid var(--line);border-radius:.25rem;flex:none;display:grid;place-items:center;font-size:.7rem;line-height:1}
+.cx-row.on .k{background:var(--acc);border-color:var(--acc);color:var(--accfg)}
+.cx-row.on .k::after{content:"\2713"}
+.cx-row.no .k{border-color:var(--mut)}
+.cx-row.no .k::after{content:"\2715";color:var(--mut)}
+.cx-row em{margin-left:auto;font-style:normal;color:var(--mut);font-size:.76rem;text-align:right}
+.cx-row.ok{background:rgba(120,120,120,.1)}
+.cx-lbl{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:.5rem 0 .2rem}
+.cx-ybtn{display:inline-block;margin:.2rem .3rem 0 0;padding:.25rem .8rem;border-radius:99px;border:1px solid var(--acc);background:transparent;color:var(--acc);font-weight:700;font-size:.8rem}
+.cx-ybtn.press,.cx-sendb.press{background:var(--acc);color:var(--accfg)}
+.cx-cursor{position:absolute;left:10px;top:10px;width:22px;height:22px;z-index:5;pointer-events:none;opacity:0;transition:left .8s cubic-bezier(.4,0,.2,1),top .8s cubic-bezier(.4,0,.2,1),opacity .3s;background:no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 2l7.5 19 2.6-7.4L21 11z' fill='%23151515' stroke='%23fff' stroke-width='1.6' stroke-linejoin='round'/></svg>");filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.cx-cursor.on{opacity:1}
+.cx-cap{margin:.8rem 0 .4rem;color:var(--fg);font-weight:600;min-height:1.6em}
+.cx-bubble{background:var(--acc);color:var(--accfg)!important;padding:.6rem .8rem;border-radius:.8rem;margin:0 0 .6rem;font-size:.9rem;animation:cxin .4s ease both}
+.cx-bubble b{display:block}
+.cx-room{width:100%;height:auto;max-height:15rem;display:block}
+#p2-walker{transition:transform 2.8s linear}
+#p2-flip{transform-box:fill-box;transform-origin:center;transition:transform .2s}
+.cx-room .cx-leg{transform-box:fill-box;transform-origin:50% 0}
+#p2-walker.walk .cx-leg.l{animation:cxleg .6s ease-in-out infinite alternate}
+#p2-walker.walk .cx-leg.r{animation:cxleg .6s ease-in-out infinite alternate-reverse}
+@keyframes cxleg{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+#p2-door{transition:opacity .4s}
+/* fullscreen walkthrough */
+.cx-fs{position:fixed;inset:0;z-index:95;background:var(--bg);color:var(--fg);display:grid;grid-template-rows:auto 1fr auto;animation:cxin .35s ease both}
+.cx-fs[hidden]{display:none}
+.cx-fh{display:flex;gap:.8rem;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:var(--card)}
+.cx-fh b{font:var(--dw,700) 1.05rem var(--disp)}
+.cx-fb{padding:1rem;overflow:auto}
+.cx-dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:.9rem;max-width:62rem;margin:0 auto}
+.cx-tile{border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;background:var(--card);transition:box-shadow .4s,border-color .4s,transform .4s;opacity:.55}
+.cx-tile.on{opacity:1;border-color:var(--acc);box-shadow:0 0 0 2px var(--acc);transform:translateY(-2px)}
+.cx-tile h4{font:var(--dw,700) 1rem var(--disp);margin:0 0 .5rem}
+.cx-tile ul{list-style:none;margin:0;padding:0;display:grid;gap:.3rem;font-size:.88rem;color:var(--mut)}
+.cx-tile li{display:flex;justify-content:space-between;gap:.6rem}
+.cx-tile li em{font-style:normal;color:var(--acc)}
+.cx-ff{padding:.8rem 1rem;border-top:1px solid var(--line);background:var(--card);font-weight:600;min-height:3.4rem}
+/* mini player */
+.cx-m{position:fixed;inset:0;z-index:96;display:grid;place-items:center;padding:.6rem;background:rgba(0,0,0,.68)}
+.cx-m[hidden]{display:none}
+.cx-mw{width:min(40rem,100%);max-height:calc(100svh - 1.2rem);display:flex;flex-direction:column;background:var(--wbg,var(--card));color:var(--wfg,var(--fg));border:1px solid var(--line);border-radius:var(--r);box-shadow:0 30px 90px rgba(0,0,0,.5);animation:cxin .3s ease both}
+.cx-mh{display:flex;gap:.6rem;justify-content:space-between;align-items:flex-start;padding:1rem 1.2rem .6rem}
+.cx-mh h2{font-size:1.35rem;margin:0;max-width:none}
+.cx-mh p{margin:.2rem 0 0}
+.cx-ms{flex:1;min-height:14rem;overflow:auto;padding:.4rem 1.2rem 1rem;display:flex;flex-direction:column;gap:.6rem}
+.cx-ms .cx-msg{max-width:96%}
+.cx-note2{align-self:stretch;border:1px solid var(--acc);border-left-width:4px;border-radius:.6rem;padding:.6rem .8rem;font-weight:600;font-size:.92rem;animation:cxin .35s ease both}
+.cx-fld{align-self:stretch;border:1px solid var(--line);border-radius:.6rem;padding:.5rem .7rem;background:var(--field);animation:cxin .35s ease both}
+.cx-fld span{display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.cx-fld b{display:block;font-weight:500;min-height:1.4em;font-size:.92rem}
+.cx-tapb{align-self:flex-start;padding:.45rem 1rem;border-radius:99px;border:1px solid var(--acc);background:transparent;color:var(--acc);font-weight:700;font-size:.88rem;animation:cxin .35s ease both}
+.cx-tapb.press{background:var(--acc);color:var(--accfg)}
+.cx-mf{display:flex;flex-wrap:wrap;gap:.5rem;padding:.6rem 1.2rem 1rem;border-top:1px solid var(--line)}
+.cx-vid{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin:0 0 2rem}
+.play{display:inline-block;width:0;height:0;border-left:.65em solid currentColor;border-top:.4em solid transparent;border-bottom:.4em solid transparent}
+/* nine ways */
+.cx-ben{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:2rem}
+.cx-ben .card{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem}
+.cx-ben .card ul{margin-bottom:1rem;flex:1}
+.cx-ben .card .link{margin-bottom:.8rem}
+/* contribute */
+.cx-sug{max-width:56rem;margin:0 0 1.6rem}
+.cx-sug label{display:block;font-size:.85rem;font-weight:600;color:var(--mut);margin:0 0 .35rem}
+.cx-sugrow{display:flex;gap:.6rem;align-items:flex-start}
+.cx-sugrow .mic-wrap{flex:1;min-width:0}
+.cx-sugrow>.btn{flex:none}
+.pchips button.cx-custom{border-style:dashed}
+.cx-tools{display:grid;gap:.6rem;margin:.6rem 0}
+.cx-th,.cx-tr{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr) minmax(0,1.2fr) minmax(0,1.2fr);gap:.6rem}
+.cx-th span{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--mut)}
+.cx-tr .cx-c>label{display:none;margin:0 0 .25rem}
+.cx-tr textarea{min-height:5.2rem}
+.cx-thanks{margin:1rem 0 0;padding:.8rem 1rem;border:1px solid var(--acc);border-left-width:5px;border-radius:.7rem;font-weight:700;animation:cxin .4s ease both}
+.cx-wform{max-width:72rem}
+.cx-anonst:not(:empty){margin:1rem 0 0;padding:.8rem 1rem;border:1px solid var(--acc);border-left-width:5px;border-radius:.7rem;font-weight:700;animation:cxin .4s ease both}
+.cx-story{margin-bottom:2rem}
+/* family callout */
+.cx-fam{margin:0 0 2rem;padding:1.4rem 1.6rem;border:1px solid var(--acc);border-radius:var(--r);background:var(--card);font:var(--dw,600) clamp(1.2rem,2.4vw,1.8rem)/1.25 var(--disp);letter-spacing:var(--trk,-.01em)}
+.cx-fam small{display:block;margin-top:.6rem;font:400 .95rem/1.5 var(--body);color:var(--mut)}
+.cx-trust{border-left:3px solid var(--acc);padding:.2rem 0 .2rem .9rem;margin:.6rem 0 1rem;color:var(--mut)}
+.mockbox .btn.small+.btn.small{margin-left:.4rem}
+.uc.card{text-align:left;cursor:pointer;font:inherit;color:inherit;align-items:flex-start}
+button.card.uc{display:flex;flex-direction:column;gap:.2rem;transition:transform .25s,border-color .25s}
+button.card.uc:hover{border-color:var(--acc)}
+@media(max-width:60rem){
+.cx-stage{grid-template-columns:1fr;height:auto}
+.cx-win{height:19rem}
+.cx-ben{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cx-th{display:none}
+.cx-tr{grid-template-columns:1fr;gap:.5rem;padding:.8rem;border:1px solid var(--line);border-radius:calc(var(--r)*.6)}
+.cx-tr .cx-c>label{display:block}
+.cx-skip{margin-left:0}
+}
+@media(max-width:34rem){
+.cx-ben{grid-template-columns:1fr}
+.cx-copy{flex-direction:column}
+.cx-copy .btn{align-self:stretch}
+.cx-sugrow{flex-direction:column}
+.cx-sugrow>.btn{width:100%}
+.cx-win{height:17rem}
+}
+@media(prefers-reduced-motion:reduce){.cx-rv{opacity:1;transform:none}}
 </style></head>
 <body class="citrus">
 <script>(function(){var F={1:"Inter:wght@400;500;600;700;800",2:"Manrope:wght@400;500;600;700;800",3:"Playfair+Display:wght@500;700;800;900",4:"Fredoka:wght@400;500;600;700",6:"Nunito:wght@400;600;700;800",7:"JetBrains+Mono:wght@400;500;700",8:"Space+Grotesk:wght@400;500;600;700"};
@@ -908,12 +1097,12 @@ var n=null;try{var p=new URLSearchParams(location.search).get("design");if(p!==n
 if(n===null){try{var s=localStorage.getItem("cbDesign");if(s!==null&&/^[0-8]$/.test(s))n=+s}catch(e){}}
 window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <canvas id="bg" aria-hidden="true"></canvas><canvas id="fx" aria-hidden="true"></canvas>
-<a class="skip" href="#now">Skip to content</a>
+<a class="skip" href="#setup">Skip to content</a>
 <header class="hdr" id="top">
 <a class="logo" href="#top" aria-label="claudebomb.com, home"><svg class="bomb" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="bb" cx="14" cy="19" r="10"/><path class="bh" d="M8 17a6.5 6.5 0 0 1 4-4.5"/><rect class="bb" x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)"/><path class="bf" d="M23.5 6.5c2-2.5 4 .5 5.5-2.5"/><path class="bl" d="M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z"/></svg><span>claude<b>bomb</b></span></a>
 <button type="button" class="menubtn" aria-expanded="false" aria-controls="nav">Menu</button>
 <nav class="nav" id="nav" aria-label="Main">
-<a href="#products">Products</a><a href="#demos">Demos</a><a href="#now">Use it</a><a href="#cost">Cost</a><a href="#contribute">Contribute</a><a href="#usecases">Use cases</a><a href="#social">Social</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#benefits">Benefits</a><a href="#teaser">Roadmap</a>
+<a href="#products">Products</a><a href="#setup">Setup</a><a href="#first">What happens</a><a href="#cost">Cost</a><a href="#usecases">Use cases</a><a href="#family">Family</a><a href="#benefits">Benefits</a><a href="#teaser">2036</a><a href="#contribute">Contribute</a>
 </nav>
 <a class="btn small hdr-cta" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe</a>
 </header>
@@ -957,45 +1146,126 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="hero" id="hero"><div class="wrap">
-<p class="eyebrow">Free, open, ready today</p>
-<h1>Your dashboard, built by your AI</h1>
-<p class="sub">Download one plain text file, drop it into an AI assistant such as Claude, and get one calm page for your day: a ranked to-do list, your inbox with drafted replies, your calendar, and the people who matter.</p>
+<p class="eyebrow">Free, open, nothing to download</p>
+<h1 class="cx-h1">Your helping hand into the blossoming world of artificial intelligence</h1>
+<p class="sub">Claude Bomb is a dashboard plus an AI introduction kit: a handshake, rules of engagement, and a planning document, all in one piece of text. Paste it into your AI assistant, and within five minutes it does three things for you.</p>
 <p class="tierline" id="tierline"></p>
-<div class="cta"><a class="btn" href="/dashboard/claudebomb-dashboard.md" download>Download the dashboard</a><a class="btn ghost" href="/dashboard/claudebomb-dashboard.md" target="_blank" rel="noopener">Read it first</a></div>
-<ol class="steps hsteps" aria-label="How to use it today in three steps">
-<li><span class="sn">1</span><div><h3>Download the file</h3><p>One text file, about 11 KB. Open it in any editor to read every line.</p></div></li>
-<li><span class="sn">2</span><div><h3>Drop it into your assistant</h3><p>Start a new chat in Claude or a similar assistant, attach the file, and say "Set up my dashboard."</p></div></li>
-<li><span class="sn">3</span><div><h3>Bookmark your link</h3><p>You get a setup rating from 1 to 100, a list of free connectors that raise it, and a dashboard you can bookmark.</p></div></li>
+<div class="cta"><a class="btn" href="#setup">Copy and paste it</a><a class="btn ghost" href="#first">Watch what happens</a><button type="button" class="btn ghost" data-reveal="cost" aria-controls="cost" aria-expanded="false">What's this going to cost me in the long run?</button></div>
+<ol class="cx-trio" aria-label="The three things it does in five minutes">
+<li class="card"><span class="cx-n">1</span><h3>Audits your environment</h3><p>It looks at what your AI can reach on your computer and in your accounts, then suggests what you can improve.</p></li>
+<li class="card"><span class="cx-n">2</span><h3>Sets it up for you</h3><p>It sets up your environment from your instructions, with one organized home for everything you and your AI make.</p></li>
+<li class="card"><span class="cx-n">3</span><h3>Builds your dashboard</h3><p>It builds one calm page for your day: a ranked to-do list, your inbox with drafted replies, your calendar, and the people who matter.</p></li>
 </ol>
+<p class="lead cx-after">The rest of this page explains those three.</p>
+
+<figure class="cx-curve" id="cxcurve">
+<svg viewBox="0 0 800 300" role="img" aria-labelledby="cxct cxcd" preserveAspectRatio="xMidYMid meet">
+<title id="cxct">The AI learning curve, with helpers lifting newcomers up</title>
+<desc id="cxcd">A rising curve. Figures at the top of the curve reach down and lift figures from the bottom up the curve.</desc>
+<defs>
+<linearGradient id="cxarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--acc);stop-opacity:.34"/><stop offset="1" style="stop-color:var(--acc);stop-opacity:0"/></linearGradient>
+<linearGradient id="cxbody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.55"/></linearGradient>
+<radialGradient id="cxhead" cx=".35" cy=".3" r=".8"><stop offset="0" style="stop-color:#fff;stop-opacity:.95"/><stop offset=".45" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.6"/></radialGradient>
+<linearGradient id="cxarm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:#fff;stop-opacity:.9"/></linearGradient>
+<radialGradient id="cxglow" cx=".5" cy=".5" r=".5"><stop offset="0" style="stop-color:var(--acc);stop-opacity:.5"/><stop offset="1" style="stop-color:var(--acc);stop-opacity:0"/></radialGradient>
+<g id="cxfig"><ellipse cx="0" cy="2" rx="17" ry="4" fill="rgba(0,0,0,.22)"/><path d="M-15 0C-15-13-9-19 0-19S15-13 15 0Z" fill="url(#cxbody)"/><circle cx="0" cy="-30" r="10" fill="url(#cxhead)"/><ellipse cx="-3.5" cy="-33.5" rx="3.2" ry="2" fill="#fff" opacity=".7"/></g>
+</defs>
+<path id="cxarea" d="M20 262C170 258 300 236 420 160S660 44 780 34L780 300L20 300Z" fill="url(#cxarea)"/>
+<path id="cxpath" d="M20 262C170 258 300 236 420 160S660 44 780 34" fill="none" style="stroke:var(--acc)" stroke-width="5" stroke-linecap="round"/>
+<path d="M20 262C170 258 300 236 420 160S660 44 780 34" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" transform="translate(0,-2)"/>
+<circle id="cxglow" cx="740" cy="40" r="64" fill="url(#cxglow)" opacity="0"/>
+<text class="cx-lab" x="26" y="288">Where most people start</text>
+<text class="cx-lab" x="774" y="130" text-anchor="end">The blossoming world of AI</text>
+<g id="cxarms"></g>
+<g id="cxfigs"></g>
+</svg>
+<figcaption class="cx-cap2"><span id="cxcurvecap">People at the top of the AI curve reach down and lift everyone up.</span> <button type="button" class="btn small ghost" id="cxcurve-replay">Replay</button></figcaption>
+</figure>
+
+<p class="cx-two"><b>Two products.</b> The personal dashboard is available now. The work dashboard is a future state, and <a class="link" href="#contribute">we build it with you</a>.</p>
 <p class="fine">Your data stays between you and your assistant. Nothing is sent to claudebomb.com.</p>
+</div></section>
+
+<section class="sec" id="cost" hidden><div class="wrap">
+<div class="shead"><p class="eyebrow">Cost</p>
+<h2>What's this going to cost me in the long run?</h2>
+<p class="lead">AI can do things that seem like they must cost a lot of money. In reality, there are ways to get incredible usage for free today.</p>
+<p class="mut small" id="cost-note" hidden></p></div>
+<div class="cards c3">
+<article class="card hl"><h3>Most of this is free, forever</h3><p>You can do a majority of this for free. That is what it costs you. There are some bonuses to spending money, and any money you spend is your choice, after we have already given you a pretty amazing free dashboard.</p></article>
+<article class="card"><h3>You will spend zero money on this site, ever</h3><p>This site is part of the <a class="link" href="https://hmrfamily.life" target="_blank" rel="noopener">HMR family</a>. These sites are meant to elevate humanity at zero cost, forever. This is one of many we are building.</p></article>
+<article class="card"><h3>Our advice: set it up for zero dollars first</h3><p>Because this works so well for free, we recommend you do not spend any money right now. Get set up with the free version, see what it looks like, and then ask your AI what more money would add.</p>
+<div class="cx-copy"><pre><code id="cp-more">What would I gain by spending more money on this setup?</code></pre><button type="button" class="btn small" data-copy="#cp-more">Copy</button></div></article>
+</div>
+<p class="lead"><strong>From now until you have a fully working dashboard, it costs you zero dollars.</strong></p>
+<details class="cx-more"><summary>If you ever want to see what money adds</summary>
+<p class="lead">Pick the most you want to spend each month. We show the plan that fits and what the next step up adds.</p>
+<p class="label" id="gatelabel">Your monthly budget</p>
+<div class="pchips" id="gates" role="radiogroup" aria-labelledby="gatelabel">
+<button type="button" role="radio" aria-checked="true" tabindex="0" data-g="0">Up to $15</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="1">$30</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="2">$50</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="3">$100</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="4">$200</button>
+</div>
+<div class="cards c3" id="gateout" aria-live="polite">
+<article class="card hl"><p class="label">Your plan</p><h3 id="g-plan"></h3><p id="g-get"></p></article>
+<article class="card"><p class="label">The step up from the previous gate</p><h3 id="g-stephead"></h3><p id="g-step"></p></article>
+</div>
+<div class="cards c4" aria-label="Claude plans">
+<article class="card"><h3>Free</h3><p><b>$0.</b> Sonnet and Haiku. Chat, web search, files, connectors, and artifacts. No Claude Code.</p></article>
+<article class="card"><h3>Pro</h3><p><b>$20 a month</b> ($17 a month billed yearly). Adds Opus, Claude Code, Projects, and Claude in Chrome.</p></article>
+<article class="card"><h3>Max</h3><p><b>$100 a month.</b> 5 times Pro's usage. $100 a month of API credits.</p></article>
+<article class="card"><h3>Ultra</h3><p><b>$200 a month.</b> 10 times Pro's weekly usage, no 5-hour limit for verified accounts. $200 a month of API credits.</p></article>
+</div>
+<p class="fine" style="margin-top:0">For comparison, ChatGPT: Go $8 a month, Plus $20 a month, Pro from $100 a month (<a class="link" href="https://chatgpt.com/pricing" target="_blank" rel="noopener">chatgpt.com/pricing</a>). Claude prices from <a class="link" href="https://claude.com/pricing" target="_blank" rel="noopener">claude.com/pricing</a>, November 2026. Plans change; check there.</p>
+<div class="cards c2x">
+<article class="card"><h3>Tips to keep usage low</h3><ul>
+<li>Use the smallest model for small jobs.</li>
+<li>Start a new chat when one gets long.</li>
+<li>Let one main chat delegate.</li>
+<li>Keep files small and reuse them.</li></ul></article>
+<article class="card"><h3>Things you could be doing today for less than you think</h3><ul class="dolist">
+<li>Summarize your inbox each morning <span class="tag small">Free</span></li>
+<li>Draft replies <span class="tag small">Free</span></li>
+<li>Plan your week from your calendar <span class="tag small">Free</span></li>
+<li>Track subscriptions from email receipts <span class="tag small">Free</span></li>
+<li>Turn a voice note into a to-do list <span class="tag small">Free</span></li>
+<li>Research a purchase <span class="tag small">Free</span></li>
+<li>Make a family newsletter <span class="tag small">Free</span></li>
+<li>Build a personal website <span class="tag small">Pro</span></li></ul>
+<p class="mut small" style="margin:1rem 0 0">The tag shows the lowest plan where it works. Building websites needs Claude Code, which starts at Pro.</p></article>
+</div>
+</details>
 </div></section>
 
 <section class="sec" id="problems"><div class="wrap">
 <div class="shead"><p class="eyebrow">Why this exists</p>
-<h2>Problems this file solves</h2>
-<p class="lead">These apply at every level, from a first chat to a daily power user.</p></div>
+<h2>Problems that stop people today</h2>
+<p class="lead">These apply at every level, from a first chat to a daily power user. Each one has the same fix: copy and paste.</p></div>
 <div class="cards c3">
-<article class="card"><h3>You cannot see how you use AI</h3><p>It is hard to see your own usage. The file asks your assistant to list the accounts and connectors you use and what you do most.</p></article>
-<article class="card"><h3>You are not sure you use it well</h3><p>Without a comparison, you cannot tell whether you are doing well or missing something simple. The file compares you to five profiles, from a grandparent new to AI to a software engineer.</p></article>
-<article class="card"><h3>Everyone is on a separate journey</h3><p>People learn the same lessons alone, and many learn them the expensive way. We think everyone should reach a basic standard that is easy to reach.</p></article>
-<article class="card hl"><h3>No app shows how to use your AI better</h3><p>We do not know of an app that looks at how you use your AI and shows how to use it better. This file does, with your own assistant, and it says plainly what it cannot see.</p></article>
-<article class="card"><h3>Tutorials that fit you</h3><p>Ask for a tutorial based on your usage. You get a short, free tutorial on the one thing that would help you most.</p></article>
+<article class="card"><h3>I don't know how to use it</h3><p>Most people open a chat box, type a question, and stop there. Nobody showed them what else it can do.</p></article>
+<article class="card"><h3>I don't know how to optimize it</h3><p>Even people who use AI every day cannot tell whether their setup is good. Without a comparison, you cannot tell whether you are doing well or missing something simple.</p></article>
+<article class="card hl"><h3>You find out after years that you used it wrong</h3><p>That is the most frustrating one. Files saved in the wrong places, lost context between chats, and money spent on the wrong plan. We learned these lessons the expensive way, so you do not have to.</p></article>
+<article class="card"><h3>You cannot see how you use AI</h3><p>It is hard to see your own usage. The setup asks your assistant to list the accounts and connectors you use and what you do most.</p></article>
+<article class="card"><h3>Everyone is on a separate journey</h3><p>People learn the same lessons alone. We think everyone should reach a basic standard that is easy to reach.</p></article>
+<article class="card"><h3>No app shows how to use your AI better</h3><p>We do not know of an app that looks at how you use your AI and shows how to use it better. This does, with your own assistant, and it says plainly what it cannot see.</p></article>
 </div>
 </div></section>
 
 <section class="sec" id="products"><div class="wrap">
 <div class="shead"><p class="eyebrow">Two products</p>
-<h2>Personal dashboard now, work dashboard next</h2>
+<h2>Personal dashboard now, work dashboard in the future</h2>
 <p class="lead">The personal dashboard comes first and paves the way for the work dashboard.</p></div>
 <div class="two">
 <article class="card hl"><span class="tag warm">Available now</span><h3>Personal dashboard</h3>
 <ul>
-<li>One free text file. Use it today in Claude. Other assistants should mostly work.</li>
+<li>Free text you copy and paste into your AI assistant. Use it today in Claude. Other assistants should mostly work.</li>
 <li>Improved by the crowd. Send an idea, and we review it and test it on our side.</li>
-<li>If it makes the file better, we ship it in a new version and credit you.</li>
+<li>If it makes the text better, we ship it in a new version and credit you.</li>
 <li>Every version and every change lives in the GitHub repo.</li></ul>
-<div class="links"><a class="btn" href="/dashboard/claudebomb-dashboard.md" download>Download the file</a><a class="link" href="https://github.com/AtlasJumped/claudebomb.com" target="_blank" rel="noopener">GitHub repo</a></div></article>
-<article class="card"><span class="tag soft">Planned, early 2027</span><h3>Work dashboard</h3>
+<div class="links"><a class="btn" href="#setup">Copy and paste it</a><a class="link" href="https://github.com/AtlasJumped/claudebomb.com" target="_blank" rel="noopener">GitHub repo</a></div></article>
+<article class="card"><span class="tag soft">Future state, planned for early 2027</span><h3>Work dashboard</h3>
 <p class="mut small">This is the story we are working toward. It is not built, and nothing here is available yet.</p>
 <ul>
 <li>Sometime in early 2027, someone brings the personal dashboard to their company, and it merges with a company dashboard.</li>
@@ -1020,16 +1290,16 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <section class="sec" id="t1" data-tier="1"><div class="wrap">
 <div class="shead"><p class="eyebrow">If you are new to AI</p>
 <h2>It is a text file. That is all.</h2>
-<p class="lead">You download one file that ends in .md. It is plain text, like a note. Your assistant reads it and does the work.</p></div>
+<p class="lead">You copy plain text, like a note, and paste it into a chat. Your assistant reads it and does the work. There is nothing to download.</p></div>
 <div class="cards c3">
 <article class="card hl"><h3>Safe</h3><ul>
-<li>A .md file is text. Open it in any editor and read every line.</li>
+<li>It is plain text. Press Read it first and read every line.</li>
 <li>It contains no code that runs by itself.</li>
-<li>It sends nothing anywhere. Your data stays between you and your assistant.</li></ul></article>
-<article class="card"><h3>Or skip the download</h3><p>Open the copy and paste page, copy the text, and paste it into a chat. Pasting words into a chat is the same as typing them.</p><a class="btn" href="#paste">Go to copy and paste</a></article>
+<li>It sends nothing anywhere. Your data stays between you and your assistant.</li></ul><a class="link" href="#secure">How do you know this is secure?</a></article>
+<article class="card"><h3>No download at all</h3><p>Copy the text and paste it into a chat. Pasting words into a chat is the same as typing them. No downloads, no zip files, no drama.</p><a class="btn" href="#setup">Go to copy and paste</a></article>
 <article class="card"><h3>Under 10 minutes</h3><ul>
-<li>Download the file, or copy the text.</li>
-<li>Put it into your assistant and say "Set up my dashboard."</li>
+<li>Copy the text.</li>
+<li>Paste it into your assistant and say "Set up my dashboard."</li>
 <li>Say yes or no to each choice.</li>
 <li>That is the whole setup.</li></ul></article>
 </div>
@@ -1038,20 +1308,20 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <article class="card"><h3>Automation, explained</h3><p>AI assistants come in several models. Stronger ones are better at hard problems. Smaller ones are faster and cheaper for easy jobs. You do not need to know which is which.</p><p>The file tells your assistant to judge how hard each job is and pick the right model for it. This part is optional.</p></article>
 </div>
 <div class="two">
-<article class="card rope"><h3>We climbed the hill. This file is the rope.</h3>
+<article class="card rope"><h3>We climbed the hill. This is the rope.</h3>
 <svg viewBox="0 0 340 150" role="img" aria-label="A hill that shows the steep learning curve of AI. A dashed rope runs from the top of the hill down to the bottom, where you start.">
 <path class="hill" d="M10 138 C90 136 130 120 170 84 C210 48 250 22 330 18"/>
 <path class="rp" d="M300 20 C250 40 180 100 50 134"/>
 <circle class="dot" cx="48" cy="134" r="6"/><circle class="dot" cx="300" cy="20" r="6"/>
 <text x="10" y="120">You start here</text><text x="190" y="12">Where we are now</text></svg>
 <p>We spent too much money and learned how to save. We ran GPU jobs for days that turned out to be useless. AI has a steep learning curve, and we wrote down what we learned so your assistant can do the climbing for you.</p>
-<p>This file is us throwing a rope back down the hill.</p></article>
+<p>This is us throwing a rope back down the hill.</p></article>
 <article class="card"><h3>Do not have an assistant yet?</h3>
-<p>Claude is our preferred one. A free account is enough to try this once. This link goes straight to the download page. Install it, open it, then put the file in.</p>
+<p>Claude is our preferred one. A free account is enough to try this once. This link goes straight to the download page for the app. Install it, open it, then paste the text in.</p>
 <a class="btn" href="https://claude.ai/download" target="_blank" rel="noopener">Get Claude</a>
 <p class="mut small" style="margin-top:1rem">Other assistants</p>
 <div class="links"><a class="link" href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a><a class="link" href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a><a class="link" href="https://copilot.microsoft.com" target="_blank" rel="noopener">Copilot</a></div>
-<p class="mut small" style="margin-top:.8rem">We built this file for Claude. We have not tested every other assistant.</p></article>
+<p class="mut small" style="margin-top:.8rem">We built this for Claude. We have not tested every other assistant.</p></article>
 </div>
 </div></section>
 
@@ -1067,8 +1337,8 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <article class="card"><h3>Video, music, and events</h3><p>If your assistant can reach them, it suggests new things matched to what you like, and leaves out what you never want suggested.</p></article>
 <article class="card"><h3>A schedule</h3><p>If your assistant can run scheduled tasks, your dashboard updates itself. If it cannot, you say "refresh my dashboard" and it rebuilds.</p></article>
 </div>
-<p class="lead">Each connection raises your setup rating. Try the meter in "Use it today."</p>
-<div class="cta"><a class="btn" href="#demos">Watch workflows you can automate in minutes</a><a class="btn ghost" href="#now">See the setup rating</a></div>
+<p class="lead">Each connection raises your setup rating. Try the rating meter in "What happens second."</p>
+<div class="cta"><a class="btn" href="#demos">Watch workflows you can automate in minutes</a><a class="btn ghost" href="#second">See the setup rating</a></div>
 </div></section>
 
 <section class="sec" id="t3" data-tier="3"><div class="wrap">
@@ -1084,42 +1354,81 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <ul>
 <li>V1.1: My AI Journey tab, model delegation, and a choice of automated or manual setup.</li>
 <li>V1.0: First release. Setup rating, nine tabs, privacy firewall.</li></ul>
-<p>We review each suggestion and test it on our side. If it improves the file, we ship it in a new version and credit the person who suggested it, here and in the repo. Built by the claudebomb team. Your name goes here when your suggestion ships.</p>
+<p>We review each suggestion and test it on our side. If it improves the file, we ship it in a new version and credit the person who suggested it, here and in the repo. Credit goes to the Claude Bomb team, and your name goes here when your suggestion ships.</p>
 <div class="links"><a class="btn" href="https://github.com/AtlasJumped/claudebomb.com" target="_blank" rel="noopener">View the GitHub repo</a><a class="link" href="#contribute">Send an improvement</a></div></article>
 </div>
 </div></section>
 
-<section class="sec" id="demos"><div class="wrap">
-<div class="shead"><p class="eyebrow">Watch it work</p>
-<h2>Press Play and watch a workflow</h2>
-<p class="lead">Each card runs a short walkthrough. A cursor moves and clicks, a message fills in, and the microphone turns on. The data is made up, and nothing is sent. Voice narration is optional, and you can mute it.</p></div>
-<div class="pcards">
-<article class="pcard"><span class="tag small">Walkthrough</span><h3>Reply to a family email by voice</h3><p>Open the inbox, pick an email, read the draft, add your words by microphone, and press Send.</p><button type="button" class="btn" data-demo="reply"><span class="play" aria-hidden="true"></span> Play</button></article>
-<article class="pcard"><span class="tag small">Walkthrough</span><h3>Send the weekly recruiting recap</h3><p>One button writes the Slack recap from live numbers. You edit it and send.</p><button type="button" class="btn" data-demo="report"><span class="play" aria-hidden="true"></span> Play</button></article>
-<article class="pcard"><span class="tag small">Walkthrough</span><h3>Plan a trip with friends</h3><p>Find the week when your calendars line up, then start a group chat with a draft message.</p><button type="button" class="btn" data-demo="trip"><span class="play" aria-hidden="true"></span> Play</button></article>
-<article class="pcard"><span class="tag small">Walkthrough</span><h3>See your AI journey</h3><p>See accounts and habits, compare yourself to five profiles, and ask for a tutorial based on your usage.</p><button type="button" class="btn" data-demo="journey"><span class="play" aria-hidden="true"></span> Play</button></article>
+<section class="sec" id="setup"><div class="wrap">
+<div class="shead"><p class="eyebrow">Setup</p>
+<h2>Copy and paste. That is the whole setup.</h2>
+<p class="lead">Press Copy and paste, open a new chat in your AI assistant, and paste. Then say "Set up my dashboard." We have not tested every assistant. It was made for Claude, and the others should mostly work.</p></div>
+<p class="cx-banner">No downloads, no zip files, no drama.</p>
+<div class="cta"><button type="button" class="btn" id="cp-go">Copy and paste</button><button type="button" class="btn ghost" id="cp-read" aria-expanded="false" aria-controls="paste-view">Read it first</button></div>
+<p class="cx-note">We originally were going to have you download this, but you don't even need to.</p>
+<p class="mut small" id="paste-status" role="status" aria-live="polite"></p>
+<div id="paste-view" hidden>
+<label class="sel" for="paste-box">The full text that Copy and paste copies: the setup guide, then the dashboard instructions</label>
+<textarea id="paste-box" class="pastebox" readonly rows="14" data-mic="none" spellcheck="false">Loading the text...</textarea>
+<div class="cta" style="margin-top:1rem"><button type="button" class="btn small" id="cp-go2">Copy the text</button><a class="btn small ghost" href="https://github.com/AtlasJumped/claudebomb.com/blob/main/setup/claude-setup-guide.md" target="_blank" rel="noopener">Setup guide on GitHub</a><a class="btn small ghost" href="https://github.com/AtlasJumped/claudebomb.com/blob/main/dashboard/claudebomb-dashboard.md" target="_blank" rel="noopener">Dashboard instructions on GitHub</a></div>
 </div>
-<div class="cta"><button type="button" class="btn ghost" data-demo="explore">Open the demo dashboard</button></div>
-<p class="fine" style="margin-top:1rem">The demo dashboard is a full click-around mock. Press Send anywhere and it only shows a note that nothing was sent. Narration uses your browser's built-in voice. If your browser has none, you get captions only.</p>
+<div class="cards c2x" style="margin-top:2rem">
+<article class="card"><h3>After you paste, say this</h3>
+<div class="cx-copy"><pre><code id="cp-say">Set up my dashboard.</code></pre><button type="button" class="btn small" data-copy="#cp-say">Copy</button></div>
+<p class="mut small">Then say yes or no to each choice. Under 10 minutes, start to finish.</p></article>
+<article class="card" id="secure"><h3>How do you know this is secure?</h3>
+<p>You are not downloading or installing anything. You copy words and paste them into a chat, which is the same as typing them yourself.</p>
+<p>It is plain text, so you can press Read it first and read every line before you paste. It contains no code that runs by itself, and it sends nothing anywhere. Your assistant asks before it creates, moves, or sends anything.</p>
+<p>Just copy and paste it. It is that easy.</p></article>
+</div>
 </div></section>
 
-<section class="sec" id="now"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">01</span> What we have now</p>
-<h2>Use it today: one file for your AI assistant</h2>
-<p class="lead">The first product is small on purpose. You download one file and drop it into an AI assistant such as Claude. It looks at what it can reach, tells you how complete your setup is, and builds your dashboard.</p>
-<p><span class="tag warm">Dashboard V1.1, free</span> Ready now. It is a plain text file you can read before you use it, and your data never comes to us.</p>
-<div class="cta"><a class="btn" href="/dashboard/claudebomb-dashboard.md" download>Download the dashboard file</a><a class="btn ghost" href="/dashboard/claudebomb-dashboard.md" target="_blank" rel="noopener">Read it first</a></div></div>
+<section class="sec" id="first"><div class="wrap">
+<div class="shead"><p class="eyebrow">What happens first</p>
+<h2>You paste. Your AI gets to work.</h2>
+<p class="lead">This is a scripted preview of how your screen will look. The AI here is a stand-in, nothing is sent, and you will not have to do any of this by hand.</p></div>
+<div class="cx-player" id="p1">
+<div class="cx-bar"><button type="button" class="btn small" data-play>Play</button>
+<span class="cx-skip" role="group" aria-label="Skip to a part"><span class="mut small">Skip to</span><button type="button" class="btn small ghost" data-from="paste">Paste</button><button type="button" class="btn small ghost" data-from="folders">Folders</button><button type="button" class="btn small ghost" data-from="readme">README</button><button type="button" class="btn small ghost" data-from="connect">Connections</button></span></div>
+<div class="cx-stage" id="p1-stage">
+<div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>AI assistant</span></div><div class="cx-chat" id="p1-chat"></div><div class="cx-input"><span class="cx-typed" id="p1-in">Message your AI</span><b class="cx-sendb" id="p1-send">Send</b></div></div>
+<div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>What it looks like next to it</span></div><div class="cx-nar" id="p1-nar"></div></div>
+<span class="cx-cursor" id="p1-cur" aria-hidden="true"></span>
+</div>
+<p class="cx-cap" id="p1-cap" role="status" aria-live="polite">Press Play to watch the first five minutes.</p>
+<div class="cta"><a class="btn ghost" href="#second" id="p1-next">Next: what happens second</a></div>
+</div>
+</div></section>
 
-<ol class="steps">
-<li><span class="sn">1</span><div><h3>Download one file</h3><p>A single file, free and open. It carries all the first-time setup instructions inside. Drop it into a new chat and say "Set up my dashboard."</p></div></li>
-<li><span class="sn">2</span><div><h3>Drop it into your assistant</h3><p>Your assistant surveys what it can reach and what it cannot, then writes a short report in plain language.</p></div></li>
-<li><span class="sn">3</span><div><h3>See your rating from 1 to 100</h3><p>100 means everything is connected. A 10 means you have barely started. Try the meter below.</p></div></li>
-<li><span class="sn">4</span><div><h3>Add free connectors</h3><p>You get a list of free connectors, each with what it unlocks. Connect them in a couple of minutes and the rating goes up.</p></div></li>
-<li><span class="sn">5</span><div><h3>Get your dashboard link</h3><p>The assistant builds your dashboard as a link you can bookmark. It refreshes at a rate you choose and shows when it was last refreshed.</p></div></li>
-</ol>
+<section class="sec" id="second"><div class="wrap">
+<div class="shead"><p class="eyebrow">What happens second</p>
+<h2>Your dashboard builds itself while you get a drink</h2>
+<p class="lead">You hit enter. Your AI builds your dashboard, and you wait.</p></div>
+<div class="cx-player" id="p2">
+<div class="cx-bar"><button type="button" class="btn small" data-play>Play</button><button type="button" class="btn small ghost" id="p2-fs">Open the full-screen walkthrough</button></div>
+<div class="cx-stage" id="p2-stage">
+<div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>AI assistant</span></div><div class="cx-chat" id="p2-chat"></div></div>
+<div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>Meanwhile, in the room</span></div><div class="cx-nar" id="p2-nar">
+<p class="cx-bubble" id="p2-free" hidden><b>This does not cost anything.</b> This is just something AI can do. You just have to sit there and wait.</p>
+<svg class="cx-room" viewBox="0 0 360 210" role="img" aria-label="A person at a desk gets up, walks to the refrigerator, gets a drink, and walks back to the computer">
+<defs><linearGradient id="rmb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.55"/></linearGradient><radialGradient id="rmh" cx=".35" cy=".3" r=".8"><stop offset="0" style="stop-color:#fff;stop-opacity:.95"/><stop offset=".5" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.6"/></radialGradient></defs>
+<rect x="0" y="176" width="360" height="34" style="fill:var(--line)" opacity=".18"/>
+<g><rect x="14" y="132" width="104" height="8" rx="3" style="fill:var(--fg)" opacity=".55"/><rect x="24" y="140" width="6" height="36" rx="2" style="fill:var(--fg)" opacity=".45"/><rect x="102" y="140" width="6" height="36" rx="2" style="fill:var(--fg)" opacity=".45"/><rect x="42" y="82" width="66" height="46" rx="6" style="fill:var(--card);stroke:var(--fg)" stroke-width="2"/><rect id="p2-bar" x="48" y="112" width="0" height="6" rx="3" style="fill:var(--acc)"/><text id="p2-scr" x="75" y="102" text-anchor="middle" class="cx-lab" style="font-size:9px">Building...</text></g>
+<g id="p2-fridge"><rect x="292" y="70" width="52" height="106" rx="7" style="fill:var(--card);stroke:var(--fg)" stroke-width="2"/><line x1="292" y1="112" x2="344" y2="112" style="stroke:var(--fg)" stroke-width="2"/><rect x="299" y="84" width="4" height="20" rx="2" style="fill:var(--fg)"/><rect id="p2-door" x="292" y="70" width="52" height="106" rx="7" style="fill:var(--acc)" opacity="0"/></g>
+<g id="p2-walker" style="transform:translate(132px,176px)"><g id="p2-flip" style="transform:scaleX(1)">
+<ellipse cx="0" cy="2" rx="16" ry="4" fill="rgba(0,0,0,.2)"/>
+<rect class="cx-leg l" x="-9" y="-30" width="8" height="30" rx="4" style="fill:var(--fg)" opacity=".7"/><rect class="cx-leg r" x="1" y="-30" width="8" height="30" rx="4" style="fill:var(--fg)" opacity=".7"/>
+<rect x="-13" y="-70" width="26" height="44" rx="12" fill="url(#rmb)"/><circle cx="0" cy="-82" r="11" fill="url(#rmh)"/>
+<rect id="p2-cup" x="12" y="-58" width="7" height="10" rx="2" style="fill:var(--card);stroke:var(--fg)" stroke-width="1.5" opacity="0"/></g></g>
+</svg></div></div>
+<span class="cx-cursor" id="p2-cur" aria-hidden="true"></span>
+</div>
+<p class="cx-cap" id="p2-cap" role="status" aria-live="polite">Press Play to watch it build.</p>
+</div>
 
-<div class="demo" aria-label="Setup rating and refresh controls">
-<div class="gauge-box"><p class="label">Your setup rating</p>
+<div class="demo" aria-label="Setup rating and refresh controls" style="margin-top:2rem">
+<div class="gauge-box"><p class="label">Your setup rating, from 1 to 100</p>
+<p class="mut small">100 means everything is connected. A 10 means you have barely started. Try connecting things, and watch it go up. Each connector is free.</p>
 <div class="gauge"><div class="gnum"><b id="score">12</b><span> / 100</span></div><div class="gbar" role="img" aria-label="Setup rating bar"><i id="gfill" style="width:12%"></i></div></div>
 <fieldset class="conn"><legend>Try connecting things</legend>
 <label><input type="checkbox" data-pts="18"> Email, every provider <em>unlocks reply workflows</em></label>
@@ -1140,124 +1449,55 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div>
 </div></section>
 
-<section class="sec" id="paste"><div class="wrap">
-<div class="shead"><p class="eyebrow">No download</p>
-<h2>Copy and paste instead</h2>
-<p class="lead">This is the full text of the dashboard file. Press Copy, open a new chat in your assistant, paste, and send. Then type "Set up my dashboard." Words pasted into a chat are the same as words you type.</p></div>
-<label class="sel" for="paste-box">The full dashboard text</label>
-<textarea id="paste-box" class="pastebox" readonly rows="14" data-mic="none" spellcheck="false">Loading the dashboard text...</textarea>
-<div class="cta" style="margin-top:1rem"><button type="button" class="btn" id="paste-copy">Copy the dashboard text</button><a class="btn ghost" href="/dashboard/claudebomb-dashboard.md" download>Download it instead</a></div>
-<p class="mut small" id="paste-status" role="status" aria-live="polite"></p>
+<section class="sec" id="demos"><div class="wrap">
+<div class="shead"><p class="eyebrow">Watch it work</p>
+<h2>Press Play and watch a workflow</h2>
+<p class="lead">Each card runs a short walkthrough. A cursor moves and clicks, a message fills in, and the microphone turns on. The data is made up, and nothing is sent. Voice narration is optional, and you can mute it.</p></div>
+<div class="pcards">
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>Reply to a family email by voice</h3><p>Open the inbox, pick an email, read the draft, add your words by microphone, and press Send.</p><button type="button" class="btn" data-demo="reply"><span class="play" aria-hidden="true"></span> Play</button></article>
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>Send the weekly recruiting recap</h3><p>One button writes the Slack recap from live numbers. You edit it and send.</p><button type="button" class="btn" data-demo="report"><span class="play" aria-hidden="true"></span> Play</button></article>
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>Plan a trip with friends</h3><p>Find the week when your calendars line up, then start a group chat with a draft message.</p><button type="button" class="btn" data-demo="trip"><span class="play" aria-hidden="true"></span> Play</button></article>
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>See your AI journey</h3><p>See accounts and habits, compare yourself to five profiles, and ask for a tutorial based on your usage.</p><button type="button" class="btn" data-demo="journey"><span class="play" aria-hidden="true"></span> Play</button></article>
+</div>
+<div class="cta"><button type="button" class="btn ghost" data-demo="explore">Open the demo dashboard</button></div>
+<p class="fine" style="margin-top:1rem">The demo dashboard is a full click-around mock. Press Send anywhere and it only shows a note that nothing was sent. Narration uses your browser's built-in voice. If your browser has none, you get captions only.</p>
 </div></section>
 
-<section class="sec" id="cost"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">02</span> Cost</p>
-<h2>What it costs, and what you get</h2>
-<p class="lead">Pick the most you want to spend each month. We show the plan that fits and what the next step up adds.</p>
-<p class="mut small" id="cost-note" hidden></p></div>
 
-<p class="label" id="gatelabel">Your monthly budget</p>
-<div class="pchips" id="gates" role="radiogroup" aria-labelledby="gatelabel">
-<button type="button" role="radio" aria-checked="true" tabindex="0" data-g="0">Up to $15</button>
-<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="1">$30</button>
-<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="2">$50</button>
-<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="3">$100</button>
-<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="4">$200</button>
-</div>
-<div class="cards c3" id="gateout" aria-live="polite">
-<article class="card hl"><p class="label">Your plan</p><h3 id="g-plan"></h3><p id="g-get"></p></article>
-<article class="card"><p class="label">The step up from the previous gate</p><h3 id="g-stephead"></h3><p id="g-step"></p></article>
-</div>
 
-<div class="cards c4" aria-label="Claude plans">
-<article class="card"><h3>Free</h3><p><b>$0.</b> Sonnet and Haiku. Chat, web search, files, connectors, and artifacts. No Claude Code.</p></article>
-<article class="card"><h3>Pro</h3><p><b>$20 a month</b> ($17 a month billed yearly). Adds Opus, Claude Code, Projects, and Claude in Chrome.</p></article>
-<article class="card"><h3>Max</h3><p><b>$100 a month.</b> 5 times Pro's usage. $100 a month of API credits.</p></article>
-<article class="card"><h3>Ultra</h3><p><b>$200 a month.</b> 10 times Pro's weekly usage, no 5-hour limit for verified accounts. $200 a month of API credits.</p></article>
-</div>
-<p class="fine" style="margin-top:0">For comparison, ChatGPT: Go $8 a month, Plus $20 a month, Pro from $100 a month (<a class="link" href="https://chatgpt.com/pricing" target="_blank" rel="noopener">chatgpt.com/pricing</a>). Claude prices from <a class="link" href="https://claude.com/pricing" target="_blank" rel="noopener">claude.com/pricing</a>, November 2026. Plans change; check there.</p>
 
-<div class="note" style="margin:2.4rem 0 2rem"><p class="label">Our experience</p>
-<p>We run everything on one $200 plan. Our main assistant, Opus, hands each job to the model that fits: hard problems to the strongest, building to a mid-size model, quick fixes to the smallest. That keeps usage down. On that one plan we have built and run several websites, including this one, without paying anything extra.</p>
-<p class="mut small" style="margin:0">This is what happened for us, not a promise about your plan.</p></div>
 
-<div class="cards c2x">
-<article class="card"><h3>Tips to keep usage low</h3><ul>
-<li>Use the smallest model for small jobs.</li>
-<li>Start a new chat when one gets long.</li>
-<li>Let one main chat delegate.</li>
-<li>Keep files small and reuse them.</li></ul></article>
-<article class="card"><h3>Things you could be doing today for less than you think</h3><ul class="dolist">
-<li>Summarize your inbox each morning <span class="tag small">Free</span></li>
-<li>Draft replies <span class="tag small">Free</span></li>
-<li>Plan your week from your calendar <span class="tag small">Free</span></li>
-<li>Track subscriptions from email receipts <span class="tag small">Free</span></li>
-<li>Turn a voice note into a to-do list <span class="tag small">Free</span></li>
-<li>Research a purchase <span class="tag small">Free</span></li>
-<li>Make a family newsletter <span class="tag small">Free</span></li>
-<li>Build a personal website <span class="tag small">Pro</span></li></ul>
-<p class="mut small" style="margin:1rem 0 0">The tag shows the lowest plan where it works. Building websites needs Claude Code, which starts at Pro.</p></article>
-</div>
-</div></section>
-
-<section class="sec" id="contribute"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">03</span> Build it with us</p>
-<h2>Tell us how your work really works</h2>
-<p class="lead">The dashboard gets better with every workflow people share. Pick your profession, then record or type how you do your job: the tools, the routines, what slows you down, and what already works. We start with recruiting.</p></div>
-
-<div class="allmeter"><p class="label" id="allm">Professions with at least one entry: 0 of 0</p><div class="meter" role="img" aria-label="Overall completeness"><i style="width:0%"></i></div></div>
-
-<div class="prof-box">
-<p class="label" id="proflabel">Choose a profession</p>
-<div class="pchips" id="pchips" role="radiogroup" aria-labelledby="proflabel"></div>
-<div class="ppanel" id="ppanel" aria-live="polite"></div>
-</div>
-
-<form class="wform" id="wform" novalidate>
-<h3>Record or type your workflow</h3>
-<p class="note-opt">Everything here is optional. Fill in as much or as little as you like. More detail helps, including your company for possible future collaboration, but leave blank anything you'd rather not share. We read every comment.</p>
-<p class="mut small">Press the microphone next to a box and talk. Your words go into that box. You can also type.</p>
-<label for="f-prof">Profession category</label>
-<select id="f-prof" name="prof"></select>
-<label for="f-sug">Suggest a profession that isn't on this list</label>
-<input type="text" id="f-sug" name="sug">
-<label for="f-title">Job title</label>
-<input type="text" id="f-title" name="title">
-<label for="f-co">Company</label>
-<input type="text" id="f-co" name="company">
-<label for="f-tools">Name the tools you use</label>
-<input type="text" id="f-tools" name="tools" placeholder="For example: Slack, Outlook, Gmail, Microsoft Teams, Zoom, Jira, Salesforce, Workday">
-<label for="f-week">Walk us through a typical week</label>
-<textarea id="f-week" name="week" rows="4" placeholder="What do you do first, then next?"></textarea>
-<label for="f-hard">What makes it harder than it should be</label>
-<textarea id="f-hard" name="hard" rows="3"></textarea>
-<label for="f-good">What already works well</label>
-<textarea id="f-good" name="good" rows="3"></textarea>
-<div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
-<div class="row"><button type="submit" class="btn">Send by email</button></div>
-<p class="mut small">This opens your email app with your words ready to send to leo@universemodel.ai. Nothing is stored on this page.</p>
-</form>
-</div></section>
 
 <section class="sec" id="usecases"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">04</span> Use cases</p>
+<div class="shead"><p class="eyebrow">Try it safely</p>
 <h2>What the dashboard can do for you</h2>
-<p class="lead">The same dashboard serves many parts of life. Three use cases have a full breakdown below. The rest are in the dashboard already and get their own breakdown soon.</p></div>
+<p class="lead">Everything you saw in the video is here for you in a demo environment. Play around, stay safe, and see if you want this on your computer. Click any card to open it in the middle of the screen. Nothing is saved or sent.</p></div>
 <div class="cards c3 ucs">
-<a class="card uc built" href="#social"><span class="tag warm">Breakdown built</span><h3>Social</h3><p>Your page, your circles, and who sees where you are.</p><span class="link">See the breakdown</span></a>
-<a class="card uc built" href="#family"><span class="tag warm">Breakdown built</span><h3>Family</h3><p>A family tree, birthdays, and one button to reach everyone.</p><span class="link">See the breakdown</span></a>
-<a class="card uc built" href="#workflows"><span class="tag warm">Breakdown built</span><h3>Chores and workflows</h3><p>Press a button and finish a chore, from replies to trip plans.</p><span class="link">See the breakdown</span></a>
-<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Email</h3><p>Replies drafted from your voice notes.</p></div>
-<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Calendar</h3><p>Your agenda and trip planning.</p></div>
-<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Money</h3><p>A read-only money view and a subscription review.</p></div>
-<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Health</h3><p>Air quality, sleep, and meals tracked quietly.</p></div>
-<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Fun</h3><p>A TV screen that shows only new things, and music tips from friends.</p></div>
-<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Work</h3><p>One-button reports and an out-of-office that does the handoff.</p></div>
+<button type="button" class="card uc built" data-open="social"><span class="tag warm">Try the demo</span><h3>Social</h3><p>Your page, your circles, and who sees where you are.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="family"><span class="tag warm">Try the demo</span><h3>Family</h3><p>A family tree, birthdays, and one button to reach everyone.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="emails"><span class="tag warm">Try the demo</span><h3>Email</h3><p>Replies drafted from your voice notes.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="trip"><span class="tag warm">Try the demo</span><h3>Calendar</h3><p>Your agenda and trip planning with friends.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="money"><span class="tag warm">Try the demo</span><h3>Money</h3><p>A read-only money view and a subscription review.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="health"><span class="tag warm">Try the demo</span><h3>Health</h3><p>Air quality, sleep, and meals tracked quietly.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="tv"><span class="tag warm">Try the demo</span><h3>Fun</h3><p>A TV screen that shows only new things, and music tips from friends.</p><span class="link">Open</span></button>
+<button type="button" class="card uc built" data-open="report"><span class="tag warm">Try the demo</span><h3>Work</h3><p>One-button reports and an out-of-office that does the handoff.</p><span class="link">Open</span></button>
+<a class="card uc built" href="#chores"><span class="tag warm">Try the demos</span><h3>Chores and workflows</h3><p>Press a button and finish a chore, from replies to trip plans.</p><span class="link">Jump to the chores</span></a>
 </div>
+
+<div id="chores" class="cx-sub">
+<h3 class="cx-h3">Press a button, finish a chore</h3>
+<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Click any tile and go through the whole workflow.</p>
+<div class="wf">
+<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open</i></button>
+</div></div>
 </div></section>
 
 <section class="sec" id="social"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">05</span> Use case: Social</p>
+<div class="shead"><p class="eyebrow">Fostering and elevating relationships</p>
 <h2>Your page, your circles, your rules</h2>
 <p class="lead">The dashboard can double as a page about you, so you never need to buy a domain. You choose what is public, who can message you, and who can see where you are.</p>
 </div>
@@ -1278,9 +1518,10 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <div class="mockbox"><h3>Who can message whom</h3>
 <div class="rings" role="img" aria-label="Circles: you, close trusted friends, their close friends, everyone else"><i class="r4"></i><i class="r3"></i><i class="r2"></i><i class="r1"></i></div>
 <ul class="legend"><li><i class="k1"></i>You</li><li><i class="k2"></i>Close trusted friends</li><li><i class="k3"></i>Their close friends</li><li><i class="k4"></i>Everyone else, needs permission</li></ul>
-<p>Messages go straight through between close trusted friends and their close friends. Anything wider needs permission, with a reason attached.</p>
-<label class="sel" for="who">Try it: who are you messaging?</label>
-<select id="who"><option value="free">A close trusted friend</option><option value="free">A close friend of a close friend</option><option value="ask">A friend of a friend, two steps out</option><option value="ask">Someone outside your circles</option></select>
+<p class="cx-trust">We want people to be able to message each other, stay in touch, and see each other's information. We think you should trust your closest friends. If they are good people, it makes sense to trust their judgment one step removed. Beyond that, we are not sure, so anything wider needs permission, with a reason attached.</p>
+<button type="button" class="btn small ghost" data-cxplay="msgwho"><span class="play" aria-hidden="true"></span> Play</button>
+<label class="sel" for="who-msg">Try it: who are you messaging?</label>
+<select id="who-msg"><option value="free">A close trusted friend</option><option value="free">A close friend of a close friend</option><option value="ask">A friend of a friend, two steps out</option><option value="ask">Someone outside your circles</option></select>
 <p class="outcome" id="outcome" aria-live="polite"></p>
 <button type="button" class="btn" data-open="msg">Type message <svg class="mi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
 <p class="mut small">The dashboard may also suggest who to reach out to, such as a friend who loves music.</p></div>
@@ -1294,16 +1535,18 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <li><label><span>Best friend 5</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>
 </ul>
 <p class="mut small" id="locnote" aria-live="polite">Sharing with nobody.</p>
+<button type="button" class="btn small ghost" data-cxplay="location"><span class="play" aria-hidden="true"></span> Play a demo</button>
 <p class="mut small">If you listen to <a href="https://crimejunkiepodcast.com" target="_blank" rel="noopener">true crime</a>, you know it's wise to have at least one person who always knows where you are. Share your location with a best friend here, and they will have your history if the police ever need it.</p>
 <p class="mut small">The idea: close friends know you are safe and feel connected. You pick how long history is kept, and only the friends you choose can ever open it.</p></div>
 </div>
 </div></section>
 
 <section class="sec" id="family"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">06</span> Use case: Family</p>
+<div class="shead"><p class="eyebrow">Family</p>
 <h2>The people who matter, one button away</h2>
 <p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it. Reaching the whole family takes one click.</p>
 </div>
+<p class="cx-fam">If we find a single way for you and your family to get even just a little bit closer for free in five minutes, what's stopping you?<small>We expect you will recognize more than one use case on this page that has value for your family.</small></p>
 <div class="fam">
 <div class="famcard tree">
 <h3>Family tree</h3>
@@ -1336,82 +1579,103 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div>
 </div></section>
 
-<section class="sec" id="workflows"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">07</span> Use case: Chores and workflows</p>
-<h2>Press a button, finish a chore</h2>
-<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Click any tile and go through the whole workflow.</p>
-</div>
-<div class="wf">
-<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open</i></button>
-</div>
-</div></section>
 
 <section class="sec" id="benefits"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">08</span> Why it matters</p>
-<h2>Seven ways it pays you back</h2>
-<p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p>
+<div class="shead"><p class="eyebrow">Why it matters</p>
+<h2>Nine ways it pays you back</h2>
+<p class="lead">Every feature we imagine lands in one of nine buckets, with family first. If an idea does not help one of them, we leave it out. Press Play on any card to watch it work.</p>
 <p class="lead"><strong>It is good now and keeps getting better. The more you put in, the more it pays you back.</strong></p></div>
-<div class="cards c4 ben">
-<article class="card"><h3>Save money</h3><ul><li>Lights and thermostat turn off when rooms are empty.</li><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li></ul></article>
-<article class="card"><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul></article>
-<article class="card"><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funsies below.</li></ul></article>
-<article class="card hl"><h3>Forge family bonds</h3><ul><li>A family tree and inherited contacts.</li><li>Birthdays before they sneak up on you.</li><li>One button to message every cousin.</li></ul><a class="link" href="#family">See the family view</a></article>
-<article class="card"><h3>Explore places</h3><ul><li>A trip suggestion when your budget, calendar, and friends line up.</li><li>Events near you that match what you like.</li><li>Group plans without the group chat chaos.</li></ul></article>
-<article class="card"><h3>Try new activities</h3><ul><li>"Here is what people like you are trying. Want to try it?"</li><li>Ideas matched to your free time.</li><li>You always choose.</li></ul></article>
-<article class="card"><h3>Gains</h3><p class="mut small">Become better: health, reading, learning.</p><ul><li>Air quality, sleep, and meals tracked quietly.</li><li>A reading and learning plan you set.</li><li>A voice journal each night, kept private by default.</li></ul></article>
-</div>
+<div class="cx-ben"><article class="card hl"><span class="cx-bn">1</span><h3>Forge family bonds</h3><ul><li>A family tree and inherited contacts.</li><li>Birthdays before they sneak up on you.</li><li>One button to message every cousin.</li></ul><a class="link" href="#family">See the family view</a><button type="button" class="btn small" data-cxplay="family"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">2</span><h3>Save money</h3><ul><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li><li>Lights and thermostat turn off when rooms are empty.</li></ul><button type="button" class="btn small" data-cxplay="money"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">3</span><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul><button type="button" class="btn small" data-cxplay="time"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">4</span><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funsies below.</li></ul><button type="button" class="btn small" data-cxplay="fun"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">5</span><h3>Explore places</h3><ul><li>A trip suggestion when your budget, calendar, and friends line up.</li><li>Events near you that match what you like.</li><li>Group plans without the group chat chaos.</li></ul><button type="button" class="btn small" data-cxplay="explore"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">6</span><h3>Try new activities</h3><ul><li>"Here is what people like you are trying. Want to try it?"</li><li>Ideas matched to your free time.</li><li>You always choose.</li></ul><button type="button" class="btn small" data-cxplay="try"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">7</span><h3>Gains</h3><ul><li>Air quality, sleep, and meals tracked quietly.</li><li>A reading and learning plan you set.</li><li>A voice journal each night, kept private by default.</li></ul><button type="button" class="btn small" data-cxplay="gains"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">8</span><h3>Feel safer and calmer</h3><ul><li>Share your location with a best friend, person by person.</li><li>An out-of-office that hands off your open items.</li><li>You choose who sees what.</li></ul><button type="button" class="btn small" data-cxplay="safe"><span class="play" aria-hidden="true"></span> Play</button></article><article class="card"><span class="cx-bn">9</span><h3>Get more done at work</h3><ul><li>One-button reports from live numbers.</li><li>Work items you can action from home, if you choose.</li><li>A future state we build with you.</li></ul><button type="button" class="btn small" data-cxplay="work"><span class="play" aria-hidden="true"></span> Play</button></article></div>
 </div></section>
 
 <section class="sec" id="teaser"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">09</span> Roadmap</p>
+<div class="shead"><p class="eyebrow">Roadmap</p>
 <h2>Where this could be in 2036</h2>
-<p class="lead">If enough people start today, one dashboard could run the routine of a whole life: family, friends, work, money, and fun, with a privacy firewall between work and home.</p>
-<p class="lead"><strong>We ship a major release every quarter. Check back each quarter for new features.</strong></p>
-<p class="mut small"><span class="tag soft">Planned</span> Everything on this roadmap is planned, not promised. Quarters and contents can change as we learn from what people share.</p></div>
-<ol class="tl road">
-<li><span class="yr">Q1 2027</span><div><h3>First new breakdown <span class="tag soft">Planned</span></h3><p>The first of the use cases marked "Breakdown coming" gets its own full walkthrough.</p></div></li>
-<li><span class="yr">Q2 2027</span><div><h3>More use cases <span class="tag soft">Planned</span></h3><p>Another breakdown, plus new workflows drawn from what people share in the form above.</p></div></li>
-<li><span class="yr">Q3 2027</span><div><h3>More connectors <span class="tag soft">Planned</span></h3><p>More free connectors that raise your setup rating, and more of the dashboard in one place.</p></div></li>
-<li><span class="yr">Q4 2027</span><div><h3>A year of releases <span class="tag soft">Planned</span></h3><p>The fourth quarterly release, shaped by a year of feedback.</p></div></li>
-<li><span class="yr">2028 onward</span><div><h3>A release every quarter <span class="tag soft">Planned</span></h3><p>We keep the rhythm: one major release each quarter, each one a step toward the 2036 vision.</p></div></li>
-<li><span class="yr">2036</span><div><h3>The vision <span class="tag soft">Vision</span></h3><p>One dashboard for family, friends, work, money, and fun. We built a separate site that shows a day in that life.</p><a class="link" href="https://endgame.life">See life in 2036 at endgame.life</a></div></li>
-</ol>
-</div></section>
-
-<section class="sec" id="next"><div class="wrap">
-<div class="shead"><p class="eyebrow">Three ways to start</p>
-<h2>Pick one</h2></div>
-<div class="cards c3">
-<article class="card nxt hl"><h3>Take five minutes: set it up now</h3><p>Download the file, or copy and paste it. Your dashboard is ready in under 10 minutes.</p><a class="btn" href="#now">Set it up</a></article>
-<article class="card nxt"><h3>Take five minutes: help build the work dashboard</h3><p>Tell us your job title, the tools you use at work, and how you use them. It is anonymous, and none of it is sensitive.</p><button type="button" class="btn" id="wk-open" aria-controls="workform">Start the short form</button></article>
-<article class="card nxt"><h3>See the vision: the world in 2036</h3><p>If people start today, this is what the world could look like in 2036.</p><a class="btn" href="https://endgame.life" target="_blank" rel="noopener">Visit endgame.life</a></article>
+<p class="lead"><a class="link" href="https://endgame.life" target="_blank" rel="noopener">endgame.life</a> is another site in the HMR family. It shows our vision of what the future could look like ten years from the year we started creating these sites. We do not think we are too far away from it.</p></div>
+<div class="two">
+<article class="card hl"><h3>The vision, in short</h3>
+<p>We want to put control in the hands of individual people who are doing real work and finding ways to be more efficient. Our main aim is to empower people to empower others, so you become the kind of person who can help other people, because we think that feels good.</p>
+<p>We consistently take feedback from everybody. Time permitting, we put out major releases quarterly or more often.</p>
+<a class="btn" href="https://endgame.life" target="_blank" rel="noopener">See life in 2036 at endgame.life</a></article>
 </div>
 </div></section>
 
-<section class="sec" id="workform" hidden><div class="wrap">
-<form class="wform" id="wk-form" novalidate>
-<h3>Help build the work dashboard</h3>
-<p class="note-opt">Everything here is optional. Answers are anonymous unless you add a name. Do not include anything private or confidential. Your answers are saved on this device only. Nothing is sent from this page. You choose whether to copy them or email them to us.</p>
-<p class="mut small">Press the microphone next to a box and talk. You can also type.</p>
-<label for="wk-title">Job title</label>
-<input type="text" id="wk-title" autocomplete="off">
-<label for="wk-tools">Tools you use at work</label>
-<input type="text" id="wk-tools" autocomplete="off" placeholder="For example: Slack, Outlook, Zoom, Jira, Salesforce">
-<label for="wk-how">How you use them</label>
-<textarea id="wk-how" rows="4" placeholder="What do you do first, then next?"></textarea>
-<label for="wk-co">Company name (optional)</label>
-<input type="text" id="wk-co" autocomplete="off">
-<label for="wk-name">Your name (optional, only if you want credit)</label>
-<input type="text" id="wk-name" autocomplete="off">
-<div class="row" style="margin-top:1.2rem"><button type="submit" class="btn">Email it to us</button><button type="button" class="btn ghost" id="wk-copy">Copy my answers</button><button type="button" class="btn ghost" id="wk-clear">Clear</button></div>
-<p class="mut small" id="wk-status" role="status" aria-live="polite"></p>
-<p class="mut small">The email button opens your email app with your words ready to send to leo@universemodel.ai.</p>
+<section class="sec" id="contribute"><div class="wrap">
+<div class="shead"><p class="eyebrow">Build it with us</p>
+<h2>Tell us how your work really works</h2>
+<p class="lead">The personal dashboard is here now. The work dashboard is a future state, and we build it here, together. Once people have personal dashboards and see the value, we expect them to say at work, "we need this." We do not plan to be the salespeople. You will be.</p></div>
+
+<div class="two cx-story">
+<article class="card"><h3>How we expect it to go</h3>
+<ol class="cx-ol">
+<li>You build a personal dashboard.</li>
+<li>Your company agrees to bring a dashboard to work.</li>
+<li>The company sets its policies, and you decide what goes to your work account and what does not.</li>
+<li>Once those conditions are set, everything left over is automated, and what you chose to share is there.</li></ol></article>
+<article class="card"><h3>What could flow between home and work</h3>
+<ul>
+<li>A sense of community: the names of significant others and pets, birthdays, hobbies, and interests. Share a lot or a little. We hope people share more.</li>
+<li>Your home dashboard may reach your work calendar and to-do list, so you can add to them from your home computer.</li>
+<li>Forward a website you find at home to your work computer.</li>
+<li>If you feel like it, action a work email from home. We want your ideas for more of these that help both sides.</li></ul></article>
+</div>
+
+<div class="cx-vid"><button type="button" class="btn" data-cxplay="consult"><span class="play" aria-hidden="true"></span> Watch a consultant fill this in</button><span class="mut small">A short demo. The consultant's profession is not on the list, so they add it, then talk through their tools.</span></div>
+
+<div class="allmeter"><p class="label" id="allm">Professions with at least one entry: 0 of 0</p><div class="meter" role="img" aria-label="Overall completeness"><i style="width:0%"></i></div></div>
+
+<div class="cx-sug">
+<label for="f-sug">Suggest a profession that isn't on this list</label>
+<div class="cx-sugrow"><input type="text" id="f-sug" name="Suggested profession" form="wform" autocomplete="off"><button type="button" class="btn small" id="f-sug-add">Add it</button></div>
+<p class="mut small" id="f-sug-msg" role="status" aria-live="polite"></p>
+</div>
+
+<div class="prof-box">
+<p class="label" id="proflabel">Choose a profession</p>
+<div class="pchips" id="pchips" role="radiogroup" aria-labelledby="proflabel"></div>
+<div class="ppanel" id="ppanel" aria-live="polite"></div>
+</div>
+
+<form class="wform cx-wform" id="wform" novalidate data-hmr-anon-form data-hmr-subject="Workflow contribution" data-hmr-to="leo@universemodel.ai">
+<h3>Record or type how your work really works</h3>
+<p class="note-opt">Everything here is optional. Fill in as much or as little as you like. More detail helps, including your company for possible future collaboration, but leave blank anything you'd rather not share. We read every comment.</p>
+<p class="mut small">Press the microphone in any box and talk. When you are done, click the next microphone. You do not have to press stop.</p>
+<label for="f-prof">Profession category</label>
+<select id="f-prof" name="Profession category"></select>
+<label for="f-title">Job title</label>
+<input type="text" id="f-title" name="Job title">
+<label for="f-co">Company</label>
+<input type="text" id="f-co" name="Company">
+
+<h3 class="cx-h3">Your tools</h3>
+<p class="mut small">One row per tool. Say what you use it for in plain, objective words, then what annoys you, then how it could be better.</p>
+<div class="cx-tools" id="cx-tools" role="group" aria-label="Your tools">
+<div class="cx-th" aria-hidden="true"><span>Tool</span><span>What you use it for</span><span>Complaints</span><span>How it could be better</span></div>
+</div>
+<div class="row"><button type="button" class="btn small ghost" id="cx-addtool">Add another tool</button></div>
+
+<label for="f-other">Anything else you want us to know</label>
+<textarea id="f-other" name="Anything else" rows="3"></textarea>
+
+<div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
+<div class="row"><button type="button" class="btn" id="send-mail">Send by my personal email</button><button type="submit" class="btn ghost" id="send-anon">Submit anonymously</button></div>
+<p class="mut small">Send by my personal email opens your email app with your words ready, addressed to leo@universemodel.ai. Submit anonymously goes straight to us with no name and no email app.</p>
+<p class="cx-anonst" data-hmr-anon-status role="status" aria-live="polite"></p>
+<p class="mut small" id="cx-sendstatus" role="status" aria-live="polite"></p>
 </form>
 </div></section>
+
+<section class="sec" id="pitch"><div class="wrap">
+<div class="shead"><p class="eyebrow">If you are interested by now</p>
+<h2>Two ways to take part</h2></div>
+<div class="cards c3">
+<article class="card nxt hl"><span class="tag warm">Preferred</span><h3>Fill in the form, then paste the dashboard</h3><p>Take five minutes and fill in the form above. Anonymous is fine. It helps support the community. Then copy and paste the latest dashboard and run it.</p><div class="cta"><a class="btn" href="#contribute">Fill in the form</a><button type="button" class="btn ghost" data-copyall>Copy and paste the latest dashboard</button></div></article>
+<article class="card nxt"><h3>Or just set it up</h3><p>Skip the form and go straight to the setup. Your dashboard is ready in under 10 minutes.</p><a class="btn" href="#setup">Copy and paste it</a></article>
+<article class="card nxt"><h3>Then follow the build</h3><p>We email when a new version ships. It is free and open source.</p><a class="btn ghost" href="#subscribe">Follow the build</a></article>
+</div>
+<p class="mut small" id="pitch-status" role="status" aria-live="polite"></p>
+</div></section>
+
 
 </main>
 
@@ -1442,6 +1706,22 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <div class="dm-stage"><div class="md-app" id="md-app"></div></div>
 <p class="dm-cap" id="dm-cap" aria-live="polite"></p>
 </div></div>
+
+
+<div class="cx-fs" id="cxfs" hidden role="dialog" aria-modal="true" aria-labelledby="cxfs-t"><div class="cx-fh"><b id="cxfs-t">Your dashboard, full screen</b><span class="cta"><button type="button" class="btn small ghost" id="cxfs-replay">Replay</button><button type="button" class="btn small" id="cxfs-close">Close</button></span></div>
+<div class="cx-fb"><div class="cx-dash">
+<div class="cx-tile"><h4>Today, ranked</h4><ul><li>Reply to Mom <em>1</em></li><li>Send the weekly recap <em>2</em></li><li>Book the dentist <em>3</em></li></ul></div>
+<div class="cx-tile"><h4>Inbox, drafted</h4><ul><li>Family dinner <em>draft ready</em></li><li>Team update <em>draft ready</em></li></ul></div>
+<div class="cx-tile"><h4>Calendar</h4><ul><li>Today <em>2 events</em></li><li>Friday <em>free</em></li></ul></div>
+<div class="cx-tile"><h4>People who matter</h4><ul><li>Grandma <em>birthday soon</em></li><li>Cousins <em>message all</em></li></ul></div>
+<div class="cx-tile"><h4>Press a button, finish a chore</h4><ul><li>Family emails <em>open</em></li><li>Weekly report <em>open</em></li><li>Plan a trip <em>open</em></li></ul></div>
+<div class="cx-tile"><h4>Setup rating</h4><ul><li>Connected <em>more each week</em></li><li>Refreshed <em>just now</em></li></ul></div>
+</div></div>
+<p class="cx-ff" id="cxfs-cap" role="status" aria-live="polite"></p></div>
+
+<div class="cx-m" id="cxm" hidden><div class="cx-mw" role="dialog" aria-modal="true" aria-labelledby="cxm-title"><div class="cx-mh"><div><h2 id="cxm-title">Demo</h2><p class="mut small" id="cxm-sub"></p></div><button type="button" class="wclose" id="cxm-close">Close</button></div>
+<div class="cx-ms" id="cxm-scr" aria-live="polite"></div>
+<div class="cx-mf"><button type="button" class="btn small" id="cxm-replay">Replay</button><button type="button" class="btn small ghost" id="cxm-close2">Close</button></div></div></div>
 
 <div class="win-ov" id="winov" hidden><div class="win" id="win" role="dialog" aria-modal="true" aria-labelledby="wtitle" tabindex="-1"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1497,6 +1777,7 @@ Thanks for the partnership.</textarea><div class="ai-note" aria-live="polite"></
 <div class="whead"><div><h2 id="wtitle" tabindex="-1">Watch something new</h2><p class="mut small">Demo only. Titles are generic on purpose.</p></div><button type="button" class="wclose" data-close>Close</button></div>
 <div class="wbody">
 <div class="tvset"><label><input type="checkbox" checked id="tv-new"> Only new things</label><label><input type="checkbox" id="tv-re"> Open to rewatching</label><button type="button" class="btn small" id="tv-pick">Pick for me</button></div>
+<p class="mut small">Future state: once your dashboard connects to your streaming services, you rate what you watch with a strong no, no, yes, or strong yes, it tracks your favorite series, and it never shows you a show you dislike again. You never scroll through a movie menu again.</p>
 <p class="mut small" id="tv-msg" aria-live="polite">Showing your top 10 new picks for each side. Scroll inside a list.</p>
 <div class="tvcols"><div><h3>Movies</h3><ol id="tv-m"></ol></div><div><h3>Shows</h3><ol id="tv-s"></ol></div></div>
 <h3>Still airing</h3>
@@ -1873,6 +2154,59 @@ function openMsg(){
       q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var b=$('button',res);if(b)b.click()}});
     });
 }
+
+function openSocial(){
+  flowWindow('Your page, your circles, your rules','Demo only. Nothing is saved or sent.',
+  '<p class="mut">You choose what is public, who can message you, and who can see where you are. Try the switches.</p>'+
+  '<ul class="sws" id="sc-sw">'+['About me','Family tree','Interests and hobbies','Photos'].map(function(n){return '<li><label><span>'+n+'</span><span class="sw"><input type="checkbox" role="switch"><i></i></span></label></li>'}).join('')+'</ul>'+
+  '<p class="mut small" id="sc-pub" aria-live="polite">0 of 4 public</p>'+
+  '<label for="sc-who">Try it: who is messaging you?</label><select id="sc-who"><option value="free">A close trusted friend</option><option value="free">A close friend of a close friend</option><option value="ask">A friend of a friend, two steps out</option><option value="ask">Someone outside your circles</option></select>'+
+  '<p class="outcome" id="sc-out" aria-live="polite"></p>'+
+  '<h3 style="margin-top:1.2rem">Share your location with a best friend</h3><div class="sws"><label style="display:flex;gap:.6rem;align-items:center"><input type="checkbox" id="sc-loc"> Share with Best friend 1</label></div><p class="mut small" id="sc-locn" aria-live="polite">Sharing with nobody.</p>'+
+  '<div class="wfoot"><button type="button" class="btn ghost" data-close>Close</button></div>',
+  function(w){
+    var sw=$$('#sc-sw input',w),pb=$('#sc-pub',w);
+    sw.forEach(function(x){x.addEventListener('change',function(){pb.textContent=sw.filter(function(y){return y.checked}).length+' of '+sw.length+' public'})});
+    var who=$('#sc-who',w),out=$('#sc-out',w);
+    function u(){var ask=who.value==='ask';out.textContent=ask?'Needs permission first. They get a short request with your reason, and they can say no.':'Goes straight through. No request needed.';out.className='outcome '+(ask?'ask':'free')}
+    who.addEventListener('change',u);u();
+    $('#sc-loc',w).addEventListener('change',function(){$('#sc-locn',w).textContent=this.checked?'Sharing with Best friend 1. They get a notification. You can stop any time.':'Sharing with nobody.'});
+  });
+}
+function openFamily(){
+  flowWindow('The people who matter, one button away','Demo only. Nothing is sent.',
+  '<p class="mut">Parents own the family information, and children\'s dashboards inherit it. Reaching the whole family takes one click.</p>'+
+  '<div class="pick"><p class="label">Who should get it</p>'+['Cousin Dev','Cousin Mina','Cousin Theo','Cousin Ana'].map(function(n){return '<label><input type="checkbox" checked data-fname="'+n+'"> '+n+'</label>'}).join('')+'</div>'+
+  '<ul class="bd"><li><span>Grandma</span><em>Birthday in 9 days</em></li><li><span>Cousin Mina</span><em>Birthday in 3 weeks</em></li><li><span>Uncle</span><em>Birthday next month</em></li></ul>'+
+  '<div class="wfoot"><button type="button" class="btn ghost" data-close>Close</button><button type="button" class="btn" id="fm-go">Message all selected cousins</button></div>',
+  function(w){$('#fm-go',w).addEventListener('click',function(){
+    var names=$$('[data-fname]:checked',w).map(function(i){return i.dataset.fname});
+    if(!names.length){toast('Check at least one cousin first.');return}
+    composeWindow({title:'Message your cousins',to:names.join(', '),subj:'Hello from the family dashboard',body:'Hi everyone,\n\nI was thinking of you and wanted to say hello. How are you doing? Let\'s plan a video call soon.',done:'Sent to '+names.length+' cousin'+(names.length>1?'s':'')+' (demo)',send:'Send to all'});
+  })});
+}
+function openMoney(){
+  var SUBS=[['Streaming service A',12],['Music app',11],['Cloud storage',3],['Premium bundle',30]];
+  flowWindow('Money: your subscriptions','Demo only. Example data. Nothing is cancelled.',
+  '<p class="mut">Here are the subscriptions we found in your email, and what each one costs. Uncheck any you want to cancel.</p>'+
+  '<div class="pick">'+SUBS.map(function(s,i){return '<label><input type="checkbox" checked data-i="'+i+'"> '+s[0]+' <em class="mut small">$'+s[1]+' a month</em></label>'}).join('')+'</div>'+
+  '<p class="outcome" id="mn-out" aria-live="polite">Keeping all four.</p>'+
+  '<div class="wfoot"><button type="button" class="btn ghost" id="mn-save">I want to save money today</button><button type="button" class="btn" id="mn-go">Submit</button></div>',
+  function(w){
+    var bx=$$('[data-i]',w),out=$('#mn-out',w);
+    function gone(){return bx.reduce(function(t,b){return t+(b.checked?0:SUBS[+b.dataset.i][1])},0)}
+    bx.forEach(function(b){b.addEventListener('change',function(){var g=gone();out.textContent=g?'Cancelling these saves $'+g+' a month.':'Keeping all four.'})});
+    $('#mn-go',w).addEventListener('click',function(){var g=gone();out.textContent=g?'We have started cancelling. You are now saving $'+g+' a month. Demo only.':'Nothing to cancel. You keep all four.'});
+    $('#mn-save',w).addEventListener('click',function(){out.textContent='You wanted to take a trip. The price now is the lowest we have seen in the past year (example). Want us to book it? Demo only, so nothing is booked.'});
+  });
+}
+function openHealth(){
+  flowWindow('Health, tracked quietly','Demo only. Example data. Nothing is saved.',
+  '<p class="mut">Switch on what you want tracked. It stays private by default.</p>'+
+  '<ul class="sws" id="hl-sw">'+[['Air quality','Example: good today'],['Sleep','Example: steady this week'],['Meals','Example: logged']].map(function(r){return '<li><label><span>'+r[0]+' <em class="mut small">'+r[1]+'</em></span><span class="sw"><input type="checkbox" role="switch" checked><i></i></span></label></li>'}).join('')+'</ul>'+
+  '<p class="mut small" id="hl-n" aria-live="polite">Tracking 3 things, privately.</p><div class="wfoot"><button type="button" class="btn ghost" data-close>Close</button></div>',
+  function(w){var sw=$$('#hl-sw input',w);sw.forEach(function(x){x.addEventListener('change',function(){$('#hl-n',w).textContent='Tracking '+sw.filter(function(y){return y.checked}).length+' things, privately.'})})});
+}
 var OPEN={
   prof:function(b){openProf(b)},
   msg:function(){openMsg()},
@@ -1881,6 +2215,7 @@ var OPEN={
   ooo:function(){openWin('ooo',initOoo)},
   tv:function(){openWin('tv',initTv)},
   trip:function(){openWin('trip',initTrip)},
+  social:function(){openSocial()},family:function(){openFamily()},money:function(){openMoney()},health:function(){openHealth()},
   cousins:function(){
     var names=$$('.pick input:checked').map(function(i){return i.dataset.name});
     if(!names.length){toast('Check at least one cousin first.');return}
@@ -1897,7 +2232,7 @@ var OPEN={
   var rate=$('#rate'),rf=$('#refresh');
   function r(){var v=+rate.value;rf.textContent=v?'Last refreshed: just now. Next refresh in '+(v>=1440?'a day':v>=60?'an hour':'15 minutes')+'.':'Last refreshed: when you opened it.'}
   rate.addEventListener('change',r);r();
-  var who=$('#who'),oc=$('#outcome');
+  var who=$('#who-msg'),oc=$('#outcome');
   function w(){var ask=who.value==='ask';oc.textContent=ask?'Needs permission first. They get a short request with your reason, and they can say no.':'Goes straight through. No request needed.';oc.className='outcome '+(ask?'ask':'free')}
   who.addEventListener('change',w);w();
   var sw=$$('#prof .sw input'),pc=$('#pubcount');
@@ -1911,12 +2246,14 @@ var OPEN={
 /* ---------- professions ---------- */
 var PROF=['Recruiting','Software engineering','Product management','Design','Data and analytics','Sales','Marketing','Customer support','Operations','Finance and accounting','Human resources','Legal','Nursing and healthcare','Teaching and education','Skilled trades','Construction','Retail','Restaurants and hospitality','Real estate','Logistics and transportation','Manufacturing','Public service','Nonprofit work','Science and research','Writing and journalism','Film, music, and arts','Farming and agriculture','Caregiving and parenting','Students','Small business owners','Freelancers','Something else'];
 (function(){
-  var box=$('#pchips'),pn=$('#ppanel'),sel=$('#f-prof');
-  PROF.forEach(function(p,i){
-    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.setAttribute('aria-checked',i===0?'true':'false');b.tabIndex=i===0?0:-1;b.textContent=p;b.dataset.i=i;box.appendChild(b);
+  var box=$('#pchips'),pn=$('#ppanel'),sel=$('#f-prof'),tools=$('#cx-tools'),NT=0,fill=$('#emfill'),lab=$('#emlabel');
+  function chip(p,i,custom){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.setAttribute('aria-checked','false');b.tabIndex=-1;b.textContent=p;b.dataset.i=i;if(custom)b.className='cx-custom';box.appendChild(b);
     var o=document.createElement('option');o.textContent=p;sel.appendChild(o);
-  });
-  $('#allm').textContent='Professions with at least one entry: 0 of '+PROF.length;
+  }
+  PROF.forEach(function(p,i){chip(p,i,false)});
+  function count(){$('#allm').textContent='Professions with at least one entry: 0 of '+PROF.length}
+  count();
   function show(i){
     $$('button',box).forEach(function(b,k){b.setAttribute('aria-checked',k===i?'true':'false');b.tabIndex=k===i?0:-1});
     sel.selectedIndex=i;
@@ -1924,9 +2261,9 @@ var PROF=['Recruiting','Software engineering','Product management','Design','Dat
     pn.innerHTML='<div class="phead"><h3>'+esc(p)+'</h3><span class="tag'+(rec?'':' soft')+'">'+(rec?'Open now, first in line':'Open for the first entry')+'</span></div>'+
     '<div class="meter" role="img" aria-label="0 of 10 contributors so far"><i style="width:0%"></i></div>'+
     '<p class="count"><strong>0 contributors so far.</strong> Goal: 10 to feel complete.</p>'+
-    (rec?'<p>We want to hear about your tools: an applicant tracking system such as Greenhouse, a CRM, outbound tools such as LinkedIn and Gem, and AI assistants such as Claude. We know least about how offers get approved and what happens after a candidate is hired.</p>':'<p>Tell us your tools, your weekly routines, what slows you down, and what already works well in '+esc(p.toLowerCase())+'.</p>')+
+    (rec?'<p>We want to hear about your tools: an applicant tracking system such as Greenhouse, a CRM, outbound tools such as LinkedIn and Gem, and AI assistants such as Claude. We know least about how offers get approved and what happens after a candidate is hired.</p>':'<p>Tell us your tools, what you use each one for, what annoys you, and how it could be better in '+esc(p.toLowerCase())+'.</p>')+
     '<div class="empty"><strong>No entries yet</strong><span>Be the first.</span><a class="btn" href="#wform" data-go>Add the first entry</a></div>';
-    $('[data-go]',pn).addEventListener('click',function(){setTimeout(function(){$('#f-tools').focus({preventScroll:true})},400)});
+    $('[data-go]',pn).addEventListener('click',function(){setTimeout(function(){var f=$('#tool-0');if(f)f.focus({preventScroll:true})},400)});
   }
   box.addEventListener('click',function(e){var b=e.target.closest('button');if(b)show(+b.dataset.i)});
   box.addEventListener('keydown',function(e){
@@ -1935,15 +2272,59 @@ var PROF=['Recruiting','Software engineering','Product management','Design','Dat
   });
   sel.addEventListener('change',function(){show(sel.selectedIndex)});
   show(0);
-  var ids=$$('#wform select, #wform input, #wform textarea').map(function(x){return x.id}),fill=$('#emfill'),lab=$('#emlabel');
-  function em(){var n=ids.filter(function(i){return $('#'+i).value.trim().length>0}).length,pc=Math.round(n/ids.length*100);fill.style.width=pc+'%';lab.textContent='Your entry is '+pc+'% complete'}
-  ids.forEach(function(i){$('#'+i).addEventListener('input',em);$('#'+i).addEventListener('change',em)});em();
-  $('#wform').addEventListener('submit',function(e){
-    e.preventDefault();
-    var g=function(i){return $('#'+i).value.trim()};
-    var body='Profession category: '+sel.value+'\nSuggested profession: '+g('f-sug')+'\nJob title: '+g('f-title')+'\nCompany: '+g('f-co')+'\n\nTools I use:\n'+g('f-tools')+'\n\nA typical week:\n'+g('f-week')+'\n\nWhat makes it harder:\n'+g('f-hard')+'\n\nWhat already works:\n'+g('f-good')+'\n';
-    location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Workflow: '+sel.value)+'&body='+encodeURIComponent(body);
+  /* suggest a profession: appears as a chip, selected, and fills the category */
+  var sug=$('#f-sug'),sm=$('#f-sug-msg');
+  function addCustom(){
+    var v=sug.value.trim().replace(/\s+/g,' ');if(!v)return;
+    var ix=PROF.findIndex(function(p){return p.toLowerCase()===v.toLowerCase()});
+    if(ix<0){v=v.charAt(0).toUpperCase()+v.slice(1);PROF.push(v);ix=PROF.length-1;chip(v,ix,true);count();sm.textContent=v+' is added to the list and selected for you.'}
+    else sm.textContent=PROF[ix]+' is already on the list. We selected it for you.';
+    show(ix);
+  }
+  $('#f-sug-add').addEventListener('click',addCustom);
+  sug.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addCustom()}});
+  var sugT;sug.addEventListener('input',function(){clearTimeout(sugT);sugT=setTimeout(function(){if(sug.value.trim().length>2&&sug.dataset.touched!=='typing'){}},0)});
+  sug.addEventListener('change',addCustom);
+  /* tools as columns */
+  var HEAD=['Tool','What you use it for','Complaints','How it could be better'];
+  function addRow(){
+    var n=NT++,r=document.createElement('div');r.className='cx-tr';
+    var h='';
+    ['tool','use','complaint','better'].forEach(function(k,c){
+      var id=(c===0?'tool-':k+'-')+n,al='Tool '+(n+1)+': '+HEAD[c],nm=HEAD[c]+' '+(n+1);
+      h+='<div class="cx-c"><label for="'+id+'">'+HEAD[c]+'</label>'+(c===0?'<input type="text" id="'+id+'" name="'+nm+'" aria-label="'+al+'" autocomplete="off">':'<textarea id="'+id+'" name="'+nm+'" rows="2" aria-label="'+al+'"></textarea>')+'</div>';
+    });
+    r.innerHTML=h;tools.appendChild(r);enhance(r);em();return r;
+  }
+  for(var q=0;q<3;q++)addRow();
+  $('#cx-addtool').addEventListener('click',function(){var r=addRow();var f=$('input',r);if(f)f.focus()});
+  /* completeness */
+  function fields(){return $$('#wform select, #wform input, #wform textarea').filter(function(x){return x.name&&x.id!=='f-prof'})}
+  function em(){var f=fields(),n=f.filter(function(x){return x.value.trim().length>0}).length,pc=f.length?Math.min(100,Math.round(n/Math.max(8,Math.min(f.length,12))*100)):0;fill.style.width=pc+'%';lab.textContent='Your entry is '+pc+'% complete'}
+  $('#wform').addEventListener('input',em);$('#wform').addEventListener('change',em);em();
+  function g(id){var e=$('#'+id);return e?e.value.trim():''}
+  function text(){
+    var t='Workflow contribution\n\nProfession category: '+sel.value+'\nJob title: '+g('f-title')+'\nCompany: '+g('f-co')+'\n';
+    for(var i=0;i<NT;i++){var a=g('tool-'+i),b=g('use-'+i),c=g('complaint-'+i),d=g('better-'+i);if(a||b||c||d)t+='\nTool: '+a+'\nWhat I use it for: '+b+'\nComplaints: '+c+'\nHow it could be better: '+d+'\n'}
+    if(g('f-other'))t+='\nAnything else:\n'+g('f-other')+'\n';
+    return t;
+  }
+  function any(){return fields().some(function(x){return x.id!=='f-sug'&&x.value.trim()})}
+  var ss=$('#cx-sendstatus');
+  $('#send-mail').addEventListener('click',function(){
+    if(!any()){ss.textContent='Add at least one answer first.';return}
+    location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Workflow: '+sel.value)+'&body='+encodeURIComponent(text());
+    ss.textContent='Your email app should open with your words ready to send.';
   });
+  var form=$('#wform'),ast=$('[data-hmr-anon-status]',form);
+  /* The shared dock sends forms with data-hmr-anon-form. This earlier hook only stops an empty submit. */
+  window.addEventListener('submit',function(e){
+    if(e.target!==form)return;
+    ss.textContent='';
+    if(!any()){e.preventDefault();e.stopImmediatePropagation();ast.textContent='';ss.textContent='Add at least one answer first.'}
+  },true);
+  form.addEventListener('reset',function(){setTimeout(em,0)});
+  window.cbEnhance=enhance;
   enhance(document);
 })();
 
@@ -2022,22 +2403,22 @@ document.addEventListener('pointermove',function(e){
   if(RM||e.pointerType==='touch')return;
   if(trailOn)sparkle(e.clientX,e.clientY);
   var dx=e.clientX-lastMove.x,dy=e.clientY-lastMove.y,n=performance.now();
-  if(dx*dx+dy*dy>900&&n-lastMove.t>45&&ov.hidden){lastMove={x:e.clientX,y:e.clientY,t:n};ring(e.clientX,e.clientY,3.2,1.1,300)}
+  lastMove={x:e.clientX,y:e.clientY,t:n};
 },{passive:true});
 document.addEventListener('pointerdown',function(e){
   if(e.button>0||RM)return;
   if(e.target.closest(EMPTYSKIP)||!ov.hidden)return;
   down={t:performance.now(),x:e.clientX,y:e.clientY};
-  ring(e.clientX,e.clientY,8,1.6,380);
+  ring(e.clientX,e.clientY,3.5,1.3,320);
   clearInterval(holdTimer);
   holdTimer=setInterval(function(){
     if(!down)return;var h=performance.now()-down.t;
-    ring(down.x,down.y,Math.min(26,8+h/70),2.2,420+h/6);
+    ring(down.x,down.y,Math.min(8,3.5+h/300),1.8,340+h/10);
   },160);
 });
 function release(){
   clearInterval(holdTimer);
-  if(down){var h=performance.now()-down.t;if(h>350)ring(down.x,down.y,Math.min(46,16+h/40),3.2,560+Math.min(h,1800)/4);down=null}
+  if(down){var h=performance.now()-down.t;if(h>350)ring(down.x,down.y,Math.min(10,5+h/400),2.4,380+Math.min(h,1800)/8);down=null}
 }
 document.addEventListener('pointerup',release);document.addEventListener('pointercancel',release);
 
@@ -2151,10 +2532,10 @@ function copyText(txt,done){
 /* ---------- who are you ---------- */
 var KEY='cbProfile',TN={1:'new to AI',2:'uses AI some',3:'a super user'};
 var AIN={claude:'Claude',chatgpt:'ChatGPT',gemini:'Gemini',copilot:'Copilot',other:'another assistant'};
-var TL={1:'New to AI? It is a text file, it is safe, and setup takes under 10 minutes.',2:'You know how to prompt. Here is what you are probably missing.',3:'You know the models. You are critical to this movement.'};
+var TL={1:'New to AI? It is plain text, it is safe, and setup takes under 10 minutes.',2:'You know how to prompt. Here is what you are probably missing.',3:'You know the models. You are critical to this movement.'};
 var main=$('#main'),ORIG=$$('#main>*'),IDS={};
 ORIG.forEach(function(el){if(el.id)IDS[el.id]=el});
-var FRONT={1:['t1','paste','now','demos'],2:['t2','demos','now','paste'],3:['t3','contribute','demos','now']};
+var FRONT={1:['t1','setup','first','second'],2:['t2','first','second','setup'],3:['t3','contribute','first','second']};
 var state=null,showAll=false,pick=0;
 function load(){
   try{var o=JSON.parse(lsGet(KEY)||'null');
@@ -2173,7 +2554,7 @@ function noteHTML(s){
     h+='<p><b>On a free plan you may miss:</b></p><ul>'+
     '<li>Connectors. Which ones you can connect, and how many, depends on your assistant and plan. Check its connector list.</li>'+
     '<li>Usage room. Free plans have usage limits, so a long setup chat may pause until the limit resets.</li>'+
-    '<li>The strongest models. On Claude Free, that means no Opus and no Claude Code. See Cost below.</li>'+
+    '<li>The strongest models. On Claude Free, that means no Opus and no Claude Code. See Cost above.</li>'+
     '<li>A schedule. Your dashboard updates itself only if your assistant can run scheduled tasks. If it cannot, you say "refresh my dashboard."</li></ul>'+
     '<p class="mut small">Our file is free either way, and we get nothing from it. What you get on the assistant side depends on what you pay that company.</p>';
   }else if(s.plan==='paid'){
@@ -2241,32 +2622,6 @@ state=load();fillForm(state);render();
     else{msg.textContent='Switch each item on or off yourself. Nothing is decided for you. Illustration only.'}
   })});
   mark('all');
-})();
-
-/* ---------- copy and paste page ---------- */
-(function(){
-  var box=$('#paste-box'),st=$('#paste-status');
-  fetch('/dashboard/claudebomb-dashboard.md',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('http');return r.text()}).then(function(t){box.value=t}).catch(function(){box.value='We could not load the text here. Download the file instead: /dashboard/claudebomb-dashboard.md'});
-  $('#paste-copy').addEventListener('click',function(){
-    if(/^(Loading|We could not)/.test(box.value)){st.textContent='The text has not loaded yet.';return}
-    copyText(box.value,function(ok){st.textContent=ok?'Copied. Now paste it into a new chat in your assistant.':'Copy failed. Click in the box, press Ctrl+A or Command+A, then copy.'});
-  });
-})();
-
-/* ---------- work dashboard short form ---------- */
-(function(){
-  var wf=$('#workform'),KEYW='cbWorkDraft',F=['wk-title','wk-tools','wk-how','wk-co','wk-name'],st=$('#wk-status');
-  function g(i){return $('#'+i).value.trim()}
-  try{var d=JSON.parse(lsGet(KEYW)||'{}');F.forEach(function(i){if(d&&typeof d[i]==='string')$('#'+i).value=d[i]})}catch(e){}
-  function save(){var d={};F.forEach(function(i){d[i]=$('#'+i).value});lsSet(KEYW,JSON.stringify(d))}
-  F.forEach(function(i){$('#'+i).addEventListener('input',save)});
-  function text(){return 'Work dashboard idea (anonymous unless a name is given)\n\nJob title: '+g('wk-title')+'\nTools I use at work: '+g('wk-tools')+'\nHow I use them: '+g('wk-how')+'\nCompany (optional): '+g('wk-co')+'\nName (optional): '+g('wk-name')+'\n'}
-  function any(){return F.some(function(i){return g(i)})}
-  $('#wk-open').addEventListener('click',function(){wf.hidden=false;wf.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});setTimeout(function(){$('#wk-title').focus({preventScroll:true})},RM?0:350)});
-  $('#wk-form').addEventListener('submit',function(e){e.preventDefault();if(!any()){st.textContent='Add at least one answer first.';return}
-    location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Work dashboard idea')+'&body='+encodeURIComponent(text());st.textContent='Your email app should open. Nothing was sent from this page.'});
-  $('#wk-copy').addEventListener('click',function(){if(!any()){st.textContent='Add at least one answer first.';return}copyText(text(),function(ok){st.textContent=ok?'Copied. Paste it into an email or message to us.':'Copy failed. Select the text by hand.'})});
-  $('#wk-clear').addEventListener('click',function(){F.forEach(function(i){$('#'+i).value=''});lsDel(KEYW);st.textContent='Cleared.'});
 })();
 
 /* ---------- demos ---------- */
@@ -2466,6 +2821,380 @@ document.addEventListener('keydown',function(e){
 });
 })();
 
+</script>
+<script>
+(function(){
+'use strict';
+var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function toast(m){var t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('on')},3000)}
+function copyText(txt,done){
+  function fb(){var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;left:-999px;top:0';document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(x){}document.body.removeChild(ta);done(ok)}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){done(true)},fb);else fb();
+}
+/* ---------- sequencer ---------- */
+function Seq(){this.id=0;this.t=null;this.iv=[];this.onend=null}
+Seq.prototype.stop=function(){this.id++;clearTimeout(this.t);this.iv.forEach(clearInterval);this.iv=[]};
+Seq.prototype.run=function(steps,from){
+  var me=this,i=0;me.stop();var id=me.id;
+  if(from){while(i<steps.length&&steps[i].mark!==from){steps[i].fn(true);i++}}
+  function next(){
+    if(me.id!==id)return;
+    if(i>=steps.length){if(me.onend)me.onend();return}
+    var s=steps[i++];
+    me.t=setTimeout(function(){if(me.id!==id)return;s.fn(RM);next()},RM?0:s.ms);
+  }
+  next();
+};
+Seq.prototype.type=function(el,text,instant,cb){
+  var me=this;
+  if(instant||RM){el.textContent=text;if(cb)cb();return}
+  var n=0,iv=setInterval(function(){n+=2;el.textContent=text.slice(0,n);if(n>=text.length){clearInterval(iv);if(cb)cb()}},22);
+  me.iv.push(iv);
+};
+function typeMs(t){return RM?0:Math.min(2600,t.length*11+300)}
+
+/* ---------- copy buttons and boxes ---------- */
+var FULL='';
+function loadAll(){
+  if(loadAll.p)return loadAll.p;
+  function get(u){return fetch(u,{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('http');return r.text()})}
+  loadAll.p=Promise.all([get('/setup/claude-setup-guide.md'),get('/dashboard/claudebomb-dashboard.md')]).then(function(a){FULL=a[0].replace(/\s+$/,'')+'\n\n---\n\nThe dashboard instructions follow. Read them after the setup guide above.\n\n---\n\n'+a[1];return FULL}).catch(function(e){loadAll.p=null;throw e});
+  return loadAll.p;
+}
+var box=$('#paste-box'),st=$('#paste-status');
+function setStatus(t){if(st)st.textContent=t}
+function doCopyAll(statusEl){
+  var out=statusEl||st;
+  loadAll().then(function(t){copyText(t,function(ok){out.textContent=ok?'Copied. Now open a new chat in your AI assistant, paste, and send.':'Copy failed. Press Read it first, click in the box, press Ctrl+A or Command+A, then copy.';if(ok)toast('Copied. Paste it into a new chat.')})}).catch(function(){out.textContent='We could not load the text. Open the setup guide on GitHub and copy it from there.'});
+}
+$('#cp-go').addEventListener('click',function(){doCopyAll(st)});
+$('#cp-go2').addEventListener('click',function(){doCopyAll(st)});
+$('#cp-read').addEventListener('click',function(){
+  var v=$('#paste-view'),b=this,open=v.hidden;
+  v.hidden=!open;b.setAttribute('aria-expanded',open?'true':'false');b.textContent=open?'Hide the text':'Read it first';
+  if(open){box.value='Loading the text...';loadAll().then(function(t){box.value=t}).catch(function(){box.value='We could not load the text here. Open the setup guide on GitHub instead.'})}
+});
+$$('[data-copy]').forEach(function(b){b.addEventListener('click',function(){
+  var el=$(b.dataset.copy);if(!el)return;
+  copyText(el.textContent.trim(),function(ok){var o=b.textContent;b.textContent=ok?'Copied':'Copy failed';setTimeout(function(){b.textContent=o},1800)});
+})});
+$$('[data-copyall]').forEach(function(b){b.addEventListener('click',function(){doCopyAll($('#pitch-status'))})});
+/* ---------- reveal cost ---------- */
+function revealCost(focus){
+  var c=$('#cost');c.hidden=false;
+  $$('[data-reveal="cost"]').forEach(function(b){b.setAttribute('aria-expanded','true')});
+  if(focus!==false)c.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});
+}
+$$('[data-reveal="cost"]').forEach(function(b){b.addEventListener('click',function(){revealCost()})});
+$$('a[href="#cost"]').forEach(function(a){a.addEventListener('click',function(){revealCost(false)})});
+if(location.hash==='#cost')revealCost();
+/* ---------- level qualifier ---------- */
+var QUAL={
+1:['Level 1: New to AI','You have never used AI, or you only chat with it. Nothing is connected to it, and you may not know what a model, a plan, or a connector is. That is a fine place to start. This is where most of the people who gain the most begin.','What happens first, in about five minutes','#first'],
+2:['Level 2: I use AI some','You know how to prompt. You may use AI a few times a week. You are not sure about plans, models, or connectors, and you suspect you are missing something. Check the connector list in your assistant for email, calendar, files, and team chat. Each one you have not connected is something you are missing.','See what happens first','#first'],
+3:['Level 3: Super user','You know the models, such as Opus and Sonnet, and you choose between them on purpose. You have connected your tools and you want to help others get there. You are critical to this movement, because you know what we are missing.','Tell us how your work really works','#contribute']
+};
+(function(){
+  var tiers=$('#tiers');if(!tiers)return;
+  var q=document.createElement('div');q.className='cx-qual';q.id='cx-qual';q.setAttribute('aria-live','polite');
+  q.innerHTML='<div><article class="card"><h3></h3><p></p><div class="cta"><a class="btn small"></a></div></article></div>';
+  tiers.parentNode.insertBefore(q,tiers.nextSibling);
+  function show(n){
+    var d=QUAL[n];if(!d)return;
+    $('h3',q).textContent=d[0];$('p',q).textContent=d[1];var a=$('a',q);a.textContent=d[2];a.setAttribute('href',d[3]);
+    q.classList.add('on');
+  }
+  tiers.addEventListener('click',function(e){var b=e.target.closest('.tier');if(b)show(+b.dataset.tier)});
+  tiers.addEventListener('keydown',function(e){if(['ArrowRight','ArrowDown','ArrowLeft','ArrowUp'].indexOf(e.key)>-1)setTimeout(function(){var c=$('#tiers .tier[aria-checked=true]');if(c)show(+c.dataset.tier)},0)});
+  $$('#tiers .tier').forEach(function(b){var h=document.createElement('span');h.className='cx-hint';h.textContent='Click to see what qualifies you';b.appendChild(h)});
+})();
+
+/* ---------- curve animation ---------- */
+(function(){
+  var svg=$('#cxcurve svg');if(!svg)return;
+  var P=$('#cxpath'),L=P.getTotalLength(),figs=$('#cxfigs'),arms=$('#cxarms'),NS='http://www.w3.org/2000/svg';
+  var seq=new Seq();
+  function at(t){var p=P.getPointAtLength(Math.max(0,Math.min(1,t))*L);return {x:p.x,y:p.y}}
+  var CL=[.07,.19,.31,.43],CT=[.58,.64,.7,.76],HP=[.84,.94];
+  var cl=[],hp=[];
+  function mk(t){var g=document.createElementNS(NS,'use');g.setAttributeHref?g.setAttributeHref('#cxfig'):g.setAttribute('href','#cxfig');figs.appendChild(g);var o={g:g,t:t};place(o);return o}
+  function place(o){var p=at(o.t);o.x=p.x;o.y=p.y;o.g.setAttribute('transform','translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+')')}
+  function lerp(a,b,e){return a+(b-a)*e}
+  function shoulder(o){return {x:o.x,y:o.y-20}}
+  function arm(a,b,e,k){
+    var s=shoulder(a),t=shoulder(b),ex=lerp(s.x,t.x,e),ey=lerp(s.y,t.y,e);
+    var cx=(s.x+ex)/2+(k||0),cy=(s.y+ey)/2-24;
+    k=k||0;
+    var el=arm.el;if(!el){el=arm.el=document.createElementNS(NS,'path');el.setAttribute('fill','none');el.setAttribute('stroke','url(#cxarm)');el.setAttribute('stroke-width','7');el.setAttribute('stroke-linecap','round');arms.appendChild(el);
+      var h=arm.hand=document.createElementNS(NS,'circle');h.setAttribute('r','6');h.setAttribute('fill','#fff');h.setAttribute('stroke','var(--acc)');h.setAttribute('stroke-width','2');arms.appendChild(h)}
+    el.setAttribute('d','M'+s.x.toFixed(1)+' '+s.y.toFixed(1)+' Q'+cx.toFixed(1)+' '+cy.toFixed(1)+' '+ex.toFixed(1)+' '+ey.toFixed(1));
+    arm.hand.setAttribute('cx',ex.toFixed(1));arm.hand.setAttribute('cy',ey.toFixed(1));
+    el.style.opacity=arm.hand.style.opacity=1;
+  }
+  function armOff(){if(arm.el){arm.el.style.opacity=0;arm.hand.style.opacity=0}}
+  function ease(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2}
+  function tween(ms,fn,id){return new Promise(function(res){
+    if(RM){fn(1);res();return}
+    var t0=performance.now();
+    function f(n){if(seq.id!==id){res();return}var x=Math.min(1,(n-t0)/ms);fn(ease(x));if(x<1)requestAnimationFrame(f);else res()}
+    requestAnimationFrame(f);
+  })}
+  function reset(){
+    figs.innerHTML='';arms.innerHTML='';arm.el=null;
+    cl=CL.map(mk);hp=HP.map(mk);
+    $('#cxglow').setAttribute('opacity',0);
+    $('#cxcurvecap').textContent='People at the top of the AI curve reach down and lift everyone up.';
+  }
+  function final(){
+    reset();cl.forEach(function(o,i){o.t=CT[i];place(o)});$('#cxglow').setAttribute('opacity',1);
+    $('#cxcurvecap').textContent='Everyone is lifted. This site is your helping hand.';
+  }
+  async function play(){
+    seq.stop();var id=seq.id;
+    if(RM){final();return}
+    reset();
+    for(var i=0;i<cl.length;i++){
+      if(seq.id!==id)return;
+      var c=cl[i],h=hp[i%2],from=c.t,to=CT[i];
+      await tween(700,function(e){arm(h,c,e,-18)},id);
+      await tween(1100,function(e){c.t=lerp(from,to,e);place(c);arm(h,c,1,-18)},id);
+      await tween(350,function(e){arm(h,c,1-e*.0,-18);arm.el.style.opacity=1-e;arm.hand.style.opacity=1-e},id);
+      armOff();
+    }
+    if(seq.id!==id)return;
+    $('#cxglow').setAttribute('opacity',1);
+    $('#cxcurvecap').textContent='Everyone is lifted. This site is your helping hand.';
+  }
+  reset();
+  $('#cxcurve-replay').addEventListener('click',play);
+  if(RM){final()}
+  else if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.disconnect();setTimeout(play,350)}})},{threshold:.35});io.observe($('#cxcurve'));
+  }else play();
+})();
+
+/* ---------- shared stage helpers ---------- */
+function mkStage(root){
+  var stage=$('.cx-stage',root),cur=$('.cx-cursor',root);
+  return {
+    stage:stage,
+    cursorTo:function(el,instant,cb){
+      if(!el)return;
+      var sr=stage.getBoundingClientRect(),er=el.getBoundingClientRect();
+      var x=er.left-sr.left+er.width*.6,y=er.top-sr.top+er.height*.55;
+      if(instant||RM){cur.classList.remove('on');if(cb)cb();return}
+      cur.classList.add('on');cur.style.left=x+'px';cur.style.top=y+'px';
+      setTimeout(function(){el.classList.add('press');setTimeout(function(){el.classList.remove('press');if(cb)cb()},260)},850);
+    },
+    cursorHide:function(){cur.classList.remove('on')}
+  };
+}
+function addMsg(chat,cls,html){var d=document.createElement('div');d.className='cx-msg '+cls;d.innerHTML=html;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
+
+/* ---------- player 1: what happens first ---------- */
+(function(){
+  var root=$('#p1');if(!root)return;
+  var S=mkStage(root),chat=$('#p1-chat'),nar=$('#p1-nar'),cap=$('#p1-cap'),inp=$('#p1-in'),sendb=$('#p1-send'),seq=new Seq(),playBtn=$('[data-play]',root);
+  var IN0='Message your AI';
+  var CONN=[['Calendars','agenda and trip planning',1],['Notes and files','your voice journal',1],['Music','discovery',1],['Email','reply workflows',0,1],['Team chat','one-button reports',0,1],['Streaming questionnaire','the new-only TV screen',0,1],['Read-only money view','subscription review',0,0],['Smart home hub','lights and thermostat',0,0]];
+  function view(html){nar.innerHTML='<div class="cx-v">'+html+'</div>';nar.scrollTop=0}
+  function setCap(t){cap.textContent=t}
+  function reset(){
+    chat.innerHTML='';inp.textContent=IN0;sendb.classList.remove('on','press');S.cursorHide();
+    view('<h4>Step 1</h4><p>Copy the text with the Copy and paste button, open a new chat, and paste. That is all you do.</p><div class="cx-big">Ctrl+V</div><p class="mut small">Or Command+V on a Mac.</p>');
+    setCap('Press Play to watch the first five minutes.');
+  }
+  var TREE='<h4>Your new home for everything</h4><ul class="cx-tree" id="p1-tree"><li class="d">artificial intelligence/<ul><li class="f" id="p1-rm">Read Me Master.md</li><li class="d">Audio Recordings of User/<ul><li class="f">README.md</li></ul></li><li class="d">Text Translations of Text Written by User/<ul><li class="f">README.md</li></ul></li><li class="d">Websites/<ul><li class="f">README.md</li></ul></li></ul></li></ul><p class="mut small">In your Documents. From now on, you and your AI stay organized.</p>';
+  function reveal(sel,n){var l=$$(sel,nar);if(l[n])l[n].classList.add('in')}
+  function showTree(instant,upto){view(TREE);var l=$$('li',nar);l.forEach(function(x,i){if(instant||i<upto)x.classList.add('in')})}
+  var READ=['<b>1. Values and mission.</b> What you and your AI stand for.','<b>2. Operating protocol.</b> The seven short rules you follow together.','<b>3. Human notes.</b> Only you type here. The AI may never edit it.','<b>4. Corrections from the human.</b> Written by the AI, a sacred space. Every correction you give is saved, so it is never lost.','<b>5. AI automation.</b> What your AI does for you automatically, one line each.'];
+  function readSecs(instant){
+    var words=READ.join(' ').replace(/<[^>]+>/g,'').split(/\s+/).length,secs=Math.max(10,Math.round(words/200*60/5)*5);
+    view('<h4>Read Me Master.md</h4><div class="cx-readme"><ol>'+READ.map(function(t){return '<li'+(instant?' class="in"':'')+'>'+t+'</li>'}).join('')+'</ol></div><p class="cx-rt" id="p1-rt">'+(instant?'About '+secs+' seconds to read.':'')+'</p>');
+    return secs;
+  }
+  function connView(){view('<h4>What each connection unlocks</h4><p>Say yes or no to each one. You can say no to anything.</p><div class="cx-rows">'+CONN.map(function(c){return '<div class="cx-row'+(c[2]?' ok':'')+'"><span>'+esc(c[0])+'</span><em>'+(c[2]?'connected: ':'unlocks ')+esc(c[1])+'</em></div>'}).join('')+'</div>')}
+  var steps=[
+   {ms:0,mark:'paste',fn:function(){reset()}},
+   {ms:900,fn:function(i){inp.textContent='[Pasted: the setup guide and the dashboard text]';setCap('You paste. That is the first and only thing you do by hand.')}},
+   {ms:1400,fn:function(i){S.cursorTo(sendb,i,function(){sendb.classList.add('on')});}},
+   {ms:1200,fn:function(i){S.cursorHide();inp.textContent=IN0;sendb.classList.remove('on');addMsg(chat,'u','Pasted: the setup guide and the dashboard text.')}},
+   {ms:900,fn:function(i){var m=addMsg(chat,'a','<span class="t"></span><span class="cx-dots"></span>');seq.type($('.t',m),'Assessing environment',i);view('<h4>Your AI is looking around</h4><p>It checks what it can reach. It changes nothing yet.</p><div class="cx-scan"><i></i></div>');setCap('Your AI assesses your environment. Safe words, no changes.')}},
+   {ms:2000,fn:function(i){var m=addMsg(chat,'a','<span class="t"></span><div class="yn"></div>');seq.type($('.t',m),'Hi. This is easier than you think. There is nothing to install and nothing to download. May I create one folder in your Documents called "artificial intelligence"? I will not move or delete anything you already have.',i,function(){$('.yn',m).innerHTML='<span class="cx-ybtn" id="p1-yes">Yes</span> <span class="cx-ybtn" style="opacity:.6">No</span>'});setCap('Your AI asks before it touches anything.')}},
+   {ms:typeMs('Hi. This is easier than you think. There is nothing to install and nothing to download. May I create one folder in your Documents called "artificial intelligence"? I will not move or delete anything you already have.')+500,fn:function(i){S.cursorTo($('#p1-yes'),i)}},
+   {ms:1500,mark:'folders',fn:function(i){S.cursorHide();addMsg(chat,'u','Yes.')}},
+   {ms:900,fn:function(i){var m=addMsg(chat,'a','<span class="t"></span>');seq.type($('.t',m),"I've created folders in your Documents called artificial intelligence. Everything we make together lives there, so you will always know where to look.",i);showTree(i,0);setCap('Your AI creates your folder system. From now on, you and AI are organized.')}}
+  ];
+  for(var k=0;k<8;k++)(function(k){steps.push({ms:k?550:1800,fn:function(i){var l=$$('li',nar);if(l[k])l[k].classList.add('in')}})})(k);
+  steps.push({ms:1500,fn:function(i){S.cursorTo($('#p1-rm'),i,function(){$('#p1-rm').classList.add('pick')});setCap('Open the Read Me Master. It is the first file every chat reads.')}});
+  steps.push({ms:1700,mark:'readme',fn:function(i){S.cursorHide();var secs=readSecs(i)}});
+  for(var r=0;r<5;r++)(function(r){steps.push({ms:r?800:1000,fn:function(i){var l=$$('.cx-readme li',nar);if(l[r])l[r].classList.add('in');if(r===4){var words=READ.join(' ').replace(/<[^>]+>/g,'').split(/\s+/).length,secs=Math.max(10,Math.round(words/200*60/5)*5);var t=$('#p1-rt');if(t)t.textContent='About '+secs+' seconds to read. You can edit any of it.';setCap('The README opens with your values and mission. You get time to read it.')}}})})(r);
+  steps.push({ms:2400,mark:'connect',fn:function(i){addMsg(chat,'a','Here is what you are connected to and what you are not. Tell me what you want to keep and what you want to add.');connView();
+    var m=addMsg(chat,'a','<div class="cx-rows" id="p1-rows">'+CONN.map(function(c,ix){return '<div class="cx-row'+(c[2]?' on':'')+'" data-i="'+ix+'"><span class="k"></span><span>'+esc(c[0])+'</span><em>'+(c[2]?'connected':'not connected')+'</em></div>'}).join('')+'</div>');setCap('Connected or not, in plain language. You choose yes or no.')}});
+  CONN.forEach(function(c,ix){if(c[2])return;steps.push({ms:ix===3?1700:900,fn:function(i){var row=$('#p1-rows [data-i="'+ix+'"]');if(!row)return;S.cursorTo(row,i,function(){row.classList.add(c[3]?'on':'no');$('em',row).textContent=c[3]?'yes, connect it':'no, thanks'})}})});
+  steps.push({ms:1300,fn:function(i){S.cursorHide();var m=addMsg(chat,'a','Just tell me when you have selected everything, and I will build your dashboard. <div><span class="cx-ybtn" id="p1-submit">Submit</span></div>')}});
+  steps.push({ms:1300,fn:function(i){S.cursorTo($('#p1-submit'),i)}});
+  steps.push({ms:1200,fn:function(i){S.cursorHide();addMsg(chat,'u','Submit');}});
+  steps.push({ms:900,fn:function(i){addMsg(chat,'a','Done. I am building your dashboard now.');setCap('Your selections are in. Next: what happens second.');if(!i&&!RM){}}});
+  steps.push({ms:600,fn:function(i){playBtn.textContent='Replay';playBtn.disabled=false}});
+  function start(from){playBtn.disabled=true;playBtn.textContent='Playing';seq.run(steps,from)}
+  playBtn.addEventListener('click',function(){start()});
+  seq.onend=function(){playBtn.disabled=false;playBtn.textContent='Replay'};
+  $$('[data-from]',root).forEach(function(b){b.addEventListener('click',function(){start(b.dataset.from)})});
+  reset();
+  window.__p1stop=function(){seq.stop()};
+})();
+
+/* ---------- player 2: what happens second, and the full-screen walkthrough ---------- */
+var fsSeq=new Seq();
+function openFS(){
+  var fs=$('#cxfs');fs.hidden=false;document.documentElement.classList.add('modal-open');fs.dataset.last=document.activeElement&&document.activeElement.id||'';
+  var tiles=$$('.cx-tile',fs),ff=$('#cxfs-cap');
+  tiles.forEach(function(t){t.classList.remove('on')});
+  var CAP=['Your ranked to-do list, set each morning.','Your inbox, with replies drafted in your voice. Nothing is sent without your yes.','One agenda for every calendar, with conflicts marked.','The people who matter, one button away.','Press a button, finish a chore. The window opens in the middle, and the dashboard waits underneath.','That is your dashboard. Everything on it is free to set up.'];
+  var steps=[];
+  tiles.forEach(function(t,i){steps.push({ms:i?2200:600,fn:function(){tiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');ff.textContent=CAP[i]}})});
+  steps.push({ms:2400,fn:function(){tiles.forEach(function(x){x.classList.add('on')});ff.textContent=CAP[5]}});
+  fsSeq.run(steps);
+  $('#cxfs-close').focus();
+}
+function closeFS(){
+  var fs=$('#cxfs');fsSeq.stop();fs.hidden=true;document.documentElement.classList.remove('modal-open');
+  var b=$('#p2-fs');if(b)b.focus();
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!$('#cxfs').hidden)closeFS();else if(!$('#cxm').hidden)closeM()}});
+$('#cxfs-close').addEventListener('click',closeFS);
+$('#cxfs-replay').addEventListener('click',openFS);
+$('#p2-fs').addEventListener('click',openFS);
+(function(){
+  var root=$('#p2');if(!root)return;
+  var S=mkStage(root),chat=$('#p2-chat'),cap=$('#p2-cap'),seq=new Seq(),playBtn=$('[data-play]',root);
+  var walker=$('#p2-walker'),flip=$('#p2-flip'),bar=$('#p2-bar'),scr=$('#p2-scr'),door=$('#p2-door'),cup=$('#p2-cup'),free=$('#p2-free');
+  function pos(x){walker.style.transform='translate('+x+'px,176px)'}
+  function reset(){
+    chat.innerHTML='';free.hidden=true;S.cursorHide();bar.setAttribute('width',0);scr.textContent='Building...';door.setAttribute('opacity',0);cup.setAttribute('opacity',0);
+    walker.style.transition='none';walker.classList.remove('walk');flip.style.transform='scaleX(1)';pos(132);void walker.getBoundingClientRect();walker.style.transition='';
+    cap.textContent='Press Play to watch it build.';
+  }
+  function walk(x,ms,dir){flip.style.transform='scaleX('+dir+')';walker.style.transition=RM?'none':'transform '+ms+'ms linear';walker.classList.add('walk');pos(x);if(!RM)setTimeout(function(){walker.classList.remove('walk')},ms);else walker.classList.remove('walk')}
+  function prog(w){bar.style.transition=RM?'none':'width 1.6s ease';bar.setAttribute('width',Math.round(Math.min(100,w)*.54))}
+  var steps=[
+   {ms:0,fn:function(){reset()}},
+   {ms:700,fn:function(i){addMsg(chat,'u','Submit');}},
+   {ms:900,fn:function(i){var m=addMsg(chat,'a','<span class="t"></span><span class="cx-dots"></span>');seq.type($('.t',m),'Building your dashboard now.',i);prog(20);cap.textContent='Your dashboard is being built.'}},
+   {ms:1200,fn:function(i){free.hidden=false;cap.textContent='This does not cost anything. It is just something AI can do.'}},
+   {ms:2200,fn:function(i){cap.textContent='You just have to sit there and wait. So the person gets up.';walk(262,2800,1);prog(45)}},
+   {ms:3100,fn:function(i){door.setAttribute('opacity',.35);cup.setAttribute('opacity',1);cap.textContent='A drink of water from the refrigerator.';prog(60)}},
+   {ms:1800,fn:function(i){door.setAttribute('opacity',0);cap.textContent='And back to the computer.';walk(132,2800,-1);prog(80)}},
+   {ms:3000,fn:function(i){cup.setAttribute('opacity',0);scr.textContent='Just finishing up';var m=addMsg(chat,'a','Just finishing up...');prog(95)}},
+   {ms:1600,fn:function(i){scr.textContent='Done';prog(104);addMsg(chat,'a','Here is a link to your dashboard. Just click here: <span class="cx-ybtn" id="p2-link">yourname.example/dashboard</span>');cap.textContent='Your AI hands you a link to your dashboard.'}},
+   {ms:1500,fn:function(i){S.cursorTo($('#p2-link'),i)}},
+   {ms:1500,fn:function(i){S.cursorHide();cap.textContent='Your dashboard opens. Here is the full-screen walkthrough.';openFS()}}
+  ];
+  function start(){closeFS();playBtn.disabled=true;playBtn.textContent='Playing';seq.run(steps)}
+  playBtn.addEventListener('click',start);
+  seq.onend=function(){playBtn.disabled=false;playBtn.textContent='Replay'};
+  reset();
+})();
+
+/* ---------- mini player (modal) ---------- */
+var mSeq=new Seq(),mLast=null;
+function closeM(){mSeq.stop();$('#cxm').hidden=true;document.documentElement.classList.remove('modal-open');if(mLast&&mLast.focus)mLast.focus({preventScroll:true})}
+$('#cxm-close').addEventListener('click',closeM);
+$('#cxm-close2').addEventListener('click',closeM);
+$('#cxm').addEventListener('mousedown',function(e){if(e.target===this)closeM()});
+var SC={
+family:['Forge family bonds','Birthdays, cousins, and one button.',[
+ ['a','Good morning. Grandma has a birthday in 9 days. Want me to help?'],['u','Yes. Message all my cousins about a call for her.'],
+ ['rows',[['Cousin Dev','',1],['Cousin Mina','',1],['Cousin Theo','',1],['Cousin Ana','',1]]],
+ ['a','Here is a draft: "Hi everyone, Grandma\'s birthday is coming up. Want to do a video call with the whole family?"'],['tap','Send to all'],['n','Sent to 4 cousins (demo). You are a little closer, in about a minute.']]],
+money:['Save money','Subscriptions found in your email.',[
+ ['a','Here are the subscriptions I found in your email, and what they cost. Keep or cancel?'],
+ ['rows',[['Streaming service A','$12 a month',1],['Music app','$11 a month',1],['Cloud storage','$3 a month',1],['Premium bundle','$30 a month',1]]],
+ ['u','Keep all of them except the premium bundle.'],['untick',3],['tap','Submit'],['n','We have started cancelling it. You are now saving $30 a month. Example data.'],
+ ['u','I want to save money today.'],['a','You wanted to take a trip. The price now is the lowest I have seen in the past year. If you book for these dates, here is where you would stay, what you are close to, and an itinerary. Do you want me to book it?'],['tap','Yes'],['n','Booking now (demo). Nothing is booked.']]],
+time:['Save time','A ranked day, and a reply from a voice note.',[
+ ['a','Good morning. Here is your ranked to-do list.'],['rows',[['Reply to Mom about Sunday','',0],['Send the weekly recap','',0],['Book the dentist','',0]]],
+ ['u','Tell Mom I can come Sunday, and ask what to bring.'],['a','Draft ready: "Hi Mom, I can come Sunday. What should I bring?"'],['tap','Send'],['tick',0],['n','Sent (demo). One thing done by talking.']]],
+fun:['Have fun','Only new things, no menus.',[
+ ['a','You turned on the TV. No menu. Movies on the left, shows on the right, all new to you.'],
+ ['rows',[['A quiet drama about a lighthouse keeper','movie',0],['A fantasy series, new this week','show',0],['A detective show set in the 1960s','show',0]]],
+ ['a','A heads-up: most of your friends have rated a film in their top ten, and you have never watched it.'],['tap','Pick one at random'],['n','Tonight: A road-trip comedy. Generic titles on purpose.']]],
+explore:['Explore places','A trip that lines up.',[
+ ['a','Your budget looks good, work is slower this time of year, and two friends in your close circle are free the same week.'],['rows',[['You','free week 3',1],['Friend A','free week 3',1],['Friend B','free week 3',1]]],
+ ['a','Want me to start a group chat with a draft message?'],['tap','Yes'],['n','Group chat started (demo).']]],
+try:['Try new activities','Ideas matched to your free time.',[
+ ['a','Here is what people like you are trying. Want to try one?'],['rows',[['A beginner class near you','Saturday',0],['A group walk','Sunday',0],['A new recipe night with friends','Friday',0]]],
+ ['u','The walk.'],['tick',1],['n','Added to your calendar (demo). You always choose.']]],
+gains:['Gains','Become better, quietly.',[
+ ['a','Here is what I track for you, quietly, and keep private by default.'],['rows',[['Air quality','example: good',1],['Sleep','example: steady',1],['Meals','example: logged',1],['Reading plan','your own plan',1]]],
+ ['a','It is evening. Want to record your voice journal?'],['tap','Record'],['n','Saved, private by default (demo).']]],
+safe:['Feel safer and calmer','Location sharing and a handoff.',[
+ ['a','You choose who can see where you are. Off by default, person by person.'],['rows',[['Best friend 1','',0],['Best friend 2','',0],['Best friend 3','',0]]],
+ ['u','Share with Best friend 1.'],['tick',0],['n','Best friend 1 gets a notification that they can now see your location. Demo only.'],
+ ['a','Going out of office? One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.'],['tap','I am going out of office'],['n','Done (demo). Peace of mind, no lost productivity.']]],
+work:['Get more done at work','A future state, previewed.',[
+ ['a','Friday. Here is the weekly recap, written from your numbers.'],['rows',[['Open roles','12',0],['Interviews held','31',0],['Offers out','4',0]]],
+ ['u','Make it a little warmer, then send it.'],['a','Done. Edited, and ready.'],['tap','Send to team chat'],['n','Sent (demo). You never left the screen.']]],
+msgwho:['Who can message whom','Trust your closest friends first.',[
+ ['a','We want people to message each other, stay in touch, and see each other\'s information. We think you should trust your closest friends.'],
+ ['a','If they are good people, it makes sense to trust their judgment one step removed. Beyond that, we are not sure, so it needs permission.'],
+ ['rows',[['A close trusted friend','goes straight through',1],['A close friend of a close friend','goes straight through',1],['A friend of a friend, two steps out','needs permission',0],['Someone outside your circles','needs permission',0]]],
+ ['tap','Message someone two steps out'],['n','They get a short request with your reason, and they can say no.']]],
+location:['Share location with best friends','Type a name, give access.',[
+ ['a','Who do you want to share your location with?'],['fld','Name','Best friend 1'],['tap','Share'],
+ ['n','Best friend 1 gets a notification that they can see your location and your track.'],
+ ['a','Here is your friends dashboard: who you share with, and who shares with you.'],['rows',[['You share with Best friend 1','',1],['Best friend 1 shares with you','',0],['Best friend 2 shares with you','',1]]],
+ ['n','It does not have to be mutual. You choose who you share with, and they choose who they share with.']]],
+consult:['A consultant fills it in','Profession not on the list.',[
+ ['n','Professions with at least one entry: 0 of 32.'],['fld','Suggest a profession that isn\'t on this list','Consultant'],['n','Consultant appears in the list and is selected for them.'],
+ ['a','Click the microphone and talk. When you are done, click the next microphone. You do not have to press stop.'],
+ ['fld','Tool','Slack'],['fld','What you use it for','Messaging my internal peers, not my external relationships.'],['fld','Complaints','I wish it was easier to engage with my external colleagues.'],
+ ['fld','How it could be better','A dashboard where the people I have marked important show up, with their latest messages and an automated reply I can edit and send, all without leaving that screen.'],
+ ['n','Sped up for the demo. The real thing fills in as fast as you talk.']]]
+};
+function rowsHTML(rows){return '<div class="cx-rows" style="width:100%">'+rows.map(function(r){return '<div class="cx-row'+(r[2]?' on':'')+'"><span class="k"></span><span>'+esc(r[0])+'</span>'+(r[1]?'<em>'+esc(r[1])+'</em>':'')+'</div>'}).join('')+'</div>'}
+function runM(key,trigger){
+  var d=SC[key];if(!d)return;
+  mLast=trigger||document.activeElement;
+  $('#cxm-title').textContent=d[0];$('#cxm-sub').textContent=d[1]+' Demo only. Nothing is sent.';
+  var scr=$('#cxm-scr');
+  function go(){
+    scr.innerHTML='';var lastRows=null,steps=[];
+    d[2].forEach(function(s){
+      var t=s[0];
+      if(t==='u'||t==='a'){steps.push({ms:t==='u'?800:900,fn:function(i){var m=addMsg(scr,t,'<span class="t"></span>');mSeq.type($('.t',m),s[1],i)}});steps.push({ms:typeMs(s[1])+400,fn:function(){}})}
+      else if(t==='rows'){steps.push({ms:600,fn:function(){var w=document.createElement('div');w.innerHTML=rowsHTML(s[1]);lastRows=w.firstChild;scr.appendChild(lastRows);scr.scrollTop=scr.scrollHeight}})}
+      else if(t==='tick'||t==='untick'){steps.push({ms:900,fn:function(){if(!lastRows)return;var r=lastRows.children[s[1]];if(r)r.classList.toggle('on',t==='tick')}})}
+      else if(t==='tap'){steps.push({ms:800,fn:function(){var b=document.createElement('button');b.type='button';b.className='cx-tapb';b.textContent=s[1];scr.appendChild(b);scr.scrollTop=scr.scrollHeight;setTimeout(function(){b.classList.add('press')},RM?0:600)}});steps.push({ms:900,fn:function(){}})}
+      else if(t==='n'){steps.push({ms:700,fn:function(){var n=document.createElement('div');n.className='cx-note2';n.textContent=s[1];scr.appendChild(n);scr.scrollTop=scr.scrollHeight}})}
+      else if(t==='fld'){steps.push({ms:800,fn:function(i){var f=document.createElement('div');f.className='cx-fld';f.innerHTML='<span>'+esc(s[1])+'</span><b></b>';scr.appendChild(f);scr.scrollTop=scr.scrollHeight;mSeq.type($('b',f),s[2],i)}});steps.push({ms:RM?0:Math.min(2400,s[2].length*11+300),fn:function(){}})}
+    });
+    mSeq.onend=null;mSeq.run(steps);
+  }
+  $('#cxm').hidden=false;document.documentElement.classList.add('modal-open');
+  $('#cxm-replay').onclick=go;
+  $('#cxm-close').focus();go();
+}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-cxplay]');if(b)runM(b.dataset.cxplay,b)});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Tab')return;var m=$('#cxm');if(m.hidden)return;
+  var f=$$('button,a[href]',m).filter(function(x){return x.offsetParent!==null});if(!f.length)return;
+  var a=document.activeElement,i=f.indexOf(a);
+  if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}
+});
+/* ---------- soft reveal on scroll ---------- */
+(function(){
+  if(RM||!('IntersectionObserver' in window))return;
+  var els=$$('#main .shead,#main .cards,#main .two,#main .cx-player,#main .cx-ben,#main .cx-curve,#main .wf,#main .soc,#main .fam');
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.08,rootMargin:'0px 0px -6% 0px'});
+  els.forEach(function(el){var r=el.getBoundingClientRect();if(r.top<innerHeight*.9&&r.bottom>0)return;el.classList.add('cx-rv');io.observe(el)});
+  setTimeout(function(){$$('.cx-rv:not(.in)').forEach(function(el){var r=el.getBoundingClientRect();if(r.top<innerHeight)el.classList.add('in')})},1500);
+})();
+})();
 </script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="hmr-dock.js" data-site="claudebomb.com" data-design="#dzbtn" data-design-panel="#dzpanel" defer></script>
