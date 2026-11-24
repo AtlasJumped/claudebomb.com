@@ -338,7 +338,7 @@ textarea{resize:vertical;line-height:1.5}
 .hero .sub{color:var(--fg)}
 .fine{color:var(--fg)}
 .sec{margin:.8rem clamp(.6rem,2vw,1.6rem);border:2px solid var(--fg);border-radius:2rem;padding:clamp(2.4rem,6vw,5rem) clamp(1.1rem,4vw,3.4rem)}
-#teaser{background:#ffe9a8}#now{background:#b8f0e6}#benefits{background:#fff6e0}#family{background:#ffc2b0}#workflows{background:#fff6e0}#social{background:#d9ccff}#contribute{background:#ffe9a8}
+#teaser{background:#ffe9a8}#now{background:#b8f0e6}#benefits{background:#b8f0e6}#family{background:#ffc2b0}#workflows{background:#fff6e0}#social{background:#d9ccff}#contribute{background:#ffe9a8}#usecases{background:#fff6e0}
 .eyebrow{color:var(--fg)}
 .eyebrow .no{background:var(--fg);color:#fff;border-radius:99px;padding:.15rem .6rem;opacity:1}
 .tag{border-color:var(--fg);color:var(--fg);background:#fff}
@@ -384,15 +384,398 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 .whead{border-bottom:2px solid var(--fg)}
 @media(max-width:60rem){.hdr{border-radius:2rem}}
 .hero h1{font-size:clamp(2.5rem,6.4vw,5.6rem);max-width:15ch;line-height:.95;margin-bottom:1.2rem}.hero .sub{max-width:40em}.hsteps{margin:2rem 0 .5rem;max-width:none;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))}.hsteps li{grid-template-columns:2.6rem 1fr}.hsteps li{background:rgba(255,255,255,.7);border:2px solid var(--fg);border-radius:1.2rem;padding:.9rem 1rem}@media(max-width:700px){.hero::after{display:none}}
+/* ===== use-case and roadmap helpers (all designs) ===== */
+a.card.uc{text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.2rem;transition:transform .25s,border-color .25s}
+a.card.uc:hover{transform:translateY(-3px);border-color:var(--acc)}
+.uc .tag{align-self:flex-start;margin-bottom:.8rem}
+.uc p{flex:1}
+.uc.soon{border-style:dashed}
+.tl h3 .tag{font-size:.62rem;margin-left:.5rem;vertical-align:middle}
+.tl .link{margin-top:.6rem}
+.tl .yr{white-space:nowrap}
+/* ===== design panel ===== */
+.dz{position:fixed;left:.75rem;bottom:.75rem;z-index:80;--fg:#111;--mut:#3d3d3d;--line:#111;--card:#fff;--field:#fff;--acc:#1d4ed8;--accfg:#fff;--bg:#fff;--wbg:#fff;--wfg:#111;font:400 .9rem/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#111;letter-spacing:0}
+.dz *{box-sizing:border-box;font-family:inherit}
+.dz-btn{display:grid;place-items:center;width:3.4rem;height:3.4rem;border-radius:50%;border:2px solid #fff;background:#111;color:#fff;font-weight:700;font-size:.7rem;cursor:pointer;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:0}
+.dz-btn:hover{background:#1d4ed8}
+.dz-btn:focus-visible,.dz button:focus-visible,.dz textarea:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+.dz-panel{position:absolute;left:0;bottom:4.2rem;width:min(21rem,calc(100vw - 1.5rem));max-height:calc(100svh - 6rem);overflow:auto;background:#fff;color:#111;border:2px solid #111;border-radius:14px;padding:1rem;box-shadow:0 20px 60px rgba(0,0,0,.45);text-align:left;text-transform:none}
+.dz-panel[hidden]{display:none}
+.dz-title{font-weight:700;font-size:1rem;margin:0 0 .7rem;color:#111}
+.dz-row{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .8rem}
+.dz-row button{flex:1 1 auto;min-height:2.4rem;padding:0 .8rem;border:1px solid #111;border-radius:99px;background:#fff;color:#111;font-weight:600;font-size:.85rem;cursor:pointer;box-shadow:none;text-transform:none;letter-spacing:0}
+.dz-row button:hover{background:#111;color:#fff}
+.dz-row button[data-dz=shuffle]{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.dz-row button[data-dz=shuffle]:hover{background:#111}
+.dz label{display:block;font-weight:600;font-size:.85rem;margin:0 0 .35rem;color:#111;text-transform:none;letter-spacing:0}
+.dz textarea{width:100%;min-height:6rem;border:1px solid #111;border-radius:8px;padding:.6rem .7rem;background:#fff;color:#111;font-size:.9rem;resize:vertical;box-shadow:none}
+.dz .mic{background:#fff;color:#111;border:1px solid #111}
+.dz .mic-wrap{margin-bottom:.6rem}
+.dz .mic-live{color:#3d3d3d}
+.dz-keys,.dz-status{margin:.2rem 0 0;font-size:.78rem;color:#3d3d3d}
+.dz-status{min-height:1.1em;color:#14532d;font-weight:600}
+@media(max-width:34rem){.dz{left:.5rem;bottom:.5rem}}
+/* ===== all non-original designs: shared base ===== */
+body[data-design]{background:var(--bg);color:var(--fg);line-height:1.6}
+body[data-design] .hdr{margin:0;border:0;border-bottom:var(--hbord,1px solid var(--rule));border-radius:var(--hr,0);top:0;background:var(--hdrbg);padding:.85rem clamp(1rem,4vw,2.5rem)}
+body[data-design] .logo{font-weight:var(--dw);letter-spacing:var(--trk)}
+body[data-design] .logo b{color:var(--logob,var(--acc))}
+body[data-design] .nav a{color:var(--mut);font-weight:500}
+body[data-design] .nav a:hover{color:var(--fg)}
+body[data-design] .menubtn{border:1px solid var(--rule);color:var(--fg);border-radius:var(--br)}
+body[data-design] #main .hero{margin:0;border:0;border-radius:0;background:var(--herobg,var(--bg));color:var(--fg);min-height:calc(100svh - 4rem);overflow:hidden;position:relative}
+body[data-design] .hero::after{content:none;border:0}
+body[data-design] .hero .wrap{position:relative;z-index:1}
+body[data-design] .hero .sub,body[data-design] .fine{color:var(--mut)}
+body[data-design] #main .sec{margin:0;border:0;border-radius:0;padding:var(--pad) clamp(1rem,4vw,2.5rem);background:var(--sec1);color:var(--fg);overflow-x:clip}
+body[data-design] #main .sec:nth-of-type(even){background:var(--sec2)}
+body[data-design] h2{line-height:1.05}
+body[data-design] .lead,body[data-design] .mut,body[data-design] .card p,body[data-design] .card li,body[data-design] .tl p,body[data-design] .steps p{color:var(--mut)}
+body[data-design] .eyebrow{color:var(--eyec,var(--acc))}
+body[data-design] .eyebrow .no{background:var(--nobg,transparent);color:var(--nofg,var(--acc));border-radius:99px;padding:0;opacity:1}
+body[data-design] :is(.card,.famcard,.mockbox,.demo>div,.ppanel,.wform,.fw .side,.note,.wcard){border:var(--cb);border-radius:var(--r);background:var(--card);box-shadow:var(--sh,none);color:var(--fg)}
+body[data-design] .note{border-left:var(--nbl,var(--cb))}
+body[data-design] .card.hl{background:var(--hlbg);color:var(--hlfg);border-color:var(--hlbd,var(--acc));box-shadow:var(--sh,none)}
+body[data-design] .card.hl :is(p,li,.link,h3){color:var(--hlfg)}
+body[data-design] .card.hl li::before{background:var(--hlfg)}
+body[data-design] .card li::before{background:var(--acc)}
+body[data-design] .wcard:hover,body[data-design] a.card.uc:hover{border-color:var(--acc)}
+body[data-design] .wcard i{color:var(--linkc,var(--acc))}
+body[data-design] .link{color:var(--linkc,var(--acc))}
+body[data-design] .btn{border:var(--btnb,1px solid var(--acc));background:var(--btnbg,var(--acc));color:var(--btnfg,var(--accfg));border-radius:var(--br);box-shadow:var(--btnsh,none);font-weight:var(--btnw,600);text-transform:var(--btnt,none);letter-spacing:var(--btnl,0)}
+body[data-design] .btn:hover{background:var(--btnhv,var(--btnbg,var(--acc)));color:var(--btnhf,var(--btnfg,var(--accfg)));transform:var(--btnhx,translateY(-2px))}
+body[data-design] .btn.ghost{background:transparent;color:var(--fg);border:var(--gb,1px solid var(--rule2));box-shadow:none}
+body[data-design] .btn.ghost:hover{background:var(--ghv,transparent);color:var(--fg);border-color:var(--acc)}
+body[data-design] .tag{border-color:var(--acc);color:var(--tagfg,var(--acc));background:transparent}
+body[data-design] .tag.warm{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+body[data-design] .tag.soft,body[data-design] .tag.small{border-color:var(--rule2);color:var(--mut);background:transparent}
+body[data-design] .chips>span{background:var(--card);border:1px solid var(--rule2);color:var(--fg)}
+body[data-design] .sn{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+body[data-design] .tl,body[data-design] .tl li{border-color:var(--rule)}
+body[data-design] .tl li .yr{color:var(--yrc,var(--acc));background:transparent;border:0;padding:.35rem 0 0;border-radius:0}
+body[data-design] :is(.conn label,.pick label,.bd li,.sws li,.cost td,.doing li,.air li,.emlist li,.cp-row,.selall){border-color:var(--rule)}
+body[data-design] .bd em{color:var(--linkc,var(--acc));font-weight:600}
+body[data-design] :is(.gbar,.meter){background:var(--track);border:0;height:.6rem}
+body[data-design] :is(.gbar i,.meter i){background:var(--acc)}
+body[data-design] .sw i{background:var(--track);border:0}
+body[data-design] .sw i::after{background:var(--sw,#fff);top:.2rem;left:.2rem}
+body[data-design] .sw input:checked+i{background:var(--acc)}
+body[data-design] .sw input:checked+i::after{background:var(--accfg)}
+body[data-design] .pchips button{border:1px solid var(--rule2);background:var(--card);color:var(--fg)}
+body[data-design] .pchips button[aria-checked=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+body[data-design] .mic{border:1px solid var(--rule2);background:var(--card);color:var(--fg)}
+body[data-design] :is(select,input[type=text],textarea){border:1px solid var(--rule2);background:var(--field);color:var(--fg);border-radius:calc(var(--r)*.5)}
+body[data-design] .fw .wall>span{background:var(--bg);border:0;color:var(--acc)}
+body[data-design] .fw .wall::before{border-left-color:var(--acc)}
+body[data-design] .tree .nodes circle{fill:var(--acc);stroke:var(--bg);stroke-width:2}
+body[data-design] .tree .lbl text{fill:var(--fg)}
+body[data-design] .empty{border-color:var(--rule2)}
+body[data-design] .note-opt{border-color:var(--acc)}
+body[data-design] .foot{margin:0 0 0;border:0;border-top:var(--hbord,1px solid var(--rule));border-radius:0;background:var(--footbg);color:var(--footfg);padding:clamp(3.5rem,8vw,6rem) clamp(1rem,4vw,2.5rem) 8rem}
+body[data-design] .foot :is(.lead,.mut){color:var(--footmut)}
+body[data-design] .foot .btn{background:var(--fbtnbg);color:var(--fbtnfg);border:var(--btnb,1px solid var(--fbtnbg))}
+body[data-design] .foot .btn.ghost{background:transparent;color:var(--footfg);border:1px solid var(--footfg)}
+body[data-design] .foot a:not(.btn){color:var(--footfg)}
+body[data-design] :is(.fzpanel,.win){border:var(--cb);border-radius:var(--r);background:var(--wbg);color:var(--wfg)}
+body[data-design] .whead{border-bottom:1px solid var(--rule)}
+body[data-design] .fzbtn{border:0;background:var(--acc);color:var(--accfg)}
+body[data-design] .wclose,body[data-design] .ib{border:1px solid var(--rule2);color:var(--wfg)}
+body[data-design] .toast{background:var(--fg);color:var(--bg)}
+body[data-design] .ucs .tag{margin-bottom:.8rem}
+body[data-design] .tl .link,body[data-design] .card .link{color:var(--linkc,var(--acc))}
+
+body[data-design] .hsteps li{background:transparent;border:0;border-radius:0;padding:.9rem 0;box-shadow:none;color:var(--fg)}
+/* ===== designs 1-8 ===== */
+/* design 1 */
+body[data-design="1"]{--bg:#fff;--fg:#0f172a;--mut:#475569;--rule:#e2e8f0;--rule2:#cbd5e1;--line:#cbd5e1;--card:#fff;--field:#fff;--acc:#2563eb;--accfg:#fff;--hdrbg:rgba(255,255,255,.9);--wbg:#fff;--wfg:#0f172a;--disp:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--body:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--dw:700;--trk:-.025em;--r:16px;--br:10px;--cb:1px solid #e2e8f0;--sh:0 1px 2px rgba(15,23,42,.05),0 12px 28px -16px rgba(15,23,42,.18);--herobg:linear-gradient(180deg,#eff6ff 0,#fff 78%);--sec1:#fff;--sec2:#f8fafc;--hlbg:#eff6ff;--hlfg:#0f172a;--hlbd:#bfdbfe;--track:#e2e8f0;--footbg:#0f172a;--footfg:#fff;--footmut:#cbd5e1;--fbtnbg:#fff;--fbtnfg:#0f172a;--pad:clamp(4.5rem,10vw,8.5rem);--linkc:#1d4ed8;--tagfg:#1d4ed8;--eyec:#1d4ed8;--yrc:#1d4ed8;--sw:#fff;--hbord:1px solid #e2e8f0;font-size:1.0625rem}
+body[data-design="1"] .hdr{position:sticky;backdrop-filter:saturate(1.4) blur(12px)}
+body[data-design="1"] .nav a{padding:.4rem .7rem;border-radius:8px}
+body[data-design="1"] .nav a:hover{background:#f1f5f9}
+body[data-design="1"] .hero{text-align:center;padding-top:clamp(4rem,9vw,7rem)}
+body[data-design="1"] .hero .eyebrow{display:inline-block;background:#dbeafe;color:#1e3a8a;padding:.4rem 1rem;border-radius:99px;letter-spacing:.02em;text-transform:none;font-size:.85rem}
+body[data-design="1"] .hero h1{font-size:clamp(2.6rem,6.2vw,5rem);font-weight:800;letter-spacing:-.04em;max-width:17ch;margin:0 auto 1.4rem;line-height:1.02}
+body[data-design="1"] .hero .sub{margin:0 auto 2rem;max-width:38rem;font-size:clamp(1.1rem,1.6vw,1.3rem)}
+body[data-design="1"] .hero .cta{justify-content:center}
+body[data-design="1"] .hero .btn{min-height:3.1rem;padding:0 1.7rem;box-shadow:0 8px 20px -8px rgba(37,99,235,.55)}
+body[data-design="1"] .hero .btn.ghost{box-shadow:none}
+body[data-design="1"] .hsteps{margin:4rem auto 1rem;text-align:left}
+body[data-design="1"] .hsteps li{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.4rem;box-shadow:var(--sh)}
+body[data-design="1"] .hero .fine{margin:1rem auto 0;text-align:center}
+body[data-design="1"] .shead{max-width:46rem;margin-bottom:3rem}
+body[data-design="1"] h2{font-size:clamp(2rem,4.2vw,3.2rem);letter-spacing:-.035em;max-width:22ch}
+body[data-design="1"] .eyebrow{font-size:.8rem;letter-spacing:.06em;font-weight:700}
+body[data-design="1"] .eyebrow .no{margin-right:.5rem;color:#64748b}
+body[data-design="1"] .card,body[data-design="1"] .wcard,body[data-design="1"] .famcard{transition:transform .25s,box-shadow .25s,border-color .25s}
+body[data-design="1"] .card:hover,body[data-design="1"] .wcard:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(15,23,42,.06),0 22px 40px -20px rgba(37,99,235,.35)}
+body[data-design="1"] .cards{gap:1.25rem}
+body[data-design="1"] .btn{transition:transform .2s,box-shadow .2s,background .2s}
+body[data-design="1"] .btn:hover{background:#1d4ed8}
+body[data-design="1"] .card li::before{width:.35rem;height:.35rem}
+
+/* design 2 */
+body[data-design="2"]{--bg:#070b1a;--fg:#e8ecff;--mut:#aeb8dc;--rule:rgba(143,168,255,.16);--rule2:rgba(143,168,255,.3);--line:rgba(143,168,255,.3);--card:linear-gradient(#0d1330,#0d1330) padding-box,linear-gradient(135deg,rgba(143,168,255,.6),rgba(255,255,255,.07) 45%,rgba(94,234,212,.35)) border-box;--field:#0a1028;--acc:#9bb0ff;--accfg:#080d24;--hdrbg:rgba(9,13,32,.86);--wbg:#0e1433;--wfg:#e8ecff;--disp:Manrope,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--body:Manrope,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--dw:800;--trk:-.035em;--r:18px;--br:12px;--cb:1px solid transparent;--sh:0 18px 40px -24px rgba(99,120,255,.55);--herobg:transparent;--sec1:transparent;--sec2:rgba(255,255,255,.02);--hlbg:linear-gradient(#17204d,#17204d) padding-box,linear-gradient(135deg,#9bb0ff,#5eead4) border-box;--hlfg:#f2f4ff;--hlbd:transparent;--track:#1b2450;--footbg:#050813;--footfg:#e8ecff;--footmut:#aeb8dc;--fbtnbg:#9bb0ff;--fbtnfg:#080d24;--pad:clamp(4rem,9vw,7.5rem);--linkc:#b8c6ff;--tagfg:#b8c6ff;--eyec:#9bb0ff;--yrc:#b8c6ff;--sw:#e8ecff;--btnbg:linear-gradient(135deg,#9bb0ff,#6ee7d3);--btnb:1px solid transparent;--btnfg:#080d24;--btnsh:0 10px 30px -10px rgba(120,150,255,.7);--btnhv:linear-gradient(135deg,#b7c6ff,#8ff3e0);--gb:1px solid rgba(155,176,255,.4);--ghv:rgba(155,176,255,.1);font-size:1.0625rem;background:radial-gradient(60rem 38rem at 8% -8%,rgba(99,102,241,.32),transparent 62%),radial-gradient(48rem 34rem at 100% 6%,rgba(14,165,233,.18),transparent 62%),radial-gradient(50rem 40rem at 50% 60%,rgba(124,58,237,.1),transparent 70%),#070b1a;background-repeat:no-repeat}
+body[data-design="2"] .hdr{position:sticky;margin:.75rem clamp(.6rem,2vw,1.6rem) 0;top:.75rem;border:1px solid rgba(155,176,255,.22);border-radius:16px;backdrop-filter:blur(14px)}
+body[data-design="2"] .nav a:hover{color:#fff}
+body[data-design="2"] .hero{min-height:calc(100svh - 6rem)}
+body[data-design="2"] .hero::before{content:"";position:absolute;right:-8%;top:6%;width:min(44rem,70vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(139,92,246,.35),rgba(56,189,248,.14) 45%,transparent 70%);filter:blur(10px);animation:dz2glow 12s ease-in-out infinite alternate;z-index:0}
+@keyframes dz2glow{to{transform:translate(-4%,6%) scale(1.08)}}
+body[data-design="2"] .hero h1{font-size:clamp(2.7rem,7vw,5.8rem);max-width:14ch;background:linear-gradient(180deg,#fff 30%,#b9c6ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#fff;padding-bottom:.1em}
+body[data-design="2"] .hero .eyebrow{display:inline-block;padding:.35rem .9rem;border:1px solid rgba(155,176,255,.35);border-radius:99px;background:rgba(155,176,255,.08);letter-spacing:.08em}
+body[data-design="2"] .hsteps li{background:rgba(255,255,255,.035);border:1px solid rgba(155,176,255,.18);border-radius:16px;padding:1.3rem}
+body[data-design="2"] .sec{border-top:1px solid rgba(155,176,255,.1)}
+body[data-design="2"] h2{letter-spacing:-.04em;font-size:clamp(2rem,4.6vw,3.6rem)}
+body[data-design="2"] .eyebrow .no{margin-right:.6rem;padding:.12rem .55rem;border:1px solid rgba(155,176,255,.35);border-radius:99px;color:#b8c6ff}
+body[data-design="2"] .card,body[data-design="2"] .wcard,body[data-design="2"] .famcard,body[data-design="2"] .mockbox{transition:transform .3s,box-shadow .3s}
+body[data-design="2"] .card:hover,body[data-design="2"] .wcard:hover{transform:translateY(-4px);box-shadow:0 0 0 1px rgba(155,176,255,.5),0 24px 50px -22px rgba(99,120,255,.75)}
+body[data-design="2"] .btn{transition:transform .2s,box-shadow .2s}
+body[data-design="2"] .btn:hover{box-shadow:0 14px 40px -10px rgba(120,150,255,.9)}
+body[data-design="2"] .mic.on{color:#fff}
+body[data-design="2"] .foot{background:rgba(5,8,19,.9)}
+
+/* design 3 */
+body[data-design="3"]{--bg:#f6f0e4;--fg:#141414;--mut:#463f33;--rule:#141414;--rule2:#6b6150;--line:#141414;--card:#fbf7ee;--field:#fffdf8;--acc:#9b1c1c;--accfg:#fff;--hdrbg:#f6f0e4;--wbg:#fbf7ee;--wfg:#141414;--disp:"Playfair Display","Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;--body:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;--dw:800;--trk:-.015em;--r:0px;--br:0px;--cb:1px solid #141414;--sh:none;--herobg:#f6f0e4;--sec1:#f6f0e4;--sec2:#eee5d1;--hlbg:#141414;--hlfg:#f6f0e4;--hlbd:#141414;--track:#d9cfb9;--footbg:#141414;--footfg:#f6f0e4;--footmut:#d9d0bd;--fbtnbg:#f6f0e4;--fbtnfg:#141414;--pad:clamp(3.5rem,8vw,6.5rem);--linkc:#9b1c1c;--tagfg:#9b1c1c;--eyec:#9b1c1c;--yrc:#9b1c1c;--sw:#fbf7ee;--btnbg:#141414;--btnfg:#f6f0e4;--btnb:1px solid #141414;--btnhv:#9b1c1c;--btnhf:#fff;--btnhx:none;--hbord:3px double #141414;--btnw:700;--btnt:uppercase;--btnl:.12em;font-size:1.125rem;line-height:1.7}
+body[data-design="3"] .hdr{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.4rem 1.6rem;padding-top:1.4rem;padding-bottom:1rem}
+@media(min-width:60.01rem){
+body[data-design="3"] .logo{flex:1 0 100%;text-align:center;font-size:clamp(2.4rem,5vw,4rem);font-weight:900;letter-spacing:-.03em;font-style:italic;padding-bottom:.7rem;border-bottom:1px solid #141414}
+body[data-design="3"] .nav{margin:0;gap:1.6rem}
+body[data-design="3"] .hdr-cta{margin:0}
+}
+body[data-design="3"] .nav a{font:600 .78rem/1 var(--body);text-transform:uppercase;letter-spacing:.16em;color:#141414}
+body[data-design="3"] .nav a:hover{color:#9b1c1c}
+body[data-design="3"] .btn.small{font-size:.72rem}
+body[data-design="3"] .hero{text-align:center;min-height:auto;padding-top:clamp(3rem,7vw,5.5rem);padding-bottom:clamp(3rem,7vw,5.5rem);border-bottom:3px double #141414}
+body[data-design="3"] .hero .eyebrow{font:700 .78rem var(--body);letter-spacing:.3em;text-transform:uppercase;color:#9b1c1c;display:flex;align-items:center;gap:1rem;justify-content:center}
+body[data-design="3"] .hero .eyebrow::before,body[data-design="3"] .hero .eyebrow::after{content:"";height:1px;background:#141414;flex:0 1 7rem}
+body[data-design="3"] .hero h1{font-size:clamp(3rem,8vw,6.8rem);font-weight:900;max-width:15ch;margin:0 auto 1.4rem;letter-spacing:-.035em;line-height:.95}
+body[data-design="3"] .hero .sub{font-style:italic;margin:0 auto 2rem;max-width:36rem;font-size:clamp(1.15rem,2vw,1.45rem)}
+body[data-design="3"] .hero .cta{justify-content:center}
+body[data-design="3"] .hsteps{margin:3rem auto 1rem;text-align:left;border-top:1px solid #141414;padding-top:1.6rem}
+body[data-design="3"] .hsteps li{border-left:1px solid #141414;padding-left:1.2rem}
+body[data-design="3"] .hsteps li:first-child{border-left:0;padding-left:0}
+body[data-design="3"] .hero .fine{margin:1rem auto 0}
+body[data-design="3"] .shead{border-top:4px solid #141414;padding-top:1rem;margin-bottom:2.6rem}
+body[data-design="3"] h2{font-size:clamp(2.2rem,5.2vw,4.2rem);letter-spacing:-.025em;line-height:1}
+body[data-design="3"] .eyebrow{font:700 .76rem var(--body);letter-spacing:.24em;text-transform:uppercase}
+body[data-design="3"] .eyebrow .no{margin-right:.8rem;font-family:var(--disp);font-style:italic;font-size:1.2rem;letter-spacing:0}
+body[data-design="3"] .shead>.lead:first-of-type::first-letter{float:left;font:900 3.9em/.78 var(--disp);padding:.07em .1em 0 0;color:#9b1c1c}
+body[data-design="3"] .cards{gap:0 2.2rem;border-top:0}
+body[data-design="3"] .cards .card{border:0;border-top:3px double #141414;background:transparent;padding:1rem 0 1.4rem;margin-bottom:.6rem}
+body[data-design="3"] .cards .card h3{font-size:1.5rem}
+body[data-design="3"] .cards .card.hl{background:#141414;color:#f6f0e4;padding:1.1rem 1.2rem 1.4rem}
+body[data-design="3"] .btn{box-shadow:none}
+body[data-design="3"] .tl li .yr{font-family:var(--disp);font-style:italic;font-weight:800;font-size:1.25rem}
+body[data-design="3"] .tag{font-family:var(--body)}
+body[data-design="3"] .foot{border-top:6px double #f6f0e4}
+body[data-design="3"] .card.uc.soon{border-style:solid}
+
+/* design 4 */
+body[data-design="4"]{--bg:#fff4d6;--fg:#1b1340;--mut:#352d63;--rule:#1b1340;--rule2:#1b1340;--line:#1b1340;--card:#fff;--field:#fff;--acc:#ff4d8d;--accfg:#1b1340;--hdrbg:#fff;--wbg:#fff;--wfg:#1b1340;--disp:Fredoka,ui-rounded,"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS",system-ui,sans-serif;--body:Fredoka,ui-rounded,"Varela Round",Nunito,"Trebuchet MS",system-ui,sans-serif;--dw:700;--trk:-.015em;--r:1.4rem;--br:99px;--cb:3px solid #1b1340;--sh:6px 6px 0 #1b1340;--herobg:#2f4bff;--sec1:#fff4d6;--sec2:#c8f7e1;--hlbg:#ffe14d;--hlfg:#1b1340;--hlbd:#1b1340;--track:#fff;--footbg:#1b1340;--footfg:#fff;--footmut:#e6e1ff;--fbtnbg:#ffe14d;--fbtnfg:#1b1340;--pad:clamp(3.5rem,8vw,6.5rem);--linkc:#1b1340;--tagfg:#1b1340;--eyec:#1b1340;--yrc:#1b1340;--sw:#1b1340;--nobg:#1b1340;--nofg:#fff;--btnbg:#ff4d8d;--btnfg:#1b1340;--btnb:3px solid #1b1340;--btnsh:4px 4px 0 #1b1340;--btnhv:#ffe14d;--btnhx:translate(-1px,-1px);--btnw:700;--hbord:3px solid #1b1340;--gb:3px solid #1b1340;--ghv:#ffe14d;font-size:1.125rem;line-height:1.55}
+body[data-design="4"] .hdr{position:sticky;margin:.7rem clamp(.6rem,2vw,1.6rem) 0;top:.7rem;border:3px solid #1b1340;border-radius:99px;box-shadow:4px 4px 0 #1b1340;padding:.55rem .6rem .55rem 1.4rem}
+@media(max-width:60rem){body[data-design="4"] .hdr{border-radius:1.6rem}}
+body[data-design="4"] .logo{font-size:1.5rem;color:#1b1340}
+body[data-design="4"] .nav a{color:#1b1340;font-weight:600;padding:.3rem .8rem;border-radius:99px}
+body[data-design="4"] .nav a:hover{background:#ffe14d}
+body[data-design="4"] .hero{--fg:#fff;--mut:#fff;--rule2:#fff;--eyec:#ffe14d;--nobg:#ffe14d;--nofg:#1b1340;--sw:#fff;color:#fff;margin:0;padding-top:clamp(4rem,9vw,7rem)}
+body[data-design="4"] .hero::before{content:"";position:absolute;right:-6rem;top:-5rem;width:min(30rem,60vw);aspect-ratio:1;border-radius:50%;background:#ff4d8d;border:3px solid #1b1340;animation:dz4bob 5s ease-in-out infinite;z-index:0}
+body[data-design="4"] .hero::after{content:"";display:block;position:absolute;right:16%;left:auto;bottom:-6rem;width:min(15rem,35vw);aspect-ratio:1;border-radius:2.5rem;background:#ffe14d;border:3px solid #1b1340;transform:rotate(14deg);animation:dz4bob 6s ease-in-out -2s infinite;z-index:0}
+@keyframes dz4bob{50%{transform:translateY(-1.2rem) rotate(6deg)}}
+@media(max-width:60rem){body[data-design="4"] .hero::after{display:none}body[data-design="4"] .hero::before{width:12rem;right:-4rem;top:-4rem}}
+body[data-design="4"] .hero h1{font-size:clamp(3.2rem,11vw,9rem);font-weight:700;line-height:.9;max-width:11ch;letter-spacing:-.03em;margin-bottom:1.6rem;text-shadow:5px 5px 0 #1b1340}
+body[data-design="4"] .hero .sub{font-size:clamp(1.2rem,2.4vw,1.7rem)}
+body[data-design="4"] .hero .btn.ghost{color:#1b1340;background:#fff}
+body[data-design="4"] .hero .btn.ghost:hover{background:#ffe14d}
+body[data-design="4"] .hero .eyebrow{background:#1b1340;display:inline-block;padding:.35rem 1rem;border-radius:99px}
+body[data-design="4"] .hsteps li{background:#fff;color:#1b1340;border:3px solid #1b1340;border-radius:1.2rem;padding:1.1rem;box-shadow:5px 5px 0 #1b1340}
+body[data-design="4"] .hsteps li p{color:#352d63}
+body[data-design="4"] .hsteps .sn{background:#ff4d8d;color:#1b1340;border:3px solid #1b1340}
+body[data-design="4"] .hero .fine{color:#fff}
+body[data-design="4"] #main>#contribute{background:#ffc2d9}
+body[data-design="4"] #main>#usecases{background:#c8f7e1}
+body[data-design="4"] #main>#social{background:#d9ccff}
+body[data-design="4"] #main>#family{background:#ffe14d}
+body[data-design="4"] #main>#workflows{background:#bde9ff}
+body[data-design="4"] #main>#benefits{background:#ffd1b3}
+body[data-design="4"] #main>#teaser{background:#c8f7e1}
+body[data-design="4"] #main>#now{background:#fff4d6}
+body[data-design="4"] .sec{border-top:3px solid #1b1340!important}
+body[data-design="4"] h2{font-size:clamp(2.4rem,6.4vw,5rem);line-height:.95;letter-spacing:-.025em}
+body[data-design="4"] .eyebrow{font-size:.9rem;letter-spacing:.06em}
+body[data-design="4"] .eyebrow .no{padding:.2rem .8rem;transform:rotate(-4deg);display:inline-block;margin-right:.7rem}
+body[data-design="4"] .cards .card:nth-child(odd),body[data-design="4"] .wf .wcard:nth-child(odd){transform:rotate(-1.1deg)}
+body[data-design="4"] .cards .card:nth-child(even),body[data-design="4"] .wf .wcard:nth-child(even){transform:rotate(1deg)}
+body[data-design="4"] .card,body[data-design="4"] .wcard,body[data-design="4"] .famcard,body[data-design="4"] .mockbox{transition:transform .25s cubic-bezier(.3,1.6,.5,1),box-shadow .2s}
+body[data-design="4"] .cards .card:hover,body[data-design="4"] .wf .wcard:hover{transform:rotate(0) translate(-3px,-3px) scale(1.02);box-shadow:9px 9px 0 #1b1340}
+body[data-design="4"] .card h3{font-size:1.5rem}
+body[data-design="4"] .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1b1340}
+body[data-design="4"] .btn{transition:transform .15s,box-shadow .15s,background .15s}
+body[data-design="4"] .tag{border-width:2px;background:#fff;border-color:#1b1340}
+body[data-design="4"] .tag.warm{background:#ff4d8d;color:#1b1340;border-color:#1b1340}
+body[data-design="4"] .foot .btn{border:3px solid #ffe14d}
+body[data-design="4"] .foot{border-top:3px solid #1b1340}
+body[data-design="4"] .tl li .yr{background:#fff;border:3px solid #1b1340;border-radius:99px;padding:.25rem .9rem;height:fit-content;width:fit-content}
+body[data-design="4"] .sn{background:#1b1340;color:#fff;border:0}
+body[data-design="4"] .mic{border:2px solid #1b1340}
+body[data-design="4"] .fzbtn{border:3px solid #1b1340}
+
+/* design 5 */
+body[data-design="5"]{--bg:#fff;--fg:#000;--mut:#333;--rule:#000;--rule2:#000;--line:#000;--card:#fff;--field:#fff;--acc:#e30613;--accfg:#fff;--hdrbg:#fff;--wbg:#fff;--wfg:#000;--disp:"Helvetica Neue",Helvetica,Arial,"Liberation Sans",system-ui,sans-serif;--body:"Helvetica Neue",Helvetica,Arial,"Liberation Sans",system-ui,sans-serif;--dw:800;--trk:-.045em;--r:0px;--br:0px;--cb:1px solid #000;--sh:none;--herobg:#fff;--sec1:#fff;--sec2:#efefef;--hlbg:#e30613;--hlfg:#fff;--hlbd:#e30613;--track:#d4d4d4;--footbg:#000;--footfg:#fff;--footmut:#d6d6d6;--fbtnbg:#fff;--fbtnfg:#000;--pad:clamp(3rem,7vw,6rem);--linkc:#b8000e;--tagfg:#000;--eyec:#000;--yrc:#e30613;--sw:#fff;--btnbg:#000;--btnfg:#fff;--btnb:1px solid #000;--btnhv:#e30613;--btnhx:none;--hbord:4px solid #000;--btnt:uppercase;--btnl:.1em;--btnw:700;--gb:1px solid #000;--ghv:#000;font-size:1.0625rem;line-height:1.5}
+body[data-design="5"] .hdr{position:sticky}
+body[data-design="5"] .logo{font-size:1.35rem;letter-spacing:-.04em}
+body[data-design="5"] .nav a{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;font-weight:700;color:#000}
+body[data-design="5"] .nav a:hover{color:#e30613}
+body[data-design="5"] .btn.small{font-size:.7rem}
+body[data-design="5"] .btn.ghost:hover{color:#fff}
+body[data-design="5"] .hero{background-image:repeating-linear-gradient(to right,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 1px,transparent 1px,transparent calc(100%/8));background-color:#fff;border-bottom:1px solid #000}
+body[data-design="5"] .hero::before{content:"";position:absolute;right:clamp(1rem,4vw,2.5rem);top:clamp(1rem,4vw,2.5rem);width:clamp(4rem,12vw,11rem);aspect-ratio:1;background:#e30613;z-index:0}
+body[data-design="5"] .hero .eyebrow{font-size:.78rem;letter-spacing:.2em;font-weight:700;color:#000}
+body[data-design="5"] .hero h1{font-size:clamp(3rem,9vw,8.2rem);font-weight:800;line-height:.88;letter-spacing:-.06em;max-width:11ch}
+body[data-design="5"] .hero .sub{max-width:30rem;font-size:clamp(1.1rem,1.7vw,1.4rem);color:#222;border-left:6px solid #e30613;padding-left:1.2rem}
+body[data-design="5"] .hsteps li{border-top:4px solid #000;padding-top:1rem}
+body[data-design="5"] .sn{border:0;background:#000;color:#fff;border-radius:0;width:2.6rem}
+body[data-design="5"] #main .sec{border-top:6px solid #000}
+body[data-design="5"] .shead{display:grid;grid-template-columns:minmax(0,1fr);margin-bottom:3rem}
+@media(min-width:60.01rem){body[data-design="5"] .shead{grid-template-columns:minmax(0,4fr) minmax(0,8fr);column-gap:2rem}body[data-design="5"] .shead>*{grid-column:2}body[data-design="5"] .shead>.eyebrow{grid-column:1;grid-row:1/span 8}}
+body[data-design="5"] .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.76rem;font-weight:700;color:#000}
+body[data-design="5"] .eyebrow .no{display:block;font-size:clamp(4.5rem,13vw,11rem);line-height:.8;letter-spacing:-.07em;font-weight:800;color:#e30613;margin:0 0 .8rem}
+body[data-design="5"] h2{font-size:clamp(2.2rem,5vw,4.2rem);letter-spacing:-.05em;line-height:.95;max-width:16ch}
+body[data-design="5"] .cards,body[data-design="5"] .wf{gap:0;border-top:1px solid #000;border-left:1px solid #000}
+body[data-design="5"] .cards .card,body[data-design="5"] .wf .wcard{border:0;border-right:1px solid #000;border-bottom:1px solid #000;padding:1.6rem}
+body[data-design="5"] .wf .wcard:hover{transform:none;background:#000;color:#fff}
+body[data-design="5"] .wf .wcard:hover :is(b,span,i){color:#fff}
+body[data-design="5"] .card:hover,body[data-design="5"] a.card.uc:hover{transform:none}
+body[data-design="5"] a.card.uc:hover{background:#000;color:#fff}
+body[data-design="5"] a.card.uc:hover :is(p,h3,.link){color:#fff}
+body[data-design="5"] a.card.uc:hover .tag{color:#fff;border-color:#fff}
+body[data-design="5"] .card h3{letter-spacing:-.03em;font-size:1.4rem}
+body[data-design="5"] .card li::before{border-radius:0;background:#e30613}
+body[data-design="5"] .tl li{grid-template-columns:11rem 1fr}
+body[data-design="5"] .tl li .yr{font-family:var(--body);font-size:1.5rem;font-weight:800;letter-spacing:-.04em}
+body[data-design="5"] .tag{border-radius:0;border-color:#000;color:#000;font-weight:700}
+body[data-design="5"] .tag.warm{background:#000;color:#fff;border-color:#000}
+body[data-design="5"] .eyebrow .no,body[data-design="5"] .card.hl{transition:none}
+body[data-design="5"] .foot{border-top:6px solid #e30613}
+body[data-design="5"] .chips>span{border-radius:0}
+body[data-design="5"] .sw i{border-radius:0;background:#bdbdbd}
+body[data-design="5"] .sw i::after{border-radius:0;background:#000}
+body[data-design="5"] .sw input:checked+i{background:#e30613}
+body[data-design="5"] .sw input:checked+i::after{background:#fff}
+
+/* design 6 */
+body[data-design="6"]{--bg:#f4ecdf;--fg:#2f2a24;--mut:#5a5247;--rule:#ddd0ba;--rule2:#c9b99c;--line:#c9b99c;--card:#fffaf1;--field:#fffdf8;--acc:#486a4c;--accfg:#fff;--hdrbg:rgba(244,236,223,.92);--wbg:#fffaf1;--wfg:#2f2a24;--disp:Nunito,"Avenir Next",ui-rounded,"Segoe UI",system-ui,sans-serif;--body:Nunito,"Avenir Next",ui-rounded,"Segoe UI",system-ui,sans-serif;--dw:800;--trk:-.02em;--r:1.75rem;--br:99px;--cb:1px solid #e4d8c3;--sh:0 14px 34px -22px rgba(70,55,30,.45);--herobg:#f4ecdf;--sec1:#f4ecdf;--sec2:#e6ecdb;--hlbg:#dbe6d0;--hlfg:#2f2a24;--hlbd:#b9cfa9;--track:#ddd0ba;--footbg:#2f3a2f;--footfg:#f4ecdf;--footmut:#dfe6d6;--fbtnbg:#f4ecdf;--fbtnfg:#2f3a2f;--pad:clamp(4.5rem,10vw,8rem);--linkc:#3d5c41;--tagfg:#3d5c41;--eyec:#3d5c41;--yrc:#3d5c41;--sw:#fffaf1;--btnbg:#486a4c;--btnfg:#fff;--btnb:1px solid #486a4c;--btnsh:0 10px 22px -12px rgba(50,80,55,.6);--btnhv:#3a583e;--hbord:0 solid transparent;--btnhx:translateY(-2px);font-size:1.125rem;line-height:1.75}
+body[data-design="6"] .hdr{position:sticky;backdrop-filter:blur(10px)}
+body[data-design="6"] .nav{background:#fffaf1;border-radius:99px;padding:.3rem .5rem;gap:.1rem;box-shadow:0 6px 18px -12px rgba(70,55,30,.4)}
+@media(max-width:60rem){body[data-design="6"] .nav{border-radius:1.4rem}}
+body[data-design="6"] .nav a{padding:.45rem .85rem;border-radius:99px;color:#4a4237}
+body[data-design="6"] .nav a:hover{background:#e6ecdb;color:#2f2a24}
+body[data-design="6"] .logo{font-size:1.35rem;color:#2f2a24}
+body[data-design="6"] .hero{text-align:center;padding-top:clamp(4rem,9vw,7rem);padding-bottom:clamp(7rem,12vw,10rem)}
+body[data-design="6"] .hero::before{content:"";position:absolute;inset:auto;left:-10%;top:-20%;width:min(46rem,90vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(160,190,150,.45),transparent 68%);animation:dz6drift 16s ease-in-out infinite alternate;z-index:0}
+body[data-design="6"] .hero::after{content:"";display:block;position:absolute;right:-12%;bottom:-24%;width:min(44rem,90vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(226,190,140,.5),transparent 68%);animation:dz6drift 20s ease-in-out -6s infinite alternate;z-index:0}
+@keyframes dz6drift{to{transform:translate(8%,6%) scale(1.1)}}
+body[data-design="6"] .hero .eyebrow{color:#3d5c41;letter-spacing:.14em}
+body[data-design="6"] .hero h1{font-size:clamp(2.5rem,5.8vw,4.8rem);font-weight:800;line-height:1.08;letter-spacing:-.03em;max-width:15ch;margin:0 auto 1.4rem}
+body[data-design="6"] .hero .sub{margin:0 auto 2.2rem;max-width:36rem;font-size:clamp(1.1rem,1.7vw,1.35rem)}
+body[data-design="6"] .hero .cta{justify-content:center}
+body[data-design="6"] .hero .btn{min-height:3.2rem;padding:0 1.8rem}
+body[data-design="6"] .hsteps{margin:3.5rem auto 1rem;text-align:left}
+body[data-design="6"] .hsteps li{background:#fffaf1;border:1px solid #e4d8c3;border-radius:1.5rem;padding:1.3rem;box-shadow:var(--sh)}
+body[data-design="6"] .hero .fine{margin:1rem auto 0}
+body[data-design="6"] .sn{border-color:#486a4c;background:#e6ecdb;color:#2f4a33}
+body[data-design="6"] #main .sec,body[data-design="6"] .foot{border-radius:2.75rem 2.75rem 0 0;margin-top:-2.75rem;position:relative}
+body[data-design="6"] #main .sec:nth-of-type(1){margin-top:0}
+body[data-design="6"] .shead{max-width:44rem}
+body[data-design="6"] h2{font-size:clamp(2rem,4.4vw,3.4rem);letter-spacing:-.03em;line-height:1.1}
+body[data-design="6"] .eyebrow{letter-spacing:.14em}
+body[data-design="6"] .eyebrow .no{background:#e6ecdb;color:#2f4a33;padding:.15rem .7rem;margin-right:.6rem;border-radius:99px}
+body[data-design="6"] #main .sec:nth-of-type(even) .eyebrow .no{background:#fffaf1}
+body[data-design="6"] .cards,body[data-design="6"] .wf,body[data-design="6"] .soc,body[data-design="6"] .fam{gap:1.4rem}
+body[data-design="6"] .card,body[data-design="6"] .wcard,body[data-design="6"] .famcard,body[data-design="6"] .mockbox{padding:1.7rem;transition:transform .5s ease,box-shadow .5s ease}
+body[data-design="6"] .card:hover,body[data-design="6"] .wcard:hover{transform:translateY(-4px);box-shadow:0 22px 40px -22px rgba(70,55,30,.5)}
+body[data-design="6"] .card li::before{background:#6f9473}
+body[data-design="6"] .foot{padding-top:clamp(5rem,9vw,7rem)}
+body[data-design="6"] .tl li .yr{font-weight:800}
+body[data-design="6"] .tag{background:#fffaf1}
+body[data-design="6"] .tag.warm{background:#486a4c}
+
+/* design 7 */
+body[data-design="7"]{--bg:#080c0a;--fg:#d8e4dc;--mut:#a0b3a7;--rule:#22302a;--rule2:#35493f;--line:#35493f;--card:#0d1310;--field:#0a0f0c;--acc:#3ee58f;--accfg:#04130a;--hdrbg:#080c0a;--wbg:#0d1310;--wfg:#d8e4dc;--disp:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--body:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--dw:700;--trk:-.04em;--r:2px;--br:2px;--cb:1px solid #22302a;--sh:none;--herobg:#080c0a;--sec1:#080c0a;--sec2:#0b110e;--hlbg:#0f2519;--hlfg:#e6f5ec;--hlbd:#3ee58f;--track:#22302a;--footbg:#050806;--footfg:#d8e4dc;--footmut:#a0b3a7;--fbtnbg:#3ee58f;--fbtnfg:#04130a;--pad:clamp(3.5rem,8vw,6.5rem);--linkc:#3ee58f;--tagfg:#3ee58f;--eyec:#3ee58f;--yrc:#3ee58f;--sw:#d8e4dc;--btnbg:#3ee58f;--btnfg:#04130a;--btnb:1px solid #3ee58f;--btnhv:transparent;--btnhf:#3ee58f;--btnhx:none;--btnw:700;--gb:1px solid #35493f;--ghv:rgba(62,229,143,.08);font-size:.97rem;line-height:1.7}
+body[data-design="7"] .logo{font-size:1.05rem;letter-spacing:-.02em}
+body[data-design="7"] .logo::before{content:"$ ";color:#3ee58f}
+body[data-design="7"] .nav{gap:1.2rem}
+body[data-design="7"] .nav a{font-size:.8rem}
+body[data-design="7"] .nav a::before{content:"./";color:#3ee58f}
+body[data-design="7"] .nav a:hover{color:#3ee58f}
+body[data-design="7"] .hero .wrap{border:1px solid #22302a;background:#0c1210;padding:0 clamp(1rem,3vw,2.2rem) 2.2rem}
+body[data-design="7"] .hero .wrap::before{content:"claudebomb@dashboard:~$ ./start --free";display:block;margin:0 calc(-1*clamp(1rem,3vw,2.2rem)) 1.8rem;padding:.65rem 1rem;background:#121b16;border-bottom:1px solid #22302a;color:#3ee58f;font-size:.78rem;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-design="7"] .hero h1{font-size:clamp(2.2rem,5.6vw,4.6rem);letter-spacing:-.05em;line-height:1.05;max-width:16ch}
+body[data-design="7"] .hero h1::after{content:"\2588";color:#3ee58f;margin-left:.15em;animation:dz7blink 1.05s steps(1) infinite}
+@keyframes dz7blink{50%{opacity:0}}
+body[data-design="7"] .hero .eyebrow::before{content:"> "}
+body[data-design="7"] .hero .sub{color:#a0b3a7;font-size:1.05rem}
+body[data-design="7"] .hsteps li{border-top:1px solid #22302a;padding-top:1rem}
+body[data-design="7"] .sn{border-radius:2px}
+body[data-design="7"] h2{font-size:clamp(1.7rem,3.8vw,2.9rem);letter-spacing:-.05em}
+body[data-design="7"] h2::before{content:"## ";color:#3ee58f}
+body[data-design="7"] .eyebrow{letter-spacing:.1em;text-transform:lowercase}
+body[data-design="7"] .eyebrow .no::before{content:"["}
+body[data-design="7"] .eyebrow .no::after{content:"]"}
+body[data-design="7"] .eyebrow .no{margin-right:.6rem}
+body[data-design="7"] .card,body[data-design="7"] .wcard,body[data-design="7"] .famcard,body[data-design="7"] .mockbox{transition:border-color .2s,background .2s}
+body[data-design="7"] .card:hover,body[data-design="7"] .wcard:hover{border-color:#3ee58f;background:#0f1a14;transform:none}
+body[data-design="7"] .card h3::before{content:"> ";color:#3ee58f}
+body[data-design="7"] .card li::before{border-radius:0;width:.5rem;height:2px;top:.85em}
+body[data-design="7"] .btn{font-family:var(--body)}
+body[data-design="7"] .btn:hover{border-color:#3ee58f}
+body[data-design="7"] .chips>span,body[data-design="7"] .tag,body[data-design="7"] .pchips button{border-radius:2px}
+body[data-design="7"] .tl li .yr{font-size:.95rem}
+body[data-design="7"] .tag.warm{background:#3ee58f;color:#04130a}
+body[data-design="7"] .sw i,body[data-design="7"] .sw i::after{border-radius:2px}
+body[data-design="7"] .foot{border-top:1px solid #22302a}
+body[data-design="7"] .mic.on{color:#fff}
+
+/* design 8 */
+body[data-design="8"]{--bg:#05060a;--fg:#f4f5fb;--mut:#b4b9cf;--rule:rgba(255,255,255,.12);--rule2:rgba(255,255,255,.26);--line:rgba(255,255,255,.26);--card:#0d1019;--field:#0a0c14;--acc:#ff7a45;--accfg:#1a0a04;--hdrbg:rgba(5,6,10,.82);--wbg:#0d1019;--wfg:#f4f5fb;--disp:"Space Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--body:"Space Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--dw:600;--trk:-.045em;--r:22px;--br:99px;--cb:1px solid rgba(255,255,255,.12);--sh:0 30px 60px -40px rgba(0,0,0,.9);--herobg:radial-gradient(90% 70% at 72% 28%,#1a1033 0,#05060a 72%);--sec1:#05060a;--sec2:#080a12;--hlbg:linear-gradient(135deg,#2a1208,#1a0c26);--hlfg:#fff;--hlbd:#ff7a45;--track:#1c2030;--footbg:#020307;--footfg:#f4f5fb;--footmut:#b4b9cf;--fbtnbg:#ff7a45;--fbtnfg:#1a0a04;--pad:clamp(4.5rem,11vw,9rem);--linkc:#ff9468;--tagfg:#ff9468;--eyec:#ff9468;--yrc:#ff9468;--sw:#f4f5fb;--btnbg:linear-gradient(135deg,#ff9a6b,#ff5a2e);--btnb:1px solid transparent;--btnfg:#1a0a04;--btnsh:0 12px 40px -10px rgba(255,100,50,.65);--btnhv:linear-gradient(135deg,#ffb08c,#ff7348);--gb:1px solid rgba(255,255,255,.3);--ghv:rgba(255,255,255,.08);font-size:1.0625rem}
+body[data-design="8"] .hdr{position:sticky;backdrop-filter:blur(14px)}
+body[data-design="8"] .nav a{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em}
+body[data-design="8"] .nav a:hover{color:#fff}
+body[data-design="8"] .logo{letter-spacing:.02em}
+body[data-design="8"] .hero{min-height:calc(100svh - 3.5rem);isolation:isolate}
+body[data-design="8"] .hero::before{content:"";position:absolute;left:-50%;right:-50%;bottom:-8%;height:62%;background:linear-gradient(rgba(255,122,69,.4) 1px,transparent 1px) 0 0/100% 56px,linear-gradient(90deg,rgba(255,122,69,.4) 1px,transparent 1px) 0 0/56px 100%;transform:perspective(520px) rotateX(64deg);transform-origin:50% 100%;animation:dz8grid 3.5s linear infinite;-webkit-mask-image:linear-gradient(to top,#000 5%,transparent 88%);mask-image:linear-gradient(to top,#000 5%,transparent 88%);z-index:0}
+@keyframes dz8grid{from{background-position:0 0,0 0}to{background-position:0 56px,0 0}}
+body[data-design="8"] .hero::after{content:"";display:block;position:absolute;right:-6%;top:10%;width:min(40vw,32rem);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 34% 30%,#ff8a5c 0,#b8401a 30%,#4a1260 62%,transparent 71%);opacity:.5;box-shadow:0 0 140px rgba(255,122,69,.35);animation:dz8float 9s ease-in-out infinite;z-index:0}
+@keyframes dz8float{50%{transform:translateY(-2rem) scale(1.04)}}
+@media(max-width:60rem){body[data-design="8"] .hero::after{display:none}}
+body[data-design="8"] .hero .eyebrow{letter-spacing:.3em}
+body[data-design="8"] .hero h1{font-size:clamp(3rem,10vw,8.6rem);line-height:.88;letter-spacing:-.06em;max-width:11ch;font-weight:600;margin-bottom:2rem}
+body[data-design="8"] .hero .sub{font-size:clamp(1.15rem,1.9vw,1.5rem);max-width:30em}
+body[data-design="8"] .hsteps li{border-top:1px solid rgba(255,255,255,.2);padding-top:1rem}
+body[data-design="8"] .hsteps .sn{border-color:#ff9468;color:#ff9468}
+body[data-design="8"] .sec{border-top:1px solid rgba(255,255,255,.08)}
+body[data-design="8"] h2{font-size:clamp(2.4rem,6.2vw,5.6rem);letter-spacing:-.055em;line-height:.92;max-width:14ch}
+body[data-design="8"] .eyebrow{letter-spacing:.24em}
+body[data-design="8"] .eyebrow .no{margin-right:.8rem;color:#ff9468}
+body[data-design="8"] .card,body[data-design="8"] .wcard,body[data-design="8"] .famcard,body[data-design="8"] .mockbox{transition:transform .4s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s}
+body[data-design="8"] .card:hover,body[data-design="8"] .wcard:hover{transform:translateY(-6px);border-color:rgba(255,122,69,.7);box-shadow:0 30px 70px -30px rgba(255,122,69,.45)}
+body[data-design="8"] .btn{min-height:3.1rem;padding:0 1.7rem;transition:transform .25s,box-shadow .25s}
+body[data-design="8"] .btn:hover{box-shadow:0 18px 50px -10px rgba(255,100,50,.85)}
+body[data-design="8"] .tl li .yr{font-size:1rem}
+body[data-design="8"] .rv{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+body[data-design="8"] .rv.in{opacity:1;transform:none}
+
 </style></head>
 <body class="citrus">
+<script>(function(){var F={1:"Inter:wght@400;500;600;700;800",2:"Manrope:wght@400;500;600;700;800",3:"Playfair+Display:wght@500;700;800;900",4:"Fredoka:wght@400;500;600;700",6:"Nunito:wght@400;600;700;800",7:"JetBrains+Mono:wght@400;500;700",8:"Space+Grotesk:wght@400;500;600;700"};
+window.__dzApply=function(n){var b=document.body;if(n>0&&n<=8){b.setAttribute("data-design",n);if(F[n]&&!document.getElementById("dzf"+n)){var l=document.createElement("link");l.id="dzf"+n;l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family="+F[n]+"&display=swap";document.head.appendChild(l)}}else b.removeAttribute("data-design")};
+var n=null;try{var p=new URLSearchParams(location.search).get("design");if(p!==null&&/^[0-8]$/.test(p))n=+p}catch(e){}
+if(n===null){try{var s=localStorage.getItem("cbDesign");if(s!==null&&/^[0-8]$/.test(s))n=+s}catch(e){}}
+window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <canvas id="bg" aria-hidden="true"></canvas><canvas id="fx" aria-hidden="true"></canvas>
 <a class="skip" href="#now">Skip to content</a>
 <header class="hdr" id="top">
 <a class="logo" href="#top">claude<b>bomb</b></a>
 <button type="button" class="menubtn" aria-expanded="false" aria-controls="nav">Menu</button>
 <nav class="nav" id="nav" aria-label="Main">
-<a href="#now">Use it</a><a href="#teaser">Vision</a><a href="#benefits">Benefits</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#social">Social</a><a href="#contribute">Contribute</a>
+<a href="#now">Use it</a><a href="#contribute">Contribute</a><a href="#usecases">Use cases</a><a href="#social">Social</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#benefits">Benefits</a><a href="#teaser">Roadmap</a>
 </nav>
 <a class="btn small hdr-cta" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe</a>
 </header>
@@ -449,82 +832,64 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 </div>
 </div></section>
 
-<section class="sec" id="teaser"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">02</span> The vision</p>
-<h2>Where this could be in 2036</h2>
-<p class="lead">If enough people start today, one dashboard could run the routine of a whole life: family, friends, work, money, and fun, with a privacy firewall between work and home. We built a separate site that shows a day in that life.</p>
-<div class="cta"><a class="btn" href="https://endgame.life">See life in 2036 at endgame.life</a></div></div>
+<section class="sec" id="contribute"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">02</span> Build it with us</p>
+<h2>Tell us how your work really works</h2>
+<p class="lead">The dashboard gets better with every workflow people share. Pick your profession, then record or type how you do your job: the tools, the routines, what slows you down, and what already works. We start with recruiting.</p></div>
+
+<div class="allmeter"><p class="label" id="allm">Professions with at least one entry: 0 of 0</p><div class="meter" role="img" aria-label="Overall completeness"><i style="width:0%"></i></div></div>
+
+<div class="prof-box">
+<p class="label" id="proflabel">Choose a profession</p>
+<div class="pchips" id="pchips" role="radiogroup" aria-labelledby="proflabel"></div>
+<div class="ppanel" id="ppanel" aria-live="polite"></div>
+</div>
+
+<form class="wform" id="wform" novalidate>
+<h3>Record or type your workflow</h3>
+<p class="note-opt">Everything here is optional. Fill in as much or as little as you like. More detail helps, including your company for possible future collaboration, but leave blank anything you'd rather not share. We read every comment.</p>
+<p class="mut small">Press the microphone next to a box and talk. Your words go into that box. You can also type.</p>
+<label for="f-prof">Profession category</label>
+<select id="f-prof" name="prof"></select>
+<label for="f-sug">Suggest a profession that isn't on this list</label>
+<input type="text" id="f-sug" name="sug">
+<label for="f-title">Job title</label>
+<input type="text" id="f-title" name="title">
+<label for="f-co">Company</label>
+<input type="text" id="f-co" name="company">
+<label for="f-tools">Name the tools you use</label>
+<input type="text" id="f-tools" name="tools" placeholder="For example: Slack, Outlook, Gmail, Microsoft Teams, Zoom, Jira, Salesforce, Workday">
+<label for="f-week">Walk us through a typical week</label>
+<textarea id="f-week" name="week" rows="4" placeholder="What do you do first, then next?"></textarea>
+<label for="f-hard">What makes it harder than it should be</label>
+<textarea id="f-hard" name="hard" rows="3"></textarea>
+<label for="f-good">What already works well</label>
+<textarea id="f-good" name="good" rows="3"></textarea>
+<div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
+<div class="row"><button type="submit" class="btn">Send by email</button></div>
+<p class="mut small">This opens your email app with your words ready to send to leo@universemodel.ai. Nothing is stored on this page.</p>
+</form>
 </div></section>
 
-<section class="sec" id="benefits"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">03</span> Why it matters</p>
-<h2>Seven ways it pays you back</h2>
-<p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p>
-<p class="lead"><strong>It is good now and keeps getting better. The more you put in, the more it pays you back.</strong></p></div>
-<div class="cards c4 ben">
-<article class="card"><h3>Save money</h3><ul><li>Lights and thermostat turn off when rooms are empty.</li><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li></ul></article>
-<article class="card"><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul></article>
-<article class="card"><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funsies below.</li></ul></article>
-<article class="card hl"><h3>Forge family bonds</h3><ul><li>A family tree and inherited contacts.</li><li>Birthdays before they sneak up on you.</li><li>One button to message every cousin.</li></ul><a class="link" href="#family">See the family view</a></article>
-<article class="card"><h3>Explore places</h3><ul><li>A trip suggestion when your budget, calendar, and friends line up.</li><li>Events near you that match what you like.</li><li>Group plans without the group chat chaos.</li></ul></article>
-<article class="card"><h3>Try new activities</h3><ul><li>"Here is what people like you are trying. Want to try it?"</li><li>Ideas matched to your free time.</li><li>You always choose.</li></ul></article>
-<article class="card"><h3>Gains</h3><p class="mut small">Become better: health, reading, learning.</p><ul><li>Air quality, sleep, and meals tracked quietly.</li><li>A reading and learning plan you set.</li><li>A voice journal each night, kept private by default.</li></ul></article>
-</div>
-</div></section>
-
-<section class="sec" id="family"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">04</span> Family</p>
-<h2>The people who matter, one button away</h2>
-<p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it. Reaching the whole family takes one click.</p>
-</div>
-<div class="fam">
-<div class="famcard tree">
-<h3>Family tree</h3>
-<svg viewBox="0 0 320 214" role="img" aria-label="A family tree with grandparents, parents, and children">
-<g fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"><path d="M80 40V70H240V40M160 70V100M70 100V130M70 130H110M250 100V130M250 130H210M110 130V150M210 130V150"/><path d="M110 150V170M210 150V170"/></g>
-<g class="nodes"><circle cx="80" cy="30" r="14"/><circle cx="240" cy="30" r="14"/><circle cx="160" cy="112" r="14"/><circle cx="70" cy="112" r="12"/><circle cx="250" cy="112" r="12"/><circle cx="110" cy="182" r="14"/><circle cx="210" cy="182" r="14"/></g>
-<g class="lbl" font-size="12" text-anchor="middle"><text x="80" y="58">Grandma</text><text x="240" y="58">Grandpa</text><text x="160" y="136">You</text><text x="70" y="136">Aunt</text><text x="250" y="136">Uncle</text><text x="110" y="206">Cousin</text><text x="210" y="206">Cousin</text></g></svg>
-<p class="mut small">Each person decides how much of their branch is public.</p>
-</div>
-<div class="famcard">
-<h3>Message your cousins</h3>
-<fieldset class="pick"><legend>Who should get it</legend>
-<label><input type="checkbox" checked data-name="Cousin Dev"> Cousin Dev</label>
-<label><input type="checkbox" checked data-name="Cousin Mina"> Cousin Mina</label>
-<label><input type="checkbox" checked data-name="Cousin Theo"> Cousin Theo</label>
-<label><input type="checkbox" checked data-name="Cousin Ana"> Cousin Ana</label>
-</fieldset>
-<button type="button" class="btn" data-open="cousins">Message all selected cousins</button>
-</div>
-<div class="famcard">
-<h3>Birthdays and gift ideas</h3>
-<ul class="bd">
-<li><span>Grandma</span><em>Birthday in 9 days</em></li>
-<li><span>Cousin Mina</span><em>Birthday in 3 weeks</em></li>
-<li><span>Uncle</span><em>Birthday next month</em></li>
-</ul>
-<p class="mut small">Gift ideas for Grandma: a framed family photo, a handwritten recipe book, or a call with the whole family on video.</p>
-<button type="button" class="btn ghost" data-open="gift">Send a gift idea with a note</button>
-</div>
-</div>
-</div></section>
-
-<section class="sec" id="workflows"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">05</span> Workflows</p>
-<h2>Press a button, finish a chore</h2>
-<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Click any tile and go through the whole workflow.</p>
-</div>
-<div class="wf">
-<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open</i></button>
-<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open</i></button>
+<section class="sec" id="usecases"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">03</span> Use cases</p>
+<h2>What the dashboard can do for you</h2>
+<p class="lead">The same dashboard serves many parts of life. Three use cases have a full breakdown below. The rest are in the dashboard already and get their own breakdown soon.</p></div>
+<div class="cards c3 ucs">
+<a class="card uc built" href="#social"><span class="tag warm">Breakdown built</span><h3>Social</h3><p>Your page, your circles, and who sees where you are.</p><span class="link">See the breakdown</span></a>
+<a class="card uc built" href="#family"><span class="tag warm">Breakdown built</span><h3>Family</h3><p>A family tree, birthdays, and one button to reach everyone.</p><span class="link">See the breakdown</span></a>
+<a class="card uc built" href="#workflows"><span class="tag warm">Breakdown built</span><h3>Chores and workflows</h3><p>Press a button and finish a chore, from replies to trip plans.</p><span class="link">See the breakdown</span></a>
+<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Email</h3><p>Replies drafted from your voice notes.</p></div>
+<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Calendar</h3><p>Your agenda and trip planning.</p></div>
+<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Money</h3><p>A read-only money view and a subscription review.</p></div>
+<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Health</h3><p>Air quality, sleep, and meals tracked quietly.</p></div>
+<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Fun</h3><p>A TV screen that shows only new things, and music tips from friends.</p></div>
+<div class="card uc soon"><span class="tag soft">Breakdown coming</span><h3>Work</h3><p>One-button reports and an out-of-office that does the handoff.</p></div>
 </div>
 </div></section>
 
 <section class="sec" id="social"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">06</span> Social</p>
+<div class="shead"><p class="eyebrow"><span class="no">04</span> Use case: Social</p>
 <h2>Your page, your circles, your rules</h2>
 <p class="lead">The dashboard can double as a page about you, so you never need to buy a domain. You choose what is public, who can message you, and who can see where you are.</p>
 </div>
@@ -566,43 +931,87 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 </div>
 </div></section>
 
-<section class="sec" id="contribute"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">07</span> Build it with us</p>
-<h2>Tell us how your work really works</h2>
-<p class="lead">The dashboard gets better with every workflow people share. Pick your profession, then record or type how you do your job: the tools, the routines, what slows you down, and what already works. We start with recruiting.</p></div>
-
-<div class="allmeter"><p class="label" id="allm">Professions with at least one entry: 0 of 0</p><div class="meter" role="img" aria-label="Overall completeness"><i style="width:0%"></i></div></div>
-
-<div class="prof-box">
-<p class="label" id="proflabel">Choose a profession</p>
-<div class="pchips" id="pchips" role="radiogroup" aria-labelledby="proflabel"></div>
-<div class="ppanel" id="ppanel" aria-live="polite"></div>
+<section class="sec" id="family"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">05</span> Use case: Family</p>
+<h2>The people who matter, one button away</h2>
+<p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it. Reaching the whole family takes one click.</p>
 </div>
+<div class="fam">
+<div class="famcard tree">
+<h3>Family tree</h3>
+<svg viewBox="0 0 320 214" role="img" aria-label="A family tree with grandparents, parents, and children">
+<g fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"><path d="M80 40V70H240V40M160 70V100M70 100V130M70 130H110M250 100V130M250 130H210M110 130V150M210 130V150"/><path d="M110 150V170M210 150V170"/></g>
+<g class="nodes"><circle cx="80" cy="30" r="14"/><circle cx="240" cy="30" r="14"/><circle cx="160" cy="112" r="14"/><circle cx="70" cy="112" r="12"/><circle cx="250" cy="112" r="12"/><circle cx="110" cy="182" r="14"/><circle cx="210" cy="182" r="14"/></g>
+<g class="lbl" font-size="12" text-anchor="middle"><text x="80" y="58">Grandma</text><text x="240" y="58">Grandpa</text><text x="160" y="136">You</text><text x="70" y="136">Aunt</text><text x="250" y="136">Uncle</text><text x="110" y="206">Cousin</text><text x="210" y="206">Cousin</text></g></svg>
+<p class="mut small">Each person decides how much of their branch is public.</p>
+</div>
+<div class="famcard">
+<h3>Message your cousins</h3>
+<fieldset class="pick"><legend>Who should get it</legend>
+<label><input type="checkbox" checked data-name="Cousin Dev"> Cousin Dev</label>
+<label><input type="checkbox" checked data-name="Cousin Mina"> Cousin Mina</label>
+<label><input type="checkbox" checked data-name="Cousin Theo"> Cousin Theo</label>
+<label><input type="checkbox" checked data-name="Cousin Ana"> Cousin Ana</label>
+</fieldset>
+<button type="button" class="btn" data-open="cousins">Message all selected cousins</button>
+</div>
+<div class="famcard">
+<h3>Birthdays and gift ideas</h3>
+<ul class="bd">
+<li><span>Grandma</span><em>Birthday in 9 days</em></li>
+<li><span>Cousin Mina</span><em>Birthday in 3 weeks</em></li>
+<li><span>Uncle</span><em>Birthday next month</em></li>
+</ul>
+<p class="mut small">Gift ideas for Grandma: a framed family photo, a handwritten recipe book, or a call with the whole family on video.</p>
+<button type="button" class="btn ghost" data-open="gift">Send a gift idea with a note</button>
+</div>
+</div>
+</div></section>
 
-<form class="wform" id="wform" novalidate>
-<h3>Record or type your workflow</h3>
-<p class="note-opt">Everything here is optional. Fill in as much or as little as you like. More detail helps, including your company for possible future collaboration, but leave blank anything you'd rather not share. We read every comment.</p>
-<p class="mut small">Press the microphone next to a box and talk. Your words go into that box. You can also type.</p>
-<label for="f-prof">Profession category</label>
-<select id="f-prof" name="prof"></select>
-<label for="f-sug">Suggest a profession that isn't on this list</label>
-<input type="text" id="f-sug" name="sug">
-<label for="f-title">Job title</label>
-<input type="text" id="f-title" name="title">
-<label for="f-co">Company</label>
-<input type="text" id="f-co" name="company">
-<label for="f-tools">Name the tools you use</label>
-<input type="text" id="f-tools" name="tools" placeholder="For example: Slack, Outlook, Gmail, Microsoft Teams, Zoom, Jira, Salesforce, Workday">
-<label for="f-week">Walk us through a typical week</label>
-<textarea id="f-week" name="week" rows="4" placeholder="What do you do first, then next?"></textarea>
-<label for="f-hard">What makes it harder than it should be</label>
-<textarea id="f-hard" name="hard" rows="3"></textarea>
-<label for="f-good">What already works well</label>
-<textarea id="f-good" name="good" rows="3"></textarea>
-<div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
-<div class="row"><button type="submit" class="btn">Send by email</button></div>
-<p class="mut small">This opens your email app with your words ready to send to leo@universemodel.ai. Nothing is stored on this page.</p>
-</form>
+<section class="sec" id="workflows"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">06</span> Use case: Chores and workflows</p>
+<h2>Press a button, finish a chore</h2>
+<p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Click any tile and go through the whole workflow.</p>
+</div>
+<div class="wf">
+<button type="button" class="wcard" data-open="emails"><span class="wn">1</span><b>Family emails</b><span>Your assistant lists emails that may need a reply, with a short summary each. Pick, reorder, speak your notes, then reply one by one.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="report"><span class="wn">2</span><b>Weekly recruiting report</b><span>One button writes the Slack recap from live numbers. You edit it in a pop-up, send, and you are back.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="ooo"><span class="wn">3</span><b>Out of office</b><span>One button sets your auto-reply, tells your team, hands off open items, and blocks your calendar.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="tv"><span class="wn">4</span><b>Watch something new</b><span>Only new things by default. Top 10 movies on the left, top 10 shows on the right, plus what is still airing.</span><i>Open</i></button>
+<button type="button" class="wcard" data-open="trip"><span class="wn">5</span><b>Plan a trip</b><span>Friends whose calendars line up, a group chat suggestion, and the cost per person.</span><i>Open</i></button>
+</div>
+</div></section>
+
+<section class="sec" id="benefits"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">07</span> Why it matters</p>
+<h2>Seven ways it pays you back</h2>
+<p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p>
+<p class="lead"><strong>It is good now and keeps getting better. The more you put in, the more it pays you back.</strong></p></div>
+<div class="cards c4 ben">
+<article class="card"><h3>Save money</h3><ul><li>Lights and thermostat turn off when rooms are empty.</li><li>See every subscription and cut off the ones you do not want.</li><li>Price alerts for trips you keep talking about.</li></ul></article>
+<article class="card"><h3>Save time</h3><ul><li>A ranked to-do list each morning.</li><li>Replies drafted from your voice notes.</li><li>No scrolling through menus to pick a show.</li></ul></article>
+<article class="card"><h3>Have fun</h3><ul><li>A TV screen that shows only new things.</li><li>Music tips from friends who love music.</li><li>A button that does nothing useful. Try Funsies below.</li></ul></article>
+<article class="card hl"><h3>Forge family bonds</h3><ul><li>A family tree and inherited contacts.</li><li>Birthdays before they sneak up on you.</li><li>One button to message every cousin.</li></ul><a class="link" href="#family">See the family view</a></article>
+<article class="card"><h3>Explore places</h3><ul><li>A trip suggestion when your budget, calendar, and friends line up.</li><li>Events near you that match what you like.</li><li>Group plans without the group chat chaos.</li></ul></article>
+<article class="card"><h3>Try new activities</h3><ul><li>"Here is what people like you are trying. Want to try it?"</li><li>Ideas matched to your free time.</li><li>You always choose.</li></ul></article>
+<article class="card"><h3>Gains</h3><p class="mut small">Become better: health, reading, learning.</p><ul><li>Air quality, sleep, and meals tracked quietly.</li><li>A reading and learning plan you set.</li><li>A voice journal each night, kept private by default.</li></ul></article>
+</div>
+</div></section>
+
+<section class="sec" id="teaser"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">08</span> Roadmap</p>
+<h2>Where this could be in 2036</h2>
+<p class="lead">If enough people start today, one dashboard could run the routine of a whole life: family, friends, work, money, and fun, with a privacy firewall between work and home.</p>
+<p class="lead"><strong>We ship a major release every quarter. Check back each quarter for new features.</strong></p>
+<p class="mut small"><span class="tag soft">Planned</span> Everything on this roadmap is planned, not promised. Quarters and contents can change as we learn from what people share.</p></div>
+<ol class="tl road">
+<li><span class="yr">Q1 2027</span><div><h3>First new breakdown <span class="tag soft">Planned</span></h3><p>The first of the use cases marked "Breakdown coming" gets its own full walkthrough.</p></div></li>
+<li><span class="yr">Q2 2027</span><div><h3>More use cases <span class="tag soft">Planned</span></h3><p>Another breakdown, plus new workflows drawn from what people share in the form above.</p></div></li>
+<li><span class="yr">Q3 2027</span><div><h3>More connectors <span class="tag soft">Planned</span></h3><p>More free connectors that raise your setup rating, and more of the dashboard in one place.</p></div></li>
+<li><span class="yr">Q4 2027</span><div><h3>A year of releases <span class="tag soft">Planned</span></h3><p>The fourth quarterly release, shaped by a year of feedback.</p></div></li>
+<li><span class="yr">2028 onward</span><div><h3>A release every quarter <span class="tag soft">Planned</span></h3><p>We keep the rhythm: one major release each quarter, each one a step toward the 2036 vision.</p></div></li>
+<li><span class="yr">2036</span><div><h3>The vision <span class="tag soft">Vision</span></h3><p>One dashboard for family, friends, work, money, and fun. We built a separate site that shows a day in that life.</p><a class="link" href="https://endgame.life">See life in 2036 at endgame.life</a></div></li>
+</ol>
 </div></section>
 
 </main>
@@ -629,6 +1038,18 @@ select,input[type=text],textarea{border:2px solid var(--fg)}
 <button type="button" class="fzreset" data-fx="reset">Undo all the fun</button>
 </div>
 </div>
+
+<div class="dz" id="dz">
+<button type="button" class="dz-btn" id="dzbtn" aria-expanded="false" aria-controls="dzpanel">Design</button>
+<div class="dz-panel" id="dzpanel" role="group" aria-label="Design shuffle" hidden>
+<p class="dz-title" id="dztitle" aria-live="polite">Original</p>
+<div class="dz-row"><button type="button" data-dz="shuffle">Shuffle</button><button type="button" data-dz="prev">Previous</button><button type="button" data-dz="next">Next</button><button type="button" data-dz="orig">Original</button></div>
+<label for="dznote">What do you like or dislike about this design?</label>
+<textarea id="dznote" rows="4"></textarea>
+<div class="dz-row"><button type="button" data-dz="copy">Copy all notes</button><button type="button" data-dz="close">Close</button></div>
+<p class="dz-status" id="dzstatus" role="status" aria-live="polite"></p>
+<p class="dz-keys">Keys: S shuffles. Left and right arrows step through designs while this panel is open.</p>
+</div></div>
 
 <div class="win-ov" id="winov" hidden><div class="win" id="win" role="dialog" aria-modal="true" aria-labelledby="wtitle" tabindex="-1"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1254,5 +1675,53 @@ fzp.addEventListener('click',function(e){
 if(window.__bg)window.__bg({rm:RM});
 })();
 </script>
+<script>(function(){
+'use strict';
+var NAMES=["Clean white SaaS","Midnight glass","Editorial","Bold playful","Swiss grid","Warm calm","Terminal","Cinematic"];
+var RM=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function $(s){return document.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+var btn=$("#dzbtn"),panel=$("#dzpanel"),title=$("#dztitle"),note=$("#dznote"),status=$("#dzstatus"),cur=window.__dzInit||0,rvObs=null,stT;
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function notes(){try{var o=JSON.parse(lsGet("cbDesignNotes")||"{}");return o&&typeof o==="object"?o:{}}catch(e){return {}}}
+function label(n){return n?"Design "+n+" of 8: "+NAMES[n-1]:"Original (the current look)"}
+function say(m){status.textContent=m;clearTimeout(stT);stT=setTimeout(function(){status.textContent=""},3000)}
+function clearRv(){$$(".rv").forEach(function(e){e.classList.remove("rv","in")});if(rvObs){rvObs.disconnect();rvObs=null}}
+function setRv(){clearRv();if(cur!==8||RM||!("IntersectionObserver" in window))return;
+  rvObs=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){var t=en.target;t.classList.add("in");rvObs.unobserve(t);setTimeout(function(){t.classList.remove("rv","in")},1100)}})},{rootMargin:"0px 0px -6% 0px"});
+  $$("#main .shead,#main .cards>*,#main .wf>*,#main .tl>li,#main .demo>div,#main .hsteps>li,#main .fam>*,#main .soc>*,#main .wform,#main .prof-box").forEach(function(e){var r=e.getBoundingClientRect();if(r.bottom<0||r.top<innerHeight*.9)return;e.classList.add("rv");rvObs.observe(e)})}
+function set(n,quiet){
+  n=((n%9)+9)%9;cur=n;window.__dzApply(n);
+  title.textContent=label(n);btn.setAttribute("aria-label","Design shuffle, "+label(n));
+  note.value=notes()[n]||"";
+  lsSet("cbDesign",String(n));
+  if(!quiet)try{var u=new URL(location.href);u.searchParams.set("design",n);history.replaceState(null,"",u.pathname+u.search+u.hash)}catch(e){}
+  setRv();
+}
+function shuffle(){var n;do{n=1+Math.floor(Math.random()*8)}while(n===cur&&cur!==0?true:false);set(n)}
+function open(o){panel.hidden=!o;btn.setAttribute("aria-expanded",o?"true":"false");if(o)note.focus({preventScroll:true})}
+btn.addEventListener("click",function(){open(panel.hidden)});
+panel.addEventListener("click",function(e){var b=e.target.closest("[data-dz]");if(!b)return;var k=b.getAttribute("data-dz");
+  if(k==="shuffle")shuffle();else if(k==="prev")set(cur-1);else if(k==="next")set(cur+1);else if(k==="orig")set(0);
+  else if(k==="close"){open(false);btn.focus()}
+  else if(k==="copy"){var n=notes(),out=["claudebomb.com design notes"];for(var i=0;i<9;i++){var t=(n[i]||"").trim();out.push((i?"Design "+i+" ("+NAMES[i-1]+")":"Original")+":\n"+(t||"(no notes)"))}
+    var txt=out.join("\n\n");
+    function fb(){var ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="position:fixed;left:-999px;top:0";document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand("copy")}catch(x){}document.body.removeChild(ta);say(ok?"Copied all notes.":"Copy failed. Select the text in the box and copy it by hand.")}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){say("Copied all notes.")},fb);else fb()}
+  if(k==="shuffle"||k==="prev"||k==="next"||k==="orig")b.focus({preventScroll:true});
+});
+note.addEventListener("input",function(){var n=notes();n[cur]=note.value;lsSet("cbDesignNotes",JSON.stringify(n))});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&!panel.hidden&&panel.contains(document.activeElement)){open(false);btn.focus();return}
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  var t=e.target,tag=t&&t.tagName;if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"||(t&&t.isContentEditable))return;
+  var ov=$("#winov");if(ov&&!ov.hidden)return;
+  if(e.key==="s"||e.key==="S"){e.preventDefault();shuffle()}
+  else if(!panel.hidden&&e.key==="ArrowLeft"){e.preventDefault();set(cur-1)}
+  else if(!panel.hidden&&e.key==="ArrowRight"){e.preventDefault();set(cur+1)}
+});
+set(cur,cur===0&&location.search.indexOf("design=")<0);
+})();</script>
 <script src="/v6/funsies.js?v=1" defer></script>
 </body></html>
