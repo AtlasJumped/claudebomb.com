@@ -402,7 +402,7 @@ a.card.uc:hover{transform:translateY(-3px);border-color:var(--acc)}
 .tl .link{margin-top:.6rem}
 .tl .yr{white-space:nowrap}
 /* ===== design panel ===== */
-.dz{position:fixed;left:.75rem;bottom:.75rem;z-index:80;--fg:#111;--mut:#3d3d3d;--line:#111;--card:#fff;--field:#fff;--acc:#1d4ed8;--accfg:#fff;--bg:#fff;--wbg:#fff;--wfg:#111;font:400 .9rem/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#111;letter-spacing:0}
+.dz{position:fixed;left:.75rem;bottom:.75rem;z-index:99990;--fg:#111;--mut:#3d3d3d;--line:#111;--card:#fff;--field:#fff;--acc:#1d4ed8;--accfg:#fff;--bg:#fff;--wbg:#fff;--wfg:#111;font:400 .9rem/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#111;letter-spacing:0}
 .dz *{box-sizing:border-box;font-family:inherit}
 .dz-btn{display:grid;place-items:center;width:3.4rem;height:3.4rem;border-radius:50%;border:2px solid #fff;background:#111;color:#fff;font-weight:700;font-size:.7rem;cursor:pointer;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:0}
 .dz-btn:hover{background:#1d4ed8}
@@ -1422,22 +1422,6 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <p class="mut small">Works with AI assistants such as Claude. Not affiliated with, or endorsed by, any AI company. Some screens on this page are demos that send nothing.</p>
 </div></footer>
 
-<div class="fz" id="fz">
-<button type="button" class="fzbtn" id="fzbtn" aria-expanded="false" aria-controls="fzpanel">Funsies</button>
-<div class="fzpanel" id="fzpanel" role="group" aria-label="Funsies" hidden>
-<p class="fzh">Does nothing useful. Pure fun.</p>
-<p class="fzs">Big moments</p>
-<div class="fzrow"><button type="button" data-fx="meteors">Meteor shower</button><button type="button" data-fx="burn">Burn the page</button><button type="button" data-fx="quake">Earthquake</button><button type="button" data-fx="lightning">Lightning</button><button type="button" data-fx="tornado">Tornado</button></div>
-<p class="fzs">Little moments</p>
-<div class="fzrow"><button type="button" data-fx="confetti">Confetti</button><button type="button" data-fx="wobble">Wobble</button><button type="button" data-fx="tsunami">Big wave</button></div>
-<p class="fzs">Until you reset</p>
-<div class="fzrow"><button type="button" data-fx="spark" aria-pressed="false">Sparkle trail</button><button type="button" data-fx="hue" aria-pressed="false">Shift colors</button><button type="button" data-fx="big" aria-pressed="false">Giant type</button><button type="button" data-fx="silly" aria-pressed="false">Silly font</button></div>
-<p class="fzs">Somewhere else</p>
-<a class="fzlink" href="https://universemodel.ai/fun.html" target="_blank" rel="noopener">Enter the tensegrity smash room</a>
-<button type="button" class="fzreset" data-fx="reset">Undo all the fun</button>
-</div>
-</div>
-
 <div class="dz" id="dz">
 <button type="button" class="dz-btn" id="dzbtn" aria-expanded="false" aria-controls="dzpanel">Design</button>
 <div class="dz-panel" id="dzpanel" role="group" aria-label="Design shuffle" hidden>
@@ -2059,16 +2043,12 @@ document.addEventListener('pointerup',release);document.addEventListener('pointe
 
 /* ---------- funsies ---------- */
 var fz=$('#fz'),fzb=$('#fzbtn'),fzp=$('#fzpanel'),trailOn=false;
-function fzOpen(o){fzp.hidden=!o;fzb.setAttribute('aria-expanded',o?'true':'false')}
-fzb.addEventListener('click',function(){fzOpen(fzp.hidden)});
-document.addEventListener('click',function(e){if(!fzp.hidden&&!e.target.closest('#fz'))fzOpen(false)});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!fzp.hidden){fzOpen(false);fzb.focus()}});
 var COL=['#ff5d73','#ffd166','#06d6a0','#4cc9f0','#b388ff','#ffffff'];
 function confetti(){for(var i=0;i<140;i++)parts.push({kind:'c',x:W/2+(Math.random()-.5)*W*.3,y:H*.9,vx:(Math.random()-.5)*900,vy:-500-Math.random()*700,g:900,life:2.4+Math.random(),s:6+Math.random()*6,c:COL[i%COL.length]});kick()}
 function sparkle(x,y){parts.push({kind:'c',x:x,y:y,vx:(Math.random()-.5)*80,vy:(Math.random()-.5)*80,g:140,life:.7,s:4+Math.random()*4,c:COL[Math.floor(Math.random()*5)]});kick()}
 var root=document.documentElement;
 function toggleP(btn,cls){var on=!root.classList.contains(cls);root.classList.toggle(cls,on);btn.setAttribute('aria-pressed',on);dirty=true}
-fzp.addEventListener('click',function(e){
+if(fzp)fzp.addEventListener('click',function(e){
   var b=e.target.closest('[data-fx]');if(!b)return;var k=b.dataset.fx;
   if(k==='confetti'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');confetti()}
   else if(k==='wobble'){if(RM)return toast('Motion is reduced on your device, so this one sits out.');var m=$('#main');m.classList.add('wobble');setTimeout(function(){m.classList.remove('wobble')},2600)}
@@ -2488,4 +2468,5 @@ document.addEventListener('keydown',function(e){
 
 </script>
 <script src="/v6/funsies.js?v=1" defer></script>
+<script src="hmr-dock.js" data-site="claudebomb.com" data-design="#dzbtn" data-design-panel="#dzpanel" defer></script>
 </body></html>
