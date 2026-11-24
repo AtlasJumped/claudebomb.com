@@ -66,6 +66,13 @@ h2{font-size:clamp(2rem,5vw,4rem);margin-bottom:1.2rem;max-width:20ch}
 .lead{font-size:clamp(1.05rem,1.6vw,1.3rem);color:var(--mut);max-width:44rem}
 .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2.4rem}
 .chips>span{padding:.45rem .95rem;border:1px solid var(--line);border-radius:99px;font-size:.9rem;color:var(--fg)}
+.disc{margin:0;padding:.7rem clamp(1rem,4vw,2.5rem);font-size:.9rem;text-align:center;background:var(--card);color:var(--fg);border-bottom:1px solid var(--line)}
+body[data-design] .disc{background:var(--card);color:var(--fg);border-bottom:1px solid var(--rule2)}
+.c2x{grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr))}
+.dolist li{display:flex;justify-content:space-between;gap:.8rem;align-items:baseline}
+.dolist li::before{display:none}
+.dolist{gap:.35rem}
+#gateout .card h3{margin-bottom:.5rem}
 .cards{display:grid;gap:1rem;margin-bottom:2rem}
 .c3{grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5rem),1fr))}
 .c4{grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))}
@@ -775,12 +782,14 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <a class="logo" href="#top">claude<b>bomb</b></a>
 <button type="button" class="menubtn" aria-expanded="false" aria-controls="nav">Menu</button>
 <nav class="nav" id="nav" aria-label="Main">
-<a href="#now">Use it</a><a href="#contribute">Contribute</a><a href="#usecases">Use cases</a><a href="#social">Social</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#benefits">Benefits</a><a href="#teaser">Roadmap</a>
+<a href="#now">Use it</a><a href="#cost">Cost</a><a href="#contribute">Contribute</a><a href="#usecases">Use cases</a><a href="#social">Social</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#benefits">Benefits</a><a href="#teaser">Roadmap</a>
 </nav>
 <a class="btn small hdr-cta" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe</a>
 </header>
 
 <main id="main">
+
+<p class="disc" id="disc">Made for Claude, works with any AI assistant. ChatGPT, Gemini, and others can use the same file. What it can reach depends on the apps you connect to your assistant.</p>
 
 <section class="hero" id="hero"><div class="wrap">
 <p class="eyebrow">Free, open, ready today</p>
@@ -832,8 +841,57 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div>
 </div></section>
 
+<section class="sec" id="cost"><div class="wrap">
+<div class="shead"><p class="eyebrow"><span class="no">02</span> Cost</p>
+<h2>What it costs, and what you get</h2>
+<p class="lead">Pick the most you want to spend each month. We show the plan that fits and what the next step up adds.</p></div>
+
+<p class="label" id="gatelabel">Your monthly budget</p>
+<div class="pchips" id="gates" role="radiogroup" aria-labelledby="gatelabel">
+<button type="button" role="radio" aria-checked="true" tabindex="0" data-g="0">Up to $15</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="1">$30</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="2">$50</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="3">$100</button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" data-g="4">$200</button>
+</div>
+<div class="cards c3" id="gateout" aria-live="polite">
+<article class="card hl"><p class="label">Your plan</p><h3 id="g-plan"></h3><p id="g-get"></p></article>
+<article class="card"><p class="label">The step up from the previous gate</p><h3 id="g-stephead"></h3><p id="g-step"></p></article>
+</div>
+
+<div class="cards c4" aria-label="Claude plans">
+<article class="card"><h3>Free</h3><p><b>$0.</b> Sonnet and Haiku. Chat, web search, files, connectors, and artifacts. No Claude Code.</p></article>
+<article class="card"><h3>Pro</h3><p><b>$20 a month</b> ($17 a month billed yearly). Adds Opus, Claude Code, Projects, and Claude in Chrome.</p></article>
+<article class="card"><h3>Max</h3><p><b>$100 a month.</b> 5 times Pro's usage. $100 a month of API credits.</p></article>
+<article class="card"><h3>Ultra</h3><p><b>$200 a month.</b> 10 times Pro's weekly usage, no 5-hour limit for verified accounts. $200 a month of API credits.</p></article>
+</div>
+<p class="fine" style="margin-top:0">For comparison, ChatGPT: Go $8 a month, Plus $20 a month, Pro from $100 a month (<a class="link" href="https://chatgpt.com/pricing" target="_blank" rel="noopener">chatgpt.com/pricing</a>). Claude prices from <a class="link" href="https://claude.com/pricing" target="_blank" rel="noopener">claude.com/pricing</a>, November 2026. Plans change; check there.</p>
+
+<div class="note" style="margin:2.4rem 0 2rem"><p class="label">Our experience</p>
+<p>We run everything on one $200 plan. Our main assistant, Opus, hands each job to the model that fits: hard problems to the strongest, building to a mid-size model, quick fixes to the smallest. That keeps usage down. On that one plan we have built and run several websites, including this one, without paying anything extra.</p>
+<p class="mut small" style="margin:0">This is what happened for us, not a promise about your plan.</p></div>
+
+<div class="cards c2x">
+<article class="card"><h3>Tips to keep usage low</h3><ul>
+<li>Use the smallest model for small jobs.</li>
+<li>Start a new chat when one gets long.</li>
+<li>Let one main chat delegate.</li>
+<li>Keep files small and reuse them.</li></ul></article>
+<article class="card"><h3>Things you could be doing today for less than you think</h3><ul class="dolist">
+<li>Summarize your inbox each morning <span class="tag small">Free</span></li>
+<li>Draft replies <span class="tag small">Free</span></li>
+<li>Plan your week from your calendar <span class="tag small">Free</span></li>
+<li>Track subscriptions from email receipts <span class="tag small">Free</span></li>
+<li>Turn a voice note into a to-do list <span class="tag small">Free</span></li>
+<li>Research a purchase <span class="tag small">Free</span></li>
+<li>Make a family newsletter <span class="tag small">Free</span></li>
+<li>Build a personal website <span class="tag small">Pro</span></li></ul>
+<p class="mut small" style="margin:1rem 0 0">The tag shows the lowest plan where it works. Building websites needs Claude Code, which starts at Pro.</p></article>
+</div>
+</div></section>
+
 <section class="sec" id="contribute"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">02</span> Build it with us</p>
+<div class="shead"><p class="eyebrow"><span class="no">03</span> Build it with us</p>
 <h2>Tell us how your work really works</h2>
 <p class="lead">The dashboard gets better with every workflow people share. Pick your profession, then record or type how you do your job: the tools, the routines, what slows you down, and what already works. We start with recruiting.</p></div>
 
@@ -872,7 +930,7 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="sec" id="usecases"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">03</span> Use cases</p>
+<div class="shead"><p class="eyebrow"><span class="no">04</span> Use cases</p>
 <h2>What the dashboard can do for you</h2>
 <p class="lead">The same dashboard serves many parts of life. Three use cases have a full breakdown below. The rest are in the dashboard already and get their own breakdown soon.</p></div>
 <div class="cards c3 ucs">
@@ -889,7 +947,7 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="sec" id="social"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">04</span> Use case: Social</p>
+<div class="shead"><p class="eyebrow"><span class="no">05</span> Use case: Social</p>
 <h2>Your page, your circles, your rules</h2>
 <p class="lead">The dashboard can double as a page about you, so you never need to buy a domain. You choose what is public, who can message you, and who can see where you are.</p>
 </div>
@@ -932,7 +990,7 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="sec" id="family"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">05</span> Use case: Family</p>
+<div class="shead"><p class="eyebrow"><span class="no">06</span> Use case: Family</p>
 <h2>The people who matter, one button away</h2>
 <p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it. Reaching the whole family takes one click.</p>
 </div>
@@ -969,7 +1027,7 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="sec" id="workflows"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">06</span> Use case: Chores and workflows</p>
+<div class="shead"><p class="eyebrow"><span class="no">07</span> Use case: Chores and workflows</p>
 <h2>Press a button, finish a chore</h2>
 <p class="lead">Every task opens a clean window in the middle, and the rest of the dashboard waits underneath. You do the task, close the window, and you are back. Click any tile and go through the whole workflow.</p>
 </div>
@@ -983,7 +1041,7 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="sec" id="benefits"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">07</span> Why it matters</p>
+<div class="shead"><p class="eyebrow"><span class="no">08</span> Why it matters</p>
 <h2>Seven ways it pays you back</h2>
 <p class="lead">Every feature we imagine lands in one of seven buckets. If an idea does not help one of them, we leave it out.</p>
 <p class="lead"><strong>It is good now and keeps getting better. The more you put in, the more it pays you back.</strong></p></div>
@@ -999,7 +1057,7 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div></section>
 
 <section class="sec" id="teaser"><div class="wrap">
-<div class="shead"><p class="eyebrow"><span class="no">08</span> Roadmap</p>
+<div class="shead"><p class="eyebrow"><span class="no">09</span> Roadmap</p>
 <h2>Where this could be in 2036</h2>
 <p class="lead">If enough people start today, one dashboard could run the routine of a whole life: family, friends, work, money, and fun, with a privacy firewall between work and home.</p>
 <p class="lead"><strong>We ship a major release every quarter. Check back each quarter for new features.</strong></p>
@@ -1723,5 +1781,23 @@ document.addEventListener("keydown",function(e){
 });
 set(cur,cur===0&&location.search.indexOf("design=")<0);
 })();</script>
+<script>
+(function(){var g=document.getElementById('gates');if(!g)return;
+var D=[
+["Claude Free (or ChatGPT Go at $8)","Try the dashboard, read email and calendar if connected, and draft replies. Light daily use.","Where you start","Nothing to step up from. This is the first gate."],
+["Claude Pro ($20)","Room left in the budget. Adds the strongest model (Opus) and Claude Code: build a simple website and automate chores. There is no Claude plan between $20 and $100.","Up from Free","Adds Opus, Claude Code, Projects, and Claude in Chrome."],
+["Still Claude Pro, or Pro plus ChatGPT Plus ($40 total)","Choose the second one if you want two assistants. More of the same, not a new tier.","Up from $30","No new Claude tier here. The next real step is Max at $100."],
+["Claude Max ($100)","Five times Pro. Daily heavy use, several projects at once.","Up from Pro","5 times Pro's usage, plus $100 a month of API credits."],
+["Claude Ultra ($200)","What we use to run universemodel.ai: one main chat that hands tasks to smaller, cheaper models, and several websites built without paying more.","Up from Max","10 times Pro's weekly usage, no 5-hour limit for verified accounts, and $200 a month of API credits."]];
+var b=[].slice.call(g.querySelectorAll('[role=radio]'));
+function set(i,f){b.forEach(function(x,k){x.setAttribute('aria-checked',k===i?'true':'false');x.tabIndex=k===i?0:-1});
+document.getElementById('g-plan').textContent=D[i][0];document.getElementById('g-get').textContent=D[i][1];
+document.getElementById('g-stephead').textContent=D[i][2];document.getElementById('g-step').textContent=D[i][3];if(f)b[i].focus()}
+b.forEach(function(x,i){x.addEventListener('click',function(){set(i)});
+x.addEventListener('keydown',function(e){var k=e.key,n=null;
+if(k==='ArrowRight'||k==='ArrowDown')n=(i+1)%b.length;else if(k==='ArrowLeft'||k==='ArrowUp')n=(i+b.length-1)%b.length;else if(k==='Home')n=0;else if(k==='End')n=b.length-1;
+if(n!==null){e.preventDefault();set(n,true)}})});
+set(0)})();
+</script>
 <script src="/v6/funsies.js?v=1" defer></script>
 </body></html>
