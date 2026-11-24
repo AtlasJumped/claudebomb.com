@@ -3,6 +3,7 @@
 <title>claudebomb.com | Download your dashboard</title>
 <meta name="description" content="Download one free file, drop it into your AI assistant, and get a personal dashboard in minutes. Read the 2036 vision at endgame.life.">
 <meta name="theme-color" content="#fff6e0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
 <style>:root{--bg:#fff6e0;--fg:#151515;--mut:#3d3a33;--line:#151515;--card:#ffffff;--field:#fffaf0;--acc:#ff5a36;--accfg:#151515;--hdrbg:#ffffff;--wbg:#ffffff;--wfg:#151515;--ring:21,21,21;--disp:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--dw:900;--trk:-.05em;--r:1.5rem;--br:99px;--fzbg:#151515;--fzfg:#ffd23f;}
 *{box-sizing:border-box}
 html{font-size:100%;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -769,6 +770,136 @@ body[data-design="8"] .tl li .yr{font-size:1rem}
 body[data-design="8"] .rv{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
 body[data-design="8"] .rv.in{opacity:1;transform:none}
 
+/* ===== V1.1 additions ===== */
+.nav a{white-space:nowrap}
+@media(min-width:60.01rem){.nav{gap:1rem}.nav a{font-size:.88rem}}
+@media(min-width:60.01rem) and (max-width:90rem){.nav,body[data-design] .nav{gap:.1rem!important}.nav a,body[data-design] .nav a{padding:.3rem .45rem!important;font-size:.8rem!important;letter-spacing:0!important}body[data-design] .nav a::before{content:none!important}}
+.btn[hidden],.wclose[hidden],.sec[hidden],.tag[hidden]{display:none!important}
+.logo{display:inline-flex;align-items:center;gap:.45rem}
+.bomb{flex:none;width:1.75rem;height:1.75rem;display:block}
+.bomb .bb{fill:currentColor}.bomb .bh{fill:none;stroke:var(--bg,#fff);stroke-width:1.6;stroke-linecap:round;opacity:.55}.bomb .bf{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.bomb .bl{fill:var(--acc)}
+body[data-design="3"] .logo{justify-content:center}
+#main #hero.hero{min-height:0;padding-top:clamp(2.4rem,6vw,4.5rem);padding-bottom:clamp(2.4rem,6vw,4.5rem)}
+#who{background:#ffe9a8}#problems{background:#b8f0e6}#products{background:#ffc2b0}#t1{background:#b8f0e6}#t2{background:#d9ccff}#t3{background:#ffe9a8}#demos{background:#fff6e0}#paste{background:#ffe9a8}#next{background:#b8f0e6}#workform{background:#fff6e0}
+.tierline{font-weight:600;max-width:40em;margin:-.6rem 0 1.4rem;font-size:1.05rem}
+.tierline:empty{display:none}
+.who-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));margin-bottom:1.6rem}
+.tier{display:flex;flex-direction:column;gap:.45rem;text-align:left;padding:1.3rem;background:var(--card);border:2px solid var(--line);border-radius:var(--r);cursor:pointer;min-height:8rem;color:var(--fg);transition:transform .2s,border-color .2s}
+.tier:hover{transform:translateY(-3px);border-color:var(--acc)}
+.tier b{font:var(--dw,600) 1.25rem/1.15 var(--disp)}
+.tier span:not(.tn){color:var(--mut);font-size:.95rem}
+.tier .tn{width:2rem;height:2rem;border-radius:50%;background:var(--acc);color:var(--accfg);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.tier[aria-checked=true]{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc)}
+.who-opts{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));margin-bottom:1.4rem}
+.optrow{display:flex;flex-wrap:wrap;gap:.5rem}
+.optrow label{display:inline-flex;align-items:center;gap:.4rem;min-height:2.6rem;padding:.3rem 1rem .3rem .8rem;border:2px solid var(--line);border-radius:99px;background:var(--card);cursor:pointer;font-size:.95rem}
+.optrow label:has(input:checked){border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
+.optrow input{margin:0;transform:none}
+input[type=radio]{accent-color:var(--acc);width:1.05rem;height:1.05rem}
+.who-err{color:var(--acc);font-weight:600;margin:.6rem 0 0;min-height:1.4em}
+.who-sum{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem 1rem}
+.who-sum p{margin:0;flex:1 1 18rem}
+.who-sum[hidden],#who-form[hidden]{display:none}
+.who-note{padding:1rem 1.2rem;border:2px solid var(--line);border-left:6px solid var(--acc);border-radius:var(--r);background:var(--card);margin-top:1rem;max-width:56rem}
+.who-note p{margin:0 0 .5rem}.who-note ul{list-style:none;display:grid;gap:.4rem;margin:.4rem 0}
+.who-note li{padding-left:1.1rem;position:relative;font-size:.97rem}
+.who-note li::before{content:"";position:absolute;left:0;top:.7em;width:.4rem;height:.4rem;border-radius:50%;background:var(--acc)}
+.who-note:empty{display:none}
+.two{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));margin-bottom:1.4rem}
+.card .btn{margin-top:.7rem}
+.card .btn+.btn{margin-left:.4rem}
+.card .tag{margin-bottom:.7rem}
+.card .links{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin-top:.6rem}
+.rope svg{width:100%;height:auto;max-width:34rem;display:block;margin:.4rem 0 1rem}
+.rope svg text{fill:var(--fg);font:600 11px var(--body)}
+.rope .hill{fill:none;stroke:var(--fg);stroke-width:2.5}
+.rope .rp{fill:none;stroke:var(--acc);stroke-width:3;stroke-dasharray:6 5}
+.rope .dot{fill:var(--acc);stroke:var(--fg);stroke-width:2}
+.merge{margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--line)}
+.merge .sws li.lock label{opacity:.65;cursor:default}
+.merge-msg{min-height:2.6em}
+.pcards{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5rem),1fr));margin-bottom:1.6rem}
+.pcard{display:flex;flex-direction:column;gap:.5rem;padding:1.4rem;background:var(--card);border:2px solid var(--line);border-radius:var(--r)}
+.pcard h3{font-size:1.25rem}
+.pcard p{flex:1;margin:0;color:var(--mut);font-size:.96rem}
+.pcard .btn{align-self:flex-start;margin-top:.4rem}
+.play{display:inline-block;width:0;height:0;border-left:.7rem solid currentColor;border-top:.45rem solid transparent;border-bottom:.45rem solid transparent;margin-right:.1rem}
+.pastebox{width:100%;min-height:16rem;font:.82rem/1.5 var(--mono);white-space:pre;overflow:auto;resize:vertical}
+.nxt{display:flex;flex-direction:column}
+.nxt p{flex:1}
+.nxt .btn{align-self:flex-start}
+#wk-status{min-height:1.4em;font-weight:600}
+/* demo overlay */
+.dm-ov{position:fixed;inset:0;z-index:82;display:grid;place-items:center;padding:.6rem;background:rgba(0,0,0,.68)}
+.dm-ov[hidden]{display:none}
+.dm{width:min(62rem,100%);max-height:calc(100svh - 1.2rem);overflow:auto;background:var(--wbg);color:var(--wfg);border:2px solid var(--line);border-radius:var(--r);box-shadow:0 30px 90px rgba(0,0,0,.5)}
+.dm:focus{outline:none}
+.dm.in{animation:dmin .38s cubic-bezier(.2,.8,.2,1)}
+@keyframes dmin{from{opacity:.2;transform:scale(.45)}}
+.dm-hd{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.7rem 1rem;align-items:start;padding:1rem 1.2rem;border-bottom:1px solid var(--line)}
+.dm-hd h2{font-size:1.5rem;margin:0}
+.dm-hd p{margin:.2rem 0 0}
+.dm-ctl{display:flex;flex-wrap:wrap;gap:.4rem}
+.dm-stage{padding:1rem 1.2rem .4rem}
+.dm-cap{margin:0;padding:.8rem 1.2rem 1.1rem;min-height:4.2rem;font-size:1.02rem;font-weight:600}
+.md-app{position:relative;background:#fff;color:#14161a;border:2px solid #14161a;border-radius:14px;overflow:hidden;font:400 .95rem/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:left;letter-spacing:0;text-transform:none}
+.md-app *{box-sizing:border-box;font-family:inherit;letter-spacing:0;text-transform:none;min-width:0}
+.md-app.lock{user-select:none}
+.md-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.2rem .8rem;padding:.7rem 1rem;border-bottom:1px solid #e5e7eb;background:#f1f5f9;font-size:.85rem;color:#3f4854}
+.md-top b{color:#14161a}
+.md-demo{display:inline-block;margin-left:.4rem;padding:.05rem .5rem;border:1px solid #1d4ed8;border-radius:99px;color:#1d4ed8;font-size:.72rem;font-weight:700}
+.md-tabs{display:flex;gap:.3rem;padding:.5rem .7rem;overflow-x:auto;border-bottom:1px solid #e5e7eb}
+.md-tab{flex:none;min-height:2.4rem;padding:0 .95rem;border-radius:99px;border:1px solid #9aa3b2;background:#fff;color:#14161a;cursor:pointer;font-weight:600;font-size:.85rem}
+.md-tab[aria-selected=true]{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.md-pane{padding:1rem;min-height:22rem}
+.md-pane[hidden]{display:none}
+.md-pane h4{font-size:1.1rem;margin:0 0 .6rem;font-weight:700;color:#14161a;line-height:1.2}
+.md-pane p{color:#3f4854;font-size:.92rem;margin:0 0 .6rem}
+.md-row{display:flex;gap:.6rem;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:.6rem 0;border-top:1px solid #e5e7eb;color:#14161a}
+.md-row small{display:block;color:#3f4854;font-size:.82rem}
+.md-btn{min-height:2.4rem;padding:0 1rem;border-radius:8px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer}
+.md-btn.g{background:#fff;color:#1d4ed8}
+.md-btn.md-hl,.md-tab.md-hl{outline:3px solid #f59e0b;outline-offset:2px}
+.md-comp{margin-top:.8rem;padding:.9rem;border:1px solid #9aa3b2;border-radius:10px;background:#f8fafc}
+.md-comp[hidden]{display:none}
+.md-comp .md-lab{font-weight:700;color:#14161a;margin:0 0 .4rem}
+.md-ta{display:block;width:100%;min-height:7.5rem;border:1px solid #6b7280;border-radius:8px;padding:.6rem .7rem;font-size:.92rem;background:#fff;color:#14161a;resize:vertical;line-height:1.5}
+.md-acts{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.6rem}
+.md-acts .md-send{margin-left:auto}
+.md-mic{display:inline-flex;align-items:center;gap:.35rem}
+.md-mic.on{background:#d92d3d;border-color:#d92d3d;color:#fff;animation:pulse 1.2s ease-in-out infinite}
+.md-live{font-size:.82rem;color:#3f4854;min-height:1.2em}
+.md-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(5.5rem,1fr));gap:.5rem;margin-bottom:.8rem}
+.md-metrics div{border:1px solid #cfd4dc;border-radius:8px;padding:.5rem .7rem;font-size:.8rem;color:#3f4854}
+.md-metrics b{display:block;font-size:1.5rem;line-height:1.1;color:#14161a}
+.md-cal{display:grid;gap:.3rem;margin:.6rem 0}
+.md-cal div{display:grid;grid-template-columns:4.5rem repeat(4,1fr);gap:.3rem;align-items:center;font-size:.8rem;color:#3f4854}
+.md-cal i{height:1.4rem;border-radius:5px;background:#cfd4dc;display:block}
+.md-cal i.f{background:#1d4ed8}.md-cal i.b{background:repeating-linear-gradient(45deg,#9aa3b2,#9aa3b2 4px,#e5e7eb 4px,#e5e7eb 8px)}
+.md-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:.8rem;margin:.6rem 0}
+.md-cols ul{margin:.3rem 0 0 1.1rem;padding:0;color:#3f4854;font-size:.9rem}
+.md-sel{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.6rem 0}
+.md-sel select{min-height:2.4rem;padding:0 .6rem;border:1px solid #6b7280;border-radius:8px;background:#fff;color:#14161a;font-size:.9rem;width:auto;max-width:100%}
+.md-out{padding:.7rem .9rem;border-left:4px solid #1d4ed8;background:#eef4ff;border-radius:6px;color:#14161a;margin:.5rem 0;font-size:.92rem}
+.md-out[hidden]{display:none}
+.md-out ol{margin:.3rem 0 0 1.2rem;padding:0}
+.md-note{position:absolute;left:50%;bottom:.8rem;transform:translateX(-50%);background:#14161a;color:#fff;padding:.55rem 1rem;border-radius:99px;font-size:.85rem;font-weight:600;max-width:calc(100% - 1.6rem);text-align:center;opacity:0;transition:opacity .25s;pointer-events:none;z-index:7}
+.md-note.on{opacity:1}
+.md-cursor{position:absolute;left:0;top:0;width:26px;height:26px;pointer-events:none;z-index:8;transition:transform .8s cubic-bezier(.4,.1,.2,1);filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.md-cursor[hidden]{display:none}
+.md-cursor::after{content:"";position:absolute;left:-6px;top:-6px;width:20px;height:20px;border-radius:50%;border:3px solid #f59e0b;opacity:0;transform:scale(.4)}
+.md-cursor.click::after{animation:mdclick .4s ease-out}
+@keyframes mdclick{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+@media(max-width:34rem){.md-pane{min-height:18rem;padding:.8rem}.md-cal div{grid-template-columns:3.6rem repeat(4,1fr)}.dm-hd h2{font-size:1.25rem}.dm-stage{padding:.7rem .7rem .3rem}.card .btn+.btn{margin-left:0}}
+/* design panel additions */
+.dz-th{display:flex;justify-content:space-between;align-items:start;gap:.5rem;margin:0 0 .7rem}
+.dz-th .dz-title{margin:0}
+.dz-x{flex:none;width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid #111;background:#fff;color:#111;font-size:1.3rem;line-height:1;cursor:pointer;padding:0;box-shadow:none}
+.dz-x:hover{background:#111;color:#fff}
+.dz-lab{font-weight:600;font-size:.85rem;margin:0 0 .35rem;color:#111}
+.dz-rate{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin:0 0 .8rem}
+.dz-rate button{min-height:2.4rem;border:1px solid #111;border-radius:99px;background:#fff;color:#111;font-weight:600;font-size:.82rem;cursor:pointer;padding:0 .5rem;box-shadow:none;text-transform:none;letter-spacing:0}
+.dz-rate button[aria-checked=true]{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
 </style></head>
 <body class="citrus">
 <script>(function(){var F={1:"Inter:wght@400;500;600;700;800",2:"Manrope:wght@400;500;600;700;800",3:"Playfair+Display:wght@500;700;800;900",4:"Fredoka:wght@400;500;600;700",6:"Nunito:wght@400;600;700;800",7:"JetBrains+Mono:wght@400;500;700",8:"Space+Grotesk:wght@400;500;600;700"};
@@ -779,36 +910,204 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <canvas id="bg" aria-hidden="true"></canvas><canvas id="fx" aria-hidden="true"></canvas>
 <a class="skip" href="#now">Skip to content</a>
 <header class="hdr" id="top">
-<a class="logo" href="#top">claude<b>bomb</b></a>
+<a class="logo" href="#top" aria-label="claudebomb.com, home"><svg class="bomb" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="bb" cx="14" cy="19" r="10"/><path class="bh" d="M8 17a6.5 6.5 0 0 1 4-4.5"/><rect class="bb" x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)"/><path class="bf" d="M23.5 6.5c2-2.5 4 .5 5.5-2.5"/><path class="bl" d="M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z"/></svg><span>claude<b>bomb</b></span></a>
 <button type="button" class="menubtn" aria-expanded="false" aria-controls="nav">Menu</button>
 <nav class="nav" id="nav" aria-label="Main">
-<a href="#now">Use it</a><a href="#cost">Cost</a><a href="#contribute">Contribute</a><a href="#usecases">Use cases</a><a href="#social">Social</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#benefits">Benefits</a><a href="#teaser">Roadmap</a>
+<a href="#products">Products</a><a href="#demos">Demos</a><a href="#now">Use it</a><a href="#cost">Cost</a><a href="#contribute">Contribute</a><a href="#usecases">Use cases</a><a href="#social">Social</a><a href="#family">Family</a><a href="#workflows">Workflows</a><a href="#benefits">Benefits</a><a href="#teaser">Roadmap</a>
 </nav>
 <a class="btn small hdr-cta" href="mailto:leo@universemodel.ai?subject=Subscribe%20to%20claudebomb.com%20updates&amp;body=Please%20add%20me%20to%20the%20updates%20list.">Subscribe</a>
 </header>
 
 <main id="main">
 
-<p class="disc" id="disc">Made for Claude, works with any AI assistant. ChatGPT, Gemini, and others can use the same file. What it can reach depends on the apps you connect to your assistant.</p>
+<p class="disc" id="disc">Made for Claude, works with any AI assistant. ChatGPT, Gemini, and others can use the same file. We have not tested every assistant. What it can reach depends on the apps you connect to your assistant.</p>
+
+<section class="sec" id="who"><div class="wrap">
+<div class="shead"><p class="eyebrow">Start here</p>
+<h2>Who are you?</h2>
+<p class="lead">Pick the one that fits. We reshape this page for you. Your choice stays on this device and never goes to us.</p></div>
+<div id="who-form">
+<div class="who-grid" id="tiers" role="radiogroup" aria-label="Your experience with AI">
+<button type="button" class="tier" role="radio" aria-checked="false" tabindex="0" data-tier="1"><span class="tn">1</span><b>New to AI</b><span>I have never used AI, or I only chat with it. Nothing is connected to it.</span></button>
+<button type="button" class="tier" role="radio" aria-checked="false" tabindex="-1" data-tier="2"><span class="tn">2</span><b>I use AI some</b><span>I know how to prompt. I am not sure about plans, models, or connectors.</span></button>
+<button type="button" class="tier" role="radio" aria-checked="false" tabindex="-1" data-tier="3"><span class="tn">3</span><b>Super user</b><span>I know the models, such as Opus and Sonnet, and I want to help others.</span></button>
+</div>
+<div class="who-opts">
+<fieldset><legend>Which AI do you use? Pick all that apply.</legend><div class="optrow">
+<label><input type="checkbox" name="ai" value="claude"> Claude</label>
+<label><input type="checkbox" name="ai" value="chatgpt"> ChatGPT</label>
+<label><input type="checkbox" name="ai" value="gemini"> Gemini</label>
+<label><input type="checkbox" name="ai" value="copilot"> Copilot</label>
+<label><input type="checkbox" name="ai" value="other"> Other</label>
+</div></fieldset>
+<fieldset><legend>Your plan</legend><div class="optrow">
+<label><input type="radio" name="plan" value="free"> Free</label>
+<label><input type="radio" name="plan" value="paid"> Paid</label>
+</div></fieldset>
+</div>
+<div class="cta"><button type="button" class="btn" id="who-go">Show me my page</button><button type="button" class="btn ghost" id="who-clear" hidden>Clear my choice</button></div>
+<p class="who-err" id="who-err" role="alert"></p>
+</div>
+<div class="who-sum" id="who-sum" hidden>
+<p id="who-sumtxt"></p>
+<button type="button" class="btn small ghost" id="who-change">Change</button>
+<button type="button" class="btn small ghost" id="who-all" aria-pressed="false">Show every tier</button>
+</div>
+<div class="who-note" id="who-notes" aria-live="polite"></div>
+</div></section>
 
 <section class="hero" id="hero"><div class="wrap">
 <p class="eyebrow">Free, open, ready today</p>
 <h1>Your dashboard, built by your AI</h1>
 <p class="sub">Download one plain text file, drop it into an AI assistant such as Claude, and get one calm page for your day: a ranked to-do list, your inbox with drafted replies, your calendar, and the people who matter.</p>
+<p class="tierline" id="tierline"></p>
 <div class="cta"><a class="btn" href="/dashboard/claudebomb-dashboard.md" download>Download the dashboard</a><a class="btn ghost" href="/dashboard/claudebomb-dashboard.md" target="_blank" rel="noopener">Read it first</a></div>
 <ol class="steps hsteps" aria-label="How to use it today in three steps">
-<li><span class="sn">1</span><div><h3>Download the file</h3><p>One text file, about 7 KB. Open it in any editor to read every line.</p></div></li>
+<li><span class="sn">1</span><div><h3>Download the file</h3><p>One text file, about 11 KB. Open it in any editor to read every line.</p></div></li>
 <li><span class="sn">2</span><div><h3>Drop it into your assistant</h3><p>Start a new chat in Claude or a similar assistant, attach the file, and say "Set up my dashboard."</p></div></li>
 <li><span class="sn">3</span><div><h3>Bookmark your link</h3><p>You get a setup rating from 1 to 100, a list of free connectors that raise it, and a dashboard you can bookmark.</p></div></li>
 </ol>
 <p class="fine">Your data stays between you and your assistant. Nothing is sent to claudebomb.com.</p>
 </div></section>
 
+<section class="sec" id="problems"><div class="wrap">
+<div class="shead"><p class="eyebrow">Why this exists</p>
+<h2>Problems this file solves</h2>
+<p class="lead">These apply at every level, from a first chat to a daily power user.</p></div>
+<div class="cards c3">
+<article class="card"><h3>You cannot see how you use AI</h3><p>It is hard to see your own usage. The file asks your assistant to list the accounts and connectors you use and what you do most.</p></article>
+<article class="card"><h3>You are not sure you use it well</h3><p>Without a comparison, you cannot tell whether you are doing well or missing something simple. The file compares you to five profiles, from a grandparent new to AI to a software engineer.</p></article>
+<article class="card"><h3>Everyone is on a separate journey</h3><p>People learn the same lessons alone, and many learn them the expensive way. We think everyone should reach a basic standard that is easy to reach.</p></article>
+<article class="card hl"><h3>No app shows how to use your AI better</h3><p>We do not know of an app that looks at how you use your AI and shows how to use it better. This file does, with your own assistant, and it says plainly what it cannot see.</p></article>
+<article class="card"><h3>Tutorials that fit you</h3><p>Ask for a tutorial based on your usage. You get a short, free tutorial on the one thing that would help you most.</p></article>
+</div>
+</div></section>
+
+<section class="sec" id="products"><div class="wrap">
+<div class="shead"><p class="eyebrow">Two products</p>
+<h2>Personal dashboard now, work dashboard next</h2>
+<p class="lead">The personal dashboard comes first and paves the way for the work dashboard.</p></div>
+<div class="two">
+<article class="card hl"><span class="tag warm">Available now</span><h3>Personal dashboard</h3>
+<ul>
+<li>One free text file. Use it today in Claude. Other assistants should mostly work.</li>
+<li>Improved by the crowd. Send an idea, and we review it and test it on our side.</li>
+<li>If it makes the file better, we ship it in a new version and credit you.</li>
+<li>Every version and every change lives in the GitHub repo.</li></ul>
+<div class="links"><a class="btn" href="/dashboard/claudebomb-dashboard.md" download>Download the file</a><a class="link" href="https://github.com/AtlasJumped/claudebomb.com" target="_blank" rel="noopener">GitHub repo</a></div></article>
+<article class="card"><span class="tag soft">Planned, early 2027</span><h3>Work dashboard</h3>
+<p class="mut small">This is the story we are working toward. It is not built, and nothing here is available yet.</p>
+<ul>
+<li>Sometime in early 2027, someone brings the personal dashboard to their company, and it merges with a company dashboard.</li>
+<li>Both sides control what goes in and what goes out. The company can block information from leaving. You choose what from your personal dashboard joins.</li>
+<li>Defaults protect you. Your personal email is never shared with work, and your work email never reaches your personal dashboard.</li>
+<li>Before any company rollout, we plan to bring in professional engineers so it is safe for both sides.</li></ul>
+<div class="merge" id="merge"><p class="label">Illustration: what joins your work dashboard</p>
+<div class="bigtog"><button type="button" class="btn small" data-m="all">Keep everything</button><button type="button" class="btn small ghost" data-m="ai">Let AI suggest what not to share</button><button type="button" class="btn small ghost" data-m="own">I will choose</button></div>
+<ul class="sws" id="merge-list">
+<li class="lock"><label><span>Personal email <em class="mut small">Never shared. Default.</em></span><span class="sw"><input type="checkbox" role="switch" disabled><i></i></span></label></li>
+<li><label><span>Calendar</span><span class="sw"><input type="checkbox" role="switch" data-k="cal" checked><i></i></span></label></li>
+<li><label><span>Tasks and notes</span><span class="sw"><input type="checkbox" role="switch" data-k="notes" checked><i></i></span></label></li>
+<li><label><span>Family and friends</span><span class="sw"><input type="checkbox" role="switch" data-k="family" checked><i></i></span></label></li>
+<li><label><span>Money</span><span class="sw"><input type="checkbox" role="switch" data-k="money" checked><i></i></span></label></li>
+<li><label><span>Health</span><span class="sw"><input type="checkbox" role="switch" data-k="health" checked><i></i></span></label></li>
+</ul>
+<p class="mut small merge-msg" id="merge-msg" aria-live="polite">Keep everything shares every item below except your personal email. For each item you can also swap in a work-friendly version.</p></div>
+</article>
+</div>
+</div></section>
+
+<section class="sec" id="t1" data-tier="1"><div class="wrap">
+<div class="shead"><p class="eyebrow">If you are new to AI</p>
+<h2>It is a text file. That is all.</h2>
+<p class="lead">You download one file that ends in .md. It is plain text, like a note. Your assistant reads it and does the work.</p></div>
+<div class="cards c3">
+<article class="card hl"><h3>Safe</h3><ul>
+<li>A .md file is text. Open it in any editor and read every line.</li>
+<li>It contains no code that runs by itself.</li>
+<li>It sends nothing anywhere. Your data stays between you and your assistant.</li></ul></article>
+<article class="card"><h3>Or skip the download</h3><p>Open the copy and paste page, copy the text, and paste it into a chat. Pasting words into a chat is the same as typing them.</p><a class="btn" href="#paste">Go to copy and paste</a></article>
+<article class="card"><h3>Under 10 minutes</h3><ul>
+<li>Download the file, or copy the text.</li>
+<li>Put it into your assistant and say "Set up my dashboard."</li>
+<li>Say yes or no to each choice.</li>
+<li>That is the whole setup.</li></ul></article>
+</div>
+<div class="two">
+<article class="card"><h3>Automated or manual setup</h3><p>With automated setup, your assistant does the work for you and you say yes or no to each choice. With manual setup, you pick every step yourself.</p><p>Most people should pick automated. Tuning by hand can fine-tune your results, and either way you can say no to anything.</p></article>
+<article class="card"><h3>Automation, explained</h3><p>AI assistants come in several models. Stronger ones are better at hard problems. Smaller ones are faster and cheaper for easy jobs. You do not need to know which is which.</p><p>The file tells your assistant to judge how hard each job is and pick the right model for it. This part is optional.</p></article>
+</div>
+<div class="two">
+<article class="card rope"><h3>We climbed the hill. This file is the rope.</h3>
+<svg viewBox="0 0 340 150" role="img" aria-label="A hill that shows the steep learning curve of AI. A dashed rope runs from the top of the hill down to the bottom, where you start.">
+<path class="hill" d="M10 138 C90 136 130 120 170 84 C210 48 250 22 330 18"/>
+<path class="rp" d="M300 20 C250 40 180 100 50 134"/>
+<circle class="dot" cx="48" cy="134" r="6"/><circle class="dot" cx="300" cy="20" r="6"/>
+<text x="10" y="120">You start here</text><text x="190" y="12">Where we are now</text></svg>
+<p>We spent too much money and learned how to save. We ran GPU jobs for days that turned out to be useless. AI has a steep learning curve, and we wrote down what we learned so your assistant can do the climbing for you.</p>
+<p>This file is us throwing a rope back down the hill. We are not engineers. We use AI in our spare time, and we built this file and this site with it.</p></article>
+<article class="card"><h3>Do not have an assistant yet?</h3>
+<p>Claude is our preferred one. A free account is enough to try this once. This link goes straight to the download page. Install it, open it, then put the file in.</p>
+<a class="btn" href="https://claude.ai/download" target="_blank" rel="noopener">Get Claude</a>
+<p class="mut small" style="margin-top:1rem">Other assistants</p>
+<div class="links"><a class="link" href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a><a class="link" href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a><a class="link" href="https://copilot.microsoft.com" target="_blank" rel="noopener">Copilot</a></div>
+<p class="mut small" style="margin-top:.8rem">We built this file for Claude. We have not tested every other assistant.</p></article>
+</div>
+</div></section>
+
+<section class="sec" id="t2" data-tier="2"><div class="wrap">
+<div class="shead"><p class="eyebrow">If you use AI some</p>
+<h2>What you are probably missing</h2>
+<p class="lead">You can prompt. Here is what people at the next level connect to their assistant, and what each connection gives them. If one is not connected for you, you are missing the thing next to it. Check your assistant's connector list for each.</p></div>
+<div class="cards c3">
+<article class="card"><h3>Email</h3><p>Your assistant sorts your inbox into needs a reply, waiting on others, and for your information. It drafts replies in your voice. Nothing is sent without your yes.</p></article>
+<article class="card"><h3>Calendar</h3><p>One agenda for every calendar, with conflicts marked. A plan for your morning, and trip planning when friends' calendars line up.</p></article>
+<article class="card"><h3>Files and notes</h3><p>Your assistant can find and summarize your documents, so you stop searching folders. Notes become to-do lists.</p></article>
+<article class="card"><h3>Team chat</h3><p>Slack, Teams, or Discord. Unread mentions in one place, and one-button reports that you edit and send.</p></article>
+<article class="card"><h3>Video, music, and events</h3><p>If your assistant can reach them, it suggests new things matched to what you like, and leaves out what you never want suggested.</p></article>
+<article class="card"><h3>A schedule</h3><p>If your assistant can run scheduled tasks, your dashboard updates itself. If it cannot, you say "refresh my dashboard" and it rebuilds.</p></article>
+</div>
+<p class="lead">Each connection raises your setup rating. Try the meter in "Use it today."</p>
+<div class="cta"><a class="btn" href="#demos">Watch workflows you can automate in minutes</a><a class="btn ghost" href="#now">See the setup rating</a></div>
+</div></section>
+
+<section class="sec" id="t3" data-tier="3"><div class="wrap">
+<div class="shead"><p class="eyebrow">If you are a super user</p>
+<h2>You are critical to this movement</h2>
+<p class="lead">We are trying to lift everyone. The people who gain the most are in the first two tiers: people who do not know how to use AI, or do not trust it. You will see the value of this faster than anyone, and you know what we are missing.</p></div>
+<div class="two">
+<article class="card hl"><h3>Why we need you</h3>
+<p>We are not engineers. We use AI in our spare time, and we built this site and this file with it. We know many of you can do much better. We built this version ourselves. A crowd can build a far better one.</p>
+<p>If everyone has a dashboard, the person you call for help has one too. They are not buried in messages, and they get to you sooner. When you elevate your peers, you help yourself later.</p>
+<p>The mission is free, forever: use human ingenuity and AI to lift and optimize the efficiency of every person.</p></article>
+<article class="card"><span class="tag warm">Dashboard V1.1</span><h3>Versions and credit</h3>
+<ul>
+<li>V1.1: My AI Journey tab, model delegation, and a choice of automated or manual setup.</li>
+<li>V1.0: First release. Setup rating, nine tabs, privacy firewall.</li></ul>
+<p>We review each suggestion and test it on our side. If it improves the file, we ship it in a new version and credit the person who suggested it, here and in the repo. Credited so far: the claudebomb team. Your name goes here when your suggestion ships.</p>
+<div class="links"><a class="btn" href="https://github.com/AtlasJumped/claudebomb.com" target="_blank" rel="noopener">View the GitHub repo</a><a class="link" href="#contribute">Send an improvement</a></div></article>
+</div>
+</div></section>
+
+<section class="sec" id="demos"><div class="wrap">
+<div class="shead"><p class="eyebrow">Watch it work</p>
+<h2>Press Play and watch a workflow</h2>
+<p class="lead">Each card runs a short walkthrough. A cursor moves and clicks, a message fills in, and the microphone turns on. The data is made up, and nothing is sent. Voice narration is optional, and you can mute it.</p></div>
+<div class="pcards">
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>Reply to a family email by voice</h3><p>Open the inbox, pick an email, read the draft, add your words by microphone, and press Send.</p><button type="button" class="btn" data-demo="reply"><span class="play" aria-hidden="true"></span> Play</button></article>
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>Send the weekly recruiting recap</h3><p>One button writes the Slack recap from live numbers. You edit it and send.</p><button type="button" class="btn" data-demo="report"><span class="play" aria-hidden="true"></span> Play</button></article>
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>Plan a trip with friends</h3><p>Find the week when your calendars line up, then start a group chat with a draft message.</p><button type="button" class="btn" data-demo="trip"><span class="play" aria-hidden="true"></span> Play</button></article>
+<article class="pcard"><span class="tag small">Walkthrough</span><h3>See your AI journey</h3><p>See accounts and habits, compare yourself to five profiles, and ask for a tutorial based on your usage.</p><button type="button" class="btn" data-demo="journey"><span class="play" aria-hidden="true"></span> Play</button></article>
+</div>
+<div class="cta"><button type="button" class="btn ghost" data-demo="explore">Open the demo dashboard</button></div>
+<p class="fine" style="margin-top:1rem">The demo dashboard is a full click-around mock. Press Send anywhere and it only shows a note that nothing was sent. Narration uses your browser's built-in voice. If your browser has none, you get captions only.</p>
+</div></section>
+
 <section class="sec" id="now"><div class="wrap">
 <div class="shead"><p class="eyebrow"><span class="no">01</span> What we have now</p>
 <h2>Use it today: one file for your AI assistant</h2>
 <p class="lead">The first product is small on purpose. You download one file and drop it into an AI assistant such as Claude. It looks at what it can reach, tells you how complete your setup is, and builds your dashboard.</p>
-<p><span class="tag warm">Version 1, free</span> Ready now. It is a plain text file you can read before you use it, and your data never comes to us.</p>
+<p><span class="tag warm">Dashboard V1.1, free</span> Ready now. It is a plain text file you can read before you use it, and your data never comes to us.</p>
 <div class="cta"><a class="btn" href="/dashboard/claudebomb-dashboard.md" download>Download the dashboard file</a><a class="btn ghost" href="/dashboard/claudebomb-dashboard.md" target="_blank" rel="noopener">Read it first</a></div></div>
 
 <ol class="steps">
@@ -841,10 +1140,21 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </div>
 </div></section>
 
+<section class="sec" id="paste"><div class="wrap">
+<div class="shead"><p class="eyebrow">No download</p>
+<h2>Copy and paste instead</h2>
+<p class="lead">This is the full text of the dashboard file. Press Copy, open a new chat in your assistant, paste, and send. Then type "Set up my dashboard." Words pasted into a chat are the same as words you type.</p></div>
+<label class="sel" for="paste-box">The full dashboard text</label>
+<textarea id="paste-box" class="pastebox" readonly rows="14" data-mic="none" spellcheck="false">Loading the dashboard text...</textarea>
+<div class="cta" style="margin-top:1rem"><button type="button" class="btn" id="paste-copy">Copy the dashboard text</button><a class="btn ghost" href="/dashboard/claudebomb-dashboard.md" download>Download it instead</a></div>
+<p class="mut small" id="paste-status" role="status" aria-live="polite"></p>
+</div></section>
+
 <section class="sec" id="cost"><div class="wrap">
 <div class="shead"><p class="eyebrow"><span class="no">02</span> Cost</p>
 <h2>What it costs, and what you get</h2>
-<p class="lead">Pick the most you want to spend each month. We show the plan that fits and what the next step up adds.</p></div>
+<p class="lead">Pick the most you want to spend each month. We show the plan that fits and what the next step up adds.</p>
+<p class="mut small" id="cost-note" hidden></p></div>
 
 <p class="label" id="gatelabel">Your monthly budget</p>
 <div class="pchips" id="gates" role="radiogroup" aria-labelledby="gatelabel">
@@ -1072,6 +1382,37 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 </ol>
 </div></section>
 
+<section class="sec" id="next"><div class="wrap">
+<div class="shead"><p class="eyebrow">Three ways to start</p>
+<h2>Pick one</h2></div>
+<div class="cards c3">
+<article class="card nxt hl"><h3>Take five minutes: set it up now</h3><p>Download the file, or copy and paste it. Your dashboard is ready in under 10 minutes.</p><a class="btn" href="#now">Set it up</a></article>
+<article class="card nxt"><h3>Take five minutes: help build the work dashboard</h3><p>Tell us your job title, the tools you use at work, and how you use them. It is anonymous, and none of it is sensitive.</p><button type="button" class="btn" id="wk-open" aria-controls="workform">Start the short form</button></article>
+<article class="card nxt"><h3>See the vision: the world in 2036</h3><p>If people start today, this is what the world could look like in 2036.</p><a class="btn" href="https://endgame.life" target="_blank" rel="noopener">Visit endgame.life</a></article>
+</div>
+</div></section>
+
+<section class="sec" id="workform" hidden><div class="wrap">
+<form class="wform" id="wk-form" novalidate>
+<h3>Help build the work dashboard</h3>
+<p class="note-opt">Everything here is optional. Answers are anonymous unless you add a name. Do not include anything private or confidential. Your answers are saved on this device only. Nothing is sent from this page. You choose whether to copy them or email them to us.</p>
+<p class="mut small">Press the microphone next to a box and talk. You can also type.</p>
+<label for="wk-title">Job title</label>
+<input type="text" id="wk-title" autocomplete="off">
+<label for="wk-tools">Tools you use at work</label>
+<input type="text" id="wk-tools" autocomplete="off" placeholder="For example: Slack, Outlook, Zoom, Jira, Salesforce">
+<label for="wk-how">How you use them</label>
+<textarea id="wk-how" rows="4" placeholder="What do you do first, then next?"></textarea>
+<label for="wk-co">Company name (optional)</label>
+<input type="text" id="wk-co" autocomplete="off">
+<label for="wk-name">Your name (optional, only if you want credit)</label>
+<input type="text" id="wk-name" autocomplete="off">
+<div class="row" style="margin-top:1.2rem"><button type="submit" class="btn">Email it to us</button><button type="button" class="btn ghost" id="wk-copy">Copy my answers</button><button type="button" class="btn ghost" id="wk-clear">Clear</button></div>
+<p class="mut small" id="wk-status" role="status" aria-live="polite"></p>
+<p class="mut small">The email button opens your email app with your words ready to send to leo@universemodel.ai.</p>
+</form>
+</div></section>
+
 </main>
 
 <footer class="foot" id="subscribe"><div class="wrap">
@@ -1100,13 +1441,22 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <div class="dz" id="dz">
 <button type="button" class="dz-btn" id="dzbtn" aria-expanded="false" aria-controls="dzpanel">Design</button>
 <div class="dz-panel" id="dzpanel" role="group" aria-label="Design shuffle" hidden>
-<p class="dz-title" id="dztitle" aria-live="polite">Original</p>
+<div class="dz-th"><p class="dz-title" id="dztitle" aria-live="polite">Original</p><button type="button" class="dz-x" data-dz="close" aria-label="Close design panel">&times;</button></div>
 <div class="dz-row"><button type="button" data-dz="shuffle">Shuffle</button><button type="button" data-dz="prev">Previous</button><button type="button" data-dz="next">Next</button><button type="button" data-dz="orig">Original</button></div>
+<p class="dz-lab" id="dzratelab">Your rating of this design</p>
+<div class="dz-rate" id="dzrate" role="radiogroup" aria-labelledby="dzratelab"><button type="button" role="radio" aria-checked="false" data-r="sd">Strong dislike</button><button type="button" role="radio" aria-checked="false" data-r="d">Dislike</button><button type="button" role="radio" aria-checked="false" data-r="l">Like</button><button type="button" role="radio" aria-checked="false" data-r="sl">Strong like</button></div>
 <label for="dznote">What do you like or dislike about this design?</label>
 <textarea id="dznote" rows="4"></textarea>
 <div class="dz-row"><button type="button" data-dz="copy">Copy all notes</button><button type="button" data-dz="close">Close</button></div>
 <p class="dz-status" id="dzstatus" role="status" aria-live="polite"></p>
 <p class="dz-keys">Keys: S shuffles. Left and right arrows step through designs while this panel is open.</p>
+</div></div>
+
+<div class="dm-ov" id="dmov" hidden><div class="dm" id="dm" role="dialog" aria-modal="true" aria-labelledby="dm-title" tabindex="-1">
+<div class="dm-hd"><div><h2 id="dm-title">Demo</h2><p class="mut small" id="dm-sub">Demo only. Nothing is sent.</p></div>
+<div class="dm-ctl"><button type="button" class="btn small" id="dm-replay">Replay</button><button type="button" class="btn small ghost" id="dm-mode">Open demo dashboard</button><button type="button" class="btn small ghost" id="dm-mute" hidden>Mute voice</button><button type="button" class="wclose" id="dm-close">Close</button></div></div>
+<div class="dm-stage"><div class="md-app" id="md-app"></div></div>
+<p class="dm-cap" id="dm-cap" aria-live="polite"></p>
 </div></div>
 
 <div class="win-ov" id="winov" hidden><div class="win" id="win" role="dialog" aria-modal="true" aria-labelledby="wtitle" tabindex="-1"></div></div>
@@ -1743,6 +2093,9 @@ var btn=$("#dzbtn"),panel=$("#dzpanel"),title=$("#dztitle"),note=$("#dznote"),st
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function notes(){try{var o=JSON.parse(lsGet("cbDesignNotes")||"{}");return o&&typeof o==="object"?o:{}}catch(e){return {}}}
+var RL={sd:"Strong dislike",d:"Dislike",l:"Like",sl:"Strong like"};
+function rates(){try{var o=JSON.parse(lsGet("cbDesignRatings")||"{}");return o&&typeof o==="object"?o:{}}catch(e){return {}}}
+function updRate(){var r=rates()[cur]||"";$$("#dzrate [data-r]").forEach(function(b){b.setAttribute("aria-checked",b.getAttribute("data-r")===r?"true":"false")})}
 function label(n){return n?"Design "+n+" of 8: "+NAMES[n-1]:"Original (the current look)"}
 function say(m){status.textContent=m;clearTimeout(stT);stT=setTimeout(function(){status.textContent=""},3000)}
 function clearRv(){$$(".rv").forEach(function(e){e.classList.remove("rv","in")});if(rvObs){rvObs.disconnect();rvObs=null}}
@@ -1752,7 +2105,7 @@ function setRv(){clearRv();if(cur!==8||RM||!("IntersectionObserver" in window))r
 function set(n,quiet){
   n=((n%9)+9)%9;cur=n;window.__dzApply(n);
   title.textContent=label(n);btn.setAttribute("aria-label","Design shuffle, "+label(n));
-  note.value=notes()[n]||"";
+  note.value=notes()[n]||"";updRate();
   lsSet("cbDesign",String(n));
   if(!quiet)try{var u=new URL(location.href);u.searchParams.set("design",n);history.replaceState(null,"",u.pathname+u.search+u.hash)}catch(e){}
   setRv();
@@ -1760,10 +2113,10 @@ function set(n,quiet){
 function shuffle(){var n;do{n=1+Math.floor(Math.random()*8)}while(n===cur&&cur!==0?true:false);set(n)}
 function open(o){panel.hidden=!o;btn.setAttribute("aria-expanded",o?"true":"false");if(o)note.focus({preventScroll:true})}
 btn.addEventListener("click",function(){open(panel.hidden)});
-panel.addEventListener("click",function(e){var b=e.target.closest("[data-dz]");if(!b)return;var k=b.getAttribute("data-dz");
+panel.addEventListener("click",function(e){var rb=e.target.closest("[data-r]");if(rb){var rt=rates(),v=rb.getAttribute("data-r");if(rt[cur]===v)delete rt[cur];else rt[cur]=v;lsSet("cbDesignRatings",JSON.stringify(rt));updRate();say(rt[cur]?"Rated: "+RL[rt[cur]]+".":"Rating cleared.");return}var b=e.target.closest("[data-dz]");if(!b)return;var k=b.getAttribute("data-dz");
   if(k==="shuffle")shuffle();else if(k==="prev")set(cur-1);else if(k==="next")set(cur+1);else if(k==="orig")set(0);
   else if(k==="close"){open(false);btn.focus()}
-  else if(k==="copy"){var n=notes(),out=["claudebomb.com design notes"];for(var i=0;i<9;i++){var t=(n[i]||"").trim();out.push((i?"Design "+i+" ("+NAMES[i-1]+")":"Original")+":\n"+(t||"(no notes)"))}
+  else if(k==="copy"){var n=notes(),rt=rates(),out=["claudebomb.com design notes and ratings"];for(var i=0;i<9;i++){var t=(n[i]||"").trim();out.push((i?"Design "+i+" ("+NAMES[i-1]+")":"Original")+":\nRating: "+(RL[rt[i]]||"not rated")+"\nNotes: "+(t||"(no notes)"))}
     var txt=out.join("\n\n");
     function fb(){var ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="position:fixed;left:-999px;top:0";document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand("copy")}catch(x){}document.body.removeChild(ta);say(ok?"Copied all notes.":"Copy failed. Select the text in the box and copy it by hand.")}
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){say("Copied all notes.")},fb);else fb()}
@@ -1771,7 +2124,7 @@ panel.addEventListener("click",function(e){var b=e.target.closest("[data-dz]");i
 });
 note.addEventListener("input",function(){var n=notes();n[cur]=note.value;lsSet("cbDesignNotes",JSON.stringify(n))});
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"&&!panel.hidden&&panel.contains(document.activeElement)){open(false);btn.focus();return}
+  if(e.key==="Escape"&&!panel.hidden&&$("#winov").hidden&&$("#dmov").hidden){open(false);btn.focus();return}
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   var t=e.target,tag=t&&t.tagName;if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"||(t&&t.isContentEditable))return;
   var ov=$("#winov");if(ov&&!ov.hidden)return;
@@ -1798,6 +2151,341 @@ x.addEventListener('keydown',function(e){var k=e.key,n=null;
 if(k==='ArrowRight'||k==='ArrowDown')n=(i+1)%b.length;else if(k==='ArrowLeft'||k==='ArrowUp')n=(i+b.length-1)%b.length;else if(k==='Home')n=0;else if(k==='End')n=b.length-1;
 if(n!==null){e.preventDefault();set(n,true)}})});
 set(0)})();
+</script>
+<script>
+(function(){
+'use strict';
+var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+function toast(m){var t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('on')},3200)}
+function copyText(txt,done){
+  function fb(){var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;left:-999px;top:0';document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(x){}document.body.removeChild(ta);done(ok)}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){done(true)},fb);else fb();
+}
+
+/* ---------- who are you ---------- */
+var KEY='cbProfile',TN={1:'new to AI',2:'uses AI some',3:'a super user'};
+var AIN={claude:'Claude',chatgpt:'ChatGPT',gemini:'Gemini',copilot:'Copilot',other:'another assistant'};
+var TL={1:'New to AI? It is a text file, it is safe, and setup takes under 10 minutes.',2:'You know how to prompt. Here is what you are probably missing.',3:'You know the models. You are critical to this movement.'};
+var main=$('#main'),ORIG=$$('#main>*'),IDS={};
+ORIG.forEach(function(el){if(el.id)IDS[el.id]=el});
+var FRONT={1:['t1','paste','now','demos'],2:['t2','demos','now','paste'],3:['t3','contribute','demos','now']};
+var state=null,showAll=false,pick=0;
+function load(){
+  try{var o=JSON.parse(lsGet(KEY)||'null');
+    if(o&&(o.tier===1||o.tier===2||o.tier===3)){o.ai=Array.isArray(o.ai)?o.ai.filter(function(k){return AIN[k]}):[];o.plan=(o.plan==='free'||o.plan==='paid')?o.plan:'';return o}
+  }catch(e){}
+  return null;
+}
+function listNames(a){var n=a.map(function(k){return AIN[k]});return n.length<3?n.join(' and '):n.slice(0,-1).join(', ')+', and '+n[n.length-1]}
+function noteHTML(s){
+  var ai=s.ai,items=[],hasC=ai.indexOf('claude')>-1,others=ai.filter(function(k){return k!=='claude'});
+  if(!ai.length)items.push('You did not pick an assistant. We built the file for Claude, and other assistants should mostly work. We have not tested every assistant.');
+  if(hasC)items.push('Claude: this file was made for Claude. It should work as written.');
+  if(others.length)items.push(listNames(others)+': the file is plain text, so it should mostly work. We have not tested every assistant. What it can reach depends on the connectors your assistant offers.');
+  var h='<ul>'+items.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul>';
+  if(s.plan==='free'){
+    h+='<p><b>On a free plan you may miss:</b></p><ul>'+
+    '<li>Connectors. Which ones you can connect, and how many, depends on your assistant and plan. Check its connector list.</li>'+
+    '<li>Usage room. Free plans have usage limits, so a long setup chat may pause until the limit resets.</li>'+
+    '<li>The strongest models. On Claude Free, that means no Opus and no Claude Code. See Cost below.</li>'+
+    '<li>A schedule. Your dashboard updates itself only if your assistant can run scheduled tasks. If it cannot, you say "refresh my dashboard."</li></ul>'+
+    '<p class="mut small">Our file is free either way, and we get nothing from it. What you get on the assistant side depends on what you pay that company.</p>';
+  }else if(s.plan==='paid'){
+    h+='<p>A paid plan gives you more room for connectors, models, and usage. Exact limits depend on the assistant and plan, so check yours.</p>';
+  }
+  return h;
+}
+function render(){
+  var t=state?state.tier:0;
+  var pi=ORIG.indexOf(IDS.products),front=(FRONT[t]||[]).map(function(id){return IDS[id]}),
+      rest=ORIG.slice(pi+1).filter(function(el){return front.indexOf(el)<0});
+  ORIG.slice(0,pi+1).concat(front,rest).forEach(function(el){main.appendChild(el)});
+  ['1','2','3'].forEach(function(k){IDS['t'+k].hidden=!!t&&!showAll&&String(t)!==k});
+  var tl=$('#tierline');if(tl)tl.textContent=t?TL[t]:'';
+  var form=$('#who-form'),sum=$('#who-sum'),notes=$('#who-notes');
+  if(state){
+    form.hidden=true;sum.hidden=false;
+    var bits=[TN[state.tier]];
+    if(state.ai.length)bits.push('using '+listNames(state.ai));
+    if(state.plan)bits.push('on a '+state.plan+' plan');
+    $('#who-sumtxt').textContent='Page set for you: '+bits.join(', ')+'.';
+    notes.innerHTML=noteHTML(state);
+    var ca=$('#who-all');ca.textContent=showAll?'Show only my tier':'Show every tier';ca.setAttribute('aria-pressed',showAll?'true':'false');
+  }else{form.hidden=false;sum.hidden=true;notes.innerHTML=''}
+  var cn=$('#cost-note');
+  if(cn){if(state&&state.plan){cn.hidden=false;cn.textContent=state.plan==='free'?'You said you are on a free plan. The first gate shows what Free includes.':'You said you are on a paid plan. Compare it with the gates below.'}else cn.hidden=true}
+}
+function setPick(n,focus){
+  pick=n;$$('#tiers .tier').forEach(function(b,i){var on=(i+1)===n;b.setAttribute('aria-checked',on?'true':'false');b.tabIndex=(n?on:i===0)?0:-1;if(on&&focus)b.focus()});
+  $('#who-err').textContent='';
+}
+function fillForm(s){
+  setPick(s?s.tier:0);
+  $$('input[name=ai]').forEach(function(i){i.checked=!!s&&s.ai.indexOf(i.value)>-1});
+  $$('input[name=plan]').forEach(function(i){i.checked=!!s&&s.plan===i.value});
+  $('#who-clear').hidden=!s;
+}
+$('#tiers').addEventListener('click',function(e){var b=e.target.closest('.tier');if(b)setPick(+b.dataset.tier)});
+$('#tiers').addEventListener('keydown',function(e){
+  var k=['ArrowRight','ArrowDown','ArrowLeft','ArrowUp'].indexOf(e.key);if(k<0)return;e.preventDefault();
+  var c=pick||1,n=(k<2)?(c%3)+1:((c+1)%3)+1;setPick(n,true);
+});
+$('#who-go').addEventListener('click',function(){
+  if(!pick){$('#who-err').textContent='Pick one of the three first.';return}
+  var ai=$$('input[name=ai]:checked').map(function(i){return i.value}),pl=$$('input[name=plan]:checked').map(function(i){return i.value})[0]||'';
+  state={tier:pick,ai:ai,plan:pl};showAll=false;lsSet(KEY,JSON.stringify(state));
+  render();
+  if(pl==='free'){var g=$('#gates [data-g="0"]');if(g)g.click()}
+  $('#who').scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});
+});
+$('#who-change').addEventListener('click',function(){fillForm(state);$('#who-form').hidden=false;$('#who-sum').hidden=true;var b=$('#tiers .tier[aria-checked=true]');if(b)b.focus()});
+$('#who-clear').addEventListener('click',function(){lsDel(KEY);state=null;showAll=false;fillForm(null);render()});
+$('#who-all').addEventListener('click',function(){showAll=!showAll;render()});
+state=load();fillForm(state);render();
+
+/* ---------- work dashboard merge illustration ---------- */
+(function(){
+  var list=$('#merge-list'),msg=$('#merge-msg'),sw=$$('input[data-k]',list),btns=$$('#merge [data-m]');
+  var KEEP={cal:1,notes:1,family:1,money:1,health:1},AIOFF={family:1,money:1,health:1};
+  function mark(m){btns.forEach(function(b){var on=b.dataset.m===m;b.classList.toggle('ghost',!on)})}
+  btns.forEach(function(b){b.addEventListener('click',function(){
+    var m=b.dataset.m;mark(m);
+    if(m==='all'){sw.forEach(function(s){s.checked=true});msg.textContent='Keep everything shares every item below except your personal email. For each item you can also swap in a work-friendly version.'}
+    else if(m==='ai'){sw.forEach(function(s){s.checked=!AIOFF[s.dataset.k]});msg.textContent='The AI suggests keeping family and friends, money, and health private. You can change any switch. Illustration only.'}
+    else{msg.textContent='Switch each item on or off yourself. Nothing is decided for you. Illustration only.'}
+  })});
+  mark('all');
+})();
+
+/* ---------- copy and paste page ---------- */
+(function(){
+  var box=$('#paste-box'),st=$('#paste-status');
+  fetch('/dashboard/claudebomb-dashboard.md',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('http');return r.text()}).then(function(t){box.value=t}).catch(function(){box.value='We could not load the text here. Download the file instead: /dashboard/claudebomb-dashboard.md'});
+  $('#paste-copy').addEventListener('click',function(){
+    if(/^(Loading|We could not)/.test(box.value)){st.textContent='The text has not loaded yet.';return}
+    copyText(box.value,function(ok){st.textContent=ok?'Copied. Now paste it into a new chat in your assistant.':'Copy failed. Click in the box, press Ctrl+A or Command+A, then copy.'});
+  });
+})();
+
+/* ---------- work dashboard short form ---------- */
+(function(){
+  var wf=$('#workform'),KEYW='cbWorkDraft',F=['wk-title','wk-tools','wk-how','wk-co','wk-name'],st=$('#wk-status');
+  function g(i){return $('#'+i).value.trim()}
+  try{var d=JSON.parse(lsGet(KEYW)||'{}');F.forEach(function(i){if(d&&typeof d[i]==='string')$('#'+i).value=d[i]})}catch(e){}
+  function save(){var d={};F.forEach(function(i){d[i]=$('#'+i).value});lsSet(KEYW,JSON.stringify(d))}
+  F.forEach(function(i){$('#'+i).addEventListener('input',save)});
+  function text(){return 'Work dashboard idea (anonymous unless a name is given)\n\nJob title: '+g('wk-title')+'\nTools I use at work: '+g('wk-tools')+'\nHow I use them: '+g('wk-how')+'\nCompany (optional): '+g('wk-co')+'\nName (optional): '+g('wk-name')+'\n'}
+  function any(){return F.some(function(i){return g(i)})}
+  $('#wk-open').addEventListener('click',function(){wf.hidden=false;wf.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});setTimeout(function(){$('#wk-title').focus({preventScroll:true})},RM?0:350)});
+  $('#wk-form').addEventListener('submit',function(e){e.preventDefault();if(!any()){st.textContent='Add at least one answer first.';return}
+    location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Work dashboard idea')+'&body='+encodeURIComponent(text());st.textContent='Your email app should open. Nothing was sent from this page.'});
+  $('#wk-copy').addEventListener('click',function(){if(!any()){st.textContent='Add at least one answer first.';return}copyText(text(),function(ok){st.textContent=ok?'Copied. Paste it into an email or message to us.':'Copy failed. Select the text by hand.'})});
+  $('#wk-clear').addEventListener('click',function(){F.forEach(function(i){$('#'+i).value=''});lsDel(KEYW);st.textContent='Cleared.'});
+})();
+
+/* ---------- demos ---------- */
+var SYN=('speechSynthesis' in window)&&typeof window.SpeechSynthesisUtterance!=='undefined';
+var muted=lsGet('cbMute')==='1';
+var MICSVG='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var CURSOR='<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3 2l7.5 19 2.6-7.9L21 10.5z" fill="#14161a" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+var MAILS=[
+ {from:'Aunt Rosa',subj:'Reunion dates this summer',draft:'Hi Rosa, thank you for the reunion dates. The second weekend works for us, and I can bring a side dish.',dict:'I will bring a salad.'},
+ {from:'Cousin Dev',subj:'Grandma birthday card idea',draft:'Hi Dev, great idea. My favorite memory for Grandma is the summer we baked her recipe together. Please add it to the card.',dict:'Please mail it on Monday.'},
+ {from:'Mom',subj:'Holiday plans',draft:'Hi Mom, thanks for asking about the holidays. I would love to come, and the guest room sounds perfect. I will send my travel dates soon.',dict:'I land on the twentieth.'}
+];
+var PROFILES=[
+ ['Grandparent new to AI','Example result: you connect more than a grandparent new to AI, who usually only chats. Next step: try one connector, such as your calendar.'],
+ ['Medium user','Example result: you match a medium user. You prompt well and use a few connectors. Next step: add files, so your assistant can find your documents.'],
+ ['Expert home user','Example result: an expert home user also keeps reusable instructions and picks models on purpose. Next step: save your favorite prompt as a reusable instruction.'],
+ ['Power home user with local GPUs','Example result: a power home user also runs jobs on their own machines and schedules them. Next step: let your assistant run one task on a schedule.'],
+ ['Software engineer','Example result: a software engineer works in code and tests what the AI writes. You do not need that to benefit. Next step: ask for a tutorial on the one task you repeat most.']
+];
+function mockHTML(){
+  var rows=MAILS.map(function(m,i){return '<div class="md-row"><span><b>'+esc(m.from)+'</b><small>'+esc(m.subj)+'</small></span><button type="button" class="md-btn g" data-reply="'+i+'">Reply</button></div>'}).join('');
+  var opts='<option value="">Pick a profile</option>'+PROFILES.map(function(p,i){return '<option value="'+i+'">'+esc(p[0])+'</option>'}).join('');
+  function comp(name,lab,dict,send,msg){return '<div class="md-comp" data-comp="'+name+'" hidden><p class="md-lab" data-lab>'+lab+'</p><textarea class="md-ta" data-ta data-mic="none" aria-label="Message text"></textarea><div class="md-acts"><button type="button" class="md-btn g md-mic" data-mic data-dict="'+esc(dict)+'" aria-label="Microphone, demo only">'+MICSVG+' Mic</button><span class="md-live" data-live aria-live="polite"></span><button type="button" class="md-btn md-send" data-send data-msg="'+esc(msg)+'">'+send+'</button></div></div>'}
+  return '<div class="md-top"><span><b>My dashboard</b><span class="md-demo">Demo data</span></span><span>Last refreshed: just now</span></div>'+
+  '<div class="md-tabs" role="tablist" aria-label="Dashboard tabs">'+['today:Today','inbox:Inbox','work:Work','agenda:Agenda','journey:My AI Journey'].map(function(t){var p=t.split(':');return '<button type="button" class="md-tab" role="tab" data-tab="'+p[0]+'" aria-selected="false">'+p[1]+'</button>'}).join('')+'</div>'+
+  '<div class="md-pane" role="tabpanel" data-pane="today"><h4>Today: your top three</h4><div class="md-row"><span>Reply to Mom about the holidays<small>Waiting since Monday</small></span><button type="button" class="md-btn g" data-go="inbox">Open inbox</button></div><div class="md-row"><span>Send the weekly recruiting recap<small>Due today</small></span><button type="button" class="md-btn g" data-go="work">Open work</button></div><div class="md-row"><span>Pick a week for the trip<small>Friends are free in week 3</small></span><button type="button" class="md-btn g" data-go="agenda">Open agenda</button></div></div>'+
+  '<div class="md-pane" role="tabpanel" data-pane="inbox" hidden><h4>Inbox: needs a reply</h4>'+rows+comp('inbox','Reply','','Send','Demo only. Nothing was sent.')+'</div>'+
+  '<div class="md-pane" role="tabpanel" data-pane="work" hidden><h4>Work: weekly recruiting recap</h4><div class="md-metrics"><div><b>12</b>Open roles</div><div><b>31</b>Interviews</div><div><b>4</b>Offers out</div><div><b>2</b>Accepted</div></div><p>In the real dashboard, these numbers come from the systems you connect.</p>'+
+  comp('work','Post to #hiring-managers','Please add your interview availability by Friday.','Send to Slack','Demo only. Nothing was sent to Slack.')+'</div>'+
+  '<div class="md-pane" role="tabpanel" data-pane="agenda" hidden><h4>Agenda: find a week</h4><div class="md-cal" role="img" aria-label="Calendars: you and two friends are all free in week 3"><div><b>You</b><i></i><i></i><i class="f"></i><i></i></div><div><b>Friend A</b><i class="b"></i><i></i><i class="f"></i><i></i></div><div><b>Friend B</b><i></i><i class="b"></i><i class="f"></i><i class="b"></i></div><div><span></span><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div></div><button type="button" class="md-btn" data-trip>Suggest a trip</button>'+
+  comp('agenda','Suggested group message','I can drive if we pick somewhere close.','Start the group chat','Demo only. No group chat was started.')+'</div>'+
+  '<div class="md-pane" role="tabpanel" data-pane="journey" hidden><h4>My AI Journey</h4><p>Example data. In your real dashboard, this comes from what your assistant can see.</p><div class="md-cols"><div><b>Accounts and connectors</b><ul><li>Claude, chat</li><li>Email connector</li><li>Calendar connector</li><li>Not connected: files, team chat</li></ul></div><div><b>What you do most</b><ul><li>Drafting replies</li><li>Planning trips</li><li>Summarizing long emails</li></ul></div></div><div class="md-sel"><label for="md-cmp">Compare me to</label><select id="md-cmp" data-cmp>'+opts+'</select><button type="button" class="md-btn g" data-cmpgo>How do I compare?</button></div><div class="md-out" data-cmpout hidden aria-live="polite"></div><button type="button" class="md-btn" data-tut>Give me a tutorial based on my usage</button><div class="md-out" data-tutout hidden><b>Tutorial: summarize a long email thread</b><ol><li>Open the thread and copy it into your assistant.</li><li>Say: "Summarize this in five lines and list what I owe."</li><li>Read the list and fix anything wrong.</li><li>Say: "Draft my reply from that list."</li><li>Edit the draft, then send it yourself.</li></ol></div></div>'+
+  '<div class="md-note" id="md-note" role="status"></div><div class="md-cursor" id="md-cursor" hidden>'+CURSOR+'</div>';
+}
+var DEMOS={
+ reply:{title:'Reply to a family email by voice',steps:[
+  {say:'This is a dashboard with made-up data. Nothing here is real, and nothing is sent. First, we open the inbox.',act:[['click','[data-tab=inbox]']]},
+  {say:'Your assistant lists the emails that need a reply. We pick the one from Mom.',act:[['click','[data-pane=inbox] [data-reply="2"]']]},
+  {say:'A draft is already written for you. Read it, and edit it by typing if you like.',act:[['move','[data-pane=inbox] [data-ta]'],['wait',700]]},
+  {say:'To add words by voice, turn on the microphone and talk.',act:[['click','[data-pane=inbox] [data-mic]'],['wait',2300]]},
+  {say:'Your spoken words are added to the draft.',act:[['wait',700]]},
+  {say:'When it looks right, press Send.',act:[['click','[data-pane=inbox] [data-send]'],['wait',900]]},
+  {say:'The demo says nothing was sent. In the real dashboard, nothing goes out until you press Send yourself.',act:[['wait',400]]},
+  {say:'That is the whole workflow. Open the demo dashboard to try it yourself.',act:[]}]},
+ report:{title:'Send the weekly recruiting recap',steps:[
+  {say:'This is a dashboard with made-up data. We start on the Work tab.',act:[['click','[data-tab=work]']]},
+  {say:'The numbers come from your connected systems, and the recap is already written.',act:[['move','[data-pane=work] [data-ta]'],['wait',600]]},
+  {say:'Add a line by voice. Turn on the microphone and talk.',act:[['click','[data-pane=work] [data-mic]'],['wait',2300]]},
+  {say:'Your words join the message. Now press Send to Slack.',act:[['click','[data-pane=work] [data-send]'],['wait',900]]},
+  {say:'The demo says nothing was sent. In the real dashboard, the message goes out only when you press Send.',act:[['wait',400]]},
+  {say:'That is the whole workflow. Open the demo dashboard to try it yourself.',act:[]}]},
+ trip:{title:'Plan a trip with friends',steps:[
+  {say:'This is a dashboard with made-up data. We open the Agenda tab.',act:[['click','[data-tab=agenda]']]},
+  {say:'Your calendar and two friends\' calendars all show the same free week: week 3.',act:[['move','[data-pane=agenda] .md-cal'],['wait',700]]},
+  {say:'Press Suggest a trip.',act:[['click','[data-pane=agenda] [data-trip]']]},
+  {say:'A group message is already written. Add a line by voice.',act:[['click','[data-pane=agenda] [data-mic]'],['wait',2300]]},
+  {say:'Now start the group chat.',act:[['click','[data-pane=agenda] [data-send]'],['wait',900]]},
+  {say:'The demo says no group chat was started. In the real dashboard, nothing happens until you press the button.',act:[['wait',400]]},
+  {say:'That is the whole workflow. Open the demo dashboard to try it yourself.',act:[]}]},
+ journey:{title:'See your AI journey',steps:[
+  {say:'This is a dashboard with made-up data. We open the My AI Journey tab.',act:[['click','[data-tab=journey]']]},
+  {say:'It lists the accounts and connectors in use, and what you do most.',act:[['move','[data-pane=journey] .md-cols'],['wait',700]]},
+  {say:'Pick a profile to compare yourself to. We pick a power home user.',act:[['pick','[data-cmp]','3'],['click','[data-cmpgo]']]},
+  {say:'You see what is different, and one next step to consider.',act:[['wait',900]]},
+  {say:'Now ask for a tutorial based on your usage.',act:[['click','[data-tut]'],['wait',700]]},
+  {say:'You get a short, free tutorial on one thing that would help you most.',act:[['wait',900]]},
+  {say:'Open the demo dashboard to try it yourself.',act:[]}]}
+};
+var ov=$('#dmov'),dm=$('#dm'),app=$('#md-app'),cap=$('#dm-cap'),btnReplay=$('#dm-replay'),btnMode=$('#dm-mode'),btnMute=$('#dm-mute');
+var cur=null,tok=null,lastF=null,micT=null;
+function sleep(ms,t){return new Promise(function(res,rej){setTimeout(function(){t.dead?rej('dead'):res()},RM?Math.min(ms,120):ms)})}
+function stopSpeech(){if(SYN){try{speechSynthesis.cancel()}catch(e){}}}
+function muteLabel(){btnMute.hidden=!SYN;btnMute.textContent=muted?'Voice off. Turn on':'Mute voice'}
+function say(text,t){
+  cap.textContent=text;
+  var words=text.split(/\s+/).length,est=Math.max(1200,words*(SYN&&!muted?420:260));
+  if(SYN&&!muted){
+    return new Promise(function(res,rej){
+      var done=false;function fin(){if(done)return;done=true;t.dead?rej('dead'):res()}
+      try{var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=1;u.onend=fin;u.onerror=fin;speechSynthesis.speak(u)}catch(e){}
+      setTimeout(fin,est*1.8+600);
+    });
+  }
+  return sleep(est,t);
+}
+function pane(name){
+  $$('.md-pane',app).forEach(function(p){p.hidden=p.dataset.pane!==name});
+  $$('.md-tab',app).forEach(function(b){b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false')});
+}
+function note(msg){var n=$('#md-note',app);n.textContent=msg;n.classList.add('on');clearTimeout(note.t);note.t=setTimeout(function(){n.classList.remove('on')},2400)}
+function resetMock(tab){
+  clearTimeout(micT);
+  app.innerHTML=mockHTML();pane(tab||'today');
+}
+app.addEventListener('click',function(e){
+  var t=e.target;
+  var b=t.closest('[data-tab]');if(b){pane(b.dataset.tab);return}
+  b=t.closest('[data-go]');if(b){pane(b.dataset.go);return}
+  b=t.closest('[data-reply]');if(b){var m=MAILS[+b.dataset.reply],c=$('[data-pane=inbox] [data-comp]',app);c.hidden=false;$('[data-lab]',c).innerHTML='Reply to <b>'+esc(m.from)+'</b>';$('[data-ta]',c).value=m.draft;$('[data-mic]',c).dataset.dict=m.dict;return}
+  b=t.closest('[data-trip]');if(b){var c2=$('[data-pane=agenda] [data-comp]',app);c2.hidden=false;$('[data-ta]',c2).value='Hey all, I noticed our calendars are all free in week 3. Want me to set up a group chat to plan a trip?';return}
+  b=t.closest('[data-mic]');if(b){micToggle(b);return}
+  b=t.closest('[data-send]');if(b){note(b.dataset.msg||'Demo only. Nothing was sent.');return}
+  b=t.closest('[data-cmpgo]');if(b){var v=$('[data-cmp]',app).value,o=$('[data-cmpout]',app);if(v===''){o.hidden=false;o.textContent='Pick a profile first.';return}o.hidden=false;o.textContent=PROFILES[+v][1];return}
+  b=t.closest('[data-tut]');if(b){$('[data-tutout]',app).hidden=false;return}
+});
+function micToggle(b){
+  var comp=b.closest('[data-comp]'),live=$('[data-live]',comp),ta=$('[data-ta]',comp);
+  if(b.classList.contains('on')){b.classList.remove('on');live.textContent='';clearTimeout(micT);return}
+  b.classList.add('on');live.textContent='Listening (demo, nothing is recorded)';
+  clearTimeout(micT);
+  micT=setTimeout(function(){b.classList.remove('on');live.textContent='';var d=b.dataset.dict||'';if(d)ta.value=(ta.value.trim()+' '+d).trim()},RM?200:1800);
+}
+var curEl=null;
+function curMove(el,t){
+  var c=$('#md-cursor',app);c.hidden=false;
+  try{el.scrollIntoView({block:'nearest',behavior:'auto'})}catch(e){}
+  var a=app.getBoundingClientRect(),r=el.getBoundingClientRect();
+  var x=r.left-a.left+Math.min(r.width*.55,r.width-6),y=r.top-a.top+Math.min(r.height*.6,r.height-4);
+  c.style.transform='translate('+Math.max(0,x).toFixed(0)+'px,'+Math.max(0,y).toFixed(0)+'px)';
+  return sleep(RM?60:900,t);
+}
+async function act(a,t){
+  if(t.dead)throw 'dead';
+  var type=a[0];
+  if(type==='wait'){await sleep(a[1],t);return}
+  var el=$(a[1],app);if(!el||el.closest('[hidden]'))return;
+  if(type==='pick'){await curMove(el,t);el.value=a[2];el.dispatchEvent(new Event('change',{bubbles:true}));await sleep(300,t);return}
+  await curMove(el,t);
+  if(type==='click'){
+    el.classList.add('md-hl');await sleep(260,t);
+    var c=$('#md-cursor',app);c.classList.remove('click');void c.offsetWidth;c.classList.add('click');
+    el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+    await sleep(380,t);el.classList.remove('md-hl');
+  }
+}
+async function runSteps(id){
+  stopSpeech();if(tok)tok.dead=true;
+  var t=tok={dead:false};
+  resetMock('today');app.classList.add('lock');app.setAttribute('inert','');
+  btnReplay.hidden=true;
+  try{
+    await sleep(500,t);
+    var steps=DEMOS[id].steps;
+    for(var i=0;i<steps.length;i++){
+      var s=steps[i];
+      var acts=(async function(){for(var j=0;j<s.act.length;j++)await act(s.act[j],t)})();
+      await Promise.all([say(s.say,t),acts]);
+      await sleep(250,t);
+    }
+    $('#md-cursor',app).hidden=true;
+    cap.textContent='End of the walkthrough. Replay it, or open the demo dashboard and try it yourself.';
+    btnReplay.hidden=false;
+  }catch(e){if(e!=='dead')throw e}
+}
+function explore(){
+  stopSpeech();if(tok)tok.dead=true;
+  resetMock('today');app.classList.remove('lock');app.removeAttribute('inert');
+  cur='explore';
+  $('#dm-title').textContent='Demo dashboard';
+  $('#dm-sub').textContent='Click anything. Send never sends.';
+  cap.textContent='This is a click-around mock with made-up data. Press Send anywhere and it only shows a note. Nothing leaves this page.';
+  btnReplay.hidden=true;btnMode.hidden=true;
+}
+function openDemo(id,from){
+  lastF=document.activeElement;cur=id;
+  muteLabel();ov.hidden=false;document.documentElement.classList.add('modal-open');
+  if(from&&!RM){var r=from.getBoundingClientRect(),d=dm.getBoundingClientRect();dm.style.transformOrigin=(r.left+r.width/2-d.left)+'px '+(r.top+r.height/2-d.top)+'px';dm.classList.remove('in');void dm.offsetWidth;dm.classList.add('in')}
+  btnMode.hidden=false;
+  if(id==='explore'){explore()}
+  else{
+    $('#dm-title').textContent=DEMOS[id].title;
+    $('#dm-sub').textContent='Walkthrough. Demo only, nothing is sent.';
+    runSteps(id);
+  }
+  dm.scrollTop=0;dm.focus({preventScroll:true});
+}
+function closeDemo(){
+  stopSpeech();if(tok)tok.dead=true;clearTimeout(micT);
+  ov.hidden=true;app.innerHTML='';document.documentElement.classList.remove('modal-open');
+  if(lastF&&lastF.focus)lastF.focus({preventScroll:true});
+}
+$$('[data-demo]').forEach(function(b){b.addEventListener('click',function(){openDemo(b.dataset.demo,b)})});
+$('#dm-close').addEventListener('click',closeDemo);
+ov.addEventListener('mousedown',function(e){if(e.target===ov)closeDemo()});
+btnReplay.addEventListener('click',function(){if(DEMOS[cur])runSteps(cur)});
+btnMode.addEventListener('click',explore);
+btnMute.addEventListener('click',function(){muted=!muted;lsSet('cbMute',muted?'1':'0');if(muted)stopSpeech();muteLabel()});
+document.addEventListener('keydown',function(e){
+  if(ov.hidden)return;
+  if(e.key==='Escape'){e.preventDefault();closeDemo();return}
+  if(e.key==='Tab'){
+    var f=$$('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex="0"]',dm).filter(function(x){return x.offsetParent!==null&&!x.closest('[inert]')});
+    if(!f.length)return;var a=document.activeElement,i=f.indexOf(a);
+    if(e.shiftKey&&(i<=0||a===dm)){e.preventDefault();f[f.length-1].focus()}
+    else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}
+  }
+});
+})();
+
 </script>
 <script src="/v6/funsies.js?v=1" defer></script>
 </body></html>

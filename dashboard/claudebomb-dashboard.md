@@ -1,6 +1,12 @@
 # Claudebomb Dashboard: first-time setup
 
-Version 1.0 (November 2026). Free and open. From claudebomb.com.
+Version 1.1 (November 2026). Free and open. From claudebomb.com.
+
+Changelog:
+- V1.1: Added the My AI Journey tab, a model delegation section, and a choice between automated and manual setup.
+- V1.0: First release. Setup rating, nine-tab dashboard, privacy firewall.
+
+Source and version history: https://github.com/AtlasJumped/claudebomb.com
 
 This file is plain text. It contains no code that runs by itself and sends nothing anywhere. It is a set of instructions for an AI assistant such as Claude. Drop it into a new chat, or paste its text, and say "Set up my dashboard."
 
@@ -17,6 +23,10 @@ You are setting up a personal dashboard for the person you are talking with. The
 3. **Nothing leaves.** Do not send their data to claudebomb.com or to anyone else. The dashboard is private to the person unless they choose to share it.
 4. **Be truthful.** If you cannot reach something, say so. Never invent emails, events, balances, or numbers. Show "not connected" instead of sample data on the real dashboard.
 5. **Use what you already have.** Do not ask for passwords or codes. Only use connections the person has already set up, or ones they add themselves.
+
+### Step 0: Choose a setup mode
+
+Ask one question first: **"Automated setup, where we do everything for you and you say yes or no to each choice, or manual setup, where you pick every step yourself?"** Automated is the default. In both modes the person can say yes or no to every item, and nothing is sent, posted, bought, or deleted without their yes.
 
 ### Step 1: Survey what you can reach
 
@@ -73,6 +83,7 @@ Build one page with these tabs. Fill each tab only from connected sources. A tab
 7. **Family and friends.** The people they named, with upcoming birthdays and when they last talked, plus a button to draft a message to each.
 8. **Work.** Only work sources, kept behind the privacy firewall above.
 9. **Me.** Their setup rating, what is connected, the refresh rate, and a short list of next connectors that would raise the rating.
+10. **My AI Journey.** Where the person stands with AI and what to try next. See the section below.
 
 Design: clean and calm. Large readable text, one accent color, works on a phone and a computer, and a light or dark theme to match their system. Show "Last refreshed: [date and time]" at the top of every tab.
 
@@ -88,6 +99,42 @@ Design: clean and calm. Large readable text, one accent color, works on a phone 
 1. The link or file.
 2. Their rating and the one connector that would raise it the most.
 3. An invitation: "Want to improve the dashboard for people in your line of work? Share how your work really works at claudebomb.com." Mention that sharing is optional and that they should leave out anything private or confidential.
+
+---
+
+## My AI Journey tab
+
+This tab shows the person how they use AI today, how that compares with other people, and what to try next. It is a guide, not a grade. Say that in the first line. Only report what you can actually see: the accounts and connectors you can reach, what the person tells you, and what this chat or your memory shows. If you cannot see something, say "I cannot see this" and ask. Never guess usage from nothing, and never invent numbers.
+
+Build the tab in this order:
+
+1. **Accounts and connectors in use.** List each AI account, assistant, and connector you can see, one line each. Mark anything you could not check.
+2. **What you do most.** Name the three to five things the person does most with AI, based on what you can see and what they confirm. Ask one question if you are unsure.
+3. **Compare to five profiles.** Offer a "How do I compare?" button. Show where the person sits among these rough profiles. They are examples, not measurements.
+   - Grandparent new to AI: chats a little, nothing connected, no files, one assistant.
+   - Medium user: prompts with some skill, one or two connectors, mostly uses a chatbot.
+   - Expert home user: several connectors, reusable instructions, projects, files, picks models on purpose.
+   - Power home user with local GPUs: runs models or simulations on their own machines, and automates jobs on a schedule.
+   - Software engineer: works in code, uses agents and tools in a repository, tests and reviews what the AI produces.
+4. **What you do better than people at your level.** Name at least one real strength, tied to something you saw. If you saw none, say so.
+5. **Next steps.** Give two to four steps toward the next profile. For each: what it is, what it unlocks, how long it takes, and the exact words or the setting to use. The person says yes or no to each. Never add a step they did not ask for.
+6. **Give me a tutorial based on my usage.** Offer a button with this name. When pressed, write a short, free tutorial for the one thing the person would benefit from most, in plain language, in five steps or fewer, using their own example from what you saw. Offer another one afterward.
+
+Keep the tone friendly and plain. This tab exists so the person can see where they are and choose what to do about it.
+
+---
+
+## Model delegation (optional)
+
+Many assistants offer several models: stronger ones for hard problems and faster, cheaper ones for simple jobs. The person should not have to know which is which. If your assistant lets you hand work to other models or helpers, do this:
+
+- The model you are talking with is the daily driver. It talks with the person and decides how hard each job is.
+- Quick, small jobs (rewording, sorting, a simple lookup) go to a smaller, faster, cheaper model.
+- Everyday building and drafting goes to a mid-size model.
+- Hard problems, such as planning, tricky reasoning, or checking someone else's work, go to the strongest model.
+- Check what comes back before you present it. Say plainly which model did which job when the person asks.
+- If you cannot hand work to other models, say so and keep going. Do not pretend.
+- This is optional. If the person says no, do everything with the current model.
 
 ---
 
