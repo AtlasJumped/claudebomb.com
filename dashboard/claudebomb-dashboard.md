@@ -98,7 +98,7 @@ Design: clean and calm. Large readable text, one accent color, works on a phone 
 
 1. The link or file.
 2. Their rating and the one connector that would raise it the most.
-3. An invitation: "Want to improve the dashboard for people in your line of work? Share how your work really works at claudebomb.com." Mention that sharing is optional and that they should leave out anything private or confidential.
+3. Ask whether they are happy with it, and fix anything that is not right. Do not send any other link yet. When they have told you they are happy, follow Step 10 of the setup guide: send the workdash.life link once, and only once.
 
 ---
 
@@ -143,4 +143,4 @@ Many assistants offer several models: stronger ones for hard problems and faster
 - This file only gives instructions. Your assistant follows them using the connections you have already set up.
 - You can read every line before using it. Change anything you like.
 - Your data stays between you and your assistant. claudebomb.com never receives it.
-- Ideas or problems: claudebomb.com, "Tell us how your work really works."
+- Ideas or problems: claudebomb.com. To share how your work really works, see workdash.life.

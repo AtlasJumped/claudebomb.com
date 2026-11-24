@@ -1,0 +1,151 @@
+<!-- Moved out of claudebomb.com on 2026-11-24. This is the "Tell us how your work really works" section, for workdash.life. Not published here (folder starts with an underscore). The script below needs the page helpers $, $$, esc and enhance. -->
+<section class="sec" id="contribute"><div class="wrap">
+<div class="shead"><p class="eyebrow">Build it with us</p>
+<h2>Tell us how your work really works</h2>
+<p class="lead">The personal dashboard is here now. The work dashboard is a future state, and we build it here, together. Once people have personal dashboards and see the value, we expect them to say at work, "we need this." We do not plan to be the salespeople. You will be.</p></div>
+
+<div class="two cx-story">
+<article class="card"><h3>How we expect it to go</h3>
+<ol class="cx-ol">
+<li>You build a personal dashboard.</li>
+<li>Your company agrees to bring a dashboard to work.</li>
+<li>The company sets its policies, and you decide what goes to your work account and what does not.</li>
+<li>Once those conditions are set, everything left over is automated, and what you chose to share is there.</li></ol></article>
+<article class="card"><h3>What could flow between home and work</h3>
+<ul>
+<li>A sense of community: the names of significant others and pets, birthdays, hobbies, and interests. Share a lot or a little. We hope people share more.</li>
+<li>Your home dashboard may reach your work calendar and to-do list, so you can add to them from your home computer.</li>
+<li>Forward a website you find at home to your work computer.</li>
+<li>If you feel like it, action a work email from home. We want your ideas for more of these that help both sides.</li></ul></article>
+</div>
+
+<div class="cx-vid"><button type="button" class="btn" data-cxplay="consult"><span class="play" aria-hidden="true"></span> Watch a consultant fill this in</button><span class="mut small">A short demo. The consultant's profession is not on the list, so they add it, then talk through their tools.</span></div>
+
+<div class="allmeter"><p class="label" id="allm">Professions with at least one entry: 0 of 0</p><div class="meter" role="img" aria-label="Overall completeness"><i style="width:0%"></i></div></div>
+
+<div class="cx-sug">
+<label for="f-sug">Suggest a profession that isn't on this list</label>
+<div class="cx-sugrow"><input type="text" id="f-sug" name="Suggested profession" form="wform" autocomplete="off"><button type="button" class="btn small" id="f-sug-add">Add it</button></div>
+<p class="mut small" id="f-sug-msg" role="status" aria-live="polite"></p>
+</div>
+
+<div class="prof-box">
+<p class="label" id="proflabel">Choose a profession</p>
+<div class="pchips" id="pchips" role="radiogroup" aria-labelledby="proflabel"></div>
+<div class="ppanel" id="ppanel" aria-live="polite"></div>
+</div>
+
+<form class="wform cx-wform" id="wform" novalidate data-hmr-anon-form data-hmr-subject="Workflow contribution" data-hmr-to="leo@universemodel.ai">
+<h3>Record or type how your work really works</h3>
+<p class="note-opt">Everything here is optional. Fill in as much or as little as you like. More detail helps, including your company for possible future collaboration, but leave blank anything you'd rather not share. We read every comment.</p>
+<p class="mut small">Press the microphone in any box and talk. When you are done, click the next microphone. You do not have to press stop.</p>
+<label for="f-prof">Profession category</label>
+<select id="f-prof" name="Profession category"></select>
+<label for="f-title">Job title</label>
+<input type="text" id="f-title" name="Job title">
+<label for="f-co">Company</label>
+<input type="text" id="f-co" name="Company">
+
+<h3 class="cx-h3">Your tools</h3>
+<p class="mut small">One row per tool. Say what you use it for in plain, objective words, then what annoys you, then how it could be better.</p>
+<div class="cx-tools" id="cx-tools" role="group" aria-label="Your tools">
+<div class="cx-th" aria-hidden="true"><span>Tool</span><span>What you use it for</span><span>Complaints</span><span>How it could be better</span></div>
+</div>
+<div class="row"><button type="button" class="btn small ghost" id="cx-addtool">Add another tool</button></div>
+
+<label for="f-other">Anything else you want us to know</label>
+<textarea id="f-other" name="Anything else" rows="3"></textarea>
+
+<div class="emeter"><p class="label" id="emlabel">Your entry is 0% complete</p><div class="meter" role="img" aria-label="Entry completeness"><i id="emfill" style="width:0%"></i></div></div>
+<div class="row"><button type="button" class="btn" id="send-mail">Send by my personal email</button><button type="submit" class="btn ghost" id="send-anon">Submit anonymously</button></div>
+<p class="mut small">Send by my personal email opens your email app with your words ready, addressed to leo@universemodel.ai. Submit anonymously goes straight to us with no name and no email app.</p>
+<p class="cx-anonst" data-hmr-anon-status role="status" aria-live="polite"></p>
+<p class="mut small" id="cx-sendstatus" role="status" aria-live="polite"></p>
+</form>
+</div></section>
+<script>
+/* ---------- professions ---------- */
+var PROF=['Recruiting','Software engineering','Product management','Design','Data and analytics','Sales','Marketing','Customer support','Operations','Finance and accounting','Human resources','Legal','Nursing and healthcare','Teaching and education','Skilled trades','Construction','Retail','Restaurants and hospitality','Real estate','Logistics and transportation','Manufacturing','Public service','Nonprofit work','Science and research','Writing and journalism','Film, music, and arts','Farming and agriculture','Caregiving and parenting','Students','Small business owners','Freelancers','Something else'];
+(function(){
+  var box=$('#pchips'),pn=$('#ppanel'),sel=$('#f-prof'),tools=$('#cx-tools'),NT=0,fill=$('#emfill'),lab=$('#emlabel');
+  function chip(p,i,custom){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.setAttribute('aria-checked','false');b.tabIndex=-1;b.textContent=p;b.dataset.i=i;if(custom)b.className='cx-custom';box.appendChild(b);
+    var o=document.createElement('option');o.textContent=p;sel.appendChild(o);
+  }
+  PROF.forEach(function(p,i){chip(p,i,false)});
+  function count(){$('#allm').textContent='Professions with at least one entry: 0 of '+PROF.length}
+  count();
+  function show(i){
+    $$('button',box).forEach(function(b,k){b.setAttribute('aria-checked',k===i?'true':'false');b.tabIndex=k===i?0:-1});
+    sel.selectedIndex=i;
+    var p=PROF[i],rec=i===0;
+    pn.innerHTML='<div class="phead"><h3>'+esc(p)+'</h3><span class="tag'+(rec?'':' soft')+'">'+(rec?'Open now, first in line':'Open for the first entry')+'</span></div>'+
+    '<div class="meter" role="img" aria-label="0 of 10 contributors so far"><i style="width:0%"></i></div>'+
+    '<p class="count"><strong>0 contributors so far.</strong> Goal: 10 to feel complete.</p>'+
+    (rec?'<p>We want to hear about your tools: an applicant tracking system such as Greenhouse, a CRM, outbound tools such as LinkedIn and Gem, and AI assistants such as Claude. We know least about how offers get approved and what happens after a candidate is hired.</p>':'<p>Tell us your tools, what you use each one for, what annoys you, and how it could be better in '+esc(p.toLowerCase())+'.</p>')+
+    '<div class="empty"><strong>No entries yet</strong><span>Be the first.</span><a class="btn" href="#wform" data-go>Add the first entry</a></div>';
+    $('[data-go]',pn).addEventListener('click',function(){setTimeout(function(){var f=$('#tool-0');if(f)f.focus({preventScroll:true})},400)});
+  }
+  box.addEventListener('click',function(e){var b=e.target.closest('button');if(b)show(+b.dataset.i)});
+  box.addEventListener('keydown',function(e){
+    var k=['ArrowRight','ArrowDown','ArrowLeft','ArrowUp'].indexOf(e.key);if(k<0)return;e.preventDefault();
+    var cur=+$('[aria-checked="true"]',box).dataset.i,n=PROF.length,nx=(k<2)?(cur+1)%n:(cur-1+n)%n;show(nx);$$('button',box)[nx].focus();
+  });
+  sel.addEventListener('change',function(){show(sel.selectedIndex)});
+  show(0);
+  /* suggest a profession: appears as a chip, selected, and fills the category */
+  var sug=$('#f-sug'),sm=$('#f-sug-msg');
+  function addCustom(){
+    var v=sug.value.trim().replace(/\s+/g,' ');if(!v)return;
+    var ix=PROF.findIndex(function(p){return p.toLowerCase()===v.toLowerCase()});
+    if(ix<0){v=v.charAt(0).toUpperCase()+v.slice(1);PROF.push(v);ix=PROF.length-1;chip(v,ix,true);count();sm.textContent=v+' is added to the list and selected for you.'}
+    else sm.textContent=PROF[ix]+' is already on the list. We selected it for you.';
+    show(ix);
+  }
+  $('#f-sug-add').addEventListener('click',addCustom);
+  sug.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addCustom()}});
+  var sugT;sug.addEventListener('input',function(){clearTimeout(sugT);sugT=setTimeout(function(){if(sug.value.trim().length>2&&sug.dataset.touched!=='typing'){}},0)});
+  sug.addEventListener('change',addCustom);
+  /* tools as columns */
+  var HEAD=['Tool','What you use it for','Complaints','How it could be better'];
+  function addRow(){
+    var n=NT++,r=document.createElement('div');r.className='cx-tr';
+    var h='';
+    ['tool','use','complaint','better'].forEach(function(k,c){
+      var id=(c===0?'tool-':k+'-')+n,al='Tool '+(n+1)+': '+HEAD[c],nm=HEAD[c]+' '+(n+1);
+      h+='<div class="cx-c"><label for="'+id+'">'+HEAD[c]+'</label>'+(c===0?'<input type="text" id="'+id+'" name="'+nm+'" aria-label="'+al+'" autocomplete="off">':'<textarea id="'+id+'" name="'+nm+'" rows="2" aria-label="'+al+'"></textarea>')+'</div>';
+    });
+    r.innerHTML=h;tools.appendChild(r);enhance(r);em();return r;
+  }
+  for(var q=0;q<3;q++)addRow();
+  $('#cx-addtool').addEventListener('click',function(){var r=addRow();var f=$('input',r);if(f)f.focus()});
+  /* completeness */
+  function fields(){return $$('#wform select, #wform input, #wform textarea').filter(function(x){return x.name&&x.id!=='f-prof'})}
+  function em(){var f=fields(),n=f.filter(function(x){return x.value.trim().length>0}).length,pc=f.length?Math.min(100,Math.round(n/Math.max(8,Math.min(f.length,12))*100)):0;fill.style.width=pc+'%';lab.textContent='Your entry is '+pc+'% complete'}
+  $('#wform').addEventListener('input',em);$('#wform').addEventListener('change',em);em();
+  function g(id){var e=$('#'+id);return e?e.value.trim():''}
+  function text(){
+    var t='Workflow contribution\n\nProfession category: '+sel.value+'\nJob title: '+g('f-title')+'\nCompany: '+g('f-co')+'\n';
+    for(var i=0;i<NT;i++){var a=g('tool-'+i),b=g('use-'+i),c=g('complaint-'+i),d=g('better-'+i);if(a||b||c||d)t+='\nTool: '+a+'\nWhat I use it for: '+b+'\nComplaints: '+c+'\nHow it could be better: '+d+'\n'}
+    if(g('f-other'))t+='\nAnything else:\n'+g('f-other')+'\n';
+    return t;
+  }
+  function any(){return fields().some(function(x){return x.id!=='f-sug'&&x.value.trim()})}
+  var ss=$('#cx-sendstatus');
+  $('#send-mail').addEventListener('click',function(){
+    if(!any()){ss.textContent='Add at least one answer first.';return}
+    location.href='mailto:leo@universemodel.ai?subject='+encodeURIComponent('Workflow: '+sel.value)+'&body='+encodeURIComponent(text());
+    ss.textContent='Your email app should open with your words ready to send.';
+  });
+  var form=$('#wform'),ast=$('[data-hmr-anon-status]',form);
+  /* The shared dock sends forms with data-hmr-anon-form. This earlier hook only stops an empty submit. */
+  window.addEventListener('submit',function(e){
+    if(e.target!==form)return;
+    ss.textContent='';
+    if(!any()){e.preventDefault();e.stopImmediatePropagation();ast.textContent='';ss.textContent='Add at least one answer first.'}
+  },true);
+  form.addEventListener('reset',function(){setTimeout(em,0)});
+  window.cbEnhance=enhance;
+  enhance(document);
+})();
+</script>
