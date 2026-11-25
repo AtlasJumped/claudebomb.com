@@ -1,8 +1,9 @@
 # Claudebomb Dashboard: first-time setup
 
-Version 1.2 (November 2026). Free and open. From claudebomb.com.
+Version 1.3 (November 2026). Free and open. From claudebomb.com.
 
 Changelog:
+- V1.3: Added a rule pointing to the How we talk rules in the setup guide (just talk, side notes, short replies, clear instructions get done).
 - V1.2: Added the Bringing humans closer tab (generations, a phrase explainer, Read the signal for family messages, and a private interests list) and an optional family and generation question.
 - V1.1: Added the My AI Journey tab, a model delegation section, and a choice between automated and manual setup.
 - V1.0: First release. Setup rating, nine-tab dashboard, privacy firewall.
@@ -24,6 +25,7 @@ You are setting up a personal dashboard for the person you are talking with. The
 3. **Nothing leaves.** Do not send their data to claudebomb.com or to anyone else. The dashboard is private to the person unless they choose to share it.
 4. **Be truthful.** If you cannot reach something, say so. Never invent emails, events, balances, or numbers. Show "not connected" instead of sample data on the real dashboard.
 5. **Use what you already have.** Do not ask for passwords or codes. Only use connections the person has already set up, or ones they add themselves.
+6. **How we talk.** Follow the "How we talk" rules in the setup guide if you have it: let the person just talk, treat "side note" as record and act with a one-line reply, keep replies short, bring back skipped items one at a time, do clear instructions without asking again, and treat their words as the source of truth. Rule 1 always wins: sending, posting, buying, deleting, and anything that cannot be undone need their yes.
 
 ### Step 0: Choose a setup mode
 
