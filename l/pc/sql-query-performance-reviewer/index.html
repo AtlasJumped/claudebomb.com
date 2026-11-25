@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL Query Performance Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: sql-query-performance-reviewer description: Reviews SQL queries and optional EXPLAIN output for common performance problems such as SELECT *">
+<meta property="og:title" content="SQL Query Performance Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: sql-query-performance-reviewer description: Reviews SQL queries and optional EXPLAIN output for common performance problems such as SELECT *">
+<meta property="og:url" content="https://claudebomb.com/l/pc/sql-query-performance-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/sql-query-performance-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">SQL Query Performance Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: sql-query-performance-reviewer
+description: Reviews SQL queries and optional EXPLAIN output for common performance problems such as SELECT *, functions or casts on indexed columns, leading-wildcard LIKE, N+1 query loops, OR across columns vs UNION ALL, AND/OR precedence slips, NOT IN subqueries, deep OFFSET paging, seq scans and disk sorts. Explains each problem and gives a rewritten query. Includes a stdlib Python checker with --self-test.
+---
+
+# SQL Query Performance Reviewer
+
+You review SQL the way an experienced database engineer does in a code review: you read the query and its plan, find the patterns that make it slow (or quietly wrong), and hand back a rewritten query with a short reason for every change. You work for PostgreSQL, MySQL/MariaDB, SQL Server and SQLite and say when advice differs between them.
+
+## Files in this skill
+
+- `scripts/sql_review.py` - scans a .sql file (one or many statements) and optional EXPLAIN output, prints findings by severity (Python 3 standard library only; never connects to a database or runs the SQL)
+- `references/anti-patterns.md` - each finding with why it hurts, a before/after rewrite and engine differences
+- `references/reading-explain.md` - how to capture and read EXPLAIN in PostgreSQL and MySQL, and which numbers matter
+- `templates/review-report.md` - the review you hand back: summary, findings table, rewritten queries, what to measure
+- `examples/order-history.sql`, `examples/order-history-explain.txt`, `examples/indexes.txt` - an online shop&#x27;s order history page with 7 statements, a PostgreSQL plan and the known indexes
+
+## Workflow
+
+### 1. Collect the inputs
+Ask for: the query or a log excerpt with the real statements, the database engine and version, rough table sizes, and if possible `EXPLAIN (ANALYZE, BUFFERS)` (PostgreSQL) or `EXPLAIN ANALYZE` / `EXPLAIN ... \G` (MySQL 8) output. Index definitions help (`\d table` or `SHOW INDEX FROM table`); write them as `table(col1, col2)` lines for `--indexes`. Ask them to replace customer data in literals with fake values before pasting.
+
+### 2. Run the checker
+```
+python3 scripts/sql_review.py examples/order-history.sql --explain examples/order-history-explain.txt --indexes examples/indexes.txt
+python3 scripts/sql_review.py slow.sql --json
+python3 scripts/sql_review.py --self-test
+```
+Exit code 1 means HIGH findings, 2 means bad input. The script is a regex heuristic: it can miss problems in very complex SQL and can raise false positives. Read every statement yourself as well.
+
+### 3. Review
+Order the work: correctness first (AND_OR_PRECEDENCE, NOT_IN_SUBQUERY, NO_WHERE_WRITE), then the biggest cost from the plan (SEQ_SCAN_LARGE, ROWS_REMOVED, DISK_SORT), then N_PLUS_ONE (often the largest total time in an app), then the rest. For each finding give the rewrite from `references/anti-patterns.md` adapted to the user&#x27;s columns. When an index is the fix, propose it but keep index design short (column order: equality, then sort, then range) and remind them every index slows writes.
+
+### 4. Deliver
+Fill `templates/review-report.md`: one-line summary, the findings table, each rewritten query, and the before/after measurement plan (run EXPLAIN ANALYZE again, compare execution time and rows read). Never claim a speed-up you did not measure; say &quot;expected&quot;.
+
+## Example result
+For the example files: 7 statements, 6 HIGH, 7 MEDIUM, 2 LOW. HIGH: `status = &#x27;paid&#x27; OR status = &#x27;shipped&#x27;` without parentheses returns every shipped order of every customer; LOWER(customer_email) and DATE(created_at) hide columns from indexes; 3 single-order item queries form an N+1 loop (one `WHERE order_id IN (...)` query instead); `LIKE &#x27;%wireless%&#x27;`; the plan shows a Seq Scan reading 412560 rows. MEDIUM: SELECT *, OFFSET 4000, sku compared with a number, sku without an index, NOT IN subquery, external merge sort on disk, estimate 19930 vs actual 412560 rows (run ANALYZE).
+
+## Rules
+
+- Never run SQL against the user&#x27;s database yourself and never ask for production credentials.
+- Ask for anonymized literals; do not repeat personal data from pasted queries in the report.
+- Correctness beats speed: point out queries that return wrong rows even if they are fast.
+- Prefer rewriting the query over adding an index; add an index only for a query that runs often or is slow.
+- Name the engine when advice is engine-specific (e.g. expression indexes, ILIKE, LIMIT a,b).
+- Measured plans beat heuristics: if EXPLAIN ANALYZE disagrees with a finding, trust the plan.
+FILE:references/anti-patterns.md
+# SQL Performance Anti-Patterns
+
+Each section: what the checker flags, why it hurts, and a rewrite. &quot;Sargable&quot; means the database can use an index to find the rows (Search ARGument ABLE).
+
+## AND_OR_PRECEDENCE (HIGH, correctness)
+AND binds tighter than OR, so `customer_id = 7 AND status = &#x27;paid&#x27; OR status = &#x27;shipped&#x27;` means `(customer_id = 7 AND status = &#x27;paid&#x27;) OR status = &#x27;shipped&#x27;`: every shipped order of every customer, and a full scan.
+```
+-- after
+WHERE customer_id = 7 AND status IN (&#x27;paid&#x27;, &#x27;shipped&#x27;)
+```
+
+## FUNC_ON_COLUMN (HIGH)
+`WHERE LOWER(email) = ?`, `YEAR(created_at) = 2026`, `DATE(created_at) = ?`, `price * 2 &gt; 100`: the index stores raw values, so the function must run on every row.
+```
+-- dates: use a half-open range on the raw column
+WHERE created_at &gt;= &#x27;2026-10-01&#x27; AND created_at &lt; &#x27;2026-10-02&#x27;
+-- arithmetic: move it to the constant side
+WHERE price &gt; 50
+-- case-insensitive search: store normalized data or index the expression
+CREATE INDEX ON customers (LOWER(email));          -- PostgreSQL, SQLite 3.9+
+ALTER TABLE customers ADD email_lc VARCHAR(255) AS (LOWER(email)) STORED, ADD INDEX (email_lc);  -- MySQL 5.7+
+-- MySQL 8.0.13+ also supports functional indexes: CREATE INDEX ix ON customers ((LOWER(email)));
+-- PostgreSQL alternative: the citext type
+```
+
+## LEADING_WILDCARD (HIGH)
+`LIKE &#x27;%wireless%&#x27;` cannot use a B-tree index (only a prefix like `&#x27;wireless%&#x27;` can). Options: full-text search (PostgreSQL `tsvector` + GIN, MySQL `FULLTEXT` + `MATCH ... AGAINST`), a trigram index (`CREATE EXTENSION pg_trgm; CREATE INDEX ... USING gin (name gin_trgm_ops)`), a search engine for product search, or a reversed column for suffix searches (`&#x27;%@example.com&#x27;`).
+
+## N_PLUS_ONE (HIGH)
+One query for a list, then one query per row (an ORM lazy-loading a relation). 50 orders = 51 round trips; each is fast, the page is slow.
+```
+-- before (x N)
+SELECT product_id, qty FROM order_items WHERE order_id = 98211;
+-- after (1 query)
+SELECT order_id, product_id, qty FROM order_items WHERE order_id IN (98211, 98340, 98502);
+-- or join it into the list query
+```
+ORM fixes: Django `prefetch_related`/`select_related`, Rails `includes`, SQLAlchemy `selectinload`, Hibernate `JOIN FETCH` / `@BatchSize`, Prisma `include`. The checker needs the repeated statements in the file (paste a log excerpt).
+
+## ORDER_BY_RANDOM (HIGH)
+`ORDER BY RAND() LIMIT 1` reads and sorts the whole table. Pick a random id in range and take the next row (`WHERE id &gt;= ? ORDER BY id LIMIT 1`), keep a random-number column with an index, or use `TABLESAMPLE SYSTEM (1)` in PostgreSQL.
+
+## NO_WHERE_WRITE (HIGH)
+`UPDATE`/`DELETE` without WHERE locks and rewrites every row. If that is intended, do it in batches (`DELETE ... WHERE id IN (SELECT id ... LIMIT 5000)` in a loop) or use `TRUNCATE`.
+
+## SELECT_STAR (MEDIUM)
+Reads every column (including large text/JSON), sends more bytes, prevents index-only scans and breaks callers when columns change. List the columns. `SELECT *` inside `EXISTS (...)` is fine.
+
+## OR_ACROSS_COLUMNS (MEDIUM) and OR_SAME_COLUMN (LOW)
+`WHERE email = ? OR phone = ?`: one index cannot serve both. PostgreSQL may combine two indexes with a BitmapOr and MySQL with index_merge; if the plan shows a scan instead, split:
+```
+SELECT id FROM users WHERE email = ?
+UNION ALL
+SELECT id FROM users WHERE phone = ? AND email IS DISTINCT FROM ?;  -- avoid duplicates (MySQL: NOT (email &lt;=&gt; ?))
+```
+Same column repeated: `status IN (&#x27;paid&#x27;, &#x27;shipped&#x27;)` is shorter and plans the same or better.
+
+## IMPLICIT_CAST (MEDIUM) and QUOTED_NUMBER (LOW)
+A text column compared with a number (`sku = 40017` on a VARCHAR): MySQL converts every row&#x27;s value to a number, so the index is skipped and &#x27;040017&#x27; also matches; PostgreSQL raises an operator error. Quote the value. A numeric column compared with a quoted number (`customer_id = &#x27;1042&#x27;`) is converted once and is usually fine, but it often means the application binds ids as strings; a parameter typed as text can force a cast on the column side in some drivers (JDBC `setString` on SQL Server NVARCHAR vs VARCHAR is the classic case).
+
+## NOT_IN_SUBQUERY (MEDIUM, correctness)
+If the subquery returns a single NULL, `NOT IN` returns no rows at all. Use:
+```
+SELECT c.id FROM customers c
+WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+```
+NOT EXISTS plans as an anti-join in every major engine.
+
+## DEEP_OFFSET (MEDIUM)
+`LIMIT 20 OFFSET 4000` reads 4020 rows and throws away 4000; page 500 is 25x slower than page 1. Keyset (seek) pagination:
+```
+SELECT id, created_at, total FROM orders
+WHERE customer_id = ? AND (created_at, id) &lt; (?, ?)      -- last row of the previous page
+ORDER BY created_at DESC, id DESC
+LIMIT 20;
+```
+Index `(customer_id, created_at, id)`. MySQL supports row comparisons too; SQL Server: `created_at &lt; ? OR (created_at = ? AND id &lt; ?)`.
+
+## COUNT_FOR_EXISTS (LOW)
+`SELECT COUNT(*) ... &gt; 0` counts all matches. `SELECT EXISTS (SELECT 1 FROM ... WHERE ...)` stops at the first.
+
+## DISTINCT_JOIN (LOW)
+`SELECT DISTINCT u.* FROM users u JOIN orders o ...` builds all user x order rows then removes duplicates. Use `WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)`.
+
+## NO_INDEX_FOR_FILTER (MEDIUM, needs --indexes)
+A column used in WHERE/ON is not the first column of any listed index. Not every filter needs an index (small tables, low-selectivity flags, rare queries). Composite index order: equality columns first, then the ORDER BY column, then range columns; include selected columns for an index-only scan only when the query is hot.
+FILE:references/reading-explain.md
+# Reading EXPLAIN
+
+## Capture
+| Engine | Command | Notes |
+|---|---|---|
+| PostgreSQL | `EXPLAIN (ANALYZE, BUFFERS) &lt;query&gt;;` | ANALYZE runs the query; wrap writes in `BEGIN; ... ROLLBACK;` |
+| MySQL 8 | `EXPLAIN ANALYZE &lt;query&gt;;` or `EXPLAIN &lt;query&gt;\G` | The checker parses the `\G` vertical format |
+| MariaDB | `ANALYZE &lt;query&gt;;` / `EXPLAIN &lt;query&gt;\G` | |
+| SQL Server | `SET STATISTICS IO, TIME ON;` + actual execution plan | Read manually |
+| SQLite | `EXPLAIN QUERY PLAN &lt;query&gt;;` | Look for `SCAN table` vs `SEARCH table USING INDEX` |
+
+Run it on production-like data. A plan on a 1000-row dev table tells you nothing about a 50-million-row table.
+
+## What the checker looks for
+| Finding | PostgreSQL sign | MySQL sign |
+|---|---|---|
+| SEQ_SCAN_LARGE | `Seq Scan on t` with actual rows &gt;= 10000 | `type: ALL`, `rows` &gt;= 10000, `key: NULL` |
+| ROWS_REMOVED | `Rows Removed by Filter` &gt;= 9x the rows kept | `filtered` &lt;= 10% on &gt;= 1000 rows |
+| EST_MISMATCH | `rows=` estimate vs `actual ... rows=` off by 10x | (EXPLAIN ANALYZE only, read manually) |
+| DISK_SORT | `Sort Method: external merge  Disk: ...` | `Using temporary; Using filesort` |
+| NESTED_LOOP_MANY | inner node with `loops=` &gt;= 1000 | many rows in the driving table + `ref` lookups |
+
+## Reading a PostgreSQL plan
+- Read from the most indented node up; each `-&gt;` feeds its parent.
+- `cost=a..b` is the planner&#x27;s guess (arbitrary units), `actual time=a..b` is milliseconds per loop; multiply by `loops`.
+- `rows=` in the cost part is the estimate, in the actual part the real count. A 10x miss means stale or missing statistics: `ANALYZE table;`, or extended statistics for correlated columns (`CREATE STATISTICS`).
+- `Index Scan` / `Index Only Scan` / `Bitmap Index Scan` = index used. `Heap Fetches` high on an index-only scan = run VACUUM.
+- `Buffers: shared read=` counts 8 kB pages from disk; `hit=` from cache.
+- `Sort Method: external merge` = the sort did not fit in `work_mem`. Prefer an index that returns rows in order; raise work_mem per session only for known reporting queries.
+
+## Reading MySQL EXPLAIN
+- `type` from best to worst: `const`, `eq_ref`, `ref`, `range`, `index` (full index scan), `ALL` (full table scan).
+- `key` is the index chosen (`NULL` = none); `possible_keys` lists candidates.
+- `rows` x `filtered`% = rows passed on to the next step.
+- `Extra`: `Using index` (covering, good), `Using where` (filter after reading), `Using temporary` and `Using filesort` (extra work for GROUP BY / ORDER BY).
+
+## Before/after measurement
+1. Run the original 3 times, record median execution time and rows/buffers read.
+2. Apply one change at a time (rewrite, then index).
+3. Run again with the same parameters; also test a &quot;big&quot; customer and a &quot;small&quot; one, because plans change with data skew.
+4. Check write cost for new indexes on hot tables (insert latency, index size with `pg_relation_size` or `information_schema.STATISTICS`).
+FILE:templates/review-report.md
+# SQL performance review: &lt;query or endpoint name&gt;
+
+**Engine:** &lt;PostgreSQL 16 / MySQL 8.0 / ...&gt;   **Tables:** &lt;orders ~1.2M rows, order_items ~4M&gt;
+**Summary:** &lt;one sentence: the main problem and the expected effect of the fix&gt;
+
+## Findings
+| # | Severity | Finding | Statement | Why it matters | Fix |
+|---|---|---|---|---|---|
+| 1 | HIGH | &lt;AND_OR_PRECEDENCE&gt; | &lt;stmt 1&gt; | &lt;returns all shipped orders, full scan&gt; | &lt;parenthesize / IN (...)&gt; |
+| 2 | &lt;MEDIUM&gt; | &lt;...&gt; | &lt;...&gt; | &lt;...&gt; | &lt;...&gt; |
+
+## Rewritten queries
+### Statement &lt;n&gt;: &lt;name&gt;
+Before:
+```sql
+&lt;original&gt;
+```
+After:
+```sql
+&lt;rewrite&gt;
+```
+Why: &lt;one or two sentences&gt;
+
+## Index changes (only if needed)
+```sql
+&lt;CREATE INDEX CONCURRENTLY ix_orders_customer_created ON orders (customer_id, created_at DESC, id);&gt;
+```
+Write cost: &lt;table write rate, expected index size&gt;
+
+## Measure
+| Query | Before (ms, rows read) | After (ms, rows read) |
+|---|---|---|
+| &lt;stmt 1&gt; | &lt;912 ms, 1.2M rows&gt; | &lt;expected: &lt; 5 ms, ~20 rows&gt; |
+
+Run `EXPLAIN (ANALYZE, BUFFERS)` again after each change, with a large and a small customer.
+
+## Not changed
+&lt;findings deliberately left, e.g. SELECT * in an admin export, with the reason&gt;
+FILE:examples/order-history.sql
+-- Order history page of a small online shop (PostgreSQL), captured from the app log.
+-- 1. Order list for the account page
+SELECT * FROM orders o
+WHERE LOWER(o.customer_email) = &#x27;mina.sato@example.com&#x27;
+  AND o.status = &#x27;paid&#x27; OR o.status = &#x27;shipped&#x27;
+ORDER BY o.created_at DESC
+LIMIT 20 OFFSET 4000;
+
+-- 2-4. Line items, loaded one order at a time by the ORM
+SELECT product_id, qty, unit_price FROM order_items WHERE order_id = 98211;
+SELECT product_id, qty, unit_price FROM order_items WHERE order_id = 98340;
+SELECT product_id, qty, unit_price FROM order_items WHERE order_id = 98502;
+
+-- 5. Search box
+SELECT p.id, p.name FROM products p
+WHERE p.name LIKE &#x27;%wireless%&#x27; AND p.sku = 40017;
+
+-- 6. Customers who never ordered
+SELECT c.id, c.email FROM customers c
+WHERE c.id NOT IN (SELECT customer_id FROM orders)
+  AND DATE(c.created_at) = &#x27;2026-10-01&#x27;;
+
+-- 7. Order lookup by id from a URL parameter
+SELECT o.id, o.total FROM orders o WHERE o.customer_id = &#x27;1042&#x27;;
+FILE:examples/order-history-explain.txt
+Limit  (cost=48211.30..48211.35 rows=20 width=212) (actual time=912.4..912.5 rows=20 loops=1)
+  -&gt;  Sort  (cost=48201.30..48251.12 rows=19930 width=212) (actual time=905.1..911.8 rows=4020 loops=1)
+        Sort Key: created_at DESC
+        Sort Method: external merge  Disk: 18432kB
+        -&gt;  Seq Scan on orders o  (cost=0.00..41870.00 rows=19930 width=212) (actual time=0.03..801.7 rows=412560 loops=1)
+              Filter: (((lower(customer_email) = &#x27;mina.sato@example.com&#x27;::text) AND (status = &#x27;paid&#x27;::text)) OR (status = &#x27;shipped&#x27;::text))
+              Rows Removed by Filter: 787440
+Planning Time: 0.4 ms
+Execution Time: 914.9 ms
+FILE:examples/indexes.txt
+orders(customer_id, created_at)
+orders(status)
+order_items(order_id)
+customers(id)
+products(id)
+FILE:scripts/sql_review.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;SQL query performance reviewer (Python 3 standard library only).
+
+Reads a .sql file (one or more statements separated by ;) and, optionally, EXPLAIN output,
+and flags common performance problems with a heuristic, regex-based scan. It does not connect
+to a database and never runs the SQL. Treat findings as review prompts, not proof.
+
+Query findings (severity):
+  HIGH   FUNC_ON_COLUMN     function or arithmetic wraps a column in WHERE/ON (index cannot be used)
+  HIGH   LEADING_WILDCARD   LIKE/ILIKE pattern starts with % or _ (full scan)
+  HIGH   N_PLUS_ONE         the same statement shape repeats &gt;= --repeat times with different literals
+  HIGH   ORDER_BY_RANDOM    ORDER BY RAND()/RANDOM() sorts the whole table
+  HIGH   NO_WHERE_WRITE     UPDATE or DELETE without WHERE
+  HIGH   AND_OR_PRECEDENCE  AND and OR mixed without parentheses: AND binds first, so the OR branch
+                            matches rows from the whole table (wrong results and a full scan)
+  MEDIUM SELECT_STAR        SELECT * or alias.* (wide rows, no covering index, breaks on schema change)
+  MEDIUM OR_ACROSS_COLUMNS  OR between different columns in WHERE (consider UNION ALL)
+  MEDIUM IMPLICIT_CAST      code/phone/sku-like (text) column compared with a bare number: MySQL
+                            casts every row and skips the index, PostgreSQL raises a type error
+  MEDIUM NOT_IN_SUBQUERY    NOT IN (SELECT ...): NULL trap and poor anti-join plans; use NOT EXISTS
+  MEDIUM DEEP_OFFSET        OFFSET (or LIMIT a,b) &gt;= 1000: keyset pagination instead
+  MEDIUM NO_INDEX_FOR_FILTER  (needs --indexes) filtered/joined column not leading any known index
+  LOW    QUOTED_NUMBER      id/number column compared with a quoted number: usually fine for a literal,
+                            but a sign the app binds ids as text (typed text parameters can force a cast)
+  LOW    OR_SAME_COLUMN     col = a OR col = b: write col IN (a, b)
+  LOW    COUNT_FOR_EXISTS   COUNT(*) &gt; 0 used as an existence check; use EXISTS
+  LOW    DISTINCT_JOIN      SELECT DISTINCT with JOIN may hide a join fan-out
+EXPLAIN findings (PostgreSQL text format and MySQL EXPLAIN \\G vertical format):
+  HIGH   SEQ_SCAN_LARGE     Seq Scan / type ALL over &gt;= --large-rows rows
+  MEDIUM ROWS_REMOVED       a filter throws away &gt;= 90% of the rows it reads
+  MEDIUM EST_MISMATCH       estimated vs actual rows differ by &gt;= 10x (stale statistics)
+  MEDIUM DISK_SORT          external merge sort / Using filesort with Using temporary
+  LOW    NESTED_LOOP_MANY   inner side of a nested loop runs &gt;= 1000 loops
+Usage:
+  python3 sql_review.py query.sql
+  python3 sql_review.py query.sql --explain plan.txt --indexes indexes.txt --json
+  python3 sql_review.py --self-test
+--indexes file: one index per line, e.g. &quot;orders(customer_id, created_at)&quot;.
+Exit code: 0 no HIGH findings, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import re
+import sys
+from collections import defaultdict
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+FUNCS = (&quot;lower&quot;, &quot;upper&quot;, &quot;trim&quot;, &quot;ltrim&quot;, &quot;rtrim&quot;, &quot;date&quot;, &quot;year&quot;, &quot;month&quot;, &quot;day&quot;, &quot;cast&quot;,
+         &quot;coalesce&quot;, &quot;ifnull&quot;, &quot;nvl&quot;, &quot;substring&quot;, &quot;substr&quot;, &quot;left&quot;, &quot;right&quot;, &quot;to_char&quot;,
+         &quot;date_trunc&quot;, &quot;extract&quot;, &quot;date_format&quot;, &quot;convert&quot;, &quot;abs&quot;, &quot;round&quot;, &quot;concat&quot;, &quot;length&quot;)
+ID_COL = re.compile(r&quot;(^|_)(id|number|count|qty|quantity|amount)$&quot;)
+TEXT_COL = re.compile(r&quot;(phone|zip|postal_code|postcode|sku|isbn|iban|code|_no)$&quot;)
+KEYWORDS = {&quot;where&quot;, &quot;on&quot;, &quot;and&quot;, &quot;or&quot;, &quot;not&quot;, &quot;join&quot;, &quot;left&quot;, &quot;right&quot;, &quot;inner&quot;, &quot;outer&quot;, &quot;full&quot;,
+            &quot;cross&quot;, &quot;group&quot;, &quot;order&quot;, &quot;by&quot;, &quot;limit&quot;, &quot;offset&quot;, &quot;having&quot;, &quot;union&quot;, &quot;select&quot;, &quot;from&quot;,
+            &quot;as&quot;, &quot;using&quot;, &quot;set&quot;, &quot;values&quot;, &quot;into&quot;, &quot;lateral&quot;, &quot;natural&quot;, &quot;straight_join&quot;, &quot;with&quot;}
+
+
+class DataError(ValueError):
+    pass
+
+
+def mask(sql):
+    &quot;&quot;&quot;Remove comments, replace string literals with &#x27;Sn&#x27; tokens; return (masked, literals).&quot;&quot;&quot;
+    sql = re.sub(r&quot;--[^\n]*&quot;, &quot; &quot;, sql)
+    sql = re.sub(r&quot;/\*.*?\*/&quot;, &quot; &quot;, sql, flags=re.S)
+    lits = []
+
+    def rep(m):
+        lits.append(m.group(0)[1:-1].replace(&quot;&#x27;&#x27;&quot;, &quot;&#x27;&quot;))
+        return f&quot;&#x27;S{len(lits) - 1}&#x27;&quot;
+    return re.sub(r&quot;&#x27;(?:[^&#x27;]|&#x27;&#x27;)*&#x27;&quot;, rep, sql), lits
+
+
+def split_statements(text):
+    masked, lits = mask(text)
+    out = []
+    for part in masked.split(&quot;;&quot;):
+        s = &quot; &quot;.join(part.split())
+        if s:
+            out.append(s)
+    return out, lits
+
+
+def clause(stmt, start, enders):
+    m = re.search(r&quot;\b&quot; + start + r&quot;\b&quot;, stmt, re.I)
+    if not m:
+        return &quot;&quot;
+    rest = stmt[m.end():]
+    e = re.search(r&quot;\b(&quot; + &quot;|&quot;.join(enders) + r&quot;)\b&quot;, rest, re.I)
+    return rest[:e.start()] if e else rest
+
+
+def where_part(stmt):
+    return clause(stmt, &quot;where&quot;, [&quot;group\\s+by&quot;, &quot;order\\s+by&quot;, &quot;limit&quot;, &quot;offset&quot;, &quot;having&quot;,
+                                  &quot;union&quot;, &quot;returning&quot;, &quot;for\\s+update&quot;, &quot;window&quot;])
+
+
+def join_on_parts(stmt):
+    return re.findall(r&quot;\bon\b(.*?)(?=\b(?:join|left|right|inner|full|cross|where|group|order|limit|union)\b|$)&quot;,
+                      stmt, re.I)
+
+
+def aliases(stmt):
+    amap = {}
+    for m in re.finditer(r&quot;\b(?:from|join)\s+([a-z_][\w.]*)(?:\s+(?:as\s+)?([a-z_]\w*))?&quot;, stmt, re.I):
+        table, alias = m.group(1).lower(), (m.group(2) or &quot;&quot;).lower()
+        if table == &quot;select&quot; or table.startswith(&quot;(&quot;):
+            continue
+        amap[table.split(&quot;.&quot;)[-1]] = table.split(&quot;.&quot;)[-1]
+        if alias and alias not in KEYWORDS:
+            amap[alias] = table.split(&quot;.&quot;)[-1]
+    return amap
+
+
+def shape(stmt):
+    s = re.sub(r&quot;&#x27;S\d+&#x27;&quot;, &quot;?&quot;, stmt)
+    s = re.sub(r&quot;\b\d+(\.\d+)?\b&quot;, &quot;?&quot;, s)
+    s = re.sub(r&quot;\(\s*\?(\s*,\s*\?)*\s*\)&quot;, &quot;(?)&quot;, s)
+    return s.lower()
+
+
+def review_sql(text, repeat=3, indexes=None):
+    stmts, lits = split_statements(text)
+    if not stmts:
+        raise DataError(&quot;no SQL statements found&quot;)
+    findings = []
+
+    def add(sev, code, n, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;statement&quot;: n, &quot;message&quot;: msg})
+
+    shapes = defaultdict(list)
+    for n, st in enumerate(stmts, 1):
+        low = st.lower()
+        kind = low.split()[0]
+        shapes[shape(st)].append(n)
+        where = where_part(st)
+        ons = join_on_parts(st)
+        filt = &quot; AND &quot;.join([where] + ons)
+        if re.search(r&quot;\bselect\s+(distinct\s+)?(\w+\.)?\*&quot;, low) or re.search(r&quot;,\s*\w+\.\*&quot;, low):
+            add(&quot;MEDIUM&quot;, &quot;SELECT_STAR&quot;, n, &quot;SELECT * reads every column; list the columns you need so a covering index can serve the query&quot;)
+        for m in re.finditer(r&quot;\b(&quot; + &quot;|&quot;.join(FUNCS) + r&quot;)\s*\(\s*([a-z_][\w]*(?:\.[a-z_]\w*)?)\b[^()]*\)\s*(=|&lt;&gt;|!=|&lt;=|&gt;=|&lt;|&gt;|\bin\b|\blike\b|\bbetween\b)&quot;,
+                             filt, re.I):
+            col = m.group(2)
+            if col.lower() in KEYWORDS or re.fullmatch(r&quot;S\d+&quot;, col):
+                continue
+            add(&quot;HIGH&quot;, &quot;FUNC_ON_COLUMN&quot;, n, f&quot;{m.group(1)}({col}) in a filter hides {col} from its index; compare the bare column (e.g. a range on the raw value) or add an expression index&quot;)
+        for m in re.finditer(r&quot;([a-z_][\w.]*)\s*[+\-*/]\s*\d+\s*(=|&lt;|&gt;|&lt;=|&gt;=)&quot;, filt, re.I):
+            add(&quot;HIGH&quot;, &quot;FUNC_ON_COLUMN&quot;, n, f&quot;arithmetic on {m.group(1)} in a filter; move it to the other side of the comparison&quot;)
+        for m in re.finditer(r&quot;([a-z_][\w.]*)\s+(not\s+)?(i?like)\s+&#x27;S(\d+)&#x27;&quot;, st, re.I):
+            pat = lits[int(m.group(4))]
+            if pat[:1] in (&quot;%&quot;, &quot;_&quot;):
+                add(&quot;HIGH&quot;, &quot;LEADING_WILDCARD&quot;, n, f&quot;{m.group(1)} {m.group(3).upper()} &#x27;{pat}&#x27; starts with a wildcard, so no B-tree index helps; use full-text search, a trigram index or a reversed column&quot;)
+        if re.search(r&quot;order\s+by\s+(rand|random|newid)\s*\(\s*\)&quot;, low):
+            add(&quot;HIGH&quot;, &quot;ORDER_BY_RANDOM&quot;, n, &quot;ORDER BY random sorts every row; pick random ids or use TABLESAMPLE&quot;)
+        if kind in (&quot;update&quot;, &quot;delete&quot;) and not where.strip():
+            add(&quot;HIGH&quot;, &quot;NO_WHERE_WRITE&quot;, n, f&quot;{kind.upper()} without WHERE touches every row; add a WHERE clause or batch it&quot;)
+        if where:
+            top = where
+            while re.search(r&quot;\([^()]*\)&quot;, top):
+                top = re.sub(r&quot;\([^()]*\)&quot;, &quot; _ &quot;, top)
+            top = re.sub(r&quot;\bbetween\s+\S+\s+and\b&quot;, &quot;between x&quot;, top, flags=re.I)
+            if re.search(r&quot;\band\b&quot;, top, re.I) and re.search(r&quot;\bor\b&quot;, top, re.I):
+                add(&quot;HIGH&quot;, &quot;AND_OR_PRECEDENCE&quot;, n, &quot;AND and OR are mixed without parentheses; AND binds first, so &#x27;a AND b OR c&#x27; returns every row matching c; add parentheses: a AND (b OR c)&quot;)
+            for group in re.split(r&quot;\band\b&quot;, where, flags=re.I):
+                if not re.search(r&quot;\bor\b&quot;, group, re.I):
+                    continue
+                cols = re.findall(r&quot;([a-z_][\w.]*)\s*(?:=|&lt;&gt;|!=|&lt;|&gt;|\bin\b|\blike\b)&quot;, group, re.I)
+                cols = [c.lower() for c in cols if c.lower() not in KEYWORDS and not re.fullmatch(r&quot;s\d+&quot;, c.lower())]
+                if len(set(cols)) &gt;= 2:
+                    add(&quot;MEDIUM&quot;, &quot;OR_ACROSS_COLUMNS&quot;, n, f&quot;OR across {&#x27;, &#x27;.join(sorted(set(cols)))}: one index cannot serve both sides; split into UNION ALL of indexed queries (or check the plan uses a bitmap OR)&quot;)
+                elif len(cols) &gt;= 2:
+                    add(&quot;LOW&quot;, &quot;OR_SAME_COLUMN&quot;, n, f&quot;repeated OR on {cols[0]}; write {cols[0]} IN (...)&quot;)
+        for m in re.finditer(r&quot;([a-z_][\w.]*)\s*(=|&lt;&gt;|!=|&lt;|&gt;)\s*&#x27;S(\d+)&#x27;&quot;, filt, re.I):
+            col = m.group(1).split(&quot;.&quot;)[-1].lower()
+            if ID_COL.search(col) and re.fullmatch(r&quot;-?\d+(\.\d+)?&quot;, lits[int(m.group(3))]):
+                add(&quot;LOW&quot;, &quot;QUOTED_NUMBER&quot;, n, f&quot;{m.group(1)} compared with the string &#x27;{lits[int(m.group(3))]}&#x27;; bind it as a number so the driver never sends a text parameter&quot;)
+        for m in re.finditer(r&quot;([a-z_][\w.]*)\s*(=|&lt;&gt;|!=)\s*(\d{3,})\b&quot;, filt, re.I):
+            col = m.group(1).split(&quot;.&quot;)[-1].lower()
+            if TEXT_COL.search(col):
+                add(&quot;MEDIUM&quot;, &quot;IMPLICIT_CAST&quot;, n, f&quot;{m.group(1)} looks like a text column but is compared with the number {m.group(3)}; MySQL then casts every row and skips the index (PostgreSQL raises a type error); quote the value&quot;)
+        if re.search(r&quot;\bnot\s+in\s*\(\s*select\b&quot;, low):
+            add(&quot;MEDIUM&quot;, &quot;NOT_IN_SUBQUERY&quot;, n, &quot;NOT IN (SELECT ...) returns no rows if the subquery yields a NULL and often plans badly; use NOT EXISTS&quot;)
+        m = re.search(r&quot;\boffset\s+(\d+)&quot;, low) or re.search(r&quot;\blimit\s+(\d+)\s*,\s*\d+&quot;, low)
+        if m and int(m.group(1)) &gt;= 1000:
+            add(&quot;MEDIUM&quot;, &quot;DEEP_OFFSET&quot;, n, f&quot;OFFSET {m.group(1)} reads and throws away {m.group(1)} rows; use keyset pagination (WHERE (created_at, id) &lt; (?, ?) ORDER BY ... LIMIT n)&quot;)
+        if re.search(r&quot;count\s*\(\s*(\*|1)\s*\)\s*(&gt;\s*0|&gt;=\s*1)&quot;, low):
+            add(&quot;LOW&quot;, &quot;COUNT_FOR_EXISTS&quot;, n, &quot;COUNT(*) &gt; 0 counts every match; EXISTS stops at the first&quot;)
+        if re.search(r&quot;\bselect\s+distinct\b&quot;, low) and re.search(r&quot;\bjoin\b&quot;, low):
+            add(&quot;LOW&quot;, &quot;DISTINCT_JOIN&quot;, n, &quot;DISTINCT on a join often hides duplicate rows from a one-to-many join; use EXISTS or aggregate first&quot;)
+        if indexes is not None:
+            amap = aliases(st)
+            seen = set()
+            for m in re.finditer(r&quot;\b([a-z_]\w*)\.([a-z_]\w*)\s*(?:=|&lt;|&gt;|&lt;=|&gt;=|\bin\b|\bbetween\b)&quot;, filt, re.I):
+                table = amap.get(m.group(1).lower())
+                col = m.group(2).lower()
+                if not table or (table, col) in seen:
+                    continue
+                seen.add((table, col))
+                if table in indexes and col not in indexes[table]:
+                    add(&quot;MEDIUM&quot;, &quot;NO_INDEX_FOR_FILTER&quot;, n, f&quot;{table}.{col} is filtered or joined but no listed index on {table} starts with it&quot;)
+    for sh, ns in shapes.items():
+        if len(ns) &gt;= repeat and (&quot;where&quot; in sh):
+            add(&quot;HIGH&quot;, &quot;N_PLUS_ONE&quot;, ns[0], f&quot;statements {&#x27;, &#x27;.join(map(str, ns))} have the same shape with different values ({len(ns)}x); fetch them in one query with IN (...) or a JOIN&quot;)
+    findings.sort(key=lambda f: (SEV_ORDER[f[&quot;severity&quot;]], f[&quot;statement&quot;], f[&quot;code&quot;]))
+    shown = [re.sub(r&quot;&#x27;S(\d+)&#x27;&quot;, lambda m: &quot;&#x27;&quot; + lits[int(m.group(1))].replace(&quot;&#x27;&quot;, &quot;&#x27;&#x27;&quot;) + &quot;&#x27;&quot;, st) for st in stmts]
+    return shown, findings
+
+
+def parse_indexes(text):
+    idx = defaultdict(set)
+    for line in text.splitlines():
+        m = re.match(r&quot;\s*([\w.]+)\s*\(\s*([\w\s,]+)\)&quot;, line)
+        if m:
+            idx[m.group(1).split(&quot;.&quot;)[-1].lower()].add(m.group(2).split(&quot;,&quot;)[0].strip().lower())
+    return idx
+
+
+def review_explain(text, large=10000):
+    findings = []
+
+    def add(sev, code, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;statement&quot;: 0, &quot;message&quot;: msg})
+    lines = text.splitlines()
+    if re.search(r&quot;^\s*(\*+ \d+\. row|select_type:)&quot;, text, re.M):
+        for block in re.split(r&quot;\*+ \d+\. row \*+&quot;, text):
+            f = dict(re.findall(r&quot;^\s*(\w+):\s*(.*?)\s*$&quot;, block, re.M))
+            if not f:
+                continue
+            rows = int(f.get(&quot;rows&quot;, &quot;0&quot;) or 0)
+            if f.get(&quot;type&quot;) == &quot;ALL&quot; and rows &gt;= large:
+                add(&quot;HIGH&quot;, &quot;SEQ_SCAN_LARGE&quot;, f&quot;full table scan (type ALL) on {f.get(&#x27;table&#x27;)} ~{rows} rows; key={f.get(&#x27;key&#x27;, &#x27;NULL&#x27;)}&quot;)
+            extra = f.get(&quot;Extra&quot;, &quot;&quot;)
+            if &quot;Using filesort&quot; in extra and &quot;Using temporary&quot; in extra:
+                add(&quot;MEDIUM&quot;, &quot;DISK_SORT&quot;, f&quot;{f.get(&#x27;table&#x27;)}: Using temporary; Using filesort - an index matching GROUP BY/ORDER BY avoids it&quot;)
+            filtered = float(f.get(&quot;filtered&quot;, &quot;100&quot;) or 100)
+            if rows &gt;= 1000 and filtered &lt;= 10:
+                add(&quot;MEDIUM&quot;, &quot;ROWS_REMOVED&quot;, f&quot;{f.get(&#x27;table&#x27;)}: only {filtered:g}% of {rows} rows pass the filter&quot;)
+        return findings
+    for i, line in enumerate(lines):
+        m = re.search(r&quot;(Parallel )?Seq Scan on (\S+).*?rows=(\d+)&quot;, line)
+        if m:
+            act = re.search(r&quot;actual[^)]*rows=(\d+)&quot;, line)
+            rows = int(act.group(1) if act else m.group(3))
+            if rows &gt;= large:
+                add(&quot;HIGH&quot;, &quot;SEQ_SCAN_LARGE&quot;, f&quot;Seq Scan on {m.group(2)} returns ~{rows} rows; an index on the filter columns may help&quot;)
+        m = re.search(r&quot;Rows Removed by Filter:\s*(\d+)&quot;, line)
+        if m:
+            removed = int(m.group(1))
+            prev = next((l for l in reversed(lines[:i]) if &quot;actual&quot; in l), &quot;&quot;)
+            k = re.search(r&quot;actual[^)]*rows=(\d+)&quot;, prev)
+            kept = int(k.group(1)) if k else 0
+            if removed &gt;= 1000 and removed &gt;= 9 * max(kept, 1):
+                add(&quot;MEDIUM&quot;, &quot;ROWS_REMOVED&quot;, f&quot;filter removed {removed} rows to keep {kept} ({prev.strip()[:60]}...)&quot;)
+        m = re.search(r&quot;cost=[\d.]+\.\.[\d.]+ rows=(\d+).*actual time=[\d.]+\.\.[\d.]+ rows=(\d+) loops=(\d+)&quot;, line)
+        if m:
+            est, act, loops = int(m.group(1)), int(m.group(2)), int(m.group(3))
+            if max(est, act) &gt;= 100 and max(est, act) &gt;= 10 * max(min(est, act), 1):
+                node = line.strip().lstrip(&quot;-&gt;&quot;).strip().split(&quot;  &quot;)[0]
+                add(&quot;MEDIUM&quot;, &quot;EST_MISMATCH&quot;, f&quot;{node[:50]}: estimated {est} rows, actual {act}; run ANALYZE&quot;)
+            if loops &gt;= 1000:
+                node = line.strip().lstrip(&quot;-&gt;&quot;).strip().split(&quot;  &quot;)[0]
+                add(&quot;LOW&quot;, &quot;NESTED_LOOP_MANY&quot;, f&quot;{node[:50]} runs {loops} loops; check the join index or consider a hash join&quot;)
+        if re.search(r&quot;Sort Method: external merge&quot;, line):
+            add(&quot;MEDIUM&quot;, &quot;DISK_SORT&quot;, &quot;sort spilled to disk (external merge); add an index for ORDER BY or raise work_mem for this query&quot;)
+    findings.sort(key=lambda f: SEV_ORDER[f[&quot;severity&quot;]])
+    return findings
+
+
+def render(path, stmts, findings):
+    out = [f&quot;# SQL performance review: {path}&quot;, &quot;&quot;,
+           f&quot;{len(stmts)} statement(s); {sum(f[&#x27;severity&#x27;] == &#x27;HIGH&#x27; for f in findings)} HIGH, &quot;
+           f&quot;{sum(f[&#x27;severity&#x27;] == &#x27;MEDIUM&#x27; for f in findings)} MEDIUM, {sum(f[&#x27;severity&#x27;] == &#x27;LOW&#x27; for f in findings)} LOW&quot;, &quot;&quot;]
+    for n, st in enumerate(stmts, 1):
+        out.append(f&quot;{n}. {st[:110]}{&#x27;...&#x27; if len(st) &gt; 110 else &#x27;&#x27;}&quot;)
+    out += [&quot;&quot;, &quot;## Findings&quot;]
+    if not findings:
+        out.append(&quot;- none (heuristics only: still check the real plan with EXPLAIN ANALYZE)&quot;)
+    for f in findings:
+        where = f&quot;stmt {f[&#x27;statement&#x27;]}&quot; if f[&quot;statement&quot;] else &quot;EXPLAIN&quot;
+        out.append(f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]} ({where}): {f[&#x27;message&#x27;]}&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    results = []
+
+    def check(name, cond):
+        results.append(cond)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    def codes(sql, **kw):
+        return [f[&quot;code&quot;] for f in review_sql(sql, **kw)[1]]
+    check(&quot;select star&quot;, &quot;SELECT_STAR&quot; in codes(&quot;SELECT * FROM users WHERE id = 1&quot;))
+    check(&quot;alias star&quot;, &quot;SELECT_STAR&quot; in codes(&quot;SELECT o.* FROM orders o WHERE o.id = 1&quot;))
+    check(&quot;explicit columns ok&quot;, &quot;SELECT_STAR&quot; not in codes(&quot;SELECT id, name FROM users WHERE id = 1&quot;))
+    check(&quot;lower(col) HIGH&quot;, &quot;FUNC_ON_COLUMN&quot; in codes(&quot;SELECT id FROM users WHERE LOWER(email) = &#x27;a@b.c&#x27;&quot;))
+    check(&quot;year(col) HIGH&quot;, &quot;FUNC_ON_COLUMN&quot; in codes(&quot;SELECT id FROM orders WHERE YEAR(created_at) = 2026&quot;))
+    check(&quot;arithmetic HIGH&quot;, &quot;FUNC_ON_COLUMN&quot; in codes(&quot;SELECT id FROM t WHERE price * 2 &gt; 100&quot;))
+    check(&quot;function on value side ok&quot;, &quot;FUNC_ON_COLUMN&quot; not in codes(&quot;SELECT id FROM users WHERE email = LOWER(&#x27;A@B.C&#x27;)&quot;))
+    check(&quot;leading wildcard&quot;, &quot;LEADING_WILDCARD&quot; in codes(&quot;SELECT id FROM p WHERE name LIKE &#x27;%phone%&#x27;&quot;))
+    check(&quot;trailing wildcard ok&quot;, &quot;LEADING_WILDCARD&quot; not in codes(&quot;SELECT id FROM p WHERE name LIKE &#x27;phone%&#x27;&quot;))
+    check(&quot;wildcard inside string literal ignored&quot;, &quot;LEADING_WILDCARD&quot; not in codes(&quot;SELECT &#x27;x LIKE %y&#x27; AS note FROM p WHERE id = 1&quot;))
+    check(&quot;N+1 detected&quot;, &quot;N_PLUS_ONE&quot; in codes(&quot;SELECT name FROM users WHERE id = 1; SELECT name FROM users WHERE id = 2; SELECT name FROM users WHERE id = 3;&quot;))
+    check(&quot;2 repeats not N+1&quot;, &quot;N_PLUS_ONE&quot; not in codes(&quot;SELECT name FROM users WHERE id = 1; SELECT name FROM users WHERE id = 2;&quot;))
+    check(&quot;OR across columns&quot;, &quot;OR_ACROSS_COLUMNS&quot; in codes(&quot;SELECT id FROM u WHERE email = &#x27;a&#x27; OR phone = &#x27;b&#x27;&quot;))
+    check(&quot;OR same column LOW&quot;, &quot;OR_SAME_COLUMN&quot; in codes(&quot;SELECT id FROM u WHERE status = &#x27;a&#x27; OR status = &#x27;b&#x27;&quot;))
+    check(&quot;quoted number LOW&quot;, &quot;QUOTED_NUMBER&quot; in codes(&quot;SELECT id FROM orders WHERE customer_id = &#x27;42&#x27;&quot;))
+    check(&quot;implicit cast phone number&quot;, &quot;IMPLICIT_CAST&quot; in codes(&quot;SELECT id FROM users WHERE phone = 5551234&quot;))
+    check(&quot;number id ok&quot;, &quot;QUOTED_NUMBER&quot; not in codes(&quot;SELECT id FROM orders WHERE customer_id = 42&quot;))
+    check(&quot;NOT IN subquery&quot;, &quot;NOT_IN_SUBQUERY&quot; in codes(&quot;SELECT id FROM a WHERE id NOT IN (SELECT a_id FROM b)&quot;))
+    check(&quot;deep offset&quot;, &quot;DEEP_OFFSET&quot; in codes(&quot;SELECT id FROM a ORDER BY id LIMIT 20 OFFSET 50000&quot;))
+    check(&quot;mysql limit a,b offset&quot;, &quot;DEEP_OFFSET&quot; in codes(&quot;SELECT id FROM a ORDER BY id LIMIT 20000, 20&quot;))
+    check(&quot;order by rand&quot;, &quot;ORDER_BY_RANDOM&quot; in codes(&quot;SELECT id FROM a ORDER BY RAND() LIMIT 1&quot;))
+    check(&quot;delete without where&quot;, &quot;NO_WHERE_WRITE&quot; in codes(&quot;DELETE FROM sessions&quot;))
+    check(&quot;AND/OR precedence HIGH&quot;, &quot;AND_OR_PRECEDENCE&quot; in codes(&quot;SELECT id FROM o WHERE a = 1 AND b = 2 OR b = 3&quot;))
+    check(&quot;parenthesized OR ok&quot;, &quot;AND_OR_PRECEDENCE&quot; not in codes(&quot;SELECT id FROM o WHERE a = 1 AND (b = 2 OR b = 3)&quot;))
+    check(&quot;BETWEEN ... AND not an AND&quot;, &quot;AND_OR_PRECEDENCE&quot; not in codes(&quot;SELECT id FROM o WHERE d BETWEEN 1 AND 5 OR e = 2&quot;))
+    check(&quot;literals restored in output&quot;, &quot;&#x27;mina&#x27;&quot; in review_sql(&quot;SELECT id FROM u WHERE name = &#x27;mina&#x27;&quot;)[0][0])
+    check(&quot;count for exists&quot;, &quot;COUNT_FOR_EXISTS&quot; in codes(&quot;SELECT CASE WHEN COUNT(*) &gt; 0 THEN 1 END FROM a WHERE b = 1&quot;))
+    check(&quot;distinct join&quot;, &quot;DISTINCT_JOIN&quot; in codes(&quot;SELECT DISTINCT u.id FROM users u JOIN orders o ON o.user_id = u.id&quot;))
+    idx = parse_indexes(&quot;orders(customer_id, created_at)\nusers(id)&quot;)
+    c = codes(&quot;SELECT o.id FROM orders o JOIN users u ON u.id = o.customer_id WHERE o.status = &#x27;paid&#x27;&quot;, indexes=idx)
+    check(&quot;no index for filter&quot;, c.count(&quot;NO_INDEX_FOR_FILTER&quot;) == 1)
+    check(&quot;comments stripped&quot;, codes(&quot;-- SELECT * FROM x\nSELECT id FROM users WHERE id = 1&quot;) == [])
+    pg = &quot;&quot;&quot;Seq Scan on orders  (cost=0.00..25000.00 rows=50 width=8) (actual time=0.1..310.2 rows=48210 loops=1)
+  Filter: (status = &#x27;paid&#x27;::text)
+  Rows Removed by Filter: 951790
+Sort Method: external merge  Disk: 51200kB&quot;&quot;&quot;
+    e = [f[&quot;code&quot;] for f in review_explain(pg)]
+    check(&quot;pg seq scan large&quot;, &quot;SEQ_SCAN_LARGE&quot; in e)
+    check(&quot;pg rows removed&quot;, &quot;ROWS_REMOVED&quot; in e)
+    check(&quot;pg estimate mismatch&quot;, &quot;EST_MISMATCH&quot; in e)
+    check(&quot;pg disk sort&quot;, &quot;DISK_SORT&quot; in e)
+    my = &quot;&quot;&quot;*************************** 1. row ***************************
+           id: 1
+  select_type: SIMPLE
+        table: orders
+         type: ALL
+          key: NULL
+         rows: 980000
+     filtered: 5.00
+        Extra: Using where; Using temporary; Using filesort&quot;&quot;&quot;
+    e = [f[&quot;code&quot;] for f in review_explain(my)]
+    check(&quot;mysql type ALL&quot;, &quot;SEQ_SCAN_LARGE&quot; in e and &quot;DISK_SORT&quot; in e and &quot;ROWS_REMOVED&quot; in e)
+    try:
+        review_sql(&quot;  -- only a comment\n&quot;)
+        check(&quot;empty input rejected&quot;, False)
+    except DataError:
+        check(&quot;empty input rejected&quot;, True)
+    print(f&quot;{sum(results)}/{len(results)} passed&quot;)
+    return 0 if all(results) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;SQL query performance reviewer (heuristic)&quot;)
+    ap.add_argument(&quot;sql&quot;, nargs=&quot;?&quot;, help=&quot;.sql file with one or more statements&quot;)
+    ap.add_argument(&quot;--explain&quot;, help=&quot;EXPLAIN output (PostgreSQL text or MySQL \\G)&quot;)
+    ap.add_argument(&quot;--indexes&quot;, help=&quot;known indexes, one per line: table(col1, col2)&quot;)
+    ap.add_argument(&quot;--repeat&quot;, type=int, default=3, help=&quot;N+1 threshold (default 3)&quot;)
+    ap.add_argument(&quot;--large-rows&quot;, type=int, default=10000, help=&quot;rows for SEQ_SCAN_LARGE (default 10000)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.sql:
+        ap.error(&quot;give a .sql file or --self-test&quot;)
+    try:
+        with open(a.sql, encoding=&quot;utf-8&quot;) as fh:
+            text = fh.read()
+        idx = None
+        if a.indexes:
+            with open(a.indexes, encoding=&quot;utf-8&quot;) as fh:
+                idx = parse_indexes(fh.read())
+        stmts, findings = review_sql(text, a.repeat, idx)
+        if a.explain:
+            with open(a.explain, encoding=&quot;utf-8&quot;) as fh:
+                findings += review_explain(fh.read(), a.large_rows)
+    except (OSError, DataError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    if a.json:
+        print(json.dumps({&quot;statements&quot;: stmts, &quot;findings&quot;: findings}, indent=2))
+    else:
+        print(render(a.sql, stmts, findings))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in findings) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/sql-query-performance-reviewer',TI="SQL Query Performance Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

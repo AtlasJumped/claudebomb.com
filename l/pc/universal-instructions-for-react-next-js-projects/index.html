@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Universal Instructions for React / Next.js Projects | Open library | claudebomb.com</title>
+<meta name="description" content="# Universal Instructions for React / Next.js Projects &gt; Purpose: General rules for developing various projects with React + TypeScript, Next.js + Type">
+<meta property="og:title" content="Universal Instructions for React / Next.js Projects | Open library | claudebomb.com">
+<meta property="og:description" content="# Universal Instructions for React / Next.js Projects &gt; Purpose: General rules for developing various projects with React + TypeScript, Next.js + Type">
+<meta property="og:url" content="https://claudebomb.com/l/pc/universal-instructions-for-react-next-js-projects/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/universal-instructions-for-react-next-js-projects/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Universal Instructions for React / Next.js Projects</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by Ramazan-Yusupov. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt"># Universal Instructions for React / Next.js Projects
+
+&gt; Purpose: General rules for developing various projects with React + TypeScript, Next.js + TypeScript, and Tailwind CSS.
+&gt; Usage: Place this file in the root of a new project as `AGENTS.md`, `CLAUDE.md`, or `PROJECT_RULES.md`, or use it as a base instruction set for an AI agent.
+&gt; Important: These instructions do not contain product-specific rules. Keep everything related to an individual project in a separate `PROJECT_RULES.md` file.
+
+---
+
+# 1. Core Principle
+
+Build a production-ready application, not a collection of disconnected components.
+
+Always follow this sequence:
+
+1. Review the current project structure, `package.json`, routing, UI primitives, stores, hooks, schemas, and project rules.
+2. Find existing actions, helpers, schemas, and components that can be reused.
+3. Identify the smallest change required for the task.
+4. Preserve existing behavior.
+5. Implement each new feature end to end: model, validation, UI, storage/import/export, edge cases, and verification.
+6. Run the relevant checks and report the results honestly.
+
+Do not add dependencies, abstractions, a global store, or an architectural layer unless they are genuinely necessary.
+Use `shadcn/ui` by default for UI work. Do not add another UI kit on top of it without a clear reason.
+
+---
+
+# 2. Choosing Between React and Next.js
+
+Use Next.js when the project needs:
+
+- routing;
+- SEO;
+- SSR / Server Components;
+- Server Actions;
+- Route Handlers / API routes;
+- authentication;
+- database access;
+- private environment variables;
+- content publishing.
+
+Use React + Vite when:
+
+- the application is entirely client-side;
+- SEO is not required;
+- it is a local tool, dashboard, editor, admin panel, or desktop-like UI;
+- the server already exists as a separate service.
+
+Do not choose Next.js simply because it is popular. Do not add Redux, Zustand, React Query, a form library, or another UI kit without a specific reason.
+
+---
+
+# 3. Default Stack and Checks
+
+Use the following by default:
+
+- React;
+- TypeScript in strict mode;
+- Tailwind CSS;
+- `shadcn/ui` as the required UI approach for clean design and rapid interface development;
+- Lucide React or the icon library used by the current shadcn configuration;
+- ESLint;
+- a shared `cn()` helper;
+- runtime validation for external data;
+- accessible HTML elements.
+
+Use `shadcn/ui` as the primary source of UI primitives: buttons, inputs, selects, dialogs, sheets, dropdowns, tooltips, tabs, carousels, cards, badges, skeletons, scroll areas, and other required components. Create custom primitives only when shadcn does not provide a suitable component or when the project already has a stable local primitive.
+
+For an MVP, begin with mock/JSON/localStorage data and validate local user flows first. Add the backend, database, payments, authentication, and external integrations last, once the UI, models, and flows are clear.
+
+At a minimum, run these commands after code changes:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Do not claim that the project works if these commands were not run or completed with errors.
+
+---
+
+# 4. Architecture
+
+For Next.js projects expected to grow, keep source code inside `src/` by default: `src/app`, `src/components`, `src/lib`, `src/data`, `src/hooks`, and `src/features`. Keep root-level support folders and files (`public`, configuration files, lockfiles, and README) in the project root.
+
+For small projects, the following structure is acceptable:
+
+```text
+src/
+  app/ or pages/
+  components/
+  features/
+  lib/
+  shared/
+```
+
+For medium and large projects, use an FSD-like approach:
+
+```text
+src/
+  app/       # bootstrap, providers, layouts, routes
+  views/     # page-level composition
+  widgets/   # large UI blocks
+  features/  # user workflows
+  entities/  # domain model
+  shared/    # generic helpers, config, thin wrappers around shadcn/ui
+```
+
+Import direction:
+
+```text
+app/views -&gt; widgets -&gt; features -&gt; entities -&gt; shared
+```
+
+Do not:
+
+- import `widgets` into `features`;
+- place business logic in `shared`;
+- turn `shared/lib` into a dumping ground for unrelated functions;
+- duplicate mutation logic across multiple UI components;
+- use deep imports into another module&#x27;s internals when that module exposes a public API.
+
+---
+
+# 5. Public API
+
+Every feature, entity, or shared UI folder should expose a clear public API through `index.ts` when the module is used externally. For shadcn primitives, the public API usually already lives in `components/ui/*` or the project&#x27;s local UI layer.
+
+Good:
+
+```ts
+import { createTask } from &quot;@/features/create-task&quot;;
+```
+
+Bad:
+
+```ts
+import { createTask } from &quot;@/features/create-task/model/createTask&quot;;
+```
+
+Exception: internal code within the same feature or entity.
+
+---
+
+# 6. TypeScript
+
+Required:
+
+- enable `strict: true`;
+- do not use `any` except in isolated interoperability code;
+- do not hide type errors with `as` assertions;
+- use discriminated unions for complex state;
+- validate runtime JSON with a schema;
+- do not create multiple identical types without a meaningful reason.
+
+Example state type:
+
+```ts
+type LoadState&lt;T&gt; =
+  | { status: &quot;idle&quot; }
+  | { status: &quot;loading&quot; }
+  | { status: &quot;success&quot;; data: T }
+  | { status: &quot;error&quot;; message: string };
+```
+
+---
+
+# 7. React State and Effects
+
+Store state where it actually belongs:
+
+| State type   | Where to store it                                           |
+| ------------ | ----------------------------------------------------------- |
+| Local UI     | `useState`, `useReducer`                                    |
+| URL state    | route/search parameters                                     |
+| Server state | server rendering or a cache/query layer                     |
+| Form state   | form hook/library                                           |
+| Global UI    | a small store when necessary                                |
+| Domain state | entity/store when the state is shared across multiple flows |
+
+Do not put the following in a global store:
+
+- hover state;
+- the state of a single dropdown;
+- the draft value of a single input;
+- the state of a single modal;
+- the temporary selected tab of one component.
+
+Use `useEffect` to synchronize with external systems:
+
+- browser APIs;
+- timers;
+- subscriptions;
+- external stores;
+- DOM integrations.
+
+Do not use `useEffect` for derived values.
+
+Bad:
+
+```tsx
+const [fullName, setFullName] = useState(&quot;&quot;);
+
+useEffect(() =&gt; {
+  setFullName(`${firstName} ${lastName}`);
+}, [firstName, lastName]);
+```
+
+Good:
+
+```tsx
+const fullName = `${firstName} ${lastName}`;
+```
+
+---
+
+# 8. Next.js Boundaries
+
+In the App Router, components are Server Components by default.
+
+Add `&quot;use client&quot;` only where you need:
+
+- event handlers;
+- local state;
+- effects;
+- `window`, `document`, or `localStorage`;
+- drag and drop;
+- `contenteditable`;
+- client-only libraries.
+
+Do not make an entire layout a Client Component without a clear need.
+
+Server-only code includes:
+
+- database access;
+- authentication;
+- private API clients;
+- secret environment variables;
+- webhooks;
+- access checks.
+
+Never import a server-only module into a Client Component.
+
+---
+
+# 9. Runtime Validation and Migrations
+
+Validate all external data at the boundary:
+
+- request bodies;
+- form data;
+- URL/search parameters;
+- uploaded files;
+- imported JSON;
+- localStorage/IndexedDB data;
+- responses from external APIs.
+
+When adding a new model field, update the entire lifecycle:
+
+1. TypeScript type.
+2. Runtime schema.
+3. Factory/default values.
+4. Parser/migration for legacy data.
+5. Normalization helpers.
+6. Import/export.
+7. Search/filter indexing, if the field should be searchable.
+8. Undo/redo snapshots, if users can edit the field.
+9. UI for creating, editing, and clearing the field.
+10. Edge cases and checks.
+
+Example:
+
+```ts
+return {
+  ...item,
+  status: item.status ?? &quot;active&quot;,
+  tags: normalizeTags(item.tags),
+  dueDate: normalizeDate(item.dueDate),
+};
+```
+
+Do not add a model field only in the UI.
+
+---
+
+# 10. Forms
+
+Every form must include:
+
+- a validation schema;
+- field errors;
+- a submitting/loading state;
+- a disabled submit button while submitting;
+- protection against duplicate submissions;
+- an error state;
+- success behavior;
+- reset/draft behavior, when applicable.
+
+A form is not complete if it works only when the request succeeds perfectly.
+
+---
+
+# 11. shadcn/ui and Shared UI
+
+Use `shadcn/ui` by default to build clean, consistent interfaces quickly.
+
+Rules:
+
+- first check whether the required component exists in the shadcn registry;
+- add shadcn components through the CLI or the project&#x27;s established local method;
+- do not create a custom Button, Input, Modal, Dropdown, Tooltip, Tabs, or Card if shadcn already covers the use case;
+- adapt shadcn components through `className`, variants, and composition instead of copying similar components;
+- keep business components separate from primitives: `components/marketplace`, `features/*/ui`, `widgets/*`, or `entities/*/ui`;
+- keep only shadcn primitives and thin reusable wrappers in `components/ui` or `shared/ui`;
+- do not place product-specific business components there;
+- if shadcn does not provide a component, create a minimal local wrapper consistent with the current shadcn configuration.
+
+Base set of shadcn components for productivity interfaces:
+
+```text
+button
+input
+select
+textarea
+checkbox
+switch
+dialog
+sheet
+dropdown-menu
+popover
+tooltip
+tabs
+card
+badge
+avatar
+separator
+scroll-area
+skeleton
+carousel
+accordion
+collapsible
+hover-card
+```
+
+For marketplace, chat, and support flows, also plan for these newer shadcn components:
+
+```text
+message
+message-scroller
+attachment
+marker
+```
+
+Always use `cn()`:
+
+```ts
+export function cn(...values: Array&lt;string | false | null | undefined&gt;) {
+  return values.filter(Boolean).join(&quot; &quot;);
+}
+```
+
+---
+
+# 12. Choosing the Right UI Surface
+
+Before adding a new tool, choose the right surface:
+
+| Feature size                       | Placement                         | Example                             |
+| ---------------------------------- | --------------------------------- | ----------------------------------- |
+| 1-5 quick settings                 | context menu / dropdown / popover | status, due date, tags              |
+| 5-12 grouped settings              | sectioned, scrollable popover      | entity properties, compact filters  |
+| large data sets or bulk actions    | sidebar / drawer                  | filters, tools panel                |
+| complex form or dangerous action   | modal                             | import/export, delete confirmation  |
+| permanent workspace                | dedicated view/page/widget        | dashboard, calendar, editor         |
+
+Rule:
+
+&gt; If a control is used occasionally, keep it in a menu.
+&gt; If a control is used constantly, keep it visible on the main surface.
+&gt; If a control is complex and lengthy, move it to a sidebar or modal.
+
+Do not turn a small group of controls into a large card on the page. In productivity interfaces, this wastes valuable space.
+
+---
+
+# 13. Compact UI for Editors, Dashboards, and Workspaces
+
+In productivity applications, the primary content must remain the focus.
+
+Required:
+
+- the title, body, board, or editor must not be pushed downward by secondary controls;
+- entity properties should generally open from an icon button next to the title;
+- settings buttons must have an `aria-label`;
+- an important status can be shown as a small badge;
+- create/add actions must appear in a clear context;
+- sidebar-heavy flows must include a mobile-friendly menu or switcher;
+- do not make a productivity tool look like a landing page.
+
+Bad:
+
+```tsx
+${largepropertiescard}
+  &lt;Select&gt;Status&lt;/Select&gt;
+  &lt;Select&gt;Task&lt;/Select&gt;
+  &lt;Input&gt;Date&lt;/Input&gt;
+  &lt;Input&gt;Tags&lt;/Input&gt;
+&lt;/LargePropertiesCard&gt;
+```
+
+Good:
+
+```tsx
+${titlerow}
+  &lt;TitleInput /&gt;
+  &lt;PropertiesMenu /&gt;
+&lt;/TitleRow&gt;
+```
+
+---
+
+# 14. Overlays, Dropdowns, Popovers, and Context Menus
+
+Every menu must behave as a true overlay.
+
+Rules:
+
+- if a menu may extend beyond its container, render it through `createPortal(..., document.body)`;
+- use `position: fixed` or a reliable positioning helper;
+- set an explicit `z-index`;
+- use an opaque `backgroundColor`;
+- do not rely only on a translucent `bg-black/50` background or blur;
+- add a border, ring, or shadow;
+- set `max-height` and `overflow-y-auto`;
+- close on `Escape`;
+- close on outside click/tap;
+- prevent page text from showing through or rendering over the menu;
+- hover and active states must not change the item&#x27;s dimensions.
+
+Minimal overlay style:
+
+```tsx
+&lt;div
+  role=&quot;menu&quot;
+  className=&quot;rounded-2xl border p-2 shadow-2xl&quot;
+  style=${backgroundcolor:&quot;#151a21&quot;,
+    boxShadow: &quot;0 24px 70px rgb(0 0 0 / 78%)&quot;,
+    isolation: &quot;isolate&quot;,
+    zIndex: 1000,}
+&gt;
+  ...
+&lt;/div&gt;
+```
+
+If the menu background does not render correctly or content appears above it, check:
+
+- the portal;
+- `position`;
+- `z-index`;
+- parent stacking contexts;
+- `isolation`;
+- opacity/background;
+- parent overflow/clipping.
+
+---
+
+# 15. Option Lists in Menus
+
+A list of tasks, projects, users, tags, or other options in a menu must not look like a dense wall of text.
+
+For a two-line item:
+
+- use a `min-height` of 40-44px;
+- include a `gap` between the icon, text, and checkmark;
+- use vertical padding such as `py-1.5`;
+- give the title and metadata different line heights;
+- add `mt-0.5` between the title and metadata;
+- apply `min-w-0` to the parent containing the text;
+- apply `truncate` to the title and metadata;
+- apply `shrink-0` to checkmarks and icons.
+
+Example:
+
+```tsx
+&lt;button className=&quot;flex min-h-11 items-center gap-2.5 rounded-lg px-2.5 py-1.5&quot;&gt;
+  &lt;span className=&quot;min-w-0 flex-1&quot;&gt;
+    &lt;span className=&quot;block truncate font-medium leading-5&quot;&gt;${title}&lt;/span&gt;
+    &lt;span className=&quot;mt-0.5 block truncate text-xs leading-4 text-muted&quot;&gt;
+      {meta}
+    &lt;/span&gt;
+  &lt;/span&gt;
+  {isActive ? &lt;Check className=&quot;shrink-0&quot; /&gt; : null}
+&lt;/button&gt;
+```
+
+---
+
+# 16. Long Text and Overflow
+
+Any user-provided text may contain a long word with no spaces.
+
+For editors, `contenteditable` elements, Markdown, card titles, and comments:
+
+- use `min-w-0` on flex/grid children;
+- use the current Tailwind utilities for wrapping long words;
+- in newer Tailwind versions, `break-words` may be written as `wrap-break-word`;
+- check the documentation for the project&#x27;s current Tailwind version before using wrapping, overflow, text-wrap, grid, spacing, or arbitrary-value classes;
+- if an element is inside a flex container and long text breaks its width, check whether `wrap-anywhere` is appropriate;
+- use `truncate` for short lines in cards;
+- wrap body text instead of allowing horizontal overflow;
+- text must not render over a menu, popover, or modal;
+- test with a long string containing no spaces.
+
+For an editable block:
+
+```tsx
+className = &quot;min-w-0 wrap-break-word whitespace-pre-wrap&quot;;
+```
+
+If the project uses an older Tailwind version where `wrap-break-word` is unavailable, check the installed Tailwind version and the official documentation or version notes, then use a supported equivalent: `break-words`, an arbitrary value, or a CSS property.
+
+For a badge:
+
+```tsx
+className = &quot;inline-flex whitespace-nowrap&quot;;
+```
+
+A badge must not compress text vertically. If it does not fit, move it to a new line or use `truncate` with an explicit, understandable width.
+
+---
+
+# 17. Tailwind CSS: Verify Current Class Names
+
+The AI agent must check the Tailwind version installed in the project before using new or potentially version-dependent classes.
+
+Process:
+
+1. Inspect `package.json` and the lockfile.
+2. Determine the Tailwind major version.
+3. If a class may differ between versions, check the official documentation for that exact version.
+4. Do not replace classes mechanically without verification.
+5. When using an arbitrary value, confirm that it is included in the build output.
+
+Pay particular attention to:
+
+- `break-words` / `wrap-break-word` / `wrap-anywhere`;
+- `text-wrap`, `text-balance`, and `text-pretty`;
+- `overflow-*`;
+- `size-*`;
+- arbitrary colors such as `bg-[#151a21]`;
+- arbitrary shadows;
+- arbitrary grid templates;
+- dynamic class names.
+
+Do not build dynamic Tailwind classes like this:
+
+```tsx
+const color = &quot;red&quot;;
+return &lt;div className={`bg-${color}-500`} /&gt;;
+```
+
+Tailwind may not detect that class during the build. Use a map:
+
+```tsx
+const colorClassName = {
+  danger: &quot;bg-red-500&quot;,
+  success: &quot;bg-emerald-500&quot;,
+}${variant};
+```
+
+If an important overlay background must not depend on Tailwind&#x27;s build output, using an inline `style.backgroundColor` is acceptable.
+
+---
+
+# 18. Layout and Sidebar Collapse
+
+Collapsing a sidebar or drawer must not change the page height or leave an empty block.
+
+Rules:
+
+- app shell: `h-dvh min-h-dvh overflow-hidden`;
+- internal regions: `flex min-h-0 flex-1 overflow-hidden`;
+- enable scrolling only on the appropriate region with `overflow-y-auto`;
+- when collapsing, change width/flex-basis rather than height;
+- a collapsed sidebar must have a stable width;
+- provide a clear control for restoring the sidebar;
+- destructive or creation actions must not remain as isolated buttons without context;
+- preferences may be persisted in localStorage.
+
+Example:
+
+```tsx
+&lt;main className=&quot;flex h-dvh min-h-dvh flex-col overflow-hidden&quot;&gt;
+  &lt;div className=&quot;flex min-h-0 flex-1 overflow-hidden&quot;&gt;
+    &lt;Sidebar className=&quot;h-full min-h-0 shrink-0&quot; /&gt;
+    &lt;section className=&quot;min-h-0 flex-1 overflow-y-auto&quot; /&gt;
+  &lt;/div&gt;
+&lt;/main&gt;
+```
+
+---
+
+# 19. Browser APIs and localStorage
+
+In Next.js, browser APIs are available only in Client Components.
+
+Rules:
+
+- a file that uses `localStorage`, `window`, `document`, drag and drop, or `contenteditable` must include `&quot;use client&quot;`;
+- do not read `localStorage` in a Server Component;
+- do not cause hydration errors with different initial values;
+- wrap storage operations in `try/catch`;
+- storage failures must not break the UI;
+- verify persisted UI preferences after a reload;
+- the build must not fail with `window is not defined`.
+
+Example:
+
+```tsx
+const toggle = useCallback(() =&gt; {
+  setIsCollapsed((current) =&gt; {
+    const next = !current;
+
+    try {
+      window.localStorage.setItem(KEY, next ? &quot;true&quot; : &quot;false&quot;);
+    } catch {
+      // UI still works without browser storage.
+    }
+
+    return next;
+  });
+}, []);
+```
+
+Verify that:
+
+- the default state works with empty storage;
+- a reload preserves the state;
+- private mode or storage errors do not break the screen;
+- the build does not fail with `window is not defined`.
+
+---
+
+# 20. Relationships Between Tools
+
+If one entity is linked to another, the relationship must be real:
+
+- store it in the model;
+- show it in the UI;
+- clicking it opens the linked entity;
+- when creating the related entity, save the relationship immediately;
+- preserve the relationship during import/export;
+- include the relationship in search/filter behavior when useful;
+- if the related entity is deleted, show a fallback in the UI.
+
+Do not create a decorative &quot;Link&quot; button if the relationship is not persisted.
+
+---
+
+# 21. Unified Domain Operations
+
+Each user operation must have a single source of truth.
+
+Do not:
+
+- create an entity one way from the slash menu;
+- create it another way from the toolbar;
+- bypass validation from the command palette;
+- duplicate mutation logic in the context menu.
+
+Instead:
+
+- keep the domain operation in one place;
+- have UI components call that operation;
+- use the same validation and constraints for every entry point.
+
+---
+
+# 23. Accessibility
+
+Required:
+
+- use `&lt;button&gt;` for actions;
+- use `&lt;a&gt;` for navigation;
+- add `aria-label` to icon-only buttons;
+- provide labels for inputs;
+- show a visible focus state;
+- support keyboard navigation;
+- close modals and popovers on `Escape`;
+- close popovers on outside click;
+- use a focus trap in modals;
+- do not use color as the only way to communicate meaning;
+- do not replace `&lt;button&gt;` with `${div_onclick}`.
+
+---
+
+# 24. Loading, Empty, and Error States
+
+Data-driven screens must account for:
+
+- loading;
+- success;
+- empty state;
+- permission denied;
+- network error;
+- server error;
+- retry.
+
+A blank screen with no explanation is a bug.
+
+---
+
+# 25. Security
+
+Required:
+
+- keep secrets on the server only;
+- use runtime validation;
+- enforce access control on the server;
+- validate file MIME types and sizes;
+- sanitize user-provided HTML;
+- do not use `dangerouslySetInnerHTML` without a sanitizer;
+- do not log tokens or personal data;
+- do not trust `role` or `userId` values supplied by the browser.
+
+---
+
+# 26. Performance
+
+Measure first, then optimize.
+
+Use:
+
+- dynamic imports for heavy editor, chart, map, and PDF modules;
+- image optimization;
+- virtualization for large lists;
+- abort/stale-request protection for search;
+- selectors to reduce rerenders.
+
+Do not add memoization without a reason.
+
+---
+
+# 27. Test the Design with Realistic Content
+
+For additional guidance on interface quality, you may refer to:
+
+- https://jakub.kr/skills/make-interfaces-feel-better
+
+This resource is useful when polishing typography, hover states, shadows, borders, spacing, optical alignment, micro-interactions, and the overall feel of the interface.
+
+Before completing a UI task, test it with:
+
+- a long word with no spaces;
+- a long Russian title;
+- a short title;
+- an empty title;
+- multiple tags;
+- a long list/category name;
+- multiple options in a dropdown;
+- active and inactive statuses;
+- a date and a missing date.
+
+Verify that:
+
+- nothing overlaps;
+- overlays cover the underlying content;
+- text does not show through menus;
+- badges do not compress text vertically;
+- elements do not crowd each other;
+- scrollbars do not cover important text;
+- hover and focus states are easy to read;
+- desktop and mobile widths both look correct.
+
+---
+
+# 28. Checks After Changes
+
+After code changes, run:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+If the UI was changed:
+
+- open the page in a browser;
+- complete the primary user flow;
+- test keyboard and mouse interaction;
+- test `Escape` and outside-click behavior;
+- test reloading;
+- test long text;
+- test a mobile viewport width;
+- take a screenshot if the visual layer changed.
+
+If browser verification is impossible, say so explicitly. Do not present `typecheck` as visual verification.
+
+---
+
+# 29. Git and the Working Tree
+
+Before making changes, inspect the current state:
+
+```bash
+git status --short
+```
+
+Rules:
+
+- do not revert someone else&#x27;s changes without an explicit request;
+- do not use destructive commands without explicit permission;
+- do not perform unrelated refactoring;
+- do not commit automatically unless the user asks you to;
+- do not change line endings or reformat the entire project unnecessarily.
+
+---
+
+# 30. Final Report
+
+In the final response, state:
+
+- what changed;
+- which files are important;
+- which checks were run;
+- what could not be verified;
+- which risks remain.
+
+Keep the report concise and honest.</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/universal-instructions-for-react-next-js-projects',TI="Universal Instructions for React / Next.js Projects";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

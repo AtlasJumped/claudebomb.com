@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>herdr-multiagent | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: herdr-multiagent description: &quot;Playbook for running several coding agents in parallel under Herdr: stage decomposition, one git worktree + i">
+<meta property="og:title" content="herdr-multiagent | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: herdr-multiagent description: &quot;Playbook for running several coding agents in parallel under Herdr: stage decomposition, one git worktree + i">
+<meta property="og:url" content="https://claudebomb.com/l/pc/herdr-multiagent/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/herdr-multiagent/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">herdr-multiagent</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by Ferrum-Sidereum. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: herdr-multiagent
+description: &quot;Playbook for running several coding agents in parallel under Herdr: stage decomposition, one git worktree + isolated env + pane per agent, file-based briefs, state monitoring, review and merge. Agent-agnostic: the child kind comes from `herdr pane current` (.result.pane.agent) and matches the orchestrator (omp, opencode, claude, codex, kimi, ...). Use for multi-agent parallel work in separate worktrees. Requires HERDR_ENV=1.&quot;
+---
+
+# Multi-agent work through Herdr
+
+Playbook: split the project&#x27;s remaining work into independent stages, put each stage
+on its own agent in its own git worktree and Herdr pane, hand it a file-based brief,
+monitor it, and accept the result.
+
+This skill is agent-agnostic: the kind of the children equals the kind of the
+orchestrator. Launched from opencode, the children are opencode; from omp, they are
+omp; from claude, they are claude. Never hardcode the orchestrator&#x27;s kind from
+memory and never pick a &quot;popular&quot; kind.
+
+## 0. Preconditions
+
+```bash
+test &quot;${HERDR_ENV:-}&quot; = 1   # if this fails, stop - we are not inside Herdr
+```
+
+If the check fails, tell the user the session is not running under Herdr and stop.
+Do not drive someone else&#x27;s Herdr from outside it.
+
+The basic pane/agent commands live in Herdr&#x27;s own skill (`herdr --skill`).
+The installed binary is the authority on syntax; when unsure read
+`herdr agent`, `herdr pane`, `herdr integration` instead of guessing.
+
+## 1. Determine your own kind - before anything else
+
+```bash
+herdr pane current --current
+```
+
+The `.result.pane.agent` field IS the orchestrator&#x27;s kind, and the same value goes
+to `--kind` for the children:
+
+```bash
+KIND=$(herdr pane current --current | jq -r &#x27;.result.pane.agent&#x27;)
+# without jq:
+KIND=$(herdr pane current --current | sed -E &#x27;s/.*&quot;agent&quot;:&quot;([^&quot;]+)&quot;.*/\1/&#x27; | head -1)
+echo &quot;$KIND&quot;
+```
+
+Empty or `unknown` - ask the user which kind to start the children with.
+Below, `$KIND` always means this resolved value, never a literal.
+
+Check the Herdr integration for this kind (it provides `agent list/wait/prompt`):
+
+```bash
+herdr integration status | grep -i &quot;$KIND&quot;
+```
+
+- `current` - good.
+- `not installed` - run `herdr integration install &quot;$KIND&quot;`. Only **new** sessions
+  pick the integration up, so install it BEFORE starting children; the orchestrator
+  itself stays invisible to `agent list`, which is fine - it needs no monitoring.
+- The kind is absent from `herdr integration install` (e.g. `amp`, `cline`, `kiro`,
+  `maki`) - there will be no structural monitoring, use the §7 fallback
+  (`pane read` + git). Not a blocker.
+
+State it explicitly to the user: &quot;children kind = $KIND&quot;.
+
+## 2. Decomposition - the main step, do not rush
+
+- Read the project plan/spec and the current state (`git log`, tests,
+  `git worktree list`).
+- Split the remaining work into stages with **non-overlapping file areas**.
+  Two agents on one package - only deliberately and with an explicit order
+  (afterwards, not in parallel).
+- Additive edits to shared files (config, lock) are acceptable - record in the briefs
+  &quot;additive only, no signature changes&quot;; the orchestrator resolves merge conflicts.
+- Write down the matrix &quot;stage -&gt; files it MAY / MUST NOT touch&quot;.
+
+Before launch: everything finished in main is committed, the tree is clean.
+
+## 3. Worktree + isolated environment per agent
+
+```bash
+git worktree add ../&lt;proj&gt;-s&lt;N&gt; -b stage-&lt;N&gt;-&lt;name&gt;
+```
+
+Python trap: a shared venv imports SOMEONE ELSE&#x27;s code (editable install of the main
+repo). Give each worktree its own venv:
+
+```bash
+cd ../&lt;proj&gt;-s&lt;N&gt; &amp;&amp; python -m venv .venv \
+  &amp;&amp; ./.venv/Scripts/python.exe -m pip install -q -e &quot;./api[dev]&quot;
+```
+
+Install several venvs sequentially in one background command (the pip cache is shared).
+JS stack: its own `node_modules` per worktree (`npm ci`).
+
+If the orchestrator has a command-wrapper hook (rtk and similar): a relative
+interpreter path (`../.venv/Scripts/python.exe`) in briefs does not resolve through
+such a hook (&quot;command not found&quot;). In briefs and prompts use only ABSOLUTE paths to
+the python/npm of that worktree.
+
+## 4. Briefs - as files, not on the command line
+
+`&lt;repo&gt;/.briefs/stage-&lt;N&gt;.md` (untracked). Brief structure:
+
+- **context**: what to read first (spec, contract, key files), what is already done;
+- **task**: concrete requirements referencing spec items;
+- **boundaries**: files allowed/forbidden, &quot;do not leave the worktree&quot;, &quot;do NOT push&quot;;
+- **acceptance**: exact test/linter commands (with the absolute interpreter path of
+  the worktree), &quot;pre-existing tests stay green&quot;, commit to its own branch, final report.
+
+A brief must not assume a particular agent kind: do not write &quot;run omp/skill/...&quot;
+into it - write the goal, the boundaries and the acceptance commands. The child
+decides which of its own tools to use.
+
+The prompt to the agent is short: &quot;Read the file &lt;brief&gt; and complete it fully&quot;.
+
+## 5. Panes: create them, name them IMMEDIATELY
+
+Recommended layout - main-left: the orchestrator pane on the left at full height, all
+children in a column on the right, one under another. If the user has layout plugins
+built around main-left, any other scheme breaks their view.
+If the user explicitly asks for a different layout, follow the user.
+
+First child - `split --current --direction right`, the rest -
+`split --pane &lt;previous child&gt; --direction down` INSIDE the right column.
+Do NOT split the orchestrator pane, and do not split agent panes to the right - only
+the down-chain inside the right column.
+
+```bash
+herdr pane split --current --direction right --cwd &quot;&lt;worktree1&gt;&quot; --no-focus
+herdr pane split --pane &lt;agent1-pane&gt; --direction down --cwd &quot;&lt;worktree2&gt;&quot; --no-focus
+```
+
+The new pane ID comes from JSON `.result.pane.pane_id`. Do not touch the user&#x27;s focus
+(`--no-focus`). The child gets its name in step 6 via `agent start`; additionally
+`herdr pane rename &lt;pane_id&gt; &quot;s&lt;N&gt;-&lt;name&gt;&quot;` for clarity.
+
+## 6. Starting a child of your own kind
+
+The standard path is `agent start`, which also validates that the expected agent
+actually came up in the pane:
+
+```bash
+herdr agent start s1-&lt;name&gt; --kind &quot;$KIND&quot; --pane &lt;pane_id&gt; -- &lt;autonomy-flags&gt;
+```
+
+The name must match `[a-z][a-z0-9_-]{0,31}` and be unique among live agents.
+
+### Autonomy flags
+
+A child works unattended, otherwise it stops at an approval. The flag belongs to the
+CLI, not to Herdr. Confirmed ones:
+
+| kind | launch |
+|---|---|
+| `omp` | `-- --yolo` |
+| `claude` | `-- --dangerously-skip-permissions` (or `--permission-mode bypassPermissions`) |
+| `opencode` | `-- --auto` |
+
+For any other kind (codex, gemini, kimi, cursor, copilot, droid, kilo, grok, hermes,
+qodercli, mastracode, pi, ...) do NOT invent a flag. Resolve the canonical executable
+and read its help:
+
+```bash
+herdr agent start --help        # the --kind help text names the canonical executable
+&lt;executable&gt; --help | grep -iE &quot;permission|approve|yolo|auto|dangerous|allow&quot;
+```
+
+No flag found - check whether the CLI has an autonomy mode in its config
+(e.g. `~/.omp/agent/config.yml: tools.approvalMode: yolo`,
+`~/.claude/settings.json: permissions`, `opencode.json: permission`), and warn the
+user that the child may stop at approvals - those surface as the `blocked` state (§7).
+
+### If `agent start` timed out
+
+Known bug on Windows in PowerShell panes: `agent start` sends a mangled
+`Start-Process` -&gt; timeout. Workaround - launch the CLI in the pane directly:
+
+```bash
+herdr pane run &lt;pane_id&gt; &quot;&lt;executable&gt; &lt;autonomy-flags&gt;&quot;
+sleep 3 &amp;&amp; herdr pane read &lt;pane_id&gt; --lines 15   # expect the CLI prompt
+herdr agent rename &lt;pane_id&gt; s1-&lt;name&gt;            # if herdr recognized the agent
+```
+
+If `herdr agent explain &lt;pane_id&gt;` still reports no recognized agent afterwards,
+structural monitoring is unavailable for that pane - use the §7 fallback.
+
+### Handing over the brief
+
+NOT via `pane run`: Enter gets swallowed while the TUI renders the paste. Two steps
+with a pause:
+
+```bash
+herdr pane send-text &lt;pane_id&gt; &quot;Read the file &lt;absolute path to the brief&gt; - that is your brief. Complete it fully (code, tests, linter, commit to your own branch), then give a final report.&quot;
+sleep 5 &amp;&amp; herdr pane send-keys &lt;pane_id&gt; Enter
+```
+
+Standard alternative once the integration is installed and `agent start` succeeded:
+
+```bash
+herdr agent prompt s1-&lt;name&gt; &quot;Read the file &lt;brief&gt; and complete it fully&quot; --wait --timeout 300000
+```
+
+Verify with `pane read` that the brief actually WENT IN: input empty, agent working.
+
+## 7. Monitoring - through the integration, NOT cron
+
+```bash
+herdr agent list                       # states of all children
+herdr agent wait s1-&lt;name&gt; --until idle --timeout 1800000
+herdr agent prompt s1-&lt;name&gt; &quot;&lt;text&gt;&quot;  # push an instruction to a working child
+herdr agent read s1-&lt;name&gt; --lines 40
+```
+
+State semantics: `idle` - ready for input and its tab has been seen in the UI;
+`done` - the same idle state after unseen background work (reading through the CLI
+does not mark the tab seen); `blocked` - Herdr recognized an approval/question UI,
+the child is WAITING for a human; `unknown` - an agent is present but cannot be
+classified, which is NOT evidence of completion.
+
+Orchestrator loop: `agent wait` in turn or on an event -&gt; acceptance (§8).
+`blocked` -&gt; `agent read`, understand the question, answer via `agent prompt` or ask
+the user. Suspicious silence -&gt; `pane read &lt;pane_id&gt;`.
+
+Keep the `wait` timeout moderate (~30 min) and re-arm it on each return: very large
+values end up as &quot;timed out&quot;.
+
+Fallback when the integration for `$KIND` is unavailable or `agent explain` did not
+recognize the child: periodic `herdr pane read &lt;pane_id&gt; --lines 60` plus
+`git log/status` in the worktree. Cron only as a last resort, and always remove it
+when done.
+
+Child session dropped: the work in the worktree survives. Restart with the same CLI
+and its continue flag (check `--help`): `omp --resume`, `claude --continue`,
+`opencode --continue`. Then prompt: &quot;Your session was interrupted. Check git status
+and finish the brief &lt;file&gt;&quot;.
+
+## 8. Acceptance and merge
+
+- Each branch: tests + linter in its own worktree, review `git diff main...&lt;branch&gt; --stat`.
+- Do not take the child&#x27;s final report on faith - run the acceptance commands yourself.
+- Merge into main only with the user&#x27;s confirmation; resolve additive overlaps manually.
+- After the merge: `git worktree remove`; branches as agreed with the user.
+- Release the children&#x27;s panes without touching the user&#x27;s pane.
+
+FILE:README.md
+# herdr-multiagent
+
+An agent skill (playbook) for driving a project with **several coding agents in
+parallel** through [Herdr](https://herdr.dev), a terminal multiplexer for coding
+agents — one git worktree and one pane per stage, file-based briefs, state
+monitoring and acceptance.
+
+The skill is **agent-agnostic**: the kind of the children is resolved from Herdr and
+matches the kind of the orchestrator. Launched from `opencode`, the children are
+`opencode`; from `omp`, they are `omp`; from `claude`, they are `claude`. Any kind
+listed by `herdr agent start --help` works (pi, claude, codex, gemini, cursor, devin,
+agy, cline, omp, mastracode, opencode, copilot, kimi, kiro, droid, amp, grok, hermes,
+kilo, qodercli, maki).
+
+## What it covers
+
+- §1 resolve your own kind, verify the Herdr integration for it;
+- §2 decompose into stages with non-overlapping file areas;
+- §3 worktree + isolated environment (own venv / node_modules — otherwise agents
+  import someone else&#x27;s code through the main repo&#x27;s editable install);
+- §4 briefs as files, not on the command line;
+- §5 main-left pane layout, `--no-focus` (the user&#x27;s focus is never taken);
+- §6 starting a child, autonomy flags per kind, the Windows `agent start` timeout
+  workaround, correct brief hand-over (Enter gets swallowed by `pane run`);
+- §7 monitoring via `herdr agent list/wait/prompt/read`, the semantics of
+  `idle/done/blocked/unknown`, fallback to `pane read` + git, recovering a dropped
+  child session;
+- §8 acceptance and merge only with the user&#x27;s confirmation.
+
+## Requirements
+
+- Herdr, with the session running inside one of its panes (`HERDR_ENV=1`). Outside
+  Herdr the skill stops.
+- Git (worktrees).
+- One supported agent CLI on `PATH`.
+- For structural monitoring: `herdr integration install &lt;kind&gt;`. Kinds without an
+  integration fall back to `pane read` + git — not a blocker.
+- Verified on Windows (Git Bash + PowerShell panes); the commands are POSIX, with an
+  explicit note where Windows venv paths differ.
+
+## Installation
+
+A skill is a directory containing `SKILL.md`. Put it into your agent&#x27;s skills root:
+
+| Agent | path (verified on the author&#x27;s machine) |
+|---|---|
+| omp, pi | `~/.agents/skills/herdr-multiagent/SKILL.md` |
+| Claude Code | `~/.claude/skills/herdr-multiagent/SKILL.md` |
+| opencode | `~/.config/opencode/skills/herdr-multiagent/SKILL.md` |
+| project-local | `&lt;repo&gt;/.agents/skills/herdr-multiagent/SKILL.md` |
+
+The layout is non-recursive: `&lt;skills-root&gt;/&lt;skill-name&gt;/SKILL.md`. A nested path
+like `skills/team/herdr-multiagent/SKILL.md` is not discovered.
+
+Check your own CLI&#x27;s docs for the exact skills root — the directories differ per
+agent, while `SKILL.md` with `name` + `description` frontmatter is read the same way.
+
+## Usage
+
+Explicitly: ask the agent to &quot;work according to the herdr-multiagent skill&quot;, or
+invoke `/skill:herdr-multiagent` (in omp, when skill commands are enabled).
+
+Automatically: the skill is picked up when the task reads like &quot;build this with
+several agents in parallel&quot; and the agent runs inside Herdr.
+
+The first thing the agent does is check `HERDR_ENV=1` and resolve its own kind; then
+it proposes a decomposition and asks for confirmation before starting any child.
+
+## Layout
+
+```
+herdr-multiagent/
+├─ SKILL.md      # the skill body: frontmatter (name, description) + §0–§8
+└─ README.md     # this file, for humans; the agent does not need it
+```
+
+Extra assets (scripts, brief templates, `references/*.md`) go into the same directory
+and are read by the agent via `skill://herdr-multiagent/&lt;path&gt;`. There are none here:
+the playbook fits in a single file, and the brief template is described in prose in §4.
+
+## Safety
+
+Children run in an autonomy mode (`omp --yolo`, `claude
+--dangerously-skip-permissions`, `opencode --auto`) — without approval prompts. That
+means full filesystem and shell access inside their worktree. The skill constrains
+them through the brief (&quot;do not leave the worktree&quot;, &quot;do NOT push&quot;), but that is an
+instruction, not isolation. Merging into main happens only on the user&#x27;s explicit
+confirmation.
+
+## License
+
+Free to use.</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/herdr-multiagent',TI="herdr-multiagent";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

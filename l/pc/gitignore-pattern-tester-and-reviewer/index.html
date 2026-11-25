@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gitignore Pattern Tester and Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: gitignore-pattern-tester-and-reviewer description: Explains every line of a .gitignore, tests it against paths that must be ignored or must ">
+<meta property="og:title" content="Gitignore Pattern Tester and Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: gitignore-pattern-tester-and-reviewer description: Explains every line of a .gitignore, tests it against paths that must be ignored or must ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/gitignore-pattern-tester-and-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/gitignore-pattern-tester-and-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Gitignore Pattern Tester and Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: gitignore-pattern-tester-and-reviewer
+description: Explains every line of a .gitignore, tests it against paths that must be ignored or must stay committable, names the rule that decides each path, and flags mistakes such as negations blocked by an excluded parent folder, inline comments, leading spaces, backslashes, stray **, secrets not covered and .env.example ignored. Returns a fixed file. Includes a stdlib Python checker with --self-test, matched against real git.
+---
+
+# Gitignore Pattern Tester and Reviewer
+
+You help developers understand and fix `.gitignore` files. You explain what each pattern really matches, prove it with path tests, and find the mistakes that make git ignore source files or commit secrets and build output. You return a corrected file with tests that pass, not just advice.
+
+## Files in this skill
+
+- `scripts/gitignore_check.py` - explains each rule, runs &quot;+ path&quot; (must be ignored) and &quot;- path&quot; (must be kept) tests, names the deciding line for each path, and reports HIGH, MEDIUM, LOW and INFO findings (Python 3 standard library only)
+- `references/gitignore-rules.md` - how git reads ignore files: sources and priority, line syntax, anchoring, wildcards, the parent-directory rule, tracked files and commands to confirm
+- `references/common-pitfalls.md` - every finding code with its fix, pitfalls the script cannot see (broad names, tracked files, nested files, case sensitivity, lock files, .dockerignore differences) and good starting blocks
+- `templates/gitignore-review.md` - the review to hand back
+- `examples/webapp.gitignore` - a web app ignore file with six real bugs
+- `examples/webapp-fixed.gitignore` - the corrected file (all tests pass)
+- `examples/webapp-paths.txt` - 19 path tests used with both files
+
+## Workflow
+
+### 1. Collect the inputs
+Ask for the `.gitignore` (and any nested ones), the stack, and the paths that matter: what must be ignored (build output, dependencies, logs, secrets) and what must stay committable (source folders with common names like `build/` or `lib/`, `.gitkeep` files, `.env.example`, lock files). If the user only asks &quot;why is X ignored?&quot; ask for the path and use `git check-ignore -v X` output if they have it.
+
+### 2. Run the checker
+```
+python3 scripts/gitignore_check.py examples/webapp.gitignore --test examples/webapp-paths.txt
+python3 scripts/gitignore_check.py .gitignore --test paths.txt --json
+python3 scripts/gitignore_check.py --self-test
+```
+Paths file: `+ path` must be ignored, `- path` must be kept, end directories with `/`. Exit 1 means a HIGH finding or a failed test, 2 means unreadable input. The checker models one ignore file at the repo root; for a nested file, give paths relative to its folder.
+
+### 3. Explain and fix
+- Walk through the Rules table in plain words, especially anchoring (slash at start or middle = relative to the .gitignore folder) and the parent-directory rule (see `references/gitignore-rules.md`).
+- For each FAIL, quote the deciding line from the &quot;Decided by&quot; column and give the smallest change that fixes it.
+- Fix every HIGH and MEDIUM finding; explain any INFO you leave in place.
+- Add `- path` tests for source folders with common names so over-broad rules show up.
+- Re-run the checker on the fixed file until all tests pass, and show the diff.
+
+### 4. Deliver
+Fill `templates/gitignore-review.md`: what the current file does, the test table, findings, the full fixed file, a diff, and the commands to confirm (`git check-ignore -v`, `git status --ignored`) and to untrack files that were already committed (`git rm --cached`).
+
+## Example result
+For `examples/webapp.gitignore` with `examples/webapp-paths.txt`: 13/19 tests pass, 1 HIGH, 4 MEDIUM, 2 LOW, 1 INFO. HIGH NEGATION_BLOCKED: `logs/` excludes the folder, so `!logs/.gitkeep` can never apply (fix: `logs/*`). MEDIUM: `config/secrets.yml # never commit` is one pattern, so the secrets file would be committed; ` Thumbs.db` has a leading space; `src\generated` is read as `srcgenerated`; and `*.key`, `*.pem` and `id_rsa` files are not covered. LOW: `.env*` hides `.env.example`; `*.log` is listed twice. The unanchored `build` also hides `src/build/README.md` (fix: `/build/`). `examples/webapp-fixed.gitignore` passes 19/19 with no HIGH, MEDIUM or LOW findings.
+
+## Rules
+
+- Last matching line wins; a file inside an excluded folder can never be re-included. Say this whenever a `!` line is involved.
+- Never suggest ignoring lock files (`package-lock.json`, `poetry.lock`, `go.sum`, app `Cargo.lock`) or shared config the team commits on purpose.
+- If a secret was already committed, say that ignoring it is not enough: rotate it and consider rewriting history.
+- Prefer anchored root patterns (`/dist/`, `/build/`) for output folders, and put personal editor and OS files in the global ignore file when the team agrees.
+- Confirm on the real repository with `git check-ignore -v`: the script follows git&#x27;s documented rules for one file, but nested files, `.git/info/exclude`, the global file and `core.ignorecase` can change the result.
+FILE:references/gitignore-rules.md
+# How git reads .gitignore
+
+Source: the gitignore(5) manual (`git help gitignore`). The checker implements these rules and was compared with real git 2.47 on 6,956 path checks with no differences.
+
+## Where rules come from (highest priority first)
+1. Command-line `--exclude` options (rare; used by some tools).
+2. `.gitignore` files: the one in the same folder as the path wins over the ones above it. Patterns are relative to the folder that holds that `.gitignore`.
+3. `.git/info/exclude` - local to one clone, never committed. Good for personal scratch files.
+4. The global file in `core.excludesFile` (default `~/.config/git/ignore`) - good for editor and OS files such as `.DS_Store` and `*.swp`.
+
+Inside one file, the LAST matching line decides.
+
+## Line syntax
+| Line | Meaning |
+|---|---|
+| empty | ignored, use as a separator |
+| `# text` | comment; only at the very start of a line. `foo # bar` is the pattern `foo # bar` |
+| `\#file` | a name that starts with `#` |
+| `!pattern` | re-include something an earlier line excluded |
+| `\!file` | a name that starts with `!` |
+| `name   ` | trailing spaces are dropped unless escaped (`name\ `) |
+| `  name` | leading spaces are KEPT and become part of the name |
+| `\` | escapes the next character; it is never a path separator |
+
+## Slashes decide where a pattern matches
+| Pattern | Matches | Does not match |
+|---|---|---|
+| `build` | `build`, `src/build`, `a/b/build/x.js` (any file or folder named build) | `build.sh` |
+| `build/` | folders named build at any depth | a FILE named build |
+| `/build` | `build` next to the .gitignore only | `src/build` |
+| `doc/frotz` | `doc/frotz` next to the .gitignore (a slash in the middle anchors like a leading slash) | `a/doc/frotz` |
+| `**/doc/frotz` | `doc/frotz` at any depth | |
+
+Rule of thumb: no slash (or only a trailing one) = any depth; a slash at the start or middle = relative to the .gitignore folder.
+
+## Wildcards
+| Wildcard | Meaning |
+|---|---|
+| `*` | any characters except `/` (`*.log`, `/a*z` does not match `ab/cz`) |
+| `?` | exactly one character except `/` |
+| `[abc]`, `[a-z]`, `[!0-9]`, `[^0-9]` | one character from (or not from) the set; `[[:digit:]]` style classes work |
+| `**/name` | `name` in any folder, including the top |
+| `dir/**` | everything inside `dir`, but not `dir` itself |
+| `a/**/b` | `a/b`, `a/x/b`, `a/x/y/b` |
+| `foo**`, `**bar` | `**` not next to slashes acts like a single `*` |
+
+## The parent-directory rule (the most common surprise)
+&quot;It is not possible to re-include a file if a parent directory of that file is excluded.&quot; Git does not even list the contents of an excluded folder, so a later `!` line never gets a chance.
+
+```gitignore
+# does NOT work: logs/ is excluded as a folder
+logs/
+!logs/.gitkeep
+
+# works: exclude the folder&#x27;s contents, keep the folder visible
+logs/*
+!logs/.gitkeep
+
+# works for deeper files: re-include each folder level
+/assets/*
+!/assets/icons/
+/assets/icons/*
+!/assets/icons/app.svg
+```
+
+## Whitelist style
+Ignore everything, then allow what you want:
+```gitignore
+*
+!*/
+!*.md
+!src/**
+```
+`!*/` re-includes every folder so the later `!` lines can reach files inside them.
+
+## Already tracked files
+.gitignore only affects untracked files. A file that is already committed stays tracked:
+```
+git rm --cached path/to/file        # keep it on disk, stop tracking it
+git rm -r --cached build/           # same for a folder
+```
+If it was a secret, removing it from tracking is not enough: rotate the secret, because it is still in history.
+
+## Commands to confirm
+```
+git check-ignore -v path/to/file          # prints the file, line and pattern that ignores it (nothing = not ignored)
+git check-ignore -v --no-index path       # also for files that are tracked
+git status --ignored --short              # lists ignored files as &quot;!!&quot;
+git ls-files --others --ignored --exclude-standard   # every ignored untracked file
+```
+FILE:references/common-pitfalls.md
+# Common .gitignore pitfalls and the checker&#x27;s codes
+
+| Code | Severity | What goes wrong | Fix |
+|---|---|---|---|
+| NEGATION_BLOCKED | HIGH | `!path/file` after a rule that excludes a parent folder (`logs/`, `dist`, `a/*` for `a/b/c`) never takes effect, so the file you meant to commit stays ignored | Exclude contents (`logs/*` or `logs/**`) instead of the folder, or re-include each folder level (`!a/b/`) |
+| SECRETS_NOT_COVERED | MEDIUM | typical secret files (`.env`, `*.pem`, `*.key`, `id_rsa`) would be committed by `git add .` | Add `.env`, `.env.*`, `*.pem`, `*.key`, `id_rsa*`; also use a secret scanner in CI |
+| INLINE_COMMENT | MEDIUM | `secrets.yml # never commit` is one pattern including the comment text, so `secrets.yml` is NOT ignored | Put comments on their own line |
+| LEADING_SPACE | MEDIUM | ` Thumbs.db` matches only a name that starts with a space | Remove the space |
+| BACKSLASH_SEPARATOR | MEDIUM | `src\generated` means &quot;src&quot; + escaped &quot;g&quot; + &quot;enerated&quot; = `srcgenerated` | Always use `/`, also on Windows |
+| ENV_EXAMPLE_IGNORED | LOW | `.env*` also hides `.env.example`, the template other developers need | Add `!.env.example` after it |
+| DUPLICATE | LOW | the same line twice; harmless but a sign of copy-paste merges | Delete one |
+| DOUBLE_STAR | LOW | `foo**` is just `foo*`; the author probably meant `foo/**` | Use `**` only as `**/x`, `x/**` or `a/**/b` |
+| TRAILING_SPACE | LOW | trailing spaces are silently dropped; if they were meant, the file will not match | Remove or escape them |
+| CRLF | LOW | Windows line endings in .gitignore | Save as LF; add `* text=auto` to .gitattributes |
+| ANCHORED_BY_SLASH | INFO | `src/gen` only matches next to the .gitignore, not `packages/a/src/gen` | Add `/` to show intent or `**/` to match at any depth |
+
+## Pitfalls the script cannot see (check them by hand)
+- **Unanchored names that are too broad.** `build` also hides `src/build/` and `docs/build/`; `lib` hides every `lib` folder including source code. Use `/build/` for the root output folder. Write a `- path` test for any source folder with a common name.
+- **Tracked files.** Adding a rule does not untrack files already committed. Run `git ls-files -ci --exclude-standard` to list tracked files that match the ignore rules, then `git rm --cached`.
+- **Nested .gitignore files.** A `.gitignore` in a subfolder adds rules relative to that subfolder and can re-include what the root file excluded (unless a parent folder is excluded). Run the checker on each file with paths relative to its folder, or confirm with `git check-ignore -v`.
+- **Case sensitivity.** On macOS and Windows `core.ignorecase=true` makes `*.JPG` match `photo.jpg`; on Linux CI it does not. Write both cases or use `*.[jJ][pP][gG]`.
+- **Personal files in the shared file.** `.idea/`, `.vscode/`, `*.swp`, `.DS_Store` belong in the global ignore file (`core.excludesFile`), though many teams keep them in the repo file for convenience. Do not ignore `.vscode/settings.json` if the team shares it on purpose.
+- **Lock files.** Do not ignore `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `poetry.lock`, `Cargo.lock` (for applications) or `go.sum`: they make builds reproducible.
+- **Ignoring then committing anyway.** `git add -f` overrides ignore rules; reviewers should check for force-added build output or secrets.
+- **Other ignore files use different rules.** `.dockerignore` uses Go filepath.Match plus `**` and is always anchored at the build context root (no &quot;any depth&quot; for plain names). `.npmignore`, `.eslintignore` and `.prettierignore` follow gitignore-like rules but not always every detail. Test them with their own tools.
+
+## Good starting blocks
+```gitignore
+# Node
+node_modules/
+/dist/
+/build/
+npm-debug.log*
+.npm/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+/dist/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+
+# Logs that keep their folder
+logs/*
+!logs/.gitkeep
+```
+FILE:templates/gitignore-review.md
+# .gitignore review: &lt;repository or folder&gt;
+
+**Stack:** &lt;Node 20 + Vite / Python 3.12 / monorepo with pnpm workspaces&gt;
+**Files reviewed:** &lt;.gitignore at root, packages/api/.gitignore&gt;
+**Summary:** &lt;one sentence: the most important problem and what the fix changes&gt;
+
+## What the current file does
+| Line | Pattern | Meaning |
+|---|---|---|
+| &lt;9&gt; | &lt;`logs/`&gt; | &lt;ignores every folder named logs, at any depth, and everything in it&gt; |
+
+## Path tests
+| Result | Path | Expected | Actual | Decided by |
+|---|---|---|---|---|
+| &lt;FAIL&gt; | &lt;`logs/.gitkeep`&gt; | &lt;kept&gt; | &lt;ignored&gt; | &lt;parent logs/ excluded by L9; L10 cannot re-include it&gt; |
+
+## Findings
+| # | Severity | Code | Line | Problem | Fix |
+|---|---|---|---|---|---|
+| 1 | &lt;HIGH&gt; | &lt;NEGATION_BLOCKED&gt; | &lt;10&gt; | &lt;...&gt; | &lt;use logs/* instead of logs/&gt; |
+
+## Proposed .gitignore
+```gitignore
+&lt;full fixed file, with comments on their own lines&gt;
+```
+
+## Changes
+```diff
+- logs/
++ logs/*
+```
+
+## Apply and confirm
+1. Replace the file, then run: `git check-ignore -v &lt;each path from the tests&gt;`
+2. `git status --ignored --short` and check nothing important shows as `!!`
+3. Untrack files that are now ignored but were committed: `git rm --cached &lt;path&gt;` (rotate any secret that was committed)
+4. Commit: `chore: fix .gitignore (&lt;short reason&gt;)`
+
+## Follow-ups
+- &lt;move editor files to the global ignore file&gt;
+- &lt;add a secret scanner (gitleaks, trufflehog) to CI&gt;
+FILE:examples/webapp.gitignore
+# Dependencies
+node_modules
+/vendor/
+
+# Build output
+dist/
+build
+*.log
+logs/
+!logs/.gitkeep
+
+# Environment
+.env*
+config/secrets.yml # never commit
+
+# OS and editor files
+.DS_Store
+.idea/
+*.swp
+ Thumbs.db
+
+# Test coverage
+coverage/**
+!coverage/README.md
+
+# Generated code
+src\generated
+*.log
+FILE:examples/webapp-fixed.gitignore
+# Dependencies
+node_modules/
+/vendor/
+
+# Build output (root only, so src/build/ stays tracked)
+/dist/
+/build/
+*.log
+# ignore the contents of logs/, not the folder, so the negation can work
+logs/*
+!logs/.gitkeep
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+# never commit
+config/secrets.yml
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Test coverage
+coverage/**
+!coverage/README.md
+
+# Generated code
+/src/generated/
+FILE:examples/webapp-paths.txt
+# Paths for examples/webapp.gitignore and webapp-fixed.gitignore
+# &quot;+ path&quot; = must be ignored, &quot;- path&quot; = must stay committable
++ node_modules/react/index.js
++ packages/api/node_modules/lodash/lodash.js
++ vendor/autoload.php
+- packages/vendor/README.md
++ dist/app.js
++ build/output.js
+- src/build/README.md
++ logs/app.log
+- logs/.gitkeep
++ .env
++ .env.local
+- .env.example
++ config/secrets.yml
++ .DS_Store
++ Thumbs.db
++ coverage/lcov.info
+- coverage/README.md
++ src/generated/types.ts
+- src/index.ts
+FILE:scripts/gitignore_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Gitignore pattern tester and reviewer (Python 3 standard library only).
+
+Explains every rule in a .gitignore file, tests the file against paths that must be
+ignored (&quot;+ path&quot;) or must stay committable (&quot;- path&quot;), names the rule that decides
+each path, and flags common mistakes: negations that cannot work because a parent
+directory is excluded, inline comments, leading spaces, Windows backslashes, stray
+&quot;**&quot;, duplicates, secrets that are not covered and .env.example being ignored.
+
+Matching follows git&#x27;s documented gitignore rules for a single .gitignore at the
+repository root: last matching rule wins, &quot;!&quot; re-includes, a trailing &quot;/&quot; matches
+directories only, a &quot;/&quot; at the start or in the middle anchors the pattern to the
+.gitignore&#x27;s directory, &quot;*&quot; &quot;?&quot; &quot;[...]&quot; never match &quot;/&quot;, &quot;**&quot; spans directories,
+and a file can never be re-included if a parent directory is excluded.
+
+Usage:
+  python3 gitignore_check.py .gitignore [--test paths.txt] [--json]
+  python3 gitignore_check.py --self-test
+Paths file: one path per line, &quot;+ path&quot; = must be ignored, &quot;- path&quot; = must NOT be
+ignored, end a path with &quot;/&quot; if it is a directory, &quot;#&quot; starts a comment.
+Exit codes: 0 = no HIGH findings and all tests pass, 1 = HIGH finding or failed test,
+2 = unreadable input.
+&quot;&quot;&quot;
+import argparse, json, re, sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2, &quot;INFO&quot;: 3}
+SECRET_PROBES = [&quot;.env&quot;, &quot;config/.env.production&quot;, &quot;certs/server.key&quot;, &quot;deploy/id_rsa&quot;,
+                 &quot;secrets/service-account.pem&quot;]
+POSIX_CLASSES = {&quot;alnum&quot;: &quot;a-zA-Z0-9&quot;, &quot;alpha&quot;: &quot;a-zA-Z&quot;, &quot;digit&quot;: &quot;0-9&quot;, &quot;lower&quot;: &quot;a-z&quot;,
+                 &quot;upper&quot;: &quot;A-Z&quot;, &quot;space&quot;: &quot; \\t\\n\\r\\f\\v&quot;, &quot;xdigit&quot;: &quot;0-9A-Fa-f&quot;,
+                 &quot;punct&quot;: re.escape(&quot;!\&quot;#$%&amp;&#x27;()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~&quot;), &quot;blank&quot;: &quot; \\t&quot;}
+
+
+class Rule:
+    def __init__(self, line_no, raw, negate, dir_only, anchored, body, regex):
+        self.line_no, self.raw, self.negate, self.dir_only = line_no, raw, negate, dir_only
+        self.anchored, self.body, self.regex = anchored, body, regex
+
+    def matches(self, rel_path, is_dir):
+        if self.dir_only and not is_dir:
+            return False
+        target = rel_path if self.anchored else rel_path.rsplit(&quot;/&quot;, 1)[-1]
+        return self.regex.fullmatch(target) is not None
+
+    def label(self):
+        return f&quot;L{self.line_no} `{self.raw}`&quot;
+
+
+def strip_trailing_spaces(s):
+    &quot;&quot;&quot;git drops trailing spaces unless the last one is escaped with a backslash.&quot;&quot;&quot;
+    end = len(s)
+    while end &gt; 0 and s[end - 1] == &quot; &quot;:
+        bs, k = 0, end - 2
+        while k &gt;= 0 and s[k] == &quot;\\&quot;:
+            bs += 1; k -= 1
+        if bs % 2 == 1:
+            break
+        end -= 1
+    return s[:end]
+
+
+def class_to_regex(body):
+    out, m = &quot;&quot;, 0
+    while m &lt; len(body):
+        ch = body[m]
+        if ch == &quot;[&quot; and body.startswith(&quot;[:&quot;, m):
+            end = body.find(&quot;:]&quot;, m + 2)
+            if end != -1 and body[m + 2:end] in POSIX_CLASSES:
+                out += POSIX_CLASSES[body[m + 2:end]]; m = end + 2; continue
+        if ch == &quot;\\&quot; and m + 1 &lt; len(body):
+            out += re.escape(body[m + 1]); m += 2; continue
+        if ch == &quot;-&quot; and 0 &lt; m &lt; len(body) - 1:
+            out += &quot;-&quot;; m += 1; continue
+        out += re.escape(ch); m += 1
+    return out
+
+
+def glob_to_regex(p):
+    out, i, n = &quot;&quot;, 0, len(p)
+    while i &lt; n:
+        c = p[i]
+        if c == &quot;\\&quot;:
+            if i + 1 &lt; n:
+                out += re.escape(p[i + 1]); i += 2
+            else:
+                i += 1  # a lone trailing backslash matches nothing extra
+            continue
+        if c == &quot;*&quot;:
+            j = i
+            while j &lt; n and p[j] == &quot;*&quot;:
+                j += 1
+            if j - i &gt;= 2 and (i == 0 or p[i - 1] == &quot;/&quot;) and (j == n or p[j] == &quot;/&quot;):
+                if j == n:
+                    out += &quot;.*&quot;; i = j
+                else:
+                    out += &quot;(?:.*/)?&quot;; i = j + 1
+                continue
+            out += &quot;[^/]*&quot;; i = j; continue
+        if c == &quot;?&quot;:
+            out += &quot;[^/]&quot;; i += 1; continue
+        if c == &quot;[&quot;:
+            j = i + 1
+            neg = j &lt; n and p[j] in &quot;!^&quot;
+            if neg:
+                j += 1
+            k = j + 1 if j &lt; n and p[j] == &quot;]&quot; else j
+            while k &lt; n and p[k] != &quot;]&quot;:
+                if p[k] == &quot;[&quot; and p.startswith(&quot;[:&quot;, k):
+                    end = p.find(&quot;:]&quot;, k + 2)
+                    if end != -1:
+                        k = end + 2; continue
+                k += 2 if p[k] == &quot;\\&quot; else 1
+            if k &gt;= n:
+                out += re.escape(&quot;[&quot;); i += 1; continue
+            cls = class_to_regex(p[j:k])
+            out += (&quot;[^/&quot; + cls + &quot;]&quot;) if neg else (&quot;(?!/)[&quot; + cls + &quot;]&quot;)
+            i = k + 1; continue
+        out += re.escape(c); i += 1
+    return out
+
+
+def parse_rules(text):
+    rules, findings, seen = [], [], {}
+    for no, raw in enumerate(text.split(&quot;\n&quot;), 1):
+        if raw.endswith(&quot;\r&quot;):
+            findings.append((&quot;LOW&quot;, &quot;CRLF&quot;, no, &quot;line ends with CR (Windows line ending)&quot;,
+                             &quot;Save the file with LF line endings; set `* text=auto` in .gitattributes.&quot;))
+            raw = raw[:-1]
+        if not raw.strip() or raw.startswith(&quot;#&quot;):
+            continue
+        line = strip_trailing_spaces(raw)
+        if line != raw:
+            findings.append((&quot;LOW&quot;, &quot;TRAILING_SPACE&quot;, no, f&quot;`{raw}` has trailing spaces, which git drops&quot;,
+                             &quot;Delete them; escape a real trailing space as `\\ `.&quot;))
+        if raw[0] in &quot; \t&quot;:
+            findings.append((&quot;MEDIUM&quot;, &quot;LEADING_SPACE&quot;, no, f&quot;`{raw}` starts with whitespace, which git keeps as part of the name, so it matches nothing useful&quot;,
+                             &quot;Remove the leading whitespace.&quot;))
+        m = re.search(r&quot;\s#&quot;, line)
+        if m:
+            findings.append((&quot;MEDIUM&quot;, &quot;INLINE_COMMENT&quot;, no, f&quot;`{line}`: git has no inline comments, so `{line[m.start():].strip()}` becomes part of the pattern&quot;,
+                             &quot;Move the comment to its own line starting with #.&quot;))
+        if re.search(r&quot;\\[A-Za-z0-9_]&quot;, line):
+            findings.append((&quot;MEDIUM&quot;, &quot;BACKSLASH_SEPARATOR&quot;, no, f&quot;`{line}` uses a backslash, which escapes the next character instead of separating directories&quot;,
+                             &quot;Use forward slashes: `&quot; + line.replace(&quot;\\&quot;, &quot;/&quot;) + &quot;`.&quot;))
+        key = line.strip()
+        if key in seen:
+            findings.append((&quot;LOW&quot;, &quot;DUPLICATE&quot;, no, f&quot;`{key}` repeats line {seen[key]}&quot;, &quot;Delete the duplicate.&quot;))
+        else:
+            seen[key] = no
+        negate = line.startswith(&quot;!&quot;)
+        body = line[1:] if negate else line
+        if body.startswith(&quot;\\!&quot;) or body.startswith(&quot;\\#&quot;):
+            body = body[1:]
+        if negate and not body:
+            findings.append((&quot;LOW&quot;, &quot;EMPTY_NEGATION&quot;, no, &quot;`!` alone does nothing&quot;, &quot;Delete the line.&quot;))
+            continue
+        dir_only = body.endswith(&quot;/&quot;) and not body.endswith(&quot;\\/&quot;)
+        if dir_only:
+            body = body.rstrip(&quot;/&quot;)
+        if not body:
+            continue
+        anchored = &quot;/&quot; in body
+        if body.startswith(&quot;/&quot;):
+            body = body[1:]
+        if any((m.start() &gt; 0 and body[m.start() - 1] != &quot;/&quot;) or (m.end() &lt; len(body) and body[m.end()] != &quot;/&quot;)
+               for m in re.finditer(r&quot;\*{2,}&quot;, body)):
+            findings.append((&quot;LOW&quot;, &quot;DOUBLE_STAR&quot;, no, f&quot;`{line}`: `**` not between slashes acts like a single `*`&quot;,
+                             &quot;Use `**/name`, `dir/**` or `a/**/b`, or a single `*`.&quot;))
+        rules.append(Rule(no, line, negate, dir_only, anchored, body, re.compile(glob_to_regex(body), re.S)))
+    return rules, findings
+
+
+def last_match(rules, rel_path, is_dir):
+    hit = None
+    for r in rules:
+        if r.matches(rel_path, is_dir):
+            hit = r
+    return hit
+
+
+def check_path(rules, path):
+    &quot;&quot;&quot;Return (ignored, reason, blocked_rule) following git&#x27;s parent-directory rule.&quot;&quot;&quot;
+    is_dir = path.endswith(&quot;/&quot;)
+    parts = [p for p in path.strip(&quot;/&quot;).split(&quot;/&quot;) if p]
+    for k in range(1, len(parts) + 1):
+        sub = &quot;/&quot;.join(parts[:k])
+        sub_is_dir = k &lt; len(parts) or is_dir
+        hit = last_match(rules, sub, sub_is_dir)
+        if k &lt; len(parts):
+            if hit and not hit.negate:
+                own = last_match(rules, &quot;/&quot;.join(parts), is_dir)
+                blocked = own if own and own.negate else None
+                return True, f&quot;parent `{sub}/` excluded by {hit.label()}&quot;, blocked
+        else:
+            if hit is None:
+                return False, &quot;no rule matches&quot;, None
+            if hit.negate:
+                return False, f&quot;re-included by {hit.label()}&quot;, None
+            return True, f&quot;ignored by {hit.label()}&quot;, None
+    return False, &quot;empty path&quot;, None
+
+
+def literal_dirs(body):
+    parts = body.split(&quot;/&quot;)[:-1]
+    out = []
+    for p in parts:
+        if any(ch in p for ch in &quot;*?[\\&quot;):
+            break
+        out.append(p)
+    return out
+
+
+def lint_negations(rules):
+    findings = []
+    for idx, r in enumerate(rules):
+        if not r.negate or not r.anchored:
+            continue
+        before = rules[:idx]
+        dirs = literal_dirs(r.body)
+        for k in range(1, len(dirs) + 1):
+            sub = &quot;/&quot;.join(dirs[:k])
+            hit = last_match(before, sub, True)
+            if hit and not hit.negate:
+                findings.append((&quot;HIGH&quot;, &quot;NEGATION_BLOCKED&quot;, r.line_no,
+                                 f&quot;`{r.raw.strip()}` can never apply: its parent directory `{sub}/` is excluded by {hit.label()} and git does not look inside excluded directories&quot;,
+                                 f&quot;Exclude the contents instead of the directory (`{sub}/*` or `{sub}/**`), then keep the `!` rule; or re-include `!{sub}/` first.&quot;))
+                break
+    return findings
+
+
+def lint_secrets(rules):
+    findings = []
+    missing = [p for p in SECRET_PROBES if not check_path(rules, p)[0]]
+    if missing:
+        findings.append((&quot;MEDIUM&quot;, &quot;SECRETS_NOT_COVERED&quot;, 0, &quot;these typical secret files would NOT be ignored: &quot; + &quot;, &quot;.join(missing),
+                         &quot;Add `.env`, `.env.*` (with `!.env.example`), `*.pem`, `*.key`, `id_rsa*` if the project could ever contain them.&quot;))
+    if check_path(rules, &quot;.env.example&quot;)[0]:
+        findings.append((&quot;LOW&quot;, &quot;ENV_EXAMPLE_IGNORED&quot;, 0, &quot;`.env.example` is ignored, so the documented template cannot be committed&quot;,
+                         &quot;Add `!.env.example` after the .env rule.&quot;))
+    return findings
+
+
+def explain(rule):
+    body = rule.body
+    kind = &quot;directories&quot; if rule.dir_only else &quot;files or directories&quot;
+    verb = &quot;Re-includes&quot; if rule.negate else &quot;Ignores&quot;
+    wild = any(ch in body for ch in &quot;*?[&quot;)
+    if rule.anchored and body.endswith(&quot;/**&quot;) and &quot;*&quot; not in body[:-3]:
+        text = f&quot;{verb} everything inside `{body[:-3]}/` (but not the folder itself), relative to the .gitignore folder&quot;
+    elif rule.anchored and body.startswith(&quot;**/&quot;) and &quot;/&quot; not in body[3:]:
+        text = f&quot;{verb} {kind} {&#x27;matching&#x27; if wild else &#x27;named&#x27;} `{body[3:]}` at any depth&quot;
+    elif rule.anchored:
+        text = f&quot;{verb} {kind} {&#x27;matching&#x27; if wild else &#x27;at&#x27;} `{body}` relative to the .gitignore folder only&quot;
+    else:
+        text = f&quot;{verb} {kind} {&#x27;matching&#x27; if wild else &#x27;named&#x27;} `{body}` at any depth&quot;
+    if not rule.negate and not body.endswith(&quot;/**&quot;):
+        text += &quot;; a matched directory hides everything inside it&quot;
+    if rule.negate:
+        text += &quot; (only works if no parent directory is excluded)&quot;
+    return text + &quot;.&quot;
+
+
+def read_tests(text):
+    tests = []
+    for no, line in enumerate(text.splitlines(), 1):
+        s = line.strip()
+        if not s or s.startswith(&quot;#&quot;):
+            continue
+        if s[0] not in &quot;+-&quot; or len(s) &lt; 3:
+            raise ValueError(f&quot;paths file line {no}: expected &#x27;+ path&#x27; or &#x27;- path&#x27;, got {line!r}&quot;)
+        tests.append((s[0] == &quot;+&quot;, s[1:].strip()))
+    return tests
+
+
+def review(gi_text, tests_text=None):
+    rules, findings = parse_rules(gi_text)
+    findings += lint_negations(rules)
+    findings += lint_secrets(rules)
+    anchored = [r.line_no for r in rules if r.anchored and not r.negate and &quot;/&quot; in r.body
+                and not r.raw.startswith((&quot;/&quot;, &quot;**/&quot;)) and not r.body.endswith(&quot;/**&quot;)]
+    if anchored:
+        findings.append((&quot;INFO&quot;, &quot;ANCHORED_BY_SLASH&quot;, anchored[0],
+                         &quot;lines &quot; + &quot;, &quot;.join(map(str, anchored)) + &quot; contain a slash, so they only match relative to the .gitignore folder, not deeper copies&quot;,
+                         &quot;Fine if intended; add a leading `/` to make that explicit, or prefix `**/` to match at any depth.&quot;))
+    results = []
+    if tests_text:
+        for want, path in read_tests(tests_text):
+            got, reason, blocked = check_path(rules, path)
+            note = reason
+            if blocked:
+                note += f&quot;; {blocked.label()} cannot re-include it&quot;
+            results.append({&quot;path&quot;: path, &quot;expect&quot;: &quot;ignored&quot; if want else &quot;kept&quot;,
+                            &quot;actual&quot;: &quot;ignored&quot; if got else &quot;kept&quot;, &quot;pass&quot;: got == want, &quot;why&quot;: note})
+    findings.sort(key=lambda f: (SEV_ORDER[f[0]], f[2]))
+    return {&quot;rules&quot;: [{&quot;line&quot;: r.line_no, &quot;pattern&quot;: r.raw, &quot;meaning&quot;: explain(r)} for r in rules],
+            &quot;findings&quot;: [dict(zip((&quot;severity&quot;, &quot;code&quot;, &quot;line&quot;, &quot;problem&quot;, &quot;fix&quot;), f)) for f in findings],
+            &quot;tests&quot;: results}
+
+
+def render(name, rep):
+    out = [f&quot;# .gitignore review: {name}&quot;, &quot;&quot;]
+    counts = {s: sum(1 for f in rep[&quot;findings&quot;] if f[&quot;severity&quot;] == s) for s in SEV_ORDER}
+    failed = sum(1 for t in rep[&quot;tests&quot;] if not t[&quot;pass&quot;])
+    out.append(f&quot;Findings: {counts[&#x27;HIGH&#x27;]} HIGH, {counts[&#x27;MEDIUM&#x27;]} MEDIUM, {counts[&#x27;LOW&#x27;]} LOW, {counts[&#x27;INFO&#x27;]} INFO&quot;)
+    if rep[&quot;tests&quot;]:
+        out.append(f&quot;Tests: {len(rep[&#x27;tests&#x27;]) - failed}/{len(rep[&#x27;tests&#x27;])} passed&quot;)
+    out += [&quot;&quot;, &quot;## Rules&quot;, &quot;&quot;, &quot;| Line | Pattern | Meaning |&quot;, &quot;|---|---|---|&quot;]
+    for r in rep[&quot;rules&quot;]:
+        out.append(f&quot;| {r[&#x27;line&#x27;]} | `{r[&#x27;pattern&#x27;]}` | {r[&#x27;meaning&#x27;]} |&quot;)
+    if rep[&quot;tests&quot;]:
+        out += [&quot;&quot;, &quot;## Path tests&quot;, &quot;&quot;, &quot;| Result | Path | Expected | Actual | Decided by |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for t in rep[&quot;tests&quot;]:
+            out.append(f&quot;| {&#x27;PASS&#x27; if t[&#x27;pass&#x27;] else &#x27;FAIL&#x27;} | `{t[&#x27;path&#x27;]}` | {t[&#x27;expect&#x27;]} | {t[&#x27;actual&#x27;]} | {t[&#x27;why&#x27;]} |&quot;)
+    out += [&quot;&quot;, &quot;## Findings&quot;, &quot;&quot;]
+    if rep[&quot;findings&quot;]:
+        out += [&quot;| Severity | Code | Line | Problem | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in rep[&quot;findings&quot;]:
+            out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | {f[&#x27;line&#x27;] or &#x27;-&#x27;} | {f[&#x27;problem&#x27;]} | {f[&#x27;fix&#x27;]} |&quot;)
+    else:
+        out.append(&quot;No findings.&quot;)
+    out += [&quot;&quot;, &quot;Confirm on the real repo with `git check-ignore -v &lt;path&gt;` and `git status --ignored`; files that are already tracked stay tracked until `git rm --cached &lt;path&gt;`.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+    def t(name, cond):
+        cases.append((name, bool(cond)))
+    R = lambda s: parse_rules(s)[0]
+    ign = lambda s, p: check_path(R(s), p)[0]
+    t(&quot;*.log matches at any depth&quot;, ign(&quot;*.log&quot;, &quot;a/b/c.log&quot;) and ign(&quot;*.log&quot;, &quot;x.log&quot;))
+    t(&quot;* does not cross /&quot;, not ign(&quot;/a*z&quot;, &quot;ab/cz&quot;) and ign(&quot;/a*z&quot;, &quot;abcz&quot;))
+    t(&quot;name without slash matches basename anywhere&quot;, ign(&quot;build&quot;, &quot;src/build/x.js&quot;))
+    t(&quot;leading slash anchors&quot;, ign(&quot;/vendor&quot;, &quot;vendor/a&quot;) and not ign(&quot;/vendor&quot;, &quot;lib/vendor/a&quot;))
+    t(&quot;middle slash anchors&quot;, ign(&quot;doc/frotz&quot;, &quot;doc/frotz&quot;) and not ign(&quot;doc/frotz&quot;, &quot;a/doc/frotz&quot;))
+    t(&quot;trailing slash = directory only&quot;, ign(&quot;logs/&quot;, &quot;logs/x&quot;) and not ign(&quot;logs/&quot;, &quot;logs&quot;))
+    t(&quot;dir-only rule ignores a dir path&quot;, ign(&quot;logs/&quot;, &quot;logs/&quot;))
+    t(&quot;**/ prefix matches any depth&quot;, ign(&quot;**/foo&quot;, &quot;foo&quot;) and ign(&quot;**/foo&quot;, &quot;a/b/foo&quot;))
+    t(&quot;**/foo/bar&quot;, ign(&quot;**/foo/bar&quot;, &quot;x/foo/bar&quot;) and not ign(&quot;**/foo/bar&quot;, &quot;x/foo/baz&quot;))
+    t(&quot;trailing /** matches contents only&quot;, ign(&quot;abc/**&quot;, &quot;abc/x/y&quot;) and not ign(&quot;abc/**&quot;, &quot;abc&quot;))
+    t(&quot;a/**/b zero or more dirs&quot;, ign(&quot;a/**/b&quot;, &quot;a/b&quot;) and ign(&quot;a/**/b&quot;, &quot;a/x/y/b&quot;) and not ign(&quot;a/**/b&quot;, &quot;ab&quot;))
+    t(&quot;? matches one char not /&quot;, ign(&quot;/a?c&quot;, &quot;abc&quot;) and not ign(&quot;/a?c&quot;, &quot;a/c&quot;))
+    t(&quot;[abc] class&quot;, ign(&quot;file[12].txt&quot;, &quot;file1.txt&quot;) and not ign(&quot;file[12].txt&quot;, &quot;file3.txt&quot;))
+    t(&quot;[!x] negated class&quot;, ign(&quot;f[!0-9]&quot;, &quot;fa&quot;) and not ign(&quot;f[!0-9]&quot;, &quot;f5&quot;))
+    t(&quot;[[:digit:]] posix class&quot;, ign(&quot;v[[:digit:]]&quot;, &quot;v7&quot;) and not ign(&quot;v[[:digit:]]&quot;, &quot;vx&quot;))
+    t(&quot;last match wins with negation&quot;, not ign(&quot;*.txt\n!keep.txt&quot;, &quot;keep.txt&quot;) and ign(&quot;*.txt\n!keep.txt&quot;, &quot;a.txt&quot;))
+    t(&quot;order matters&quot;, ign(&quot;!keep.txt\n*.txt&quot;, &quot;keep.txt&quot;))
+    t(&quot;parent dir excluded blocks negation&quot;, ign(&quot;logs/\n!logs/.gitkeep&quot;, &quot;logs/.gitkeep&quot;))
+    t(&quot;dir/* allows negation&quot;, not ign(&quot;logs/*\n!logs/.gitkeep&quot;, &quot;logs/.gitkeep&quot;))
+    t(&quot;dir/** allows negation&quot;, not ign(&quot;coverage/**\n!coverage/README.md&quot;, &quot;coverage/README.md&quot;))
+    t(&quot;re-include dir then file&quot;, not ign(&quot;/a/*\n!/a/b/\n/a/b/*\n!/a/b/c&quot;, &quot;a/b/c&quot;))
+    t(&quot;escaped # and !&quot;, ign(&quot;\\#notes&quot;, &quot;#notes&quot;) and ign(&quot;\\!bang&quot;, &quot;!bang&quot;))
+    t(&quot;comment lines skipped&quot;, not ign(&quot;# *.log&quot;, &quot;a.log&quot;))
+    t(&quot;trailing spaces stripped&quot;, ign(&quot;foo   &quot;, &quot;foo&quot;))
+    t(&quot;escaped trailing space kept&quot;, ign(&quot;foo\\ &quot;, &quot;foo &quot;) and not ign(&quot;foo\\ &quot;, &quot;foo&quot;))
+    t(&quot;leading space kept as part of name&quot;, not ign(&quot; Thumbs.db&quot;, &quot;Thumbs.db&quot;))
+    t(&quot;inline comment becomes pattern&quot;, not ign(&quot;secrets.yml # x&quot;, &quot;secrets.yml&quot;))
+    t(&quot;backslash escapes, not a separator&quot;, not ign(&quot;src\\gen&quot;, &quot;src/gen/a.ts&quot;))
+    def codes(s):
+        return {f[1] for f in parse_rules(s)[1]} | {f[1] for f in lint_negations(parse_rules(s)[0])} | {f[1] for f in lint_secrets(parse_rules(s)[0])}
+    t(&quot;NEGATION_BLOCKED found&quot;, &quot;NEGATION_BLOCKED&quot; in codes(&quot;logs/\n!logs/.gitkeep&quot;))
+    t(&quot;NEGATION_BLOCKED not for dir/*&quot;, &quot;NEGATION_BLOCKED&quot; not in codes(&quot;logs/*\n!logs/.gitkeep&quot;))
+    t(&quot;NEGATION_BLOCKED via dir/* deeper&quot;, &quot;NEGATION_BLOCKED&quot; in codes(&quot;a/*\n!a/b/c.txt&quot;))
+    t(&quot;INLINE_COMMENT found&quot;, &quot;INLINE_COMMENT&quot; in codes(&quot;x.yml # c&quot;))
+    t(&quot;LEADING_SPACE found&quot;, &quot;LEADING_SPACE&quot; in codes(&quot; x&quot;))
+    t(&quot;BACKSLASH_SEPARATOR found&quot;, &quot;BACKSLASH_SEPARATOR&quot; in codes(&quot;a\\b&quot;))
+    t(&quot;DUPLICATE found&quot;, &quot;DUPLICATE&quot; in codes(&quot;*.log\n*.log&quot;))
+    t(&quot;DOUBLE_STAR found&quot;, &quot;DOUBLE_STAR&quot; in codes(&quot;foo**&quot;) and &quot;DOUBLE_STAR&quot; not in codes(&quot;**/foo\nfoo/**&quot;))
+    t(&quot;CRLF found&quot;, &quot;CRLF&quot; in codes(&quot;a\r\nb&quot;))
+    t(&quot;SECRETS_NOT_COVERED found&quot;, &quot;SECRETS_NOT_COVERED&quot; in codes(&quot;*.log&quot;))
+    t(&quot;secrets covered&quot;, &quot;SECRETS_NOT_COVERED&quot; not in codes(&quot;.env\n.env.*\n!.env.example\n*.key\n*.pem\nid_rsa*&quot;))
+    t(&quot;ENV_EXAMPLE_IGNORED found&quot;, &quot;ENV_EXAMPLE_IGNORED&quot; in codes(&quot;.env*&quot;))
+    acodes = lambda s: {f[&quot;code&quot;] for f in review(s)[&quot;findings&quot;]}
+    t(&quot;ANCHORED_BY_SLASH info&quot;, &quot;ANCHORED_BY_SLASH&quot; in acodes(&quot;src/gen&quot;) and &quot;ANCHORED_BY_SLASH&quot; not in acodes(&quot;/src/gen\nlogs/**\n**/x/y&quot;))
+    rep = review(&quot;logs/\n!logs/.gitkeep\n&quot;, &quot;+ logs/a.log\n- logs/.gitkeep\n&quot;)
+    t(&quot;test table marks blocked negation FAIL&quot;, rep[&quot;tests&quot;][0][&quot;pass&quot;] and not rep[&quot;tests&quot;][1][&quot;pass&quot;] and &quot;cannot re-include&quot; in rep[&quot;tests&quot;][1][&quot;why&quot;])
+    try:
+        read_tests(&quot;? bad&quot;)
+        t(&quot;bad paths line rejected&quot;, False)
+    except ValueError:
+        t(&quot;bad paths line rejected&quot;, True)
+    t(&quot;findings sorted HIGH first&quot;, review(&quot;x # c\nlogs/\n!logs/a\n&quot;)[&quot;findings&quot;][0][&quot;severity&quot;] == &quot;HIGH&quot;)
+    passed = sum(ok for _, ok in cases)
+    for name, ok in cases:
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(&quot;gitignore&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--test&quot;, help=&quot;paths file with &#x27;+ path&#x27; (must be ignored) and &#x27;- path&#x27; (must be kept)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.gitignore:
+        ap.print_usage(sys.stderr); return 2
+    try:
+        gi = open(a.gitignore, encoding=&quot;utf-8&quot;, newline=&quot;&quot;).read()
+        tests = open(a.test, encoding=&quot;utf-8&quot;).read() if a.test else None
+        rep = review(gi, tests)
+    except (OSError, UnicodeDecodeError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr); return 2
+    print(json.dumps(rep, indent=2) if a.json else render(a.gitignore, rep))
+    bad = any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in rep[&quot;findings&quot;]) or any(not t[&quot;pass&quot;] for t in rep[&quot;tests&quot;])
+    return 1 if bad else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/gitignore-pattern-tester-and-reviewer',TI="Gitignore Pattern Tester and Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

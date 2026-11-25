@@ -32,7 +32,7 @@ json.dump(dict(shared=SHARED, dashboard={k: v for k, v in DASH.items() if k != '
 FAV = open(os.path.join(R, 'tools/favicon.html')).read().strip()
 LOGO = '<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>'
 MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>'
-V = '3'
+V = '4'
 
 def head(title, desc, url):
     return ('<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n'
@@ -89,7 +89,7 @@ idx = head('claudebomb.com | A prompt so big it needs its own website',
            'claudebomb is a free, open-source prompt bank for every AI. Search for a prompt that is already built, ask for one by voice, copy it in one click, and help make every prompt better. CC BY 4.0.',
            'https://claudebomb.com/')
 idx += '<body id="top">\n<a class="skip" href="#bank">Skip to the prompts</a>\n'
-idx += hdr([('#bank', 'Prompts'), ('#ask', 'Ask for one'), ('#share', 'Share yours'), ('#vision', 'Vision'), ('https://github.com/AtlasJumped/claudebomb.com/tree/main/prompts', 'GitHub')], '#top')
+idx += hdr([('#bank', 'Prompts'), ('/library/', 'Open library'), ('#ask', 'Ask for one'), ('#share', 'Share yours'), ('#others', 'Other galleries'), ('/council/', 'Council')], '#top')
 idx += '''<main>
 <section class="sec hero" aria-labelledby="h1">
  <div class="wrap">
@@ -110,6 +110,7 @@ idx += '''<main>
   <h2 id="bank-h">Prompts that do real work</h2>
   <p class="lead mut">Each one would take a person hours to write well. Open a prompt to see what it does, the pitfalls it avoids, and to switch features on or off before you copy it.</p>
   <div class="grid" id="grid"></div>
+  <p class="libhint" id="libhint"></p>
   <div class="empty" id="none" hidden><p><b>No prompt for that yet.</b> Ask for it, and say what you want it to do.</p><div class="btns"><a class="btn" href="#ask" id="none-ask">Ask for this prompt</a></div></div>
  </div>
 </section>
@@ -160,9 +161,30 @@ idx += '''<main>
  </div>
 </section>
 
+<section class="sec others" id="others" aria-labelledby="others-h">
+ <div class="wrap">
+  <p class="eyebrow"><span class="no">5</span> Other galleries</p>
+  <h2 id="others-h">One of many prompt galleries, all linked here</h2>
+  <p class="lead">claudebomb is one prompt gallery among many, so here is every one we know of. Use them all. What we add, as far as we could find in November 2026: every gallery linked in one place, and you can improve any prompt right on its page with no account and no GitHub, with every change kept in public.</p>
+  <div class="gal">
+   <article><h3><a href="https://prompts.chat">prompts.chat</a></h3><p>Free. About 3,000 prompts, public domain. With an account you can add prompts and propose changes, and it keeps versions.</p><p class="mut">All of them are in our open library, with credit.</p></article>
+   <article><h3><a href="https://github.com/danielmiessler/fabric">Fabric</a></h3><p>Free, MIT licence. About 270 prompts for a command-line tool. Changes go through GitHub.</p><p class="mut">All of them are in our open library, with credit.</p></article>
+   <article><h3><a href="https://docs.langchain.com/langsmith/manage-prompts">LangChain Prompt Hub</a></h3><p>Free to browse. Prompts are saved as versions. Built for developers.</p><p class="mut">Linked, not copied.</p></article>
+   <article><h3><a href="https://godofprompt.ai/prompt-library">God of Prompt</a></h3><p>Free to browse and copy, with paid bundles. Its terms do not allow its prompts in another library.</p><p class="mut">Linked, not copied.</p></article>
+   <article><h3><a href="https://promptbase.com">PromptBase</a></h3><p>A marketplace where you buy prompts one at a time.</p><p class="mut">Linked, not copied.</p></article>
+   <article><h3><a href="https://platform.claude.com/docs/en/resources/prompt-library">Anthropic's prompting guide</a></h3><p>Anthropic's prompt library is now a guide on how to prompt Claude.</p><p class="mut">Worth reading before you write your own.</p></article>
+   <article><h3><a href="https://code.claude.com/docs/en/prompt-library">Claude Code prompt library</a></h3><p>Short prompts for coding with Claude Code.</p><p class="mut">Linked, not copied.</p></article>
+   <article><h3><a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/prompt-gallery">Google's prompt gallery</a></h3><p>Sample prompts with example answers from Gemini. Trying them needs a Google Cloud account.</p><p class="mut">Linked, not copied.</p></article>
+  </div>
+  <h3>Coming next: the council</h3>
+  <p style="max-width:46rem">Many galleries post the same prompts, and nobody checks which version is best. We plan to have the most capable AI from four companies read every free version of a prompt, debate it, and publish one best version here, with the whole debate. It is not running yet. <a href="/council/">How the council will work</a>.</p>
+  <div class="btns"><a class="btn" href="/library/">Browse the open library</a><a class="btn ghost" href="/council/">The council</a></div>
+ </div>
+</section>
+
 <section class="sec vision" id="vision" aria-labelledby="vision-h">
  <div class="wrap">
-  <p class="eyebrow"><span class="no">5</span> Vision</p>
+  <p class="eyebrow"><span class="no">6</span> Vision</p>
   <h2 id="vision-h">2036: everyone's prompt bank</h2>
   <p class="lead">Picture 2036. Humanity has a free, public prompt bank that everyone owns and everyone upgrades. When you have something complicated to ask an AI, this is the first place you go.</p>
   <p style="max-width:46rem">One-sentence requests will keep getting easier. A specific workflow will still do better. "Make me a dashboard" gets you a dashboard. A long prompt gets you the exact dashboard, with the features and tools you want. That gap is why this site will stay useful.</p>
@@ -178,17 +200,10 @@ idx += '''<main>
 
 <section class="sec why" id="why" aria-labelledby="why-h">
  <div class="wrap">
-  <p class="eyebrow"><span class="no">6</span> Why this exists</p>
+  <p class="eyebrow"><span class="no">7</span> Why this exists</p>
   <h2 id="why-h">Our hypothesis</h2>
   <p class="lead">Communication you can customize is what gets people to adopt AI. Most people type a short question and stop there. A great prompt shows the AI who you are, what you want, and how to check its own work.</p>
-  <p>What we found when we looked at other prompt sites in November 2026:</p>
-  <ul>
-   <li>Most free libraries are short one-line prompts, such as prompts.chat and the Claude Code prompt library.</li>
-   <li>The deep, long prompts mostly sit behind paywalls with unclear rights to use them, such as PromptBase and God of Prompt.</li>
-   <li>Developer tools such as Fabric, LangChain's prompt hub, and agent skills are built for programmers, not for everyone.</li>
-   <li>Anthropic's and Google's own prompt galleries have turned into guides on how to prompt.</li>
-  </ul>
-  <p>claudebomb is the free, open, clearly licensed bank of long prompts for everyone, improved in the open. Every prompt here follows the same bar: a clear goal, the context the AI needs, numbered steps, the shape of the answer, honesty rules (say when unsure, never invent sources), and what the AI must ask you before acting.</p>
+  <p>claudebomb is a free, open, clearly licensed bank of long prompts for everyone, improved in the open. Every prompt here follows the same bar: a clear goal, the context the AI needs, numbered steps, the shape of the answer, honesty rules (say when unsure, never invent sources), and what the AI must ask you before acting.</p>
   <div class="btns"><a class="btn" href="https://github.com/AtlasJumped/claudebomb.com/commits/main/prompts">Every change, on GitHub</a><a class="btn ghost" href="/prompts/prompts.json">All prompts as one file</a></div>
  </div>
 </section>
@@ -223,6 +238,9 @@ function render(){
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-copy]');if(t)doCopy(t.getAttribute('data-copy'))});
 try{var sp=new URLSearchParams(location.search);if(sp.get('q'))q.value=sp.get('q');if(sp.get('type'))cat.value=sp.get('type')}catch(e){}
 q.addEventListener('input',render);cat.addEventListener('change',render);render();
+var hint=document.getElementById('libhint'),LIB=null,lt=0;
+function lib(){var t=q.value.trim().toLowerCase();if(!t){hint.textContent='';return}if(!LIB){fetch('/library/index.json?v='+'4'+'').then(function(r){return r.json()}).then(function(d){LIB=d;lib()},function(){});return}var w=t.split(/\\s+/),n=0;LIB.forEach(function(r){var h=(r[1]+' '+r[3]).toLowerCase();for(var i=0;i<w.length;i++)if(h.indexOf(w[i])<0)return;n++});hint.textContent='';if(n){var a=C.el('a',null,n.toLocaleString()+(n===1?' more prompt':' more prompts')+' for "'+q.value.trim()+'" in the open library');a.href='/library/?q='+encodeURIComponent(q.value.trim());hint.appendChild(a)}}
+q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(lib,250)});lib();
 // ask for a prompt
 var at=document.getElementById('ask-t');C.keep(at,'cb-ask');
 document.getElementById('none-ask').addEventListener('click',function(){var v=q.value.trim();if(v&&!at.value)at.value='A prompt for: '+v+'. ';setTimeout(function(){at.focus()},300)});
@@ -359,6 +377,10 @@ if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/
     pg += TAIL % (V, js)
     os.makedirs(os.path.join(R, 'p', pid), exist_ok=True)
     open(os.path.join(R, 'p', pid, 'index.html'), 'w').write(pg)
+
+from library import build as build_library
+LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane)
+print('library prompts:', LIBN)
 
 bad = []
 for root, _, fs in os.walk(R):

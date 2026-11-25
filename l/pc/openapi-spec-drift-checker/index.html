@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OpenAPI Spec Drift Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: openapi-spec-drift-checker description: Compares an OpenAPI YAML/JSON spec to a list of implemented routes and flags drift: missing operatio">
+<meta property="og:title" content="OpenAPI Spec Drift Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: openapi-spec-drift-checker description: Compares an OpenAPI YAML/JSON spec to a list of implemented routes and flags drift: missing operatio">
+<meta property="og:url" content="https://claudebomb.com/l/pc/openapi-spec-drift-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/openapi-spec-drift-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">OpenAPI Spec Drift Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: openapi-spec-drift-checker
+description: Compares an OpenAPI YAML/JSON spec to a list of implemented routes and flags drift: missing operations, extra routes, method mismatches, and path-parameter shape differences. Use when reviewing API PRs, before a release, or asking &quot;does our code still match the OpenAPI?&quot;. Includes a stdlib Python checker with --self-test.
+---
+
+# OpenAPI Spec Drift Checker
+
+You help API teams find drift between an OpenAPI 3.x document and the routes their code actually serves. You compare paths and methods, flag missing or extra operations, and call out parameter or response mismatches that break clients. You do not invent endpoints; you only report what the inputs show.
+
+## Files in this skill
+
+- `scripts/check_drift.py` - compares a small OpenAPI snippet to a route list and prints a drift report (Python 3 standard library only)
+- `references/openapi-checklist.md` - what to verify in the spec before comparing
+- `references/common-drift.md` - frequent causes of drift and how to fix them
+- `templates/drift-report.md` - report structure for PRs and release notes
+- `examples/openapi-snippet.yaml` - sample OpenAPI fragment for demos
+
+## Workflow
+
+### 1. Collect inputs
+Ask for, or infer:
+- OpenAPI file (YAML or JSON) or a pasted paths section
+- Implemented routes: method + path list from the framework router, generated from code, or a gateway config
+- Whether path-parameter names must match exactly (`{id}` vs `{userId}`)
+
+### 2. Normalize
+Lowercase methods. Strip trailing slashes. Treat `/users/{id}` and `/users/{userId}` as the same path shape unless the team requires exact parameter names.
+
+### 3. Run the checker
+```
+python3 scripts/check_drift.py --spec examples/openapi-snippet.yaml --routes examples/routes.txt
+python3 scripts/check_drift.py --self-test
+```
+If routes are not in a file yet, help the user extract them from code first.
+
+### 4. Classify findings
+- **missing_in_code**: in OpenAPI, not implemented
+- **missing_in_spec**: implemented, not in OpenAPI
+- **method_mismatch**: path exists but verbs differ
+- **param_shape_diff**: same path pattern, different parameter names (optional strict mode)
+
+### 5. Answer
+Return a short summary counts table, then each finding with severity (high/medium/low) and a suggested fix. Use `templates/drift-report.md` for PR comments.
+
+## Rules
+
+- Prefer documenting reality when the code is intentional and the spec is stale; prefer implementing when the spec is the contract already published to clients.
+- Never claim security review was done; only report structural drift.
+- If the OpenAPI cannot be parsed, stop and show the parse error.
+FILE:references/openapi-checklist.md
+# OpenAPI pre-compare checklist
+
+Before running drift checks, confirm the spec is coherent:
+
+1. **openapi** field is `3.0.x` or `3.1.x`.
+2. **paths** exist and use leading `/`.
+3. Every operation has an HTTP method (`get`, `post`, `put`, `patch`, `delete`, `head`, `options`).
+4. Path parameters declared in the path (`{id}`) also appear under `parameters` with `in: path` and `required: true`.
+5. `$ref` targets resolve (or you are comparing a resolved/bundled document).
+6. Servers URL base path is understood: if `servers[].url` includes `/api/v1`, routes may be listed with or without that prefix—pick one convention and stick to it for the compare.
+7. Deprecated operations are still listed until removed from code; mark them in the report rather than ignoring them.
+
+## Minimal paths shape
+
+```yaml
+paths:
+  /pets:
+    get:
+      summary: List pets
+    post:
+      summary: Create pet
+  /pets/{petId}:
+    get:
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema: { type: string }
+```
+FILE:references/common-drift.md
+# Common OpenAPI drift
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| Spec has `GET /users`, code has none | Spec written ahead of implementation | Implement or remove from published spec |
+| Code has `POST /users/{id}/reset`, missing in spec | Hotfix shipped without doc update | Add operation; bump minor if public |
+| Spec `PUT`, code `PATCH` | Partial-update semantics changed | Align method; note breaking if clients call PUT |
+| `{userId}` vs `{id}` | Framework auto-names vs hand-written spec | Normalize in compare; document naming rule |
+| Trailing slash only in code | Router is slash-tolerant | Strip for compare; pick canonical form in spec |
+| Base path `/api` only in gateway | Spec servers omit gateway prefix | Strip or add the same prefix on both sides |
+| Webhooks / callbacks only in spec | Not HTTP routes | Exclude from route compare |
+| File upload route undocumented | Multipart added late | Document `multipart/form-data` requestBody |
+
+## Severity guide
+
+- **High**: public clients already call the operation; method or path missing on either side.
+- **Medium**: internal-only route missing from spec; param rename with aliases.
+- **Low**: trailing slash, optional HEAD/OPTIONS noise, deprecated-but-present.
+FILE:templates/drift-report.md
+# OpenAPI drift report
+
+- **Spec**: &lt;path or URL&gt;
+- **Routes source**: &lt;router dump / gateway / manual&gt;
+- **Compared at**: &lt;ISO timestamp&gt;
+- **Summary**: missing_in_code=&lt;n&gt;, missing_in_spec=&lt;n&gt;, method_mismatch=&lt;n&gt;, param_shape_diff=&lt;n&gt;
+
+## Findings
+
+| Severity | Kind | Spec | Code | Notes |
+| --- | --- | --- | --- | --- |
+| high | missing_in_code | `GET /pets/{petId}` | — | Implement or unpublish |
+| medium | missing_in_spec | — | `POST /pets/{petId}/adopt` | Document before release |
+
+## Decision
+
+- [ ] Update OpenAPI
+- [ ] Update code
+- [ ] Accept as known exception (list why)
+
+## Follow-ups
+
+- [ ]
+FILE:examples/openapi-snippet.yaml
+openapi: 3.0.3
+info:
+  title: Pets demo
+  version: 0.1.0
+paths:
+  /pets:
+    get:
+      summary: List pets
+      operationId: listPets
+    post:
+      summary: Create pet
+      operationId: createPet
+  /pets/{petId}:
+    get:
+      summary: Get pet by id
+      operationId: getPet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Delete pet
+      operationId: deletePet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+  /health:
+    get:
+      summary: Health check
+      operationId: health
+FILE:scripts/check_drift.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Compare OpenAPI paths to an implemented route list.
+
+Usage:
+    python3 check_drift.py --spec openapi.yaml --routes routes.txt
+    python3 check_drift.py --spec openapi.yaml --route &#x27;GET /pets&#x27; --route &#x27;POST /pets&#x27;
+    python3 check_drift.py --self-test
+
+Route file format: one &quot;METHOD /path&quot; per line. Comments (#) and blank lines ignored.
+Python 3 standard library only.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from typing import Dict, List, Set, Tuple
+
+try:
+    import yaml  # type: ignore
+except ImportError:
+    yaml = None
+
+PathKey = str  # normalized path template
+Method = str
+
+
+def normalize_path(path: str) -&gt; str:
+    path = path.strip()
+    if not path.startswith(&quot;/&quot;):
+        path = &quot;/&quot; + path
+    if len(path) &gt; 1 and path.endswith(&quot;/&quot;):
+        path = path.rstrip(&quot;/&quot;)
+    # unify parameter names to {}
+    return re.sub(r&quot;\{[^}]+\}&quot;, &quot;{}&quot;, path)
+
+
+def normalize_method(m: str) -&gt; str:
+    return m.strip().upper()
+
+
+def parse_routes(lines: List[str]) -&gt; Dict[PathKey, Set[Method]]:
+    out: Dict[PathKey, Set[Method]] = {}
+    for raw in lines:
+        line = raw.split(&quot;#&quot;, 1)[0].strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) &lt; 2:
+            raise ValueError(f&quot;Bad route line: {raw!r}&quot;)
+        method, path = normalize_method(parts[0]), normalize_path(parts[1])
+        out.setdefault(path, set()).add(method)
+    return out
+
+
+def _parse_openapi_json(text: str) -&gt; dict:
+    return json.loads(text)
+
+
+def _parse_openapi_yaml_simple(text: str) -&gt; dict:
+    &quot;&quot;&quot;Minimal YAML subset parser for simple OpenAPI path maps when PyYAML is absent.
+
+    Supports the examples shipped with this skill (no anchors, no multiline).
+    Prefer PyYAML when installed.
+    &quot;&quot;&quot;
+    # Very small fallback: extract path keys and methods via regex for our demos.
+    paths: Dict[str, dict] = {}
+    current_path = None
+    for raw in text.splitlines():
+        if raw.startswith(&quot;  /&quot;) and raw.rstrip().endswith(&quot;:&quot;):
+            current_path = raw.strip()[:-1]
+            paths[current_path] = {}
+            continue
+        if current_path and re.match(r&quot;^    (get|post|put|patch|delete|head|options):&quot;, raw):
+            method = raw.strip().split(&quot;:&quot;, 1)[0]
+            paths[current_path][method] = {}
+    if not paths:
+        raise ValueError(&quot;Could not parse OpenAPI YAML without PyYAML; install pyyaml or pass JSON.&quot;)
+    return {&quot;paths&quot;: paths}
+
+
+def load_spec(path: str) -&gt; Dict[PathKey, Set[Method]]:
+    text = open(path, encoding=&quot;utf-8&quot;).read()
+    if path.endswith(&quot;.json&quot;):
+        data = _parse_openapi_json(text)
+    else:
+        if yaml is not None:
+            data = yaml.safe_load(text)
+        else:
+            # try JSON first, then simple YAML
+            try:
+                data = _parse_openapi_json(text)
+            except json.JSONDecodeError:
+                data = _parse_openapi_yaml_simple(text)
+    paths = data.get(&quot;paths&quot;) or {}
+    out: Dict[PathKey, Set[Method]] = {}
+    http = {&quot;get&quot;, &quot;post&quot;, &quot;put&quot;, &quot;patch&quot;, &quot;delete&quot;, &quot;head&quot;, &quot;options&quot;, &quot;trace&quot;}
+    for p, item in paths.items():
+        if not isinstance(item, dict):
+            continue
+        methods = {normalize_method(m) for m in item if m.lower() in http}
+        if methods:
+            out[normalize_path(p)] = methods
+    return out
+
+
+def compare(spec: Dict[PathKey, Set[Method]], code: Dict[PathKey, Set[Method]]) -&gt; List[dict]:
+    findings = []
+    all_paths = set(spec) | set(code)
+    for p in sorted(all_paths):
+        s = spec.get(p, set())
+        c = code.get(p, set())
+        if s and not c:
+            for m in sorted(s):
+                findings.append({&quot;kind&quot;: &quot;missing_in_code&quot;, &quot;severity&quot;: &quot;high&quot;, &quot;method&quot;: m, &quot;path&quot;: p})
+        elif c and not s:
+            for m in sorted(c):
+                findings.append({&quot;kind&quot;: &quot;missing_in_spec&quot;, &quot;severity&quot;: &quot;medium&quot;, &quot;method&quot;: m, &quot;path&quot;: p})
+        else:
+            only_spec = s - c
+            only_code = c - s
+            for m in sorted(only_spec):
+                findings.append({&quot;kind&quot;: &quot;method_mismatch&quot;, &quot;severity&quot;: &quot;high&quot;, &quot;method&quot;: m, &quot;path&quot;: p, &quot;side&quot;: &quot;spec_only&quot;})
+            for m in sorted(only_code):
+                findings.append({&quot;kind&quot;: &quot;method_mismatch&quot;, &quot;severity&quot;: &quot;high&quot;, &quot;method&quot;: m, &quot;path&quot;: p, &quot;side&quot;: &quot;code_only&quot;})
+    return findings
+
+
+def format_report(findings: List[dict]) -&gt; str:
+    counts: Dict[str, int] = {}
+    for f in findings:
+        counts[f[&quot;kind&quot;]] = counts.get(f[&quot;kind&quot;], 0) + 1
+    lines = [&quot;Drift summary: &quot; + &quot;, &quot;.join(f&quot;{k}={v}&quot; for k, v in sorted(counts.items()))]
+    if not findings:
+        lines.append(&quot;No drift found.&quot;)
+        return &quot;\n&quot;.join(lines)
+    for f in findings:
+        side = f.get(&quot;side&quot;, &quot;&quot;)
+        extra = f&quot; ({side})&quot; if side else &quot;&quot;
+        lines.append(f&quot;- [{f[&#x27;severity&#x27;]}] {f[&#x27;kind&#x27;]}: {f[&#x27;method&#x27;]} {f[&#x27;path&#x27;]}{extra}&quot;)
+    return &quot;\n&quot;.join(lines)
+
+
+def self_test() -&gt; int:
+    spec = {
+        normalize_path(&quot;/pets&quot;): {&quot;GET&quot;, &quot;POST&quot;},
+        normalize_path(&quot;/pets/{petId}&quot;): {&quot;GET&quot;, &quot;DELETE&quot;},
+        normalize_path(&quot;/health&quot;): {&quot;GET&quot;},
+    }
+    code = {
+        normalize_path(&quot;/pets&quot;): {&quot;GET&quot;, &quot;POST&quot;},
+        normalize_path(&quot;/pets/{id}&quot;): {&quot;GET&quot;},  # same shape, missing DELETE
+        normalize_path(&quot;/pets/{id}/adopt&quot;): {&quot;POST&quot;},  # extra
+    }
+    findings = compare(spec, code)
+    kinds = sorted(f[&quot;kind&quot;] + &quot;:&quot; + f[&quot;method&quot;] + &quot;:&quot; + f[&quot;path&quot;] for f in findings)
+
+    cases = [
+        (&quot;missing delete on pet&quot;, any(f[&quot;kind&quot;] == &quot;method_mismatch&quot; and f[&quot;method&quot;] == &quot;DELETE&quot; for f in findings), True),
+        (&quot;extra adopt route&quot;, any(f[&quot;kind&quot;] == &quot;missing_in_spec&quot; and f[&quot;path&quot;].endswith(&quot;/adopt&quot;) for f in findings), True),
+        (&quot;health missing in code&quot;, any(f[&quot;kind&quot;] == &quot;missing_in_code&quot; and f[&quot;path&quot;] == &quot;/health&quot; for f in findings), True),
+        (&quot;list pets matched&quot;, not any(f[&quot;path&quot;] == &quot;/pets&quot; and f[&quot;kind&quot;] == &quot;missing_in_code&quot; for f in findings), True),
+        (&quot;normalize params&quot;, normalize_path(&quot;/pets/{petId}&quot;) == normalize_path(&quot;/pets/{id}&quot;), True),
+        (&quot;normalize slash&quot;, normalize_path(&quot;/pets/&quot;) == &quot;/pets&quot;, True),
+        (&quot;parse routes&quot;, parse_routes([&quot;GET /pets&quot;, &quot;POST /pets # create&quot;]) == {&quot;/pets&quot;: {&quot;GET&quot;, &quot;POST&quot;}}, True),
+        (&quot;empty compare&quot;, compare({&quot;/x&quot;: {&quot;GET&quot;}}, {&quot;/x&quot;: {&quot;GET&quot;}}) == [], True),
+    ]
+
+    # parse simple yaml fallback
+    sample = &quot;&quot;&quot;openapi: 3.0.3\npaths:\n  /pets:\n    get:\n      summary: x\n    post:\n      summary: y\n&quot;&quot;&quot;
+    parsed = _parse_openapi_yaml_simple(sample)
+    cases.append((&quot;yaml fallback paths&quot;, &quot;get&quot; in parsed[&quot;paths&quot;][&quot;/pets&quot;] and &quot;post&quot; in parsed[&quot;paths&quot;][&quot;/pets&quot;], True))
+
+    failed = 0
+    for name, got, expected in cases:
+        ok = got == expected
+        failed += not ok
+        print(f&quot;{&#x27;PASS&#x27; if ok else &#x27;FAIL&#x27;}  {name}: got={got!r} expected={expected!r}&quot;)
+    # also assert finding count sanity
+    ok = len(findings) &gt;= 3
+    failed += not ok
+    print(f&quot;{&#x27;PASS&#x27; if ok else &#x27;FAIL&#x27;}  findings_count&gt;={3}: got={len(findings)}&quot;)
+    print(f&quot;\n{len(cases)+1 - failed}/{len(cases)+1} passed&quot;)
+    return 1 if failed else 0
+
+
+def main(argv=None) -&gt; int:
+    p = argparse.ArgumentParser(description=&quot;Compare OpenAPI paths to implemented routes.&quot;)
+    p.add_argument(&quot;--spec&quot;, help=&quot;OpenAPI YAML or JSON file&quot;)
+    p.add_argument(&quot;--routes&quot;, help=&quot;File with METHOD /path lines&quot;)
+    p.add_argument(&quot;--route&quot;, action=&quot;append&quot;, default=[], help=&quot;Single METHOD /path (repeatable)&quot;)
+    p.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;, help=&quot;Print findings as JSON&quot;)
+    p.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = p.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.spec:
+        p.error(&quot;--spec is required (or use --self-test)&quot;)
+    route_lines: List[str] = list(a.route)
+    if a.routes:
+        route_lines.extend(open(a.routes, encoding=&quot;utf-8&quot;).read().splitlines())
+    if not route_lines:
+        p.error(&quot;provide --routes and/or --route&quot;)
+    spec = load_spec(a.spec)
+    code = parse_routes(route_lines)
+    findings = compare(spec, code)
+    if a.json:
+        print(json.dumps(findings, indent=2))
+    else:
+        print(format_report(findings))
+    return 0 if not findings else 2
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/openapi-spec-drift-checker',TI="OpenAPI Spec Drift Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terraform Plan Risk Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: terraform-plan-risk-reviewer description: Reviews terraform plan and show -json output before apply. Flags destroys and replacements of data">
+<meta property="og:title" content="Terraform Plan Risk Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: terraform-plan-risk-reviewer description: Reviews terraform plan and show -json output before apply. Flags destroys and replacements of data">
+<meta property="og:url" content="https://claudebomb.com/l/pc/terraform-plan-risk-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/terraform-plan-risk-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Terraform Plan Risk Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: terraform-plan-risk-reviewer
+description: Reviews terraform plan and show -json output before apply. Flags destroys and replacements of databases, buckets and other data stores, removed deletion protection, skipped final snapshots, force_destroy, new 0.0.0.0/0 ingress, public databases and buckets, IAM widening (wildcards, admin policies, PassRole on *, open trust policies) and count index shifts, and writes a risk summary with a verdict. Includes a stdlib Python checker with --self-test.
+---
+
+# Terraform Plan Risk Reviewer
+
+You review Terraform (or OpenTofu) plans the way a careful platform engineer does before approving an apply: what will be destroyed or replaced, what data could be lost, what becomes reachable from the internet, and who gains permissions. You give a clear verdict and concrete fixes, and you never paste secrets from the plan back to the user.
+
+## Files in this skill
+
+- `scripts/plan_risk.py` - reads `terraform show -json` output (full checks) or `terraform plan -no-color` text (action-level checks) and prints findings, counts and a verdict (Python 3 standard library only)
+- `references/reading-plan-output.md` - how to produce the plan JSON, text symbols and reason lines, the JSON structure, jq one-liners, secrets in plans and what a plan cannot show
+- `references/risk-rules.md` - every finding code with severity, trigger, why it matters and the usual fix, the verdict rules and manual checks
+- `templates/plan-risk-summary.md` - the summary to post on the pull request
+- `examples/shop-prod-plan.json` - a production plan with a replaced database, a deleted bucket, an SSH rule open to the world, a widened CI policy, an admin attachment and a count shift
+
+## Workflow
+
+### 1. Get the right plan
+Ask for the plan of the exact change: `terraform plan -out plan.out` then `terraform show -json plan.out &gt; plan.json`, plus the code diff or PR description and the target workspace/account. If the user only has text output, use it but say the attribute checks (IAM, ingress, protection flags) need the JSON. Remind them that plan JSON contains secrets: run the script where the file already is rather than pasting it.
+
+### 2. Run the checker
+```
+python3 scripts/plan_risk.py examples/shop-prod-plan.json
+python3 scripts/plan_risk.py plan.json --json
+python3 scripts/plan_risk.py plan.txt
+python3 scripts/plan_risk.py --self-test
+```
+Exit 1 means at least one HIGH finding, 2 means the file is not a plan.
+
+### 3. Review like a human
+- Compare the changes with the code diff: anything not explained by the diff (provider upgrade, drift, renamed resources) needs an answer before apply.
+- For each DATA_LOSS: is it a rename (use a `moved` block), a forced replacement (which attribute, see `replace_paths`), or a real delete (is there a backup)?
+- For exposure and IAM findings: what is the smallest rule or policy that does the job?
+- Check what the script cannot see (`references/risk-rules.md`, &quot;Things to check by hand&quot;): unknown values, downtime order, data migration, workspace and account.
+
+### 4. Deliver
+Fill `templates/plan-risk-summary.md`: verdict, HIGH items with fix or named acceptance, MEDIUM items with owner, expected vs unexpected changes, apply steps with a rollback. Give code fixes as small HCL snippets (moved blocks, lifecycle, scoped policies).
+
+## Example result
+`examples/shop-prod-plan.json` (Terraform 1.9.8): 2 create, 4 update, 2 replace, 2 destroy; 6 HIGH, 5 MEDIUM, 2 LOW, 2 INFO, verdict DO NOT APPLY. HIGH: the orders RDS instance is replaced (destroy first) because `storage_encrypted` changed, with deletion protection off and no final snapshot; the legacy logs bucket is deleted with force_destroy; SSH opened to 0.0.0.0/0 on the bastion; the S3 public access block is turned off for the assets bucket; the CI role gets `iam:PassRole` on `*` (and `s3:*`); AdministratorAccess is attached to the ops role. MEDIUM also includes `aws_instance.web[1]` destroyed by a count index shift. Fix: snapshot and migrate the database, `moved` or a `removed` block for the bucket, SSM instead of public SSH, scoped policies, for_each for web instances.
+
+## Rules
+
+- Never print or quote passwords, keys or tokens from a plan, even if they are visible in the JSON.
+- A HIGH finding blocks the apply until it is fixed or a named owner accepts it in writing.
+- Prefer `moved`, `removed` and `import` blocks over destroy-and-recreate for refactors.
+- Data stores need a backup before any destroy or replace, and `prevent_destroy` afterwards.
+- Do not approve plans you cannot see in full (truncated output, `-target` runs, errored plans); ask for the complete plan.
+- Policy-as-code (OPA/Conftest, Sentinel, Checkov, tfsec) is a good follow-up, not a replacement for reading the plan.
+FILE:references/reading-plan-output.md
+# Reading Terraform plan output
+
+## Get a machine-readable plan
+```
+terraform plan -out plan.out            # add -var-file / -target exactly as the real apply will
+terraform show -json plan.out &gt; plan.json
+terraform show -no-color plan.out &gt; plan.txt   # human-readable copy of the same saved plan
+```
+Review the SAME saved plan you will apply (`terraform apply plan.out`), not a fresh plan: state or remote resources can change in between. OpenTofu uses the same commands (`tofu show -json`) and format.
+
+## Text symbols
+| Symbol | Header line | Meaning |
+|---|---|---|
+| `+` | `will be created` | new resource |
+| `~` | `will be updated in-place` | attributes change, same resource ID |
+| `-` | `will be destroyed` | resource deleted |
+| `-/+` | `must be replaced` | destroy first, then create (default) - downtime gap |
+| `+/-` | `must be replaced` | create first, then destroy (`create_before_destroy`) |
+| `&lt;=` | `will be read during apply` | data source read; check why it is unknown at plan time |
+| `# forces replacement` | after an attribute | this attribute change causes the replacement |
+| `(known after apply)` | value | computed; you cannot review it now |
+| `(sensitive value)` | value | hidden in text output, but present in plan JSON |
+
+Reason lines under a header: `# (because aws_x.y is not in configuration)` (removed from code or moved without a `moved` block), `# (because index [1] is out of range for count)` (count shrank or shifted), `# (because key [&quot;a&quot;] is not in for_each map)`, `# (resource is tainted, so must be replaced)`, `# (replace requested)` (`-replace=` flag).
+
+Summary line: `Plan: 3 to add, 1 to change, 3 to destroy.` A replacement counts once in &quot;add&quot; and once in &quot;destroy&quot;, so compare destroy count with the number of `-` and `-/+` headers.
+
+## JSON structure (format_version 1.x)
+```
+{
+  &quot;format_version&quot;: &quot;1.2&quot;, &quot;terraform_version&quot;: &quot;1.9.8&quot;,
+  &quot;resource_changes&quot;: [ {
+      &quot;address&quot;: &quot;module.db.aws_db_instance.main&quot;, &quot;module_address&quot;: &quot;module.db&quot;,
+      &quot;mode&quot;: &quot;managed&quot; | &quot;data&quot;, &quot;type&quot;: &quot;aws_db_instance&quot;, &quot;name&quot;: &quot;main&quot;, &quot;index&quot;: 0 | &quot;key&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;create&quot;] | [&quot;update&quot;] | [&quot;delete&quot;] | [&quot;delete&quot;,&quot;create&quot;] | [&quot;create&quot;,&quot;delete&quot;] | [&quot;no-op&quot;] | [&quot;read&quot;] | [&quot;forget&quot;],
+        &quot;before&quot;: {...} | null, &quot;after&quot;: {...} | null,
+        &quot;after_unknown&quot;: {&quot;id&quot;: true},              # values known only after apply
+        &quot;before_sensitive&quot;: {...}, &quot;after_sensitive&quot;: {&quot;password&quot;: true},
+        &quot;replace_paths&quot;: [[&quot;storage_encrypted&quot;]],   # attributes that force replacement
+        &quot;importing&quot;: {&quot;id&quot;: &quot;...&quot;}                  # import blocks (1.5+)
+      },
+      &quot;action_reason&quot;: &quot;replace_because_cannot_update&quot; | &quot;replace_because_tainted&quot; | &quot;replace_by_request&quot; |
+                       &quot;delete_because_no_resource_config&quot; | &quot;delete_because_count_index&quot; | &quot;delete_because_each_key&quot; | ...,
+      &quot;previous_address&quot;: &quot;aws_db_instance.old&quot;     # moved blocks
+  } ],
+  &quot;resource_drift&quot;: [ ... changes made outside Terraform ... ],
+  &quot;output_changes&quot;: {...}, &quot;prior_state&quot;: {...}, &quot;configuration&quot;: {...},
+  &quot;applyable&quot;: true, &quot;complete&quot;: true, &quot;errored&quot;: false
+}
+```
+Useful one-liners:
+```
+jq -r &#x27;.resource_changes[] | select(.change.actions != [&quot;no-op&quot;]) | &quot;\(.change.actions | join(&quot;,&quot;)) \(.address)&quot;&#x27; plan.json
+jq -r &#x27;.resource_changes[] | select(.change.actions | index(&quot;delete&quot;)) | .address&#x27; plan.json
+jq -r &#x27;.resource_changes[] | select(.change.replace_paths) | &quot;\(.address): \(.change.replace_paths)&quot;&#x27; plan.json
+```
+
+## Secrets in plans
+`before`/`after` contain real values, including passwords and private keys, even when `*_sensitive` marks them. Treat plan.out and plan.json like secrets: do not attach them to tickets, chats or public CI logs; keep them as short-lived, access-controlled CI artifacts. Share the risk summary instead.
+
+## What a plan cannot tell you
+- Values computed at apply time (`known after apply`), including many IAM policy documents built from other resources.
+- Side effects outside Terraform: DNS caches, clients pinned to an IP, data inside a database being replaced.
+- Whether `lifecycle { prevent_destroy = true }` is set (it is in `configuration`, and a plan that would violate it fails instead).
+- Provider-specific behaviour such as RDS applying some changes only in the next maintenance window (`apply_immediately`).
+FILE:references/risk-rules.md
+# Risk rules used by plan_risk.py
+
+| Code | Severity | Trigger | Why it matters | Typical fix |
+|---|---|---|---|---|
+| DATA_LOSS | HIGH | destroy or replace of a data-holding type: databases (RDS, Cloud SQL, Azure SQL/PostgreSQL/MySQL, Cosmos DB, DynamoDB), buckets, disks/volumes, EFS/FSx, caches, queues/streams, KMS keys, secrets, DNS zones, log groups, ECR, Kubernetes PVCs/namespaces | a new resource starts empty; KMS key deletion makes encrypted data unreadable | snapshot/backup first, `moved` block for refactors, `prevent_destroy` on data stores, migrate data before replacing |
+| PROTECTION_OFF | HIGH (update) / MEDIUM (new or replaced) | `deletion_protection`, `deletion_protection_enabled`, `enable_deletion_protection`, `termination_protection`, `disable_api_termination` false | the next mistake can delete production | keep true; disable only in a separate change right before a planned delete |
+| PUBLIC_INGRESS | HIGH | new 0.0.0.0/0 or ::/0 ingress on all ports or admin/data ports (22, 3389, 3306, 5432, 1433, 6379, 27017, 9200, 6443 ...) | direct attack surface, brute force, data exposure | known CIDRs, SSM Session Manager, VPN, bastion, private endpoints |
+| PUBLIC_INGRESS | MEDIUM / INFO | other ports / 80 and 443 | | expose only load balancers |
+| PUBLIC_DATABASE | HIGH | `publicly_accessible = true` | database endpoint reachable from the internet | private subnets, proxy, VPN |
+| S3_PUBLIC_ACCESS | HIGH | any of the four public access block settings set to false | bucket policies or ACLs can make data public | keep all four true; CloudFront + Origin Access Control |
+| PUBLIC_ACL | HIGH | `public-read`, `public-read-write`, `authenticated-read` | everyone can list or read (or write) | BucketOwnerEnforced, private |
+| PUBLIC_POLICY | HIGH | resource policy Allow with Principal `*` and no Condition | anyone on the internet (or any AWS account) gets access | named principals; `aws:SourceArn`, `aws:PrincipalOrgID`, `aws:SourceVpce` |
+| PUBLIC_IAM | HIGH | GCP binding to `allUsers` / `allAuthenticatedUsers` | public access | specific members |
+| TRUST_ANYONE | HIGH | role trust policy with Principal `*` and no Condition | any AWS account can assume the role | exact ARNs + `sts:ExternalId` |
+| IAM_ADMIN | HIGH | `Action * / Resource *`, AdministratorAccess, PowerUserAccess, IAMFullAccess, GCP owner/editor, Azure Owner/User Access Administrator (Contributor = MEDIUM) | full control of the account or project | least privilege; break-glass admin with MFA |
+| IAM_ESCALATION | HIGH | `iam:PassRole`, `iam:Attach*/Put*Policy`, `iam:CreatePolicyVersion`, `iam:CreateAccessKey`, `sts:AssumeRole`, `kms:*` on `*`; `iam:*`, `sts:*` anywhere | the holder can grant itself more rights | scope to specific ARNs; `iam:PassedToService` condition |
+| IAM_WILDCARD | HIGH on `*` / MEDIUM | `service:*` actions, `*FullAccess` managed policies | far more than needed, includes delete | list actions actually used (Access Analyzer, CloudTrail) |
+| IAM_NOT_ACTION | MEDIUM | Allow with NotAction | grants everything else, including future actions | explicit Action list |
+| IAM_WIDENED | LOW | update adds actions or resources to a policy | permission creep | confirm with the owner |
+| TRUST_WIDENED | MEDIUM | new principals in a trust policy | new cross-account access | confirm each principal |
+| NO_FINAL_SNAPSHOT | MEDIUM | `skip_final_snapshot = true` on RDS/Aurora/DocumentDB/Neptune/Redshift | deleting leaves nothing to restore | `false` + `final_snapshot_identifier` |
+| FORCE_DESTROY | MEDIUM | `force_destroy = true` newly set | delete wipes all objects or records | keep false on real data |
+| ENCRYPTION_OFF | MEDIUM | `storage_encrypted`/`encrypted` false | compliance; enabling later usually forces replacement | enable now |
+| BACKUPS_OFF | MEDIUM | `backup_retention_period = 0` | no point-in-time recovery | 7 to 35 days |
+| SECRET_REGENERATED | MEDIUM | replace of `random_password`, `random_string`, `tls_private_key`, `aws_iam_access_key` | consumers break | plan the rotation |
+| COUNT_INDEX_SHIFT | MEDIUM | `delete_because_count_index` | removing a middle item destroys and recreates the following ones | `for_each` with stable keys, `moved` blocks |
+| DESTROY | MEDIUM (compute, LB, IP, cluster, count/each removal) / LOW | non-stateful destroy | downtime, lost IPs | confirm intent; `moved` for refactors |
+| REPLACE | MEDIUM (destroy-first compute/LB) / LOW | non-stateful replace | new IDs, IPs, DNS names; downtime gap | `create_before_destroy`, check dependents |
+| PUBLIC_FUNCTION_URL | MEDIUM | Lambda URL with auth NONE | public endpoint | AWS_IAM auth |
+| PLAN_ERRORED / PLAN_INCOMPLETE | HIGH / MEDIUM | `errored` / `complete: false` | partial picture | re-plan |
+| DRIFT, REMOVED_FROM_CONFIG, MOVED, IMPORT, FORGET, POLICY_UNKNOWN, TEXT_MODE | INFO | context | | |
+
+## Verdict
+- Any HIGH: do not apply until each HIGH is fixed or explicitly accepted by the owner (name and reason in the review).
+- Only MEDIUM: apply after the owner of each affected resource agrees.
+- LOW/INFO only: normal review.
+
+## Things to check by hand
+- **Blast radius:** how many resources change, and are they all expected from the code diff? A one-line change that replaces 40 resources is a red flag (provider upgrade, changed `name`, `count` to `for_each`).
+- **Order and downtime:** destroy-first replacements of anything serving traffic; DNS TTLs; target group swaps.
+- **Data migration:** a replaced database needs a restore from snapshot or a data migration plan; Terraform will not copy data.
+- **Unknown values:** policies or security group rules that are `known after apply` - review the module code instead.
+- **Provider and module upgrades:** read the changelog for forced replacements and default changes.
+- **Environment:** confirm the workspace/backend (`terraform workspace show`) and account (`aws sts get-caller-identity`) before applying.
+- **Policy as code:** OPA/Conftest, Sentinel, Checkov or tfsec rules can enforce the HIGH checks in CI.
+FILE:templates/plan-risk-summary.md
+# Terraform plan risk summary: &lt;stack / workspace&gt;
+
+**Change:** &lt;PR #123 &quot;Encrypt orders DB, open bastion for vendor&quot;&gt;   **Workspace/account:** &lt;prod / 123456789012 eu-west-1&gt;
+**Plan:** &lt;terraform 1.9.8, plan.out from CI run 4567&gt;   **Counts:** &lt;2 create, 4 update, 2 replace, 2 destroy&gt;
+**Verdict:** &lt;DO NOT APPLY as is / Apply after review / Low risk&gt;
+
+## Must fix or explicitly accept (HIGH)
+| # | Resource | Risk | Why | Fix or acceptance (who) |
+|---|---|---|---|---|
+| 1 | &lt;`aws_db_instance.orders`&gt; | &lt;DATA_LOSS: replaced because storage_encrypted changed&gt; | &lt;new empty DB; no final snapshot&gt; | &lt;snapshot, restore into encrypted copy, switch with a moved/import plan&gt; |
+
+## Needs owner review (MEDIUM)
+| # | Resource | Risk | Owner OK? |
+|---|---|---|---|
+| 1 | &lt;`aws_instance.web[1]`&gt; | &lt;COUNT_INDEX_SHIFT&gt; | &lt;yes/no&gt; |
+
+## Low / info
+- &lt;IAM_WIDENED on ci_deploy: s3:* - replaced by explicit actions in the fix&gt;
+- &lt;Drift on aws_lb.public tags: set in console by ...&gt;
+
+## Expected vs unexpected changes
+- Expected from the code diff: &lt;...&gt;
+- Not explained by the code diff: &lt;... investigate before apply&gt;
+
+## Apply plan
+1. &lt;Take snapshot `orders-pre-encrypt-2026-10-27`&gt;
+2. &lt;Apply in a maintenance window: &lt;time, zone&gt;&gt;
+3. &lt;Verify: app health checks, `aws rds describe-db-instances`, bastion only from VPN&gt;
+4. Rollback: &lt;restore snapshot / revert PR and re-apply&gt;
+
+## Follow-ups
+- &lt;add prevent_destroy to data stores&gt;
+- &lt;policy-as-code rule for 0.0.0.0/0 on port 22&gt;
+FILE:examples/shop-prod-plan.json
+{
+  &quot;format_version&quot;: &quot;1.2&quot;,
+  &quot;terraform_version&quot;: &quot;1.9.8&quot;,
+  &quot;planned_values&quot;: {&quot;root_module&quot;: {}},
+  &quot;resource_drift&quot;: [
+    {
+      &quot;address&quot;: &quot;aws_lb.public&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_lb&quot;,
+      &quot;name&quot;: &quot;public&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;update&quot;],
+        &quot;before&quot;: {&quot;name&quot;: &quot;shop-public&quot;, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;}},
+        &quot;after&quot;: {&quot;name&quot;: &quot;shop-public&quot;, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;, &quot;owner&quot;: &quot;set-in-console&quot;}},
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {}
+      }
+    }
+  ],
+  &quot;resource_changes&quot;: [
+    {
+      &quot;address&quot;: &quot;aws_cloudwatch_log_group.app&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_cloudwatch_log_group&quot;,
+      &quot;name&quot;: &quot;app&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;create&quot;],
+        &quot;before&quot;: null,
+        &quot;after&quot;: {&quot;name&quot;: &quot;/shop/app&quot;, &quot;retention_in_days&quot;: 30, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;}},
+        &quot;after_unknown&quot;: {&quot;arn&quot;: true, &quot;id&quot;: true},
+        &quot;before_sensitive&quot;: false,
+        &quot;after_sensitive&quot;: {}
+      }
+    },
+    {
+      &quot;address&quot;: &quot;aws_db_instance.orders&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_db_instance&quot;,
+      &quot;name&quot;: &quot;orders&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;delete&quot;, &quot;create&quot;],
+        &quot;before&quot;: {&quot;identifier&quot;: &quot;shop-orders&quot;, &quot;engine&quot;: &quot;postgres&quot;, &quot;engine_version&quot;: &quot;16.4&quot;, &quot;instance_class&quot;: &quot;db.t4g.medium&quot;, &quot;allocated_storage&quot;: 100, &quot;storage_encrypted&quot;: false, &quot;deletion_protection&quot;: false, &quot;skip_final_snapshot&quot;: true, &quot;backup_retention_period&quot;: 7, &quot;publicly_accessible&quot;: false, &quot;username&quot;: &quot;orders_admin&quot;, &quot;password&quot;: null, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;}},
+        &quot;after&quot;: {&quot;identifier&quot;: &quot;shop-orders&quot;, &quot;engine&quot;: &quot;postgres&quot;, &quot;engine_version&quot;: &quot;16.4&quot;, &quot;instance_class&quot;: &quot;db.t4g.medium&quot;, &quot;allocated_storage&quot;: 100, &quot;storage_encrypted&quot;: true, &quot;deletion_protection&quot;: false, &quot;skip_final_snapshot&quot;: true, &quot;backup_retention_period&quot;: 7, &quot;publicly_accessible&quot;: false, &quot;username&quot;: &quot;orders_admin&quot;, &quot;password&quot;: null, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;}, &quot;kms_key_id&quot;: null},
+        &quot;after_unknown&quot;: {&quot;id&quot;: true, &quot;arn&quot;: true, &quot;endpoint&quot;: true, &quot;address&quot;: true},
+        &quot;before_sensitive&quot;: {&quot;password&quot;: true},
+        &quot;after_sensitive&quot;: {&quot;password&quot;: true},
+        &quot;replace_paths&quot;: [[&quot;storage_encrypted&quot;]]
+      },
+      &quot;action_reason&quot;: &quot;replace_because_cannot_update&quot;
+    },
+    {
+      &quot;address&quot;: &quot;aws_iam_role_policy.ci_deploy&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_iam_role_policy&quot;,
+      &quot;name&quot;: &quot;ci_deploy&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;update&quot;],
+        &quot;before&quot;: {&quot;id&quot;: &quot;shop-ci:deploy&quot;, &quot;name&quot;: &quot;deploy&quot;, &quot;role&quot;: &quot;shop-ci&quot;, &quot;policy&quot;: &quot;{\&quot;Version\&quot;: \&quot;2012-10-17\&quot;, \&quot;Statement\&quot;: [{\&quot;Sid\&quot;: \&quot;Deploy\&quot;, \&quot;Effect\&quot;: \&quot;Allow\&quot;, \&quot;Action\&quot;: [\&quot;s3:PutObject\&quot;, \&quot;s3:GetObject\&quot;], \&quot;Resource\&quot;: \&quot;arn:aws:s3:::shop-assets-prod/*\&quot;}]}&quot;},
+        &quot;after&quot;: {&quot;id&quot;: &quot;shop-ci:deploy&quot;, &quot;name&quot;: &quot;deploy&quot;, &quot;role&quot;: &quot;shop-ci&quot;, &quot;policy&quot;: &quot;{\&quot;Version\&quot;: \&quot;2012-10-17\&quot;, \&quot;Statement\&quot;: [{\&quot;Sid\&quot;: \&quot;Deploy\&quot;, \&quot;Effect\&quot;: \&quot;Allow\&quot;, \&quot;Action\&quot;: \&quot;s3:*\&quot;, \&quot;Resource\&quot;: [\&quot;arn:aws:s3:::shop-assets-prod\&quot;, \&quot;arn:aws:s3:::shop-assets-prod/*\&quot;]}, {\&quot;Sid\&quot;: \&quot;PassAnyRole\&quot;, \&quot;Effect\&quot;: \&quot;Allow\&quot;, \&quot;Action\&quot;: \&quot;iam:PassRole\&quot;, \&quot;Resource\&quot;: \&quot;*\&quot;}]}&quot;},
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {}
+      }
+    },
+    {
+      &quot;address&quot;: &quot;aws_iam_role_policy_attachment.ops_admin&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_iam_role_policy_attachment&quot;,
+      &quot;name&quot;: &quot;ops_admin&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;create&quot;],
+        &quot;before&quot;: null,
+        &quot;after&quot;: {&quot;role&quot;: &quot;shop-ops&quot;, &quot;policy_arn&quot;: &quot;arn:aws:iam::aws:policy/AdministratorAccess&quot;},
+        &quot;after_unknown&quot;: {&quot;id&quot;: true},
+        &quot;before_sensitive&quot;: false,
+        &quot;after_sensitive&quot;: {}
+      }
+    },
+    {
+      &quot;address&quot;: &quot;aws_instance.web[1]&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_instance&quot;,
+      &quot;name&quot;: &quot;web&quot;,
+      &quot;index&quot;: 1,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;delete&quot;],
+        &quot;before&quot;: {&quot;id&quot;: &quot;i-0b1c2d3e4f5a6b7c8&quot;, &quot;ami&quot;: &quot;ami-0abc1234def567890&quot;, &quot;instance_type&quot;: &quot;t3.medium&quot;, &quot;associate_public_ip_address&quot;: false, &quot;tags&quot;: {&quot;Name&quot;: &quot;shop-web-1&quot;}},
+        &quot;after&quot;: null,
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: false
+      },
+      &quot;action_reason&quot;: &quot;delete_because_count_index&quot;
+    },
+    {
+      &quot;address&quot;: &quot;aws_lb.public&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_lb&quot;,
+      &quot;name&quot;: &quot;public&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;update&quot;],
+        &quot;before&quot;: {&quot;name&quot;: &quot;shop-public&quot;, &quot;internal&quot;: false, &quot;enable_deletion_protection&quot;: true, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;, &quot;owner&quot;: &quot;set-in-console&quot;}},
+        &quot;after&quot;: {&quot;name&quot;: &quot;shop-public&quot;, &quot;internal&quot;: false, &quot;enable_deletion_protection&quot;: true, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;, &quot;team&quot;: &quot;shop&quot;}},
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {}
+      }
+    },
+    {
+      &quot;address&quot;: &quot;aws_lb_target_group.web&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_lb_target_group&quot;,
+      &quot;name&quot;: &quot;web&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;create&quot;, &quot;delete&quot;],
+        &quot;before&quot;: {&quot;name_prefix&quot;: &quot;web-&quot;, &quot;port&quot;: 8080, &quot;protocol&quot;: &quot;HTTP&quot;, &quot;vpc_id&quot;: &quot;vpc-0a1b2c3d&quot;},
+        &quot;after&quot;: {&quot;name_prefix&quot;: &quot;web-&quot;, &quot;port&quot;: 8081, &quot;protocol&quot;: &quot;HTTP&quot;, &quot;vpc_id&quot;: &quot;vpc-0a1b2c3d&quot;},
+        &quot;after_unknown&quot;: {&quot;id&quot;: true, &quot;arn&quot;: true, &quot;name&quot;: true},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {},
+        &quot;replace_paths&quot;: [[&quot;port&quot;]]
+      },
+      &quot;action_reason&quot;: &quot;replace_because_cannot_update&quot;
+    },
+    {
+      &quot;address&quot;: &quot;aws_s3_bucket.legacy_logs&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_s3_bucket&quot;,
+      &quot;name&quot;: &quot;legacy_logs&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;delete&quot;],
+        &quot;before&quot;: {&quot;bucket&quot;: &quot;shop-legacy-logs-prod&quot;, &quot;force_destroy&quot;: true, &quot;tags&quot;: {&quot;env&quot;: &quot;prod&quot;}},
+        &quot;after&quot;: null,
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: false
+      },
+      &quot;action_reason&quot;: &quot;delete_because_no_resource_config&quot;
+    },
+    {
+      &quot;address&quot;: &quot;aws_s3_bucket_public_access_block.assets&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_s3_bucket_public_access_block&quot;,
+      &quot;name&quot;: &quot;assets&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;update&quot;],
+        &quot;before&quot;: {&quot;bucket&quot;: &quot;shop-assets-prod&quot;, &quot;block_public_acls&quot;: true, &quot;block_public_policy&quot;: true, &quot;ignore_public_acls&quot;: true, &quot;restrict_public_buckets&quot;: true},
+        &quot;after&quot;: {&quot;bucket&quot;: &quot;shop-assets-prod&quot;, &quot;block_public_acls&quot;: true, &quot;block_public_policy&quot;: false, &quot;ignore_public_acls&quot;: true, &quot;restrict_public_buckets&quot;: false},
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {}
+      }
+    },
+    {
+      &quot;address&quot;: &quot;aws_security_group.bastion&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_security_group&quot;,
+      &quot;name&quot;: &quot;bastion&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;update&quot;],
+        &quot;before&quot;: {&quot;name&quot;: &quot;shop-bastion&quot;, &quot;ingress&quot;: [{&quot;cidr_blocks&quot;: [&quot;10.20.0.0/16&quot;], &quot;description&quot;: &quot;SSH from VPN&quot;, &quot;from_port&quot;: 22, &quot;to_port&quot;: 22, &quot;protocol&quot;: &quot;tcp&quot;, &quot;ipv6_cidr_blocks&quot;: [], &quot;prefix_list_ids&quot;: [], &quot;security_groups&quot;: [], &quot;self&quot;: false}], &quot;egress&quot;: []},
+        &quot;after&quot;: {&quot;name&quot;: &quot;shop-bastion&quot;, &quot;ingress&quot;: [{&quot;cidr_blocks&quot;: [&quot;10.20.0.0/16&quot;], &quot;description&quot;: &quot;SSH from VPN&quot;, &quot;from_port&quot;: 22, &quot;to_port&quot;: 22, &quot;protocol&quot;: &quot;tcp&quot;, &quot;ipv6_cidr_blocks&quot;: [], &quot;prefix_list_ids&quot;: [], &quot;security_groups&quot;: [], &quot;self&quot;: false}, {&quot;cidr_blocks&quot;: [&quot;0.0.0.0/0&quot;], &quot;description&quot;: &quot;temp: SSH for vendor&quot;, &quot;from_port&quot;: 22, &quot;to_port&quot;: 22, &quot;protocol&quot;: &quot;tcp&quot;, &quot;ipv6_cidr_blocks&quot;: [], &quot;prefix_list_ids&quot;: [], &quot;security_groups&quot;: [], &quot;self&quot;: false}], &quot;egress&quot;: []},
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {}
+      }
+    },
+    {
+      &quot;address&quot;: &quot;module.network.aws_vpc.main&quot;,
+      &quot;module_address&quot;: &quot;module.network&quot;,
+      &quot;mode&quot;: &quot;managed&quot;,
+      &quot;type&quot;: &quot;aws_vpc&quot;,
+      &quot;name&quot;: &quot;main&quot;,
+      &quot;provider_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;,
+      &quot;change&quot;: {
+        &quot;actions&quot;: [&quot;no-op&quot;],
+        &quot;before&quot;: {&quot;cidr_block&quot;: &quot;10.20.0.0/16&quot;},
+        &quot;after&quot;: {&quot;cidr_block&quot;: &quot;10.20.0.0/16&quot;},
+        &quot;after_unknown&quot;: {},
+        &quot;before_sensitive&quot;: {},
+        &quot;after_sensitive&quot;: {}
+      }
+    }
+  ],
+  &quot;prior_state&quot;: {&quot;format_version&quot;: &quot;1.0&quot;, &quot;terraform_version&quot;: &quot;1.9.8&quot;},
+  &quot;configuration&quot;: {&quot;provider_config&quot;: {&quot;aws&quot;: {&quot;name&quot;: &quot;aws&quot;, &quot;full_name&quot;: &quot;registry.terraform.io/hashicorp/aws&quot;}}},
+  &quot;timestamp&quot;: &quot;2026-10-27T07:10:00Z&quot;,
+  &quot;applyable&quot;: true,
+  &quot;complete&quot;: true,
+  &quot;errored&quot;: false
+}
+FILE:scripts/plan_risk.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Terraform plan risk reviewer (Python 3 standard library only).
+
+Reads `terraform show -json plan.out` output (or, with less detail, the text of
+`terraform plan -no-color`) and flags risky changes: destroys and replacements of
+stateful resources (data loss), removed deletion protection, skipped final
+snapshots, force_destroy, disabled encryption, new public network exposure
+(0.0.0.0/0 or ::/0 ingress, public databases, S3 public access blocks, public ACLs
+and policies, allUsers bindings), IAM widening (wildcard actions, admin policies,
+iam:PassRole on *, trust policies open to anyone) and count index shifts. Prints a
+risk summary. Never prints attribute values that Terraform marks as sensitive.
+
+Usage:
+  terraform plan -out plan.out &amp;&amp; terraform show -json plan.out &gt; plan.json
+  python3 plan_risk.py plan.json [--json]
+  terraform plan -no-color &gt; plan.txt &amp;&amp; python3 plan_risk.py plan.txt   (text mode)
+  python3 plan_risk.py --self-test
+Exit codes: 0 = no HIGH findings, 1 = HIGH findings, 2 = unreadable input.
+&quot;&quot;&quot;
+import argparse, json, re, sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2, &quot;INFO&quot;: 3}
+STATEFUL = re.compile(r&quot;^(aws_(db_instance|rds_cluster|dynamodb_table|s3_bucket|ebs_volume|efs_file_system|&quot;
+                      r&quot;elasticache_(cluster|replication_group)|redshift_cluster|docdb_cluster|neptune_cluster|&quot;
+                      r&quot;opensearch_domain|elasticsearch_domain|kinesis_stream|sqs_queue|kms_key|secretsmanager_secret|&quot;
+                      r&quot;backup_vault|ecr_repository|cloudwatch_log_group|msk_cluster|fsx_\w+|route53_zone|&quot;
+                      r&quot;cognito_user_pool|timestream_table)|&quot;
+                      r&quot;google_(sql_database_instance|sql_database|storage_bucket|bigquery_(dataset|table)|compute_disk|&quot;
+                      r&quot;spanner_(instance|database)|kms_crypto_key|redis_instance|filestore_instance|firestore_database|&quot;
+                      r&quot;dns_managed_zone)|&quot;
+                      r&quot;azurerm_(storage_account|storage_container|mssql_(database|server)|postgresql_flexible_server|&quot;
+                      r&quot;mysql_flexible_server|cosmosdb_account|key_vault|managed_disk|redis_cache|dns_zone)|&quot;
+                      r&quot;kubernetes_(persistent_volume_claim|persistent_volume|namespace)(_v1)?)$&quot;)
+SECRET_GEN = re.compile(r&quot;^(random_password|random_string|tls_private_key|aws_iam_access_key)$&quot;)
+DOWNTIME = re.compile(r&quot;^(aws_(instance|lb|alb|eip|nat_gateway|cloudfront_distribution|api_gateway_rest_api|&quot;
+                      r&quot;eks_cluster|ecs_service|acm_certificate)|google_(compute_instance|container_cluster)|&quot;
+                      r&quot;azurerm_(linux|windows)_virtual_machine|azurerm_kubernetes_cluster)$&quot;)
+SENSITIVE_PORTS = {22: &quot;SSH&quot;, 23: &quot;Telnet&quot;, 3389: &quot;RDP&quot;, 3306: &quot;MySQL&quot;, 5432: &quot;PostgreSQL&quot;, 1433: &quot;SQL Server&quot;,
+                   1521: &quot;Oracle&quot;, 6379: &quot;Redis&quot;, 27017: &quot;MongoDB&quot;, 9200: &quot;Elasticsearch&quot;, 5601: &quot;Kibana&quot;,
+                   2375: &quot;Docker API&quot;, 2379: &quot;etcd&quot;, 11211: &quot;Memcached&quot;, 5900: &quot;VNC&quot;, 9092: &quot;Kafka&quot;,
+                   6443: &quot;Kubernetes API&quot;, 10250: &quot;Kubelet&quot;}
+WEB_PORTS = {80, 443}
+PUBLIC_CIDRS = {&quot;0.0.0.0/0&quot;, &quot;::/0&quot;, &quot;*&quot;, &quot;internet&quot;, &quot;any&quot;}
+ADMIN_POLICIES = re.compile(r&quot;(AdministratorAccess|PowerUserAccess|IAMFullAccess)$&quot;)
+ESCALATION_ACTIONS = {&quot;iam:*&quot;, &quot;iam:passrole&quot;, &quot;iam:createpolicyversion&quot;, &quot;iam:attachrolepolicy&quot;, &quot;iam:putrolepolicy&quot;,
+                      &quot;iam:createaccesskey&quot;, &quot;iam:updateassumerolepolicy&quot;, &quot;sts:assumerole&quot;, &quot;sts:*&quot;, &quot;kms:*&quot;, &quot;*&quot;}
+POLICY_ATTRS = (&quot;policy&quot;, &quot;assume_role_policy&quot;, &quot;inline_policy&quot;)
+PROTECTION_ATTRS = (&quot;deletion_protection&quot;, &quot;deletion_protection_enabled&quot;, &quot;enable_deletion_protection&quot;,
+                    &quot;termination_protection&quot;, &quot;disable_api_termination&quot;)
+
+
+def finding(sev, code, addr, problem, fix):
+    return {&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;resource&quot;: addr, &quot;problem&quot;: problem, &quot;fix&quot;: fix}
+
+
+def kind_of(actions):
+    a = list(actions or [])
+    if a == [&quot;delete&quot;, &quot;create&quot;]:
+        return &quot;replace (destroy first)&quot;
+    if a == [&quot;create&quot;, &quot;delete&quot;]:
+        return &quot;replace (create first)&quot;
+    return {&quot;create&quot;: &quot;create&quot;, &quot;update&quot;: &quot;update&quot;, &quot;delete&quot;: &quot;destroy&quot;, &quot;no-op&quot;: &quot;no-op&quot;, &quot;read&quot;: &quot;read&quot;,
+            &quot;forget&quot;: &quot;forget&quot;}.get(a[0] if len(a) == 1 else &quot;,&quot;.join(a), &quot;,&quot;.join(a))
+
+
+def sensitive(mask, key):
+    return mask is True or (isinstance(mask, dict) and mask.get(key) not in (None, False))
+
+
+def get(d, key, default=None):
+    return d.get(key, default) if isinstance(d, dict) else default
+
+
+def ports_of(lo, hi, proto):
+    proto = str(proto).lower()
+    if proto in (&quot;-1&quot;, &quot;all&quot;, &quot;*&quot;):
+        return 0, 65535, &quot;all&quot;
+    try:
+        lo, hi = int(lo if lo not in (None, &quot;&quot;) else 0), int(hi if hi not in (None, &quot;&quot;) else 65535)
+    except (TypeError, ValueError):
+        return 0, 65535, proto
+    if proto in (&quot;icmp&quot;, &quot;icmpv6&quot;, &quot;1&quot;, &quot;58&quot;):
+        return None
+    if lo in (-1,) or (lo == 0 and hi in (0, 65535)):
+        return 0, 65535, proto
+    return lo, hi, proto
+
+
+def open_rules(rtype, values):
+    &quot;&quot;&quot;Yield (cidr, lo, hi, proto) for internet-open ingress rules in a resource&#x27;s values.&quot;&quot;&quot;
+    v = values or {}
+    out = set()
+    def add(cidrs, lo, hi, proto):
+        p = ports_of(lo, hi, proto)
+        if p is None:
+            return
+        for c in cidrs or []:
+            if str(c).lower() in PUBLIC_CIDRS:
+                out.add((str(c), p[0], p[1], p[2]))
+    if rtype == &quot;aws_security_group&quot;:
+        for r in v.get(&quot;ingress&quot;) or []:
+            add((r.get(&quot;cidr_blocks&quot;) or []) + (r.get(&quot;ipv6_cidr_blocks&quot;) or []), r.get(&quot;from_port&quot;), r.get(&quot;to_port&quot;), r.get(&quot;protocol&quot;))
+    elif rtype == &quot;aws_security_group_rule&quot; and v.get(&quot;type&quot;) == &quot;ingress&quot;:
+        add((v.get(&quot;cidr_blocks&quot;) or []) + (v.get(&quot;ipv6_cidr_blocks&quot;) or []), v.get(&quot;from_port&quot;), v.get(&quot;to_port&quot;), v.get(&quot;protocol&quot;))
+    elif rtype == &quot;aws_vpc_security_group_ingress_rule&quot;:
+        add([x for x in (v.get(&quot;cidr_ipv4&quot;), v.get(&quot;cidr_ipv6&quot;)) if x], v.get(&quot;from_port&quot;), v.get(&quot;to_port&quot;), v.get(&quot;ip_protocol&quot;))
+    elif rtype == &quot;google_compute_firewall&quot; and str(v.get(&quot;direction&quot;, &quot;INGRESS&quot;)).upper() == &quot;INGRESS&quot;:
+        for al in v.get(&quot;allow&quot;) or []:
+            ports = al.get(&quot;ports&quot;) or [&quot;0-65535&quot;]
+            for pr in ports:
+                lo, _, hi = str(pr).partition(&quot;-&quot;)
+                add(v.get(&quot;source_ranges&quot;), lo, hi or lo, al.get(&quot;protocol&quot;, &quot;all&quot;))
+    elif rtype == &quot;azurerm_network_security_rule&quot; and str(v.get(&quot;direction&quot;)).lower() == &quot;inbound&quot; and str(v.get(&quot;access&quot;)).lower() == &quot;allow&quot;:
+        src = [v.get(&quot;source_address_prefix&quot;)] + (v.get(&quot;source_address_prefixes&quot;) or [])
+        rng = v.get(&quot;destination_port_range&quot;) or &quot;*&quot;
+        for pr in [rng] + (v.get(&quot;destination_port_ranges&quot;) or []):
+            if pr == &quot;*&quot;:
+                add(src, 0, 65535, v.get(&quot;protocol&quot;, &quot;*&quot;))
+            else:
+                lo, _, hi = str(pr).partition(&quot;-&quot;)
+                add(src, lo, hi or lo, v.get(&quot;protocol&quot;, &quot;*&quot;))
+    return out
+
+
+def port_label(lo, hi, proto):
+    if proto == &quot;all&quot; or (lo == 0 and hi == 65535):
+        return &quot;all ports&quot;
+    names = [f&quot;{p} ({n})&quot; for p, n in SENSITIVE_PORTS.items() if lo &lt;= p &lt;= hi]
+    rng = str(lo) if lo == hi else f&quot;{lo}-{hi}&quot;
+    return f&quot;port {rng}&quot; + (f&quot; incl. {&#x27;, &#x27;.join(names[:3])}&quot; if names and lo != hi else (f&quot; ({SENSITIVE_PORTS[lo]})&quot; if lo == hi and lo in SENSITIVE_PORTS else &quot;&quot;))
+
+
+def parse_policy(doc):
+    if isinstance(doc, str):
+        try:
+            doc = json.loads(doc)
+        except ValueError:
+            return None
+    if not isinstance(doc, dict):
+        return None
+    st = doc.get(&quot;Statement&quot;) or []
+    return [st] if isinstance(st, dict) else st
+
+
+def as_list(x):
+    return x if isinstance(x, list) else ([] if x is None else [x])
+
+
+def allow_actions(stmts):
+    acts = set()
+    for s in stmts or []:
+        if s.get(&quot;Effect&quot;, &quot;Allow&quot;) != &quot;Allow&quot;:
+            continue
+        for a in as_list(s.get(&quot;Action&quot;)):
+            for r in as_list(s.get(&quot;Resource&quot;)) or [&quot;(none)&quot;]:
+                acts.add((str(a), str(r)))
+    return acts
+
+
+def check_policy(addr, attr, before, after, unknown):
+    out = []
+    if unknown:
+        return [finding(&quot;INFO&quot;, &quot;POLICY_UNKNOWN&quot;, addr, f&quot;{attr} is only known after apply&quot;, &quot;Review the rendered policy after apply or render it with a data source in a separate plan.&quot;)]
+    b, a = parse_policy(before), parse_policy(after)
+    if a is None:
+        return out
+    if attr == &quot;assume_role_policy&quot;:
+        for s in a:
+            if s.get(&quot;Effect&quot;, &quot;Allow&quot;) != &quot;Allow&quot;:
+                continue
+            pr = s.get(&quot;Principal&quot;)
+            vals = [pr] if isinstance(pr, str) else [v for x in (pr or {}).values() for v in as_list(x)]
+            if &quot;*&quot; in vals and not s.get(&quot;Condition&quot;):
+                out.append(finding(&quot;HIGH&quot;, &quot;TRUST_ANYONE&quot;, addr, &quot;trust policy lets any AWS principal assume this role (Principal * without Condition)&quot;,
+                                   &quot;Name the exact account or role ARNs, and add sts:ExternalId or aws:PrincipalOrgID conditions.&quot;))
+        bp = {v for s in (b or []) for x in (get(s, &quot;Principal&quot;) or {}).values() for v in as_list(x)} if b and all(isinstance(get(s, &quot;Principal&quot;), dict) for s in b) else set()
+        ap = {v for s in a if isinstance(s.get(&quot;Principal&quot;), dict) for x in s[&quot;Principal&quot;].values() for v in as_list(x)}
+        new = sorted(ap - bp - {&quot;*&quot;})
+        if b is not None and new:
+            out.append(finding(&quot;MEDIUM&quot;, &quot;TRUST_WIDENED&quot;, addr, &quot;new principals can assume this role: &quot; + &quot;, &quot;.join(new), &quot;Confirm each new principal is expected (cross-account access?).&quot;))
+        return out
+    for s in a:
+        if s.get(&quot;Effect&quot;, &quot;Allow&quot;) != &quot;Allow&quot;:
+            continue
+        orig = [str(x) for x in as_list(s.get(&quot;Action&quot;))]
+        acts = [x.lower() for x in orig]
+        res = [str(x) for x in as_list(s.get(&quot;Resource&quot;))]
+        pr = s.get(&quot;Principal&quot;)
+        if pr is not None:
+            vals = [pr] if isinstance(pr, str) else [v for x in pr.values() for v in as_list(x)]
+            if &quot;*&quot; in vals and not s.get(&quot;Condition&quot;):
+                out.append(finding(&quot;HIGH&quot;, &quot;PUBLIC_POLICY&quot;, addr, f&quot;resource policy allows Principal * ({&#x27;, &#x27;.join(acts)[:80]}) without a Condition&quot;,
+                                   &quot;Restrict Principal to known ARNs or add aws:SourceArn / aws:PrincipalOrgID / aws:SourceVpce conditions; use CloudFront OAC for public sites.&quot;))
+        if s.get(&quot;NotAction&quot;):
+            out.append(finding(&quot;MEDIUM&quot;, &quot;IAM_NOT_ACTION&quot;, addr, &quot;Allow with NotAction grants everything except the listed actions&quot;, &quot;List the allowed actions explicitly.&quot;))
+        if &quot;*&quot; in acts and &quot;*&quot; in res:
+            out.append(finding(&quot;HIGH&quot;, &quot;IAM_ADMIN&quot;, addr, &quot;Allow Action * on Resource * (full admin)&quot;, &quot;Grant only the actions and resources this principal needs.&quot;))
+            continue
+        esc = sorted({o for o, x in zip(orig, acts) if x in ESCALATION_ACTIONS and x != &quot;*&quot; and (&quot;*&quot; in res or x in (&quot;iam:*&quot;, &quot;sts:*&quot;))})
+        if esc:
+            out.append(finding(&quot;HIGH&quot;, &quot;IAM_ESCALATION&quot;, addr, f&quot;{&#x27;, &#x27;.join(esc)} on {&#x27;, &#x27;.join(res) or &#x27;*&#x27;} lets the holder gain more privileges&quot;,
+                               &quot;Scope iam:PassRole and sts:AssumeRole to specific role ARNs (and iam:PassedToService); avoid iam:* and kms:* wildcards.&quot;))
+        wild = sorted({o for o, x in zip(orig, acts) if x.endswith(&quot;:*&quot;) and x not in ESCALATION_ACTIONS})
+        if wild:
+            sev = &quot;HIGH&quot; if &quot;*&quot; in res else &quot;MEDIUM&quot;
+            out.append(finding(sev, &quot;IAM_WILDCARD&quot;, addr, f&quot;service wildcard {&#x27;, &#x27;.join(wild)} on {&#x27;, &#x27;.join(res)}&quot;,
+                               &quot;Replace with the specific actions used (check IAM Access Analyzer or CloudTrail for what is actually called).&quot;))
+    if b is not None:
+        added = sorted({x[0] + (&quot; on &quot; + x[1] if x[1] not in (&quot;*&quot;, &quot;(none)&quot;) else &quot; on *&quot;) for x in allow_actions(a) - allow_actions(b)})
+        if added:
+            out.append(finding(&quot;LOW&quot;, &quot;IAM_WIDENED&quot;, addr, &quot;policy grants new actions/resources: &quot; + &quot;, &quot;.join(added[:8]) + (&quot; ...&quot; if len(added) &gt; 8 else &quot;&quot;),
+                               &quot;Confirm the new permissions are needed; least privilege.&quot;))
+    return out
+
+
+def review_change(rc):
+    out = []
+    addr, rtype = rc.get(&quot;address&quot;, &quot;?&quot;), rc.get(&quot;type&quot;, &quot;&quot;)
+    ch = rc.get(&quot;change&quot;) or {}
+    actions = ch.get(&quot;actions&quot;) or []
+    kind = kind_of(actions)
+    before, after = ch.get(&quot;before&quot;) or {}, ch.get(&quot;after&quot;) or {}
+    unknown = ch.get(&quot;after_unknown&quot;) or {}
+    reason = rc.get(&quot;action_reason&quot;, &quot;&quot;)
+    if rc.get(&quot;mode&quot;) == &quot;data&quot; or kind in (&quot;no-op&quot;, &quot;read&quot;):
+        return kind, out
+    why = &quot;&quot;
+    if ch.get(&quot;replace_paths&quot;):
+        why = &quot; (forced by &quot; + &quot;, &quot;.join(&quot;.&quot;.join(map(str, p)) for p in ch[&quot;replace_paths&quot;]) + &quot;)&quot;
+    elif reason:
+        why = f&quot; ({reason.replace(&#x27;_&#x27;, &#x27; &#x27;)})&quot;
+    stateful = bool(STATEFUL.match(rtype))
+    if kind == &quot;forget&quot;:
+        out.append(finding(&quot;INFO&quot;, &quot;FORGET&quot;, addr, &quot;removed from state but not destroyed (removed block)&quot;, &quot;Make sure another configuration or team takes ownership of it.&quot;))
+    if kind == &quot;destroy&quot; or kind.startswith(&quot;replace&quot;):
+        if stateful:
+            extra = &quot;; force_destroy = true, so everything in it is deleted too&quot; if get(before, &quot;force_destroy&quot;) is True else &quot;&quot;
+            out.append(finding(&quot;HIGH&quot;, &quot;DATA_LOSS&quot;, addr, f&quot;{rtype} will be {&#x27;destroyed&#x27; if kind == &#x27;destroy&#x27; else &#x27;replaced, &#x27; + kind[9:-1]}{why}; its data does not carry over{extra}&quot;,
+                               &quot;Back up or snapshot first; if this is a rename/refactor add a `moved` block or `terraform state mv`; add lifecycle prevent_destroy for data stores.&quot;))
+        elif SECRET_GEN.match(rtype) and kind.startswith(&quot;replace&quot;):
+            out.append(finding(&quot;MEDIUM&quot;, &quot;SECRET_REGENERATED&quot;, addr, f&quot;{rtype} will be regenerated{why}; everything using the old value breaks&quot;,
+                               &quot;Check what consumes it (database password, keys) and plan the rotation.&quot;))
+        elif kind == &quot;destroy&quot;:
+            sev = &quot;MEDIUM&quot; if DOWNTIME.match(rtype) or reason in (&quot;delete_because_count_index&quot;, &quot;delete_because_each_key&quot;) else &quot;LOW&quot;
+            out.append(finding(sev, &quot;DESTROY&quot;, addr, f&quot;will be destroyed{why}&quot;,
+                               &quot;Confirm it is intended; for a rename/refactor use a `moved` block instead of destroy + create.&quot;))
+        else:
+            sev = &quot;MEDIUM&quot; if kind == &quot;replace (destroy first)&quot; and DOWNTIME.match(rtype) else &quot;LOW&quot;
+            out.append(finding(sev, &quot;REPLACE&quot;, addr, f&quot;{kind}{why}&quot;,
+                               &quot;Expect a new ID/IP/DNS name; use create_before_destroy where possible and check dependents.&quot;))
+        if reason in (&quot;delete_because_count_index&quot;,):
+            out.append(finding(&quot;MEDIUM&quot;, &quot;COUNT_INDEX_SHIFT&quot;, addr, &quot;destroyed because a count index moved (an item was removed from the middle of a list)&quot;,
+                               &quot;Switch to for_each with stable keys, or add moved blocks for the shifted indexes.&quot;))
+        if reason == &quot;delete_because_no_resource_config&quot;:
+            out.append(finding(&quot;INFO&quot;, &quot;REMOVED_FROM_CONFIG&quot;, addr, &quot;resource no longer in configuration&quot;, &quot;If it moved to another module or address, add a `moved` block; to keep it but stop managing it, use a `removed` block with destroy = false.&quot;))
+    if kind in (&quot;create&quot;, &quot;update&quot;) or kind.startswith(&quot;replace&quot;):
+        bm, am = ch.get(&quot;before_sensitive&quot;) or {}, ch.get(&quot;after_sensitive&quot;) or {}
+        for attr in PROTECTION_ATTRS:
+            if get(after, attr) is False and (kind != &quot;update&quot; or get(before, attr) is True):
+                out.append(finding(&quot;HIGH&quot; if kind == &quot;update&quot; else &quot;MEDIUM&quot;, &quot;PROTECTION_OFF&quot;, addr, f&quot;{attr} {&#x27;turned off&#x27; if kind == &#x27;update&#x27; else &#x27;is false&#x27;}&quot;,
+                                   f&quot;Keep {attr} = true for production resources; turn it off only in a separate, reviewed change right before a planned delete.&quot;))
+        if get(after, &quot;skip_final_snapshot&quot;) is True and rtype in (&quot;aws_db_instance&quot;, &quot;aws_rds_cluster&quot;, &quot;aws_docdb_cluster&quot;, &quot;aws_neptune_cluster&quot;, &quot;aws_redshift_cluster&quot;):
+            if kind != &quot;update&quot; or get(before, &quot;skip_final_snapshot&quot;) is not True:
+                out.append(finding(&quot;MEDIUM&quot;, &quot;NO_FINAL_SNAPSHOT&quot;, addr, &quot;skip_final_snapshot = true: a delete leaves no snapshot&quot;,
+                                   &quot;Set skip_final_snapshot = false with a final_snapshot_identifier.&quot;))
+        if get(after, &quot;force_destroy&quot;) is True and (kind != &quot;update&quot; or get(before, &quot;force_destroy&quot;) is not True):
+            out.append(finding(&quot;MEDIUM&quot;, &quot;FORCE_DESTROY&quot;, addr, &quot;force_destroy = true lets Terraform delete the bucket/zone with everything in it&quot;,
+                               &quot;Keep force_destroy = false on buckets and zones that hold real data.&quot;))
+        for attr in (&quot;storage_encrypted&quot;, &quot;encrypted&quot;, &quot;server_side_encryption&quot;):
+            if get(after, attr) is False and (kind != &quot;update&quot; or get(before, attr) is True):
+                out.append(finding(&quot;MEDIUM&quot;, &quot;ENCRYPTION_OFF&quot;, addr, f&quot;{attr} = false&quot;, &quot;Enable encryption at rest (it usually forces replacement later, so do it now).&quot;))
+        if get(after, &quot;backup_retention_period&quot;) == 0 and get(before, &quot;backup_retention_period&quot;, 1) != 0:
+            out.append(finding(&quot;MEDIUM&quot;, &quot;BACKUPS_OFF&quot;, addr, &quot;backup_retention_period = 0 disables automated backups&quot;, &quot;Keep at least 7 days for production databases.&quot;))
+        if get(after, &quot;publicly_accessible&quot;) is True and get(before, &quot;publicly_accessible&quot;) is not True:
+            out.append(finding(&quot;HIGH&quot;, &quot;PUBLIC_DATABASE&quot;, addr, &quot;publicly_accessible = true gives the database a public endpoint&quot;,
+                               &quot;Keep databases private; connect through a bastion, VPN, SSM or RDS Proxy.&quot;))
+        if rtype == &quot;aws_s3_bucket_public_access_block&quot;:
+            off = [k for k in (&quot;block_public_acls&quot;, &quot;block_public_policy&quot;, &quot;ignore_public_acls&quot;, &quot;restrict_public_buckets&quot;)
+                   if get(after, k) is False and (kind != &quot;update&quot; or get(before, k) is not False)]
+            if off:
+                out.append(finding(&quot;HIGH&quot;, &quot;S3_PUBLIC_ACCESS&quot;, addr, &quot;S3 public access block turned off: &quot; + &quot;, &quot;.join(off),
+                                   &quot;Keep all four settings true; serve public content through CloudFront with Origin Access Control.&quot;))
+        if rtype in (&quot;aws_s3_bucket_acl&quot;, &quot;aws_s3_object&quot;) and get(after, &quot;acl&quot;) in (&quot;public-read&quot;, &quot;public-read-write&quot;, &quot;authenticated-read&quot;):
+            out.append(finding(&quot;HIGH&quot;, &quot;PUBLIC_ACL&quot;, addr, f&quot;acl = {after[&#x27;acl&#x27;]}&quot;, &quot;Use private ACLs (BucketOwnerEnforced) and CloudFront for public files.&quot;))
+        if rtype.startswith(&quot;google_&quot;) and &quot;iam&quot; in rtype:
+            members = as_list(get(after, &quot;member&quot;)) + as_list(get(after, &quot;members&quot;))
+            if any(m in (&quot;allUsers&quot;, &quot;allAuthenticatedUsers&quot;) for m in members):
+                out.append(finding(&quot;HIGH&quot;, &quot;PUBLIC_IAM&quot;, addr, &quot;grants a role to allUsers/allAuthenticatedUsers&quot;, &quot;Grant to specific users, groups or service accounts.&quot;))
+            if get(after, &quot;role&quot;) in (&quot;roles/owner&quot;, &quot;roles/editor&quot;, &quot;roles/iam.securityAdmin&quot;):
+                out.append(finding(&quot;HIGH&quot;, &quot;IAM_ADMIN&quot;, addr, f&quot;grants {after[&#x27;role&#x27;]}&quot;, &quot;Use a narrower predefined or custom role.&quot;))
+        if rtype == &quot;azurerm_role_assignment&quot; and get(after, &quot;role_definition_name&quot;) in (&quot;Owner&quot;, &quot;User Access Administrator&quot;, &quot;Contributor&quot;):
+            sev = &quot;MEDIUM&quot; if after[&quot;role_definition_name&quot;] == &quot;Contributor&quot; else &quot;HIGH&quot;
+            out.append(finding(sev, &quot;IAM_ADMIN&quot;, addr, f&quot;assigns {after[&#x27;role_definition_name&#x27;]}&quot;, &quot;Use the narrowest built-in role at the smallest scope.&quot;))
+        if rtype.startswith(&quot;aws_iam_&quot;) and rtype.endswith(&quot;policy_attachment&quot;):
+            arn = get(after, &quot;policy_arn&quot;) or &quot;&quot;
+            if ADMIN_POLICIES.search(arn) and get(before, &quot;policy_arn&quot;) != arn:
+                out.append(finding(&quot;HIGH&quot;, &quot;IAM_ADMIN&quot;, addr, f&quot;attaches {arn.split(&#x27;/&#x27;)[-1]}&quot;, &quot;Attach a least-privilege policy instead; keep admin roles for break-glass use with MFA.&quot;))
+            elif arn.endswith(&quot;FullAccess&quot;) and get(before, &quot;policy_arn&quot;) != arn:
+                out.append(finding(&quot;MEDIUM&quot;, &quot;IAM_WILDCARD&quot;, addr, f&quot;attaches {arn.split(&#x27;/&#x27;)[-1]}&quot;, &quot;Prefer a scoped customer-managed policy.&quot;))
+        if rtype == &quot;aws_lambda_function_url&quot; and get(after, &quot;authorization_type&quot;) == &quot;NONE&quot;:
+            out.append(finding(&quot;MEDIUM&quot;, &quot;PUBLIC_FUNCTION_URL&quot;, addr, &quot;Lambda function URL with authorization_type NONE is public&quot;, &quot;Use AWS_IAM auth or validate requests in the function.&quot;))
+        new_open = open_rules(rtype, after) - (open_rules(rtype, before) if kind == &quot;update&quot; else set())
+        for cidr, lo, hi, proto in sorted(new_open, key=lambda x: (x[1], x[2])):
+            label = port_label(lo, hi, proto)
+            if proto == &quot;all&quot; or (lo == 0 and hi == 65535) or any(lo &lt;= p &lt;= hi for p in SENSITIVE_PORTS):
+                sev = &quot;HIGH&quot;
+            elif lo in WEB_PORTS and hi == lo:
+                sev = &quot;INFO&quot;
+            else:
+                sev = &quot;MEDIUM&quot;
+            out.append(finding(sev, &quot;PUBLIC_INGRESS&quot;, addr, f&quot;new ingress from {cidr} on {label}&quot;,
+                               &quot;Restrict the source to known CIDRs or a load balancer security group; reach admin ports through SSM, VPN or a bastion.&quot; if sev != &quot;INFO&quot; else &quot;Expected for a public web endpoint; make sure only the load balancer is exposed.&quot;))
+        for attr in POLICY_ATTRS:
+            if attr in after or get(unknown, attr):
+                if sensitive(am, attr):
+                    continue
+                out += check_policy(addr, attr, get(before, attr), get(after, attr), get(unknown, attr) is True)
+    return kind, out
+
+
+def review_json(plan):
+    if not isinstance(plan, dict) or &quot;format_version&quot; not in plan:
+        raise ValueError(&quot;not a terraform show -json document (no format_version)&quot;)
+    changes, findings = [], []
+    for rc in plan.get(&quot;resource_changes&quot;) or []:
+        kind, f = review_change(rc)
+        if kind not in (&quot;no-op&quot;, &quot;read&quot;) and rc.get(&quot;mode&quot;) != &quot;data&quot;:
+            changes.append((kind, rc.get(&quot;address&quot;, &quot;?&quot;)))
+        findings += f
+        if (rc.get(&quot;change&quot;) or {}).get(&quot;importing&quot;):
+            findings.append(finding(&quot;INFO&quot;, &quot;IMPORT&quot;, rc.get(&quot;address&quot;, &quot;?&quot;), &quot;will be imported&quot;, &quot;Check the plan shows no further changes after import.&quot;))
+        if rc.get(&quot;previous_address&quot;):
+            findings.append(finding(&quot;INFO&quot;, &quot;MOVED&quot;, rc.get(&quot;address&quot;, &quot;?&quot;), f&quot;moved from {rc[&#x27;previous_address&#x27;]}&quot;, &quot;No action; moved blocks avoid destroy + create.&quot;))
+    drift = [d.get(&quot;address&quot;, &quot;?&quot;) for d in plan.get(&quot;resource_drift&quot;) or []]
+    if drift:
+        findings.append(finding(&quot;INFO&quot;, &quot;DRIFT&quot;, &quot;, &quot;.join(drift[:5]) + (&quot; ...&quot; if len(drift) &gt; 5 else &quot;&quot;),
+                                f&quot;{len(drift)} resource(s) changed outside Terraform&quot;, &quot;Find out who changed them; the plan may revert manual fixes.&quot;))
+    if plan.get(&quot;errored&quot;):
+        findings.append(finding(&quot;HIGH&quot;, &quot;PLAN_ERRORED&quot;, &quot;-&quot;, &quot;the plan errored&quot;, &quot;Fix the errors and re-plan before applying anything.&quot;))
+    elif plan.get(&quot;complete&quot;) is False:
+        findings.append(finding(&quot;MEDIUM&quot;, &quot;PLAN_INCOMPLETE&quot;, &quot;-&quot;, &quot;plan is not complete (deferred or -target changes)&quot;, &quot;Run a full plan after this apply.&quot;))
+    return changes, findings, plan.get(&quot;terraform_version&quot;, &quot;?&quot;)
+
+
+TEXT_RE = re.compile(r&quot;^\s*# (\S+) (will be created|will be destroyed|will be updated in-place|must be replaced|will be read during apply|will no longer be managed by Terraform)&quot;)
+
+
+def review_text(text):
+    text = re.sub(r&quot;\x1b\[[0-9;]*m&quot;, &quot;&quot;, text)
+    lines = text.splitlines()
+    changes, findings = [], []
+    i = 0
+    while i &lt; len(lines):
+        m = TEXT_RE.match(lines[i])
+        if not m:
+            i += 1; continue
+        addr, verb = m.group(1), m.group(2)
+        rtype = re.sub(r&quot;^(module\.[^.]+\.)*&quot;, &quot;&quot;, addr).split(&quot;.&quot;)[0]
+        if addr.startswith(&quot;data.&quot;) or &quot;.data.&quot; in addr or &quot;read during apply&quot; in verb:
+            i += 1; continue
+        block, j = [], i + 1
+        while j &lt; len(lines) and not TEXT_RE.match(lines[j]) and not lines[j].startswith(&quot;Plan:&quot;):
+            block.append(lines[j]); j += 1
+        first = next((l.strip() for l in block if l.strip() and not l.strip().startswith(&quot;#&quot;)), &quot;&quot;)
+        reason = next((l.strip()[3:-1] for l in block[:3] if l.strip().startswith(&quot;# (&quot;)), &quot;&quot;)
+        kind = {&quot;will be created&quot;: &quot;create&quot;, &quot;will be destroyed&quot;: &quot;destroy&quot;, &quot;will be updated in-place&quot;: &quot;update&quot;,
+                &quot;will no longer be managed by Terraform&quot;: &quot;forget&quot;}.get(verb)
+        if verb == &quot;must be replaced&quot;:
+            kind = &quot;replace (create first)&quot; if first.startswith(&quot;+/-&quot;) else &quot;replace (destroy first)&quot;
+        forced = [re.sub(r&quot;^[~+\-/ ]+&quot;, &quot;&quot;, l.strip()).split(&quot; &quot;)[0] for l in block if &quot;# forces replacement&quot; in l]
+        rc = {&quot;address&quot;: addr, &quot;type&quot;: rtype, &quot;change&quot;: {&quot;actions&quot;: {&quot;create&quot;: [&quot;create&quot;], &quot;update&quot;: [&quot;update&quot;], &quot;destroy&quot;: [&quot;delete&quot;], &quot;forget&quot;: [&quot;forget&quot;],
+              &quot;replace (create first)&quot;: [&quot;create&quot;, &quot;delete&quot;], &quot;replace (destroy first)&quot;: [&quot;delete&quot;, &quot;create&quot;]}[kind],
+              &quot;replace_paths&quot;: [[f] for f in forced]}}
+        if &quot;out of range for count&quot; in reason or &quot;count index&quot; in reason:
+            rc[&quot;action_reason&quot;] = &quot;delete_because_count_index&quot;
+        elif &quot;not in for_each map&quot; in reason:
+            rc[&quot;action_reason&quot;] = &quot;delete_because_each_key&quot;
+        elif &quot;not in configuration&quot; in reason:
+            rc[&quot;action_reason&quot;] = &quot;delete_because_no_resource_config&quot;
+        k, f = review_change(rc)
+        changes.append((k, addr))
+        findings += f
+        i = j
+    if not changes and &quot;No changes.&quot; not in text:
+        raise ValueError(&quot;no resource changes found; is this terraform plan output?&quot;)
+    findings.append(finding(&quot;INFO&quot;, &quot;TEXT_MODE&quot;, &quot;-&quot;, &quot;text plan: only actions were checked, not attribute values (IAM, ingress, protection flags)&quot;,
+                            &quot;Run `terraform show -json plan.out &gt; plan.json` and review the JSON for full checks.&quot;))
+    return changes, findings, &quot;version unknown (text plan)&quot;
+
+
+def summarize(changes, findings):
+    counts = {}
+    for k, _ in changes:
+        key = &quot;replace&quot; if k.startswith(&quot;replace&quot;) else k
+        counts[key] = counts.get(key, 0) + 1
+    findings.sort(key=lambda f: (SEV_ORDER[f[&quot;severity&quot;]], f[&quot;resource&quot;]))
+    sev = {s: sum(1 for f in findings if f[&quot;severity&quot;] == s) for s in SEV_ORDER}
+    if sev[&quot;HIGH&quot;]:
+        verdict = &quot;DO NOT APPLY as is: resolve or explicitly accept every HIGH finding&quot;
+    elif sev[&quot;MEDIUM&quot;]:
+        verdict = &quot;Apply after review: MEDIUM findings need an owner&#x27;s OK&quot;
+    else:
+        verdict = &quot;Low risk&quot;
+    return counts, sev, verdict
+
+
+def render(path, version, changes, findings):
+    counts, sev, verdict = summarize(changes, findings)
+    out = [f&quot;# Terraform plan risk review: {path}&quot;, &quot;&quot;,
+           f&quot;Terraform {version}. Changes: &quot; + &quot;, &quot;.join(f&quot;{counts.get(k, 0)} {k}&quot; for k in (&quot;create&quot;, &quot;update&quot;, &quot;replace&quot;, &quot;destroy&quot;)) +
+           (f&quot;, {counts[&#x27;forget&#x27;]} forget&quot; if counts.get(&quot;forget&quot;) else &quot;&quot;),
+           f&quot;Findings: {sev[&#x27;HIGH&#x27;]} HIGH, {sev[&#x27;MEDIUM&#x27;]} MEDIUM, {sev[&#x27;LOW&#x27;]} LOW, {sev[&#x27;INFO&#x27;]} INFO&quot;,
+           f&quot;Verdict: {verdict}&quot;, &quot;&quot;, &quot;## Findings&quot;, &quot;&quot;]
+    if findings:
+        out += [&quot;| Severity | Code | Resource | Problem | What to do |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in findings:
+            out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | `{f[&#x27;resource&#x27;]}` | {f[&#x27;problem&#x27;]} | {f[&#x27;fix&#x27;]} |&quot;)
+    else:
+        out.append(&quot;No findings.&quot;)
+    out += [&quot;&quot;, &quot;## All changes&quot;, &quot;&quot;, &quot;| Action | Resource |&quot;, &quot;|---|---|&quot;]
+    order = {&quot;destroy&quot;: 0, &quot;replace (destroy first)&quot;: 1, &quot;replace (create first)&quot;: 2, &quot;update&quot;: 3, &quot;create&quot;: 4, &quot;forget&quot;: 5}
+    for k, a in sorted(changes, key=lambda x: (order.get(x[0], 9), x[1])):
+        out.append(f&quot;| {k} | `{a}` |&quot;)
+    out += [&quot;&quot;, &quot;Plan JSON can contain secrets in plain text: do not paste it into tickets or chats; share this summary instead.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+    def t(name, cond):
+        cases.append((name, bool(cond)))
+    def codes(rc):
+        return {f[&quot;code&quot;]: f[&quot;severity&quot;] for f in review_change(rc)[1]}
+    def rc(rtype, actions, before=None, after=None, **kw):
+        d = {&quot;address&quot;: f&quot;{rtype}.x&quot;, &quot;mode&quot;: &quot;managed&quot;, &quot;type&quot;: rtype, &quot;change&quot;: {&quot;actions&quot;: actions, &quot;before&quot;: before, &quot;after&quot;: after, **kw.pop(&quot;change&quot;, {})}}
+        d.update(kw)
+        return d
+    t(&quot;kind names&quot;, kind_of([&quot;delete&quot;, &quot;create&quot;]) == &quot;replace (destroy first)&quot; and kind_of([&quot;create&quot;, &quot;delete&quot;]) == &quot;replace (create first)&quot; and kind_of([&quot;delete&quot;]) == &quot;destroy&quot;)
+    t(&quot;db destroy = HIGH DATA_LOSS&quot;, codes(rc(&quot;aws_db_instance&quot;, [&quot;delete&quot;], {&quot;id&quot;: &quot;a&quot;}, None)).get(&quot;DATA_LOSS&quot;) == &quot;HIGH&quot;)
+    t(&quot;bucket replace = HIGH DATA_LOSS&quot;, codes(rc(&quot;aws_s3_bucket&quot;, [&quot;create&quot;, &quot;delete&quot;], {}, {})).get(&quot;DATA_LOSS&quot;) == &quot;HIGH&quot;)
+    t(&quot;stateless destroy LOW&quot;, codes(rc(&quot;aws_iam_role&quot;, [&quot;delete&quot;], {}, None)).get(&quot;DESTROY&quot;) == &quot;LOW&quot;)
+    t(&quot;instance destroy-first replace MEDIUM&quot;, codes(rc(&quot;aws_instance&quot;, [&quot;delete&quot;, &quot;create&quot;], {}, {})).get(&quot;REPLACE&quot;) == &quot;MEDIUM&quot;)
+    t(&quot;create-first replace LOW&quot;, codes(rc(&quot;aws_lb_target_group&quot;, [&quot;create&quot;, &quot;delete&quot;], {}, {})).get(&quot;REPLACE&quot;) == &quot;LOW&quot;)
+    t(&quot;replace_paths shown&quot;, &quot;forced by engine&quot; in review_change(rc(&quot;aws_instance&quot;, [&quot;delete&quot;, &quot;create&quot;], {}, {}, change={&quot;replace_paths&quot;: [[&quot;engine&quot;]]}))[1][0][&quot;problem&quot;])
+    t(&quot;random_password regenerated&quot;, codes(rc(&quot;random_password&quot;, [&quot;delete&quot;, &quot;create&quot;], {}, {})).get(&quot;SECRET_REGENERATED&quot;) == &quot;MEDIUM&quot;)
+    t(&quot;count index shift&quot;, &quot;COUNT_INDEX_SHIFT&quot; in codes(rc(&quot;aws_instance&quot;, [&quot;delete&quot;], {}, None, action_reason=&quot;delete_because_count_index&quot;)))
+    t(&quot;no-op ignored&quot;, review_change(rc(&quot;aws_vpc&quot;, [&quot;no-op&quot;], {}, {}))[1] == [])
+    t(&quot;deletion_protection turned off HIGH&quot;, codes(rc(&quot;aws_db_instance&quot;, [&quot;update&quot;], {&quot;deletion_protection&quot;: True}, {&quot;deletion_protection&quot;: False})).get(&quot;PROTECTION_OFF&quot;) == &quot;HIGH&quot;)
+    t(&quot;skip_final_snapshot MEDIUM&quot;, &quot;NO_FINAL_SNAPSHOT&quot; in codes(rc(&quot;aws_db_instance&quot;, [&quot;create&quot;], None, {&quot;skip_final_snapshot&quot;: True})))
+    t(&quot;force_destroy MEDIUM&quot;, &quot;FORCE_DESTROY&quot; in codes(rc(&quot;aws_s3_bucket&quot;, [&quot;update&quot;], {&quot;force_destroy&quot;: False}, {&quot;force_destroy&quot;: True})))
+    t(&quot;unchanged force_destroy not re-flagged&quot;, &quot;FORCE_DESTROY&quot; not in codes(rc(&quot;aws_s3_bucket&quot;, [&quot;update&quot;], {&quot;force_destroy&quot;: True}, {&quot;force_destroy&quot;: True})))
+    t(&quot;encryption off&quot;, &quot;ENCRYPTION_OFF&quot; in codes(rc(&quot;aws_ebs_volume&quot;, [&quot;create&quot;], None, {&quot;encrypted&quot;: False})))
+    t(&quot;publicly_accessible HIGH&quot;, codes(rc(&quot;aws_db_instance&quot;, [&quot;update&quot;], {&quot;publicly_accessible&quot;: False}, {&quot;publicly_accessible&quot;: True})).get(&quot;PUBLIC_DATABASE&quot;) == &quot;HIGH&quot;)
+    sg_b = {&quot;ingress&quot;: [{&quot;cidr_blocks&quot;: [&quot;10.0.0.0/8&quot;], &quot;from_port&quot;: 22, &quot;to_port&quot;: 22, &quot;protocol&quot;: &quot;tcp&quot;}]}
+    sg_a = {&quot;ingress&quot;: sg_b[&quot;ingress&quot;] + [{&quot;cidr_blocks&quot;: [&quot;0.0.0.0/0&quot;], &quot;from_port&quot;: 22, &quot;to_port&quot;: 22, &quot;protocol&quot;: &quot;tcp&quot;}]}
+    t(&quot;new SSH from 0.0.0.0/0 HIGH&quot;, codes(rc(&quot;aws_security_group&quot;, [&quot;update&quot;], sg_b, sg_a)).get(&quot;PUBLIC_INGRESS&quot;) == &quot;HIGH&quot;)
+    t(&quot;existing open rule not re-flagged&quot;, &quot;PUBLIC_INGRESS&quot; not in codes(rc(&quot;aws_security_group&quot;, [&quot;update&quot;], sg_a, sg_a)))
+    t(&quot;443 from internet INFO&quot;, codes(rc(&quot;aws_vpc_security_group_ingress_rule&quot;, [&quot;create&quot;], None, {&quot;cidr_ipv4&quot;: &quot;0.0.0.0/0&quot;, &quot;from_port&quot;: 443, &quot;to_port&quot;: 443, &quot;ip_protocol&quot;: &quot;tcp&quot;})).get(&quot;PUBLIC_INGRESS&quot;) == &quot;INFO&quot;)
+    t(&quot;all protocols HIGH&quot;, codes(rc(&quot;aws_security_group_rule&quot;, [&quot;create&quot;], None, {&quot;type&quot;: &quot;ingress&quot;, &quot;cidr_blocks&quot;: [&quot;0.0.0.0/0&quot;], &quot;from_port&quot;: 0, &quot;to_port&quot;: 0, &quot;protocol&quot;: &quot;-1&quot;})).get(&quot;PUBLIC_INGRESS&quot;) == &quot;HIGH&quot;)
+    t(&quot;ipv6 ::/0 8080 MEDIUM&quot;, codes(rc(&quot;aws_security_group_rule&quot;, [&quot;create&quot;], None, {&quot;type&quot;: &quot;ingress&quot;, &quot;ipv6_cidr_blocks&quot;: [&quot;::/0&quot;], &quot;from_port&quot;: 8080, &quot;to_port&quot;: 8080, &quot;protocol&quot;: &quot;tcp&quot;})).get(&quot;PUBLIC_INGRESS&quot;) == &quot;MEDIUM&quot;)
+    t(&quot;gcp firewall 3389&quot;, codes(rc(&quot;google_compute_firewall&quot;, [&quot;create&quot;], None, {&quot;direction&quot;: &quot;INGRESS&quot;, &quot;source_ranges&quot;: [&quot;0.0.0.0/0&quot;], &quot;allow&quot;: [{&quot;protocol&quot;: &quot;tcp&quot;, &quot;ports&quot;: [&quot;3389&quot;]}]})).get(&quot;PUBLIC_INGRESS&quot;) == &quot;HIGH&quot;)
+    t(&quot;azure nsg * HIGH&quot;, codes(rc(&quot;azurerm_network_security_rule&quot;, [&quot;create&quot;], None, {&quot;direction&quot;: &quot;Inbound&quot;, &quot;access&quot;: &quot;Allow&quot;, &quot;source_address_prefix&quot;: &quot;*&quot;, &quot;destination_port_range&quot;: &quot;*&quot;, &quot;protocol&quot;: &quot;Tcp&quot;})).get(&quot;PUBLIC_INGRESS&quot;) == &quot;HIGH&quot;)
+    t(&quot;S3 public access block off&quot;, codes(rc(&quot;aws_s3_bucket_public_access_block&quot;, [&quot;update&quot;], {&quot;block_public_policy&quot;: True}, {&quot;block_public_policy&quot;: False})).get(&quot;S3_PUBLIC_ACCESS&quot;) == &quot;HIGH&quot;)
+    t(&quot;public-read ACL&quot;, &quot;PUBLIC_ACL&quot; in codes(rc(&quot;aws_s3_bucket_acl&quot;, [&quot;create&quot;], None, {&quot;acl&quot;: &quot;public-read&quot;})))
+    pol = lambda *st: json.dumps({&quot;Version&quot;: &quot;2012-10-17&quot;, &quot;Statement&quot;: list(st)})
+    t(&quot;admin policy HIGH&quot;, codes(rc(&quot;aws_iam_policy&quot;, [&quot;create&quot;], None, {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;*&quot;, &quot;Resource&quot;: &quot;*&quot;})})).get(&quot;IAM_ADMIN&quot;) == &quot;HIGH&quot;)
+    t(&quot;PassRole on * HIGH&quot;, codes(rc(&quot;aws_iam_role_policy&quot;, [&quot;create&quot;], None, {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: [&quot;iam:PassRole&quot;], &quot;Resource&quot;: &quot;*&quot;})})).get(&quot;IAM_ESCALATION&quot;) == &quot;HIGH&quot;)
+    t(&quot;s3:* on bucket MEDIUM&quot;, codes(rc(&quot;aws_iam_role_policy&quot;, [&quot;create&quot;], None, {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;s3:*&quot;, &quot;Resource&quot;: &quot;arn:aws:s3:::b/*&quot;})})).get(&quot;IAM_WILDCARD&quot;) == &quot;MEDIUM&quot;)
+    t(&quot;IAM_WIDENED lists new actions&quot;, &quot;s3:DeleteObject on arn:aws:s3:::b/*&quot; in next(f[&quot;problem&quot;] for f in review_change(rc(&quot;aws_iam_role_policy&quot;, [&quot;update&quot;],
+        {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;s3:GetObject&quot;, &quot;Resource&quot;: &quot;arn:aws:s3:::b/*&quot;})},
+        {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: [&quot;s3:GetObject&quot;, &quot;s3:DeleteObject&quot;], &quot;Resource&quot;: &quot;arn:aws:s3:::b/*&quot;})}))[1] if f[&quot;code&quot;] == &quot;IAM_WIDENED&quot;))
+    t(&quot;Deny statements ignored&quot;, &quot;IAM_ADMIN&quot; not in codes(rc(&quot;aws_iam_policy&quot;, [&quot;create&quot;], None, {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Deny&quot;, &quot;Action&quot;: &quot;*&quot;, &quot;Resource&quot;: &quot;*&quot;})})))
+    t(&quot;trust anyone HIGH&quot;, codes(rc(&quot;aws_iam_role&quot;, [&quot;create&quot;], None, {&quot;assume_role_policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Principal&quot;: {&quot;AWS&quot;: &quot;*&quot;}, &quot;Action&quot;: &quot;sts:AssumeRole&quot;})})).get(&quot;TRUST_ANYONE&quot;) == &quot;HIGH&quot;)
+    t(&quot;trust with condition ok&quot;, &quot;TRUST_ANYONE&quot; not in codes(rc(&quot;aws_iam_role&quot;, [&quot;create&quot;], None, {&quot;assume_role_policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Principal&quot;: {&quot;AWS&quot;: &quot;*&quot;}, &quot;Action&quot;: &quot;sts:AssumeRole&quot;, &quot;Condition&quot;: {&quot;StringEquals&quot;: {&quot;aws:PrincipalOrgID&quot;: &quot;o-1&quot;}}})})))
+    t(&quot;bucket policy Principal * HIGH&quot;, codes(rc(&quot;aws_s3_bucket_policy&quot;, [&quot;create&quot;], None, {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Principal&quot;: &quot;*&quot;, &quot;Action&quot;: &quot;s3:GetObject&quot;, &quot;Resource&quot;: &quot;arn:aws:s3:::b/*&quot;})})).get(&quot;PUBLIC_POLICY&quot;) == &quot;HIGH&quot;)
+    t(&quot;unknown policy INFO&quot;, &quot;POLICY_UNKNOWN&quot; in codes(rc(&quot;aws_iam_policy&quot;, [&quot;create&quot;], None, {}, change={&quot;after_unknown&quot;: {&quot;policy&quot;: True}})))
+    t(&quot;sensitive policy skipped&quot;, &quot;IAM_ADMIN&quot; not in codes(rc(&quot;aws_iam_policy&quot;, [&quot;create&quot;], None, {&quot;policy&quot;: pol({&quot;Effect&quot;: &quot;Allow&quot;, &quot;Action&quot;: &quot;*&quot;, &quot;Resource&quot;: &quot;*&quot;})}, change={&quot;after_sensitive&quot;: {&quot;policy&quot;: True}})))
+    t(&quot;AdministratorAccess attachment HIGH&quot;, codes(rc(&quot;aws_iam_role_policy_attachment&quot;, [&quot;create&quot;], None, {&quot;policy_arn&quot;: &quot;arn:aws:iam::aws:policy/AdministratorAccess&quot;})).get(&quot;IAM_ADMIN&quot;) == &quot;HIGH&quot;)
+    t(&quot;gcp allUsers HIGH&quot;, &quot;PUBLIC_IAM&quot; in codes(rc(&quot;google_storage_bucket_iam_member&quot;, [&quot;create&quot;], None, {&quot;member&quot;: &quot;allUsers&quot;, &quot;role&quot;: &quot;roles/storage.objectViewer&quot;})))
+    t(&quot;not a plan rejected&quot;, raises(lambda: review_json({&quot;foo&quot;: 1})))
+    ch, fs, _ = review_json({&quot;format_version&quot;: &quot;1.2&quot;, &quot;resource_changes&quot;: [rc(&quot;aws_db_instance&quot;, [&quot;delete&quot;], {}, None)], &quot;resource_drift&quot;: [{&quot;address&quot;: &quot;aws_lb.a&quot;}], &quot;errored&quot;: False, &quot;complete&quot;: True})
+    t(&quot;json review with drift&quot;, ch == [(&quot;destroy&quot;, &quot;aws_db_instance.x&quot;)] and {&quot;DATA_LOSS&quot;, &quot;DRIFT&quot;} &lt;= {f[&quot;code&quot;] for f in fs})
+    txt = &quot;&quot;&quot;  # aws_db_instance.main must be replaced
+-/+ resource &quot;aws_db_instance&quot; &quot;main&quot; {
+      ~ engine = &quot;postgres&quot; -&gt; &quot;mysql&quot; # forces replacement
+    }
+
+  # aws_instance.web[1] will be destroyed
+  # (because index [1] is out of range for count)
+  - resource &quot;aws_instance&quot; &quot;web&quot; {
+    }
+
+  # aws_lb_target_group.a must be replaced
++/- resource &quot;aws_lb_target_group&quot; &quot;a&quot; {
+    }
+
+Plan: 2 to add, 0 to change, 3 to destroy.
+&quot;&quot;&quot;
+    ch, fs, _ = review_text(txt)
+    c = {f[&quot;code&quot;] for f in fs}
+    t(&quot;text mode actions&quot;, ch == [(&quot;replace (destroy first)&quot;, &quot;aws_db_instance.main&quot;), (&quot;destroy&quot;, &quot;aws_instance.web[1]&quot;), (&quot;replace (create first)&quot;, &quot;aws_lb_target_group.a&quot;)])
+    t(&quot;text mode findings&quot;, {&quot;DATA_LOSS&quot;, &quot;DESTROY&quot;, &quot;REPLACE&quot;, &quot;TEXT_MODE&quot;, &quot;COUNT_INDEX_SHIFT&quot;} &lt;= c and &quot;forced by engine&quot; in next(f[&quot;problem&quot;] for f in fs if f[&quot;code&quot;] == &quot;DATA_LOSS&quot;))
+    t(&quot;text mode rejects junk&quot;, raises(lambda: review_text(&quot;hello&quot;)))
+    passed = sum(ok for _, ok in cases)
+    for name, ok in cases:
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(&quot;plan&quot;, nargs=&quot;?&quot;, help=&quot;plan JSON (terraform show -json) or plan text (terraform plan -no-color)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.plan:
+        ap.print_usage(sys.stderr); return 2
+    try:
+        raw = open(a.plan, encoding=&quot;utf-8&quot;).read()
+        if raw.lstrip().startswith(&quot;{&quot;):
+            changes, findings, version = review_json(json.loads(raw))
+        else:
+            changes, findings, version = review_text(raw)
+    except (OSError, UnicodeDecodeError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr); return 2
+    counts, sev, verdict = summarize(changes, findings)
+    if a.json:
+        print(json.dumps({&quot;terraform_version&quot;: version, &quot;counts&quot;: counts, &quot;severity&quot;: sev, &quot;verdict&quot;: verdict,
+                          &quot;findings&quot;: findings, &quot;changes&quot;: [{&quot;action&quot;: k, &quot;address&quot;: x} for k, x in changes]}, indent=2))
+    else:
+        print(render(a.plan, version, changes, findings))
+    return 1 if sev[&quot;HIGH&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/terraform-plan-risk-reviewer',TI="Terraform Plan Risk Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

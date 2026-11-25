@@ -11,3 +11,16 @@ A prompt so big it needs its own website. The free, open-source prompt bank for 
 - Requests, shared prompts and improvements are sent through the HMR dock's send(), the same inbox as the HMR feedback button.
 - Version history on each prompt page reads this repository's public commit history.
 - Static site on GitHub Pages. Part of the HMR family of websites: https://hmrfamily.life
+
+## Open library
+
+`library/` and `l/` hold 3,428 prompts copied from free, openly licensed galleries, each with its source and licence:
+
+- prompts.chat (https://github.com/f/prompts.chat): public domain under CC0 1.0. A few jailbreak and sexual prompts are left out.
+- Fabric (https://github.com/danielmiessler/fabric): MIT licence; the licence text is in `library/LICENSE-fabric.txt`.
+
+Rebuild with `python3 tools/import_library.py <prompts.chat clone> <fabric clone>` then `python3 tools/build.py`. Paid or all-rights-reserved galleries are linked from the home page, never copied.
+
+## The council (planned)
+
+`tools/council.py` gathers every free version of a prompt, has one top model from each of four companies review them, runs one round of debate, and has a chair merge the best version into `prompts/council/<id>.md`. Only the Claude seat is written; it is not running yet. It needs four API keys with billing (Anthropic, OpenAI, xAI, Google Gemini), kept as GitHub Actions secrets or on the Tower, never in the repo.

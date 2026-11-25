@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Webhook Signature Verifier and Replay Guard | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: webhook-signature-verifier-and-replay-guard description: Debugs and hardens incoming webhook verification. Recomputes HMAC signatures for St">
+<meta property="og:title" content="Webhook Signature Verifier and Replay Guard | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: webhook-signature-verifier-and-replay-guard description: Debugs and hardens incoming webhook verification. Recomputes HMAC signatures for St">
+<meta property="og:url" content="https://claudebomb.com/l/pc/webhook-signature-verifier-and-replay-guard/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/webhook-signature-verifier-and-replay-guard/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Webhook Signature Verifier and Replay Guard</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: webhook-signature-verifier-and-replay-guard
+description: Debugs and hardens incoming webhook verification. Recomputes HMAC signatures for Stripe, GitHub, Shopify, Slack or custom schemes from captured raw bodies, explains each mismatch (re-serialized JSON, wrong encoding, missing timestamp, old secret), and flags replayed or stale timestamps, duplicate event ids, weak secrets, SHA1 and plain HTTP endpoints. Offline stdlib Python checker.
+---
+
+# Webhook Signature Verifier and Replay Guard
+
+You help developers who receive webhooks from payment, Git, commerce or chat platforms answer two questions fast: &quot;why does my signature check fail?&quot; and &quot;is my endpoint safe against forged or replayed calls?&quot;. Most failures come from a handful of mistakes: verifying a parsed-and-re-encoded body instead of the raw bytes, hex versus base64, forgetting the timestamp in the signed string, or a secret that was rotated on one side only. You reproduce the provider&#x27;s HMAC exactly, try those mistakes one by one, and say which one it was.
+
+You never call the provider&#x27;s API or the user&#x27;s endpoint. You work only from captured deliveries and config the user gives you. Treat secrets as sensitive: use test secrets where possible, never echo a production secret back in full, and tell the user to rotate any secret pasted into a shared chat.
+
+## Files in this skill
+
+- `scripts/verify_webhooks.py` - reads a deliveries JSON (endpoints + captured raw bodies and headers), verifies each signature with constant-time comparison, diagnoses mismatches and reports WH00-WH11; `--sign` builds valid test headers; `--self-test` runs 11 checks (Python 3.8+ standard library only)
+- `references/provider-schemes.md` - exactly what Stripe, GitHub, Shopify and Slack sign, plus how to describe a custom scheme
+- `references/verification-pitfalls.md` - raw body handling per framework, timing-safe compare, replay windows, idempotency, secret rotation
+- `templates/verification-report.md` - the report you hand back
+- `templates/handler-snippets.md` - minimal correct handlers for Express and Flask to adapt
+- `examples/deliveries.json` - 11 demo deliveries to 5 endpoints with fake secrets and several planted mistakes
+
+## Workflow
+
+### 1. Capture the evidence
+Ask for, per endpoint: provider/scheme, the secret (a test-mode secret is best), the public URL, and for each failing call the **raw** request body exactly as received plus all headers. Logging `JSON.stringify(req.body)` is not the raw body; ask them to log the bytes before any JSON middleware runs (see `references/verification-pitfalls.md`). Put it into the `examples/deliveries.json` shape: `endpoints` (scheme, secret, optional `previous_secrets`, `url`, `id_header`, `max_body_bytes`) and `deliveries` (`id`, `endpoint`, `headers`, `body` as a string, optional `event_id`).
+
+### 2. Run the checker
+```
+python3 scripts/verify_webhooks.py examples/deliveries.json
+python3 scripts/verify_webhooks.py my-deliveries.json --now 2026-11-13T07:00:00Z --json
+python3 scripts/verify_webhooks.py --sign stripe --secret whsec_test_x --body-file body.json --timestamp 1794553200
+python3 scripts/verify_webhooks.py --self-test
+```
+Use `--now` with the time the deliveries were captured, otherwise every old capture shows as a replay. Exit 0 = no high findings, 1 = high findings, 2 = bad input. Without a shell, follow `references/provider-schemes.md` to rebuild the signed string by hand and compare.
+
+### 3. Read the result
+Each delivery gets a verdict: `accept`, `accept-duplicate(skip side effects)`, `accept-rotate-secret` or `reject`.
+- High: WH01 signature mismatch (with the likely cause), WH02 missing signature or timestamp header, WH03 timestamp older than the tolerance (replay risk), WH09 endpoint not on HTTPS, WH00 bad input or unknown endpoint.
+- Medium: WH04 duplicate event id, WH05 timestamp in the future beyond allowed skew (clock drift), WH06 SHA1-only signature, WH07 signed with a previous secret, WH08 short or low-entropy secret.
+- Low: WH10 no event id to de-duplicate on, WH11 body larger than the configured limit.
+
+### 4. Deliver
+Fill `templates/verification-report.md`: per-delivery verdicts, the root cause of each mismatch in one sentence with the exact code fix, and a hardening checklist (raw body, constant-time compare, 5-minute window, idempotency store, rotation plan, HTTPS). If they want code, adapt `templates/handler-snippets.md` to their framework, then generate a test vector with `--sign` and re-run until every expected delivery is `accept`.
+
+## Example result
+On the demo file (now = 13 Nov 2026 07:00 UTC): D01 is valid and D02 is the same Stripe event again (skip side effects); D03 was signed over compact JSON but the app verified a pretty-printed copy; D04 carries a valid signature that is an hour old, so it is rejected as a replay; D06 is still signed with GitHub&#x27;s previous secret; D07 has only the legacy SHA1 header; D08 compared a hex digest where Shopify sends base64; D10&#x27;s Slack timestamp is 10 minutes in the future; and the contact form posts to plain HTTP with an 11-character secret. Result: 5 high, 5 medium, 2 low.
+
+## Rules
+
+- Always verify against the raw bytes and compare with a constant-time function; never compare signatures with `==`.
+- Reject before doing work: signature and timestamp checks come before parsing, database writes or queueing.
+- A valid signature does not make a delivery fresh or unique: check the timestamp window and de-duplicate on the event id.
+- Do not weaken checks to &quot;make it pass&quot; (no skipping verification in production, no huge tolerances); fix the root cause.
+- Provider details change; confirm header names and signed-string formats against the provider&#x27;s current docs before shipping.
+
+FILE:references/provider-schemes.md
+# Provider signature schemes
+
+All of these are HMAC over the **raw request body** with a shared secret. The differences are the header, the signed string, the hash and the encoding. Confirm against the provider&#x27;s current documentation before shipping; names below are the widely used defaults.
+
+| Scheme (`scheme`) | Header | Signed string | Hash | Encoding | Timestamp |
+|---|---|---|---|---|---|
+| `stripe` | `Stripe-Signature: t=&lt;unix&gt;,v1=&lt;sig&gt;[,v1=&lt;sig2&gt;]` | `&lt;t&gt;.&lt;raw body&gt;` | SHA-256 | hex | `t=` inside the header; default tolerance 300 s |
+| `github` | `X-Hub-Signature-256: sha256=&lt;sig&gt;` | `&lt;raw body&gt;` | SHA-256 | hex | none (use `X-GitHub-Delivery` to de-duplicate) |
+| `github-sha1` | `X-Hub-Signature: sha1=&lt;sig&gt;` | `&lt;raw body&gt;` | SHA-1 | hex | legacy, avoid |
+| `shopify` | `X-Shopify-Hmac-Sha256: &lt;sig&gt;` | `&lt;raw body&gt;` | SHA-256 | base64 | none (de-duplicate on `X-Shopify-Webhook-Id`) |
+| `slack` | `X-Slack-Signature: v0=&lt;sig&gt;` + `X-Slack-Request-Timestamp` | `v0:&lt;ts&gt;:&lt;raw body&gt;` | SHA-256 | hex | reject if older than 5 minutes |
+
+## Notes per provider
+- **Stripe**: during secret rolling the header can carry several `v1=` values; accept if any one matches. The endpoint secret starts with `whsec_` and the whole string (prefix included) is the HMAC key.
+- **GitHub**: the secret is whatever you typed when creating the webhook. Ping events are signed too. Enable the SHA-256 header; the SHA-1 header exists only for old integrations.
+- **Shopify**: the key is the app&#x27;s API secret (or the webhook signing secret shown in the admin). The digest is base64, so comparing against a hex digest always fails.
+- **Slack**: the body is usually `application/x-www-form-urlencoded`; sign the raw string, do not rebuild it from parsed form fields.
+
+## Describing a custom scheme (`scheme: generic`)
+Set these fields on the endpoint:
+- `header` - header that carries the signature, e.g. `X-Signature`
+- `alg` - `sha256`, `sha512` or `sha1`
+- `enc` - `hex` or `base64`
+- `prefix` - text before the digest in the header, e.g. `sha256=` (empty if none)
+- `template` - signed string, using `{body}` and optionally `{ts}`, e.g. `{ts}.{body}`
+- `ts_header` - header with the unix timestamp, if the scheme has one
+- `id_header` - header with a unique delivery id, for de-duplication
+
+Any field can also override a named scheme (for example a self-hosted GitLab-style proxy that re-signs with a different header).
+
+FILE:references/verification-pitfalls.md
+# Verification pitfalls and hardening
+
+## 1. Use the raw body (the cause of most mismatches)
+JSON middleware parses the body; re-encoding it changes whitespace, key order or number formatting, so the HMAC no longer matches.
+- **Express**: mount `express.raw({ type: &#x27;application/json&#x27; })` on the webhook route (before `express.json()`), verify `req.body` (a Buffer), then `JSON.parse` it yourself.
+- **Next.js route handlers**: `const raw = await req.text()` before anything else.
+- **Flask**: `request.get_data(cache=True, as_text=False)`; do not use `request.json` for verification.
+- **Django**: `request.body` (bytes) before touching `request.POST`.
+- **FastAPI/Starlette**: `await request.body()`.
+- **Go**: read `r.Body` once with `io.ReadAll`, verify, then unmarshal from the same bytes.
+- Proxies, API gateways and serverless adapters may re-encode bodies (base64 in AWS API Gateway events: decode first) or add a trailing newline.
+
+## 2. Compare in constant time
+Use `hmac.compare_digest` (Python), `crypto.timingSafeEqual` (Node, equal-length Buffers), `hmac.Equal` (Go), `MessageDigest.isEqual` (Java). Plain `==` leaks timing and invites forgery attempts.
+
+## 3. Freshness and replay
+- If the scheme signs a timestamp, reject deliveries older than the tolerance (300 s is the common default) **even when the signature is valid**: an attacker who captured one request can resend it.
+- Allow a small future skew (about 60 s) and keep server clocks on NTP; large future offsets mean a clock problem.
+- Schemes without a signed timestamp (GitHub, Shopify) rely on de-duplication only.
+
+## 4. Idempotency
+Providers retry on timeouts and non-2xx responses, so the same event arrives more than once. Store the event or delivery id (or a SHA-256 of the raw body) with a unique constraint and a TTL longer than the provider&#x27;s retry window (often 3 days); on a repeat, return 200 without re-running side effects. Respond within a few seconds and do slow work in a queue.
+
+## 5. Secrets and rotation
+- Generate at least 32 random bytes (`python3 -c &quot;import secrets; print(secrets.token_hex(32))&quot;`); one secret per endpoint and environment.
+- Rotation: add the new secret as primary and keep the old one in `previous_secrets` for a short overlap, accept either, then remove the old one. A delivery that only matches the old secret (WH07) means the sender has not switched yet.
+- Load secrets from a secret manager or environment, strip whitespace, and never log them.
+
+## 6. Transport and limits
+- HTTPS only: the HMAC proves origin but does not hide customer data.
+- Cap body size and reject before parsing; return 401/403 for bad signatures without details, and log the reason internally.
+- Optional extra layer: allow-list the provider&#x27;s published IP ranges, but never instead of signature checks.
+
+FILE:templates/verification-report.md
+# Webhook verification report
+
+**Endpoints checked:** [names]  **Deliveries:** [n]  **Captured at:** [time, used as --now]
+**Verdict:** [All good / Fix before go-live / Under attack or misconfigured]
+**Findings:** [h] high, [m] medium, [l] low (`verify_webhooks.py` output attached)
+
+## Deliveries
+| Delivery | Endpoint | Verdict | Root cause (one sentence) |
+|---|---|---|---|
+| [D01] | [billing-stripe] | [accept / reject / duplicate / rotate] | [e.g. verified pretty-printed JSON instead of raw body] |
+
+## Fixes, in order
+1. [Code fix with file/line, e.g. mount express.raw() on /hooks/stripe before express.json()]
+2. [...]
+3. [...]
+
+## Hardening checklist
+- [ ] Verify the raw body bytes, then parse
+- [ ] Constant-time comparison
+- [ ] Timestamp window [300] s, future skew [60] s, NTP on all hosts
+- [ ] Idempotency store keyed on [event id header], TTL [3 days]
+- [ ] One random secret (32+ bytes) per endpoint and environment; rotation plan with overlap
+- [ ] HTTPS only, body size limit, 401 without details on failure
+- [ ] Alert when the failure rate on an endpoint jumps
+
+## Test vectors used
+[--sign commands and the headers they produced, with test secrets only]
+
+FILE:templates/handler-snippets.md
+# Minimal correct handlers (adapt names, keep the order of checks)
+
+## Node.js / Express (Stripe-style `t=...,v1=...`)
+```js
+const crypto = require(&#x27;crypto&#x27;);
+const express = require(&#x27;express&#x27;);
+const app = express();
+const SECRET = process.env.WEBHOOK_SECRET;      // never hard-code
+const TOLERANCE = 300;                          // seconds
+const seen = new Set();                         // use a DB table with a unique key in production
+
+app.post(&#x27;/hooks/stripe&#x27;, express.raw({ type: &#x27;application/json&#x27; }), (req, res) =&gt; {
+  const header = req.get(&#x27;Stripe-Signature&#x27;) || &#x27;&#x27;;
+  const parts = Object.fromEntries(header.split(&#x27;,&#x27;).map(p =&gt; p.split(&#x27;=&#x27;)));
+  const t = Number(parts.t);
+  const sigs = header.split(&#x27;,&#x27;).filter(p =&gt; p.startsWith(&#x27;v1=&#x27;)).map(p =&gt; p.slice(3));
+  if (!t || sigs.length === 0) return res.sendStatus(401);
+  if (Math.abs(Date.now() / 1000 - t) &gt; TOLERANCE) return res.sendStatus(401);
+  const expected = crypto.createHmac(&#x27;sha256&#x27;, SECRET).update(`${t}.`).update(req.body).digest(&#x27;hex&#x27;);
+  const ok = sigs.some(s =&gt; s.length === expected.length &amp;&amp;
+    crypto.timingSafeEqual(Buffer.from(s), Buffer.from(expected)));
+  if (!ok) return res.sendStatus(401);
+  const event = JSON.parse(req.body.toString(&#x27;utf8&#x27;));
+  if (seen.has(event.id)) return res.sendStatus(200);   // duplicate: no side effects
+  seen.add(event.id);
+  // enqueue(event) and return quickly
+  res.sendStatus(200);
+});
+app.use(express.json());                        // other routes after the raw webhook route
+```
+
+## Python / Flask (GitHub `X-Hub-Signature-256`)
+```python
+import hashlib, hmac, json, os
+from flask import Flask, request, abort
+
+app = Flask(__name__)
+SECRET = os.environ[&quot;WEBHOOK_SECRET&quot;].strip().encode()
+seen = set()  # replace with a table that has a UNIQUE constraint on delivery_id
+
+@app.post(&quot;/hooks/github&quot;)
+def github_hook():
+    raw = request.get_data(cache=True)                 # raw bytes, before request.json
+    header = request.headers.get(&quot;X-Hub-Signature-256&quot;, &quot;&quot;)
+    if not header.startswith(&quot;sha256=&quot;):
+        abort(401)
+    expected = hmac.new(SECRET, raw, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(header[7:], expected):
+        abort(401)
+    delivery = request.headers.get(&quot;X-GitHub-Delivery&quot;)
+    if delivery in seen:
+        return &quot;&quot;, 200                                  # duplicate retry
+    seen.add(delivery)
+    event = json.loads(raw)
+    # enqueue(event) and return quickly
+    return &quot;&quot;, 200
+```
+
+## Checklist when porting to another stack
+Read raw bytes -&gt; check header present -&gt; check timestamp window (if signed) -&gt; HMAC with the right hash/encoding -&gt; constant-time compare (any of several signatures) -&gt; de-duplicate -&gt; parse -&gt; enqueue -&gt; 2xx fast.
+
+FILE:examples/deliveries.json
+{
+  &quot;now&quot;: &quot;2026-11-13T07:00:00Z&quot;,
+  &quot;tolerance_seconds&quot;: 300,
+  &quot;future_skew_seconds&quot;: 60,
+  &quot;_note&quot;: &quot;Demo data only: every secret below is a fake test value. Bodies are the RAW request bodies exactly as received.&quot;,
+  &quot;endpoints&quot;: {
+    &quot;billing-stripe&quot;: {
+      &quot;scheme&quot;: &quot;stripe&quot;,
+      &quot;secret&quot;: &quot;whsec_demo_4b9e2c7a1f6d3085e2a9c4b7d1f0e6a3&quot;,
+      &quot;url&quot;: &quot;https://api.acme-demo.test/hooks/stripe&quot;,
+      &quot;max_body_bytes&quot;: 65536
+    },
+    &quot;ci-github&quot;: {
+      &quot;scheme&quot;: &quot;github&quot;,
+      &quot;secret&quot;: &quot;gh_demo_secret_9c1e7a3f5b2d8064aa71c3e9f2b5d708&quot;,
+      &quot;previous_secrets&quot;: [
+        &quot;gh_demo_old_secret_2f8a6c4e0b1d9375&quot;
+      ],
+      &quot;url&quot;: &quot;https://api.acme-demo.test/hooks/github&quot;,
+      &quot;id_header&quot;: &quot;X-GitHub-Delivery&quot;
+    },
+    &quot;orders-shopify&quot;: {
+      &quot;scheme&quot;: &quot;shopify&quot;,
+      &quot;secret&quot;: &quot;shpss_demo_e3a1c9f7b5d2084b6e2c9a7f1d3b5e80&quot;,
+      &quot;url&quot;: &quot;https://api.acme-demo.test/hooks/shopify&quot;,
+      &quot;id_header&quot;: &quot;X-Shopify-Webhook-Id&quot;
+    },
+    &quot;ops-slack&quot;: {
+      &quot;scheme&quot;: &quot;slack&quot;,
+      &quot;secret&quot;: &quot;slack_demo_8f2c6a0e4b9d1735c2e8a6f0b4d9c173&quot;,
+      &quot;url&quot;: &quot;https://api.acme-demo.test/hooks/slack&quot;
+    },
+    &quot;contact-form&quot;: {
+      &quot;scheme&quot;: &quot;generic&quot;,
+      &quot;header&quot;: &quot;X-Form-Signature&quot;,
+      &quot;alg&quot;: &quot;sha256&quot;,
+      &quot;enc&quot;: &quot;hex&quot;,
+      &quot;prefix&quot;: &quot;&quot;,
+      &quot;template&quot;: &quot;{body}&quot;,
+      &quot;secret&quot;: &quot;formhook123&quot;,
+      &quot;url&quot;: &quot;http://forms.acme-demo.test/hook&quot;
+    }
+  },
+  &quot;deliveries&quot;: [
+    {
+      &quot;id&quot;: &quot;D01&quot;,
+      &quot;endpoint&quot;: &quot;billing-stripe&quot;,
+      &quot;event_id&quot;: &quot;evt_3Qx1&quot;,
+      &quot;headers&quot;: {
+        &quot;Stripe-Signature&quot;: &quot;t=1794553160,v1=5ac4a493d3abba1d31c6979909abe3f96f880b5d5567f64e2e1292578d05a6c8&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;id\&quot;:\&quot;evt_3Qx1\&quot;,\&quot;type\&quot;:\&quot;invoice.paid\&quot;,\&quot;data\&quot;:{\&quot;object\&quot;:{\&quot;id\&quot;:\&quot;in_901\&quot;,\&quot;amount_paid\&quot;:4900,\&quot;currency\&quot;:\&quot;usd\&quot;,\&quot;customer\&quot;:\&quot;cus_77\&quot;}}}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D02&quot;,
+      &quot;endpoint&quot;: &quot;billing-stripe&quot;,
+      &quot;event_id&quot;: &quot;evt_3Qx1&quot;,
+      &quot;headers&quot;: {
+        &quot;Stripe-Signature&quot;: &quot;t=1794553160,v1=5ac4a493d3abba1d31c6979909abe3f96f880b5d5567f64e2e1292578d05a6c8&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;id\&quot;:\&quot;evt_3Qx1\&quot;,\&quot;type\&quot;:\&quot;invoice.paid\&quot;,\&quot;data\&quot;:{\&quot;object\&quot;:{\&quot;id\&quot;:\&quot;in_901\&quot;,\&quot;amount_paid\&quot;:4900,\&quot;currency\&quot;:\&quot;usd\&quot;,\&quot;customer\&quot;:\&quot;cus_77\&quot;}}}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D03&quot;,
+      &quot;endpoint&quot;: &quot;billing-stripe&quot;,
+      &quot;event_id&quot;: &quot;evt_3Qx2&quot;,
+      &quot;headers&quot;: {
+        &quot;Stripe-Signature&quot;: &quot;t=1794553170,v1=b20e8ff57bb1b1d93f8793c15a2217b54e0e012b3800a1faa32a613e4fbcb5d2&quot;
+      },
+      &quot;body&quot;: &quot;{\n  \&quot;id\&quot;: \&quot;evt_3Qx1\&quot;,\n  \&quot;type\&quot;: \&quot;invoice.paid\&quot;,\n  \&quot;data\&quot;: {\n    \&quot;object\&quot;: {\n      \&quot;id\&quot;: \&quot;in_901\&quot;,\n      \&quot;amount_paid\&quot;: 4900,\n      \&quot;currency\&quot;: \&quot;usd\&quot;,\n      \&quot;customer\&quot;: \&quot;cus_77\&quot;\n    }\n  }\n}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D04&quot;,
+      &quot;endpoint&quot;: &quot;billing-stripe&quot;,
+      &quot;event_id&quot;: &quot;evt_2Zk9&quot;,
+      &quot;headers&quot;: {
+        &quot;Stripe-Signature&quot;: &quot;t=1794549600,v1=647af93a8d457b8daee20995225aae284f5ea56cfe075c38cb465fe41ff99bfb&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;id\&quot;:\&quot;evt_3Qx1\&quot;,\&quot;type\&quot;:\&quot;invoice.paid\&quot;,\&quot;data\&quot;:{\&quot;object\&quot;:{\&quot;id\&quot;:\&quot;in_901\&quot;,\&quot;amount_paid\&quot;:4900,\&quot;currency\&quot;:\&quot;usd\&quot;,\&quot;customer\&quot;:\&quot;cus_77\&quot;}}}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D05&quot;,
+      &quot;endpoint&quot;: &quot;ci-github&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Hub-Signature-256&quot;: &quot;sha256=646c0de3d17073a243c74ed3340c018acbea30805a870eff1d6847b4333a5963&quot;,
+        &quot;X-GitHub-Delivery&quot;: &quot;a1b2-0001&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;ref\&quot;:\&quot;refs/heads/main\&quot;,\&quot;after\&quot;:\&quot;9f1c2e7\&quot;,\&quot;repository\&quot;:{\&quot;full_name\&quot;:\&quot;acme-demo/shop-api\&quot;},\&quot;pusher\&quot;:{\&quot;name\&quot;:\&quot;dev-ana\&quot;}}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D06&quot;,
+      &quot;endpoint&quot;: &quot;ci-github&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Hub-Signature-256&quot;: &quot;sha256=f728095add7f5315c2eda1d4f6e36040f898f4d0c2d71a42e8154ec05b1f16da&quot;,
+        &quot;X-GitHub-Delivery&quot;: &quot;a1b2-0002&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;ref\&quot;:\&quot;refs/heads/main\&quot;,\&quot;after\&quot;:\&quot;9f1c2e7\&quot;,\&quot;repository\&quot;:{\&quot;full_name\&quot;:\&quot;acme-demo/shop-api\&quot;},\&quot;pusher\&quot;:{\&quot;name\&quot;:\&quot;dev-ana\&quot;}}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D07&quot;,
+      &quot;endpoint&quot;: &quot;ci-github&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Hub-Signature&quot;: &quot;sha1=ca66729dfe67d043208370a5b228586808eaa8ce&quot;,
+        &quot;X-GitHub-Delivery&quot;: &quot;a1b2-0003&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;ref\&quot;:\&quot;refs/heads/main\&quot;,\&quot;after\&quot;:\&quot;9f1c2e7\&quot;,\&quot;repository\&quot;:{\&quot;full_name\&quot;:\&quot;acme-demo/shop-api\&quot;},\&quot;pusher\&quot;:{\&quot;name\&quot;:\&quot;dev-ana\&quot;}}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D08&quot;,
+      &quot;endpoint&quot;: &quot;orders-shopify&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Shopify-Hmac-Sha256&quot;: &quot;651b34b52d6af57f77251cb9e652c7e409bf05c04695478629ec8104f4bf6992&quot;,
+        &quot;X-Shopify-Webhook-Id&quot;: &quot;wh-5501&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;id\&quot;:820012,\&quot;email\&quot;:\&quot;buyer@example.test\&quot;,\&quot;total_price\&quot;:\&quot;58.00\&quot;,\&quot;currency\&quot;:\&quot;EUR\&quot;,\&quot;line_items\&quot;:[{\&quot;sku\&quot;:\&quot;TEA-250\&quot;,\&quot;quantity\&quot;:2}]}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D09&quot;,
+      &quot;endpoint&quot;: &quot;orders-shopify&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Shopify-Hmac-Sha256&quot;: &quot;ZRs0tS1q9X93JRy55lLH5Am/BcBGlUeGKeyBBPS/aZI=&quot;,
+        &quot;X-Shopify-Webhook-Id&quot;: &quot;wh-5502&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;id\&quot;:820012,\&quot;email\&quot;:\&quot;buyer@example.test\&quot;,\&quot;total_price\&quot;:\&quot;58.00\&quot;,\&quot;currency\&quot;:\&quot;EUR\&quot;,\&quot;line_items\&quot;:[{\&quot;sku\&quot;:\&quot;TEA-250\&quot;,\&quot;quantity\&quot;:2}]}&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D10&quot;,
+      &quot;endpoint&quot;: &quot;ops-slack&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Slack-Signature&quot;: &quot;v0=675094d734821c12a58309211f8d66c58fffbbf86f25ba8424acb5cffd228fe6&quot;,
+        &quot;X-Slack-Request-Timestamp&quot;: &quot;1794553800&quot;
+      },
+      &quot;body&quot;: &quot;token=demo&amp;team_id=T000&amp;command=%2Fdeploy&amp;text=shop-api+staging&amp;user_name=dev-ana&quot;
+    },
+    {
+      &quot;id&quot;: &quot;D11&quot;,
+      &quot;endpoint&quot;: &quot;contact-form&quot;,
+      &quot;headers&quot;: {
+        &quot;X-Form-Signature&quot;: &quot;50c78cd627e684b0c1c024f1dfe22cc321a4afb6d25aed29aad8f1c6c2c66dce&quot;
+      },
+      &quot;body&quot;: &quot;{\&quot;form\&quot;:\&quot;contact\&quot;,\&quot;name\&quot;:\&quot;Sam\&quot;,\&quot;message\&quot;:\&quot;Please call me back\&quot;}&quot;
+    }
+  ]
+}
+
+FILE:scripts/verify_webhooks.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Webhook signature verifier and replay guard (offline, Python 3.8+ standard library only).
+
+Reads a JSON file with endpoint configs and captured deliveries (raw body + headers),
+recomputes each HMAC signature, checks timestamps, duplicates and config hygiene, and
+explains the most likely cause of every mismatch.
+
+Usage:
+  verify_webhooks.py deliveries.json [--now 2026-11-13T10:00:00Z] [--json]
+  verify_webhooks.py --sign SCHEME --secret S --body-file body.txt [--timestamp 1794560400]
+  verify_webhooks.py --self-test
+Exit codes: 0 = no high findings, 1 = high findings, 2 = bad input.
+&quot;&quot;&quot;
+import argparse, base64, hashlib, hmac, json, math, sys
+from collections import Counter
+from datetime import datetime, timezone
+
+SCHEMES = {
+    # header, algorithm, encoding, prefix, signed-string template, timestamp header
+    &quot;github&quot;:  {&quot;header&quot;: &quot;X-Hub-Signature-256&quot;, &quot;alg&quot;: &quot;sha256&quot;, &quot;enc&quot;: &quot;hex&quot;, &quot;prefix&quot;: &quot;sha256=&quot;, &quot;template&quot;: &quot;{body}&quot;, &quot;ts_header&quot;: None},
+    &quot;github-sha1&quot;: {&quot;header&quot;: &quot;X-Hub-Signature&quot;, &quot;alg&quot;: &quot;sha1&quot;, &quot;enc&quot;: &quot;hex&quot;, &quot;prefix&quot;: &quot;sha1=&quot;, &quot;template&quot;: &quot;{body}&quot;, &quot;ts_header&quot;: None},
+    &quot;shopify&quot;: {&quot;header&quot;: &quot;X-Shopify-Hmac-Sha256&quot;, &quot;alg&quot;: &quot;sha256&quot;, &quot;enc&quot;: &quot;base64&quot;, &quot;prefix&quot;: &quot;&quot;, &quot;template&quot;: &quot;{body}&quot;, &quot;ts_header&quot;: None},
+    &quot;slack&quot;:   {&quot;header&quot;: &quot;X-Slack-Signature&quot;, &quot;alg&quot;: &quot;sha256&quot;, &quot;enc&quot;: &quot;hex&quot;, &quot;prefix&quot;: &quot;v0=&quot;, &quot;template&quot;: &quot;v0:{ts}:{body}&quot;, &quot;ts_header&quot;: &quot;X-Slack-Request-Timestamp&quot;},
+    &quot;stripe&quot;:  {&quot;header&quot;: &quot;Stripe-Signature&quot;, &quot;alg&quot;: &quot;sha256&quot;, &quot;enc&quot;: &quot;hex&quot;, &quot;prefix&quot;: &quot;&quot;, &quot;template&quot;: &quot;{ts}.{body}&quot;, &quot;ts_header&quot;: None},
+}
+SEV_ORDER = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2, &quot;info&quot;: 3}
+
+
+def scheme_for(ep):
+    base = dict(SCHEMES.get(ep.get(&quot;scheme&quot;, &quot;generic&quot;), {}))
+    for k in (&quot;header&quot;, &quot;alg&quot;, &quot;enc&quot;, &quot;prefix&quot;, &quot;template&quot;, &quot;ts_header&quot;):
+        if k in ep:
+            base[k] = ep[k]
+    missing = [k for k in (&quot;header&quot;, &quot;alg&quot;, &quot;enc&quot;, &quot;template&quot;) if not base.get(k)]
+    if missing:
+        raise ValueError(&quot;endpoint %r: generic scheme needs %s&quot; % (ep.get(&quot;name&quot;), &quot;, &quot;.join(missing)))
+    base.setdefault(&quot;prefix&quot;, &quot;&quot;)
+    base.setdefault(&quot;ts_header&quot;, None)
+    return base
+
+
+def digest(secret, msg, alg, enc):
+    mac = hmac.new(secret.encode(&quot;utf-8&quot;), msg.encode(&quot;utf-8&quot;), getattr(hashlib, alg)).digest()
+    return mac.hex() if enc == &quot;hex&quot; else base64.b64encode(mac).decode(&quot;ascii&quot;)
+
+
+def signed_string(sch, body, ts):
+    return sch[&quot;template&quot;].replace(&quot;{ts}&quot;, str(ts or &quot;&quot;)).replace(&quot;{body}&quot;, body)
+
+
+def sign(scheme_name, secret, body, ts=None):
+    sch = scheme_for({&quot;scheme&quot;: scheme_name})
+    sig = digest(secret, signed_string(sch, body, ts), sch[&quot;alg&quot;], sch[&quot;enc&quot;])
+    if scheme_name == &quot;stripe&quot;:
+        return {sch[&quot;header&quot;]: &quot;t=%s,v1=%s&quot; % (ts, sig)}
+    out = {sch[&quot;header&quot;]: sch[&quot;prefix&quot;] + sig}
+    if sch[&quot;ts_header&quot;]:
+        out[sch[&quot;ts_header&quot;]] = str(ts)
+    return out
+
+
+def get_header(headers, name):
+    for k, v in headers.items():
+        if k.lower() == name.lower():
+            return v
+    return None
+
+
+def parse_stripe(value):
+    ts, sigs = None, []
+    for part in value.split(&quot;,&quot;):
+        k, _, v = part.strip().partition(&quot;=&quot;)
+        if k == &quot;t&quot;:
+            ts = v
+        elif k == &quot;v1&quot;:
+            sigs.append(v)
+    return ts, sigs
+
+
+def entropy_bits(secret):
+    if not secret:
+        return 0.0
+    counts = Counter(secret)
+    h = -sum(c / len(secret) * math.log2(c / len(secret)) for c in counts.values())
+    return h * len(secret)
+
+
+def diagnose(sch, ep, body, ts, received):
+    &quot;&quot;&quot;Try the usual mistakes and return a human explanation, or None.&quot;&quot;&quot;
+    secret = ep[&quot;secret&quot;]
+    alg, enc = sch[&quot;alg&quot;], sch[&quot;enc&quot;]
+    tries = []
+    for old in ep.get(&quot;previous_secrets&quot;, []):
+        tries.append((&quot;WH07&quot;, &quot;matches a PREVIOUS secret: the sender still signs with the old secret (finish the rotation)&quot;, old, signed_string(sch, body, ts), enc))
+    try:
+        obj = json.loads(body)
+        tries.append((&quot;WH01&quot;, &quot;matches the body re-serialized as compact JSON: the sender or your framework parsed and re-encoded the payload before signing/verifying; always use the raw bytes&quot;, secret, signed_string(sch, json.dumps(obj, separators=(&quot;,&quot;, &quot;:&quot;)), ts), enc))
+        tries.append((&quot;WH01&quot;, &quot;matches the body re-serialized with default json.dumps spacing: verify against the raw request body, not a parsed object&quot;, secret, signed_string(sch, json.dumps(obj), ts), enc))
+    except ValueError:
+        pass
+    tries.append((&quot;WH01&quot;, &quot;matches the body with a trailing newline stripped/added: a proxy or test tool changed the body&quot;, secret, signed_string(sch, body.rstrip(&quot;\n&quot;) if body.endswith(&quot;\n&quot;) else body + &quot;\n&quot;, ts), enc))
+    if &quot;{ts}&quot; in sch[&quot;template&quot;]:
+        tries.append((&quot;WH01&quot;, &quot;matches HMAC over the body alone: the timestamp prefix is missing from the signed string&quot;, secret, body, enc))
+    if secret.startswith(&quot;whsec_&quot;):
+        tries.append((&quot;WH01&quot;, &quot;matches when the &#x27;whsec_&#x27; prefix is removed from the secret: check how the secret is loaded&quot;, secret[len(&quot;whsec_&quot;):], signed_string(sch, body, ts), enc))
+    tries.append((&quot;WH01&quot;, &quot;matches with a trimmed secret: the stored secret has stray whitespace&quot;, secret.strip(), signed_string(sch, body, ts), enc))
+    other = &quot;base64&quot; if enc == &quot;hex&quot; else &quot;hex&quot;
+    tries.append((&quot;WH01&quot;, &quot;matches with %s encoding instead of %s: wrong digest encoding&quot; % (other, enc), secret, signed_string(sch, body, ts), other))
+    for code, why, sec, msg, e in tries:
+        if sec == secret and msg == signed_string(sch, body, ts) and e == enc:
+            continue
+        cand = digest(sec, msg, alg, e)
+        if any(hmac.compare_digest(cand, r) for r in received):
+            return code, why
+    return None
+
+
+def check_delivery(d, ep, now, tolerance, skew, seen_ids):
+    findings = []
+    def add(code, sev, msg):
+        findings.append({&quot;code&quot;: code, &quot;severity&quot;: sev, &quot;delivery&quot;: d.get(&quot;id&quot;), &quot;endpoint&quot;: ep.get(&quot;name&quot;), &quot;message&quot;: msg})
+    try:
+        sch = scheme_for(ep)
+    except ValueError as e:
+        add(&quot;WH00&quot;, &quot;high&quot;, str(e))
+        return findings, None
+    headers = d.get(&quot;headers&quot;, {})
+    body = d.get(&quot;body&quot;)
+    if not isinstance(body, str):
+        add(&quot;WH00&quot;, &quot;high&quot;, &quot;body must be the raw request body as a string (not parsed JSON)&quot;)
+        return findings, None
+    raw = get_header(headers, sch[&quot;header&quot;])
+    if raw is None:
+        if ep.get(&quot;scheme&quot;) == &quot;github&quot; and get_header(headers, &quot;X-Hub-Signature&quot;):
+            add(&quot;WH06&quot;, &quot;medium&quot;, &quot;only legacy X-Hub-Signature (HMAC-SHA1) present; enable and verify X-Hub-Signature-256&quot;)
+        add(&quot;WH02&quot;, &quot;high&quot;, &quot;missing signature header %s: reject with 401 before doing any work&quot; % sch[&quot;header&quot;])
+        return findings, False
+    ts = None
+    if ep.get(&quot;scheme&quot;) == &quot;stripe&quot;:
+        ts, received = parse_stripe(raw)
+        if not ts or not received:
+            add(&quot;WH02&quot;, &quot;high&quot;, &quot;Stripe-Signature header has no t= or v1= part&quot;)
+            return findings, False
+    else:
+        if sch[&quot;prefix&quot;] and not raw.startswith(sch[&quot;prefix&quot;]):
+            add(&quot;WH01&quot;, &quot;high&quot;, &quot;signature does not start with %r (wrong scheme or algorithm?)&quot; % sch[&quot;prefix&quot;])
+            return findings, False
+        received = [raw[len(sch[&quot;prefix&quot;]):]]
+        if sch[&quot;ts_header&quot;]:
+            ts = get_header(headers, sch[&quot;ts_header&quot;])
+            if ts is None:
+                add(&quot;WH02&quot;, &quot;high&quot;, &quot;missing timestamp header %s&quot; % sch[&quot;ts_header&quot;])
+                return findings, False
+    if sch[&quot;alg&quot;] in (&quot;sha1&quot;, &quot;md5&quot;):
+        add(&quot;WH06&quot;, &quot;medium&quot;, &quot;weak HMAC algorithm %s: prefer SHA-256 if the provider supports it&quot; % sch[&quot;alg&quot;].upper())
+    expected = digest(ep[&quot;secret&quot;], signed_string(sch, body, ts), sch[&quot;alg&quot;], sch[&quot;enc&quot;])
+    valid = any(hmac.compare_digest(expected, r) for r in received)
+    if not valid:
+        hint = diagnose(sch, ep, body, ts, received)
+        if hint and hint[0] == &quot;WH07&quot;:
+            add(&quot;WH07&quot;, &quot;medium&quot;, hint[1])
+            valid = None  # authentic but signed with the old secret
+        elif hint:
+            add(&quot;WH01&quot;, &quot;high&quot;, &quot;signature mismatch; likely cause: &quot; + hint[1])
+        else:
+            add(&quot;WH01&quot;, &quot;high&quot;, &quot;signature mismatch; no common mistake reproduces it: wrong secret for this endpoint, or the body was modified in transit&quot;)
+    if ts is not None:
+        try:
+            tsv = int(ts)
+        except ValueError:
+            add(&quot;WH00&quot;, &quot;high&quot;, &quot;timestamp %r is not unix seconds&quot; % ts)
+            tsv = None
+        if tsv is not None and now is not None:
+            age = now - tsv
+            if age &gt; tolerance:
+                add(&quot;WH03&quot;, &quot;high&quot;, &quot;timestamp is %d s old (tolerance %d s): possible replay, reject even if the signature is valid&quot; % (age, tolerance))
+            elif age &lt; -skew:
+                add(&quot;WH05&quot;, &quot;medium&quot;, &quot;timestamp is %d s in the future (allowed skew %d s): check server clocks (NTP)&quot; % (-age, skew))
+    event_id = d.get(&quot;event_id&quot;) or get_header(headers, ep.get(&quot;id_header&quot;, &quot;X-Webhook-Id&quot;) or &quot;&quot;) or get_header(headers, &quot;X-GitHub-Delivery&quot;)
+    if event_id:
+        key = (ep.get(&quot;name&quot;), event_id)
+        if key in seen_ids:
+            add(&quot;WH04&quot;, &quot;medium&quot;, &quot;duplicate event id %s (first seen in delivery %s): process idempotently, do not run side effects twice&quot; % (event_id, seen_ids[key]))
+        else:
+            seen_ids[key] = d.get(&quot;id&quot;)
+    else:
+        add(&quot;WH10&quot;, &quot;low&quot;, &quot;no event/delivery id: cannot de-duplicate retries; store a hash of the body or ask the provider for an id header&quot;)
+    limit = ep.get(&quot;max_body_bytes&quot;)
+    if limit and len(body.encode(&quot;utf-8&quot;)) &gt; limit:
+        add(&quot;WH11&quot;, &quot;low&quot;, &quot;body is %d bytes, above max_body_bytes %d&quot; % (len(body.encode(&quot;utf-8&quot;)), limit))
+    return findings, valid
+
+
+def check_endpoint(ep):
+    out = []
+    def add(code, sev, msg):
+        out.append({&quot;code&quot;: code, &quot;severity&quot;: sev, &quot;delivery&quot;: None, &quot;endpoint&quot;: ep.get(&quot;name&quot;), &quot;message&quot;: msg})
+    url = ep.get(&quot;url&quot;, &quot;&quot;)
+    if url and not url.lower().startswith(&quot;https://&quot;):
+        add(&quot;WH09&quot;, &quot;high&quot;, &quot;endpoint URL is not HTTPS (%s): signatures do not hide the payload&quot; % url)
+    sec = ep.get(&quot;secret&quot;, &quot;&quot;)
+    if not sec:
+        add(&quot;WH00&quot;, &quot;high&quot;, &quot;no secret configured&quot;)
+    elif len(sec) &lt; 24 or entropy_bits(sec) &lt; 96:
+        add(&quot;WH08&quot;, &quot;medium&quot;, &quot;secret is short or low-entropy (%d chars, ~%d bits): generate at least 32 random bytes&quot; % (len(sec), entropy_bits(sec)))
+    if ep.get(&quot;scheme&quot;) == &quot;github-sha1&quot;:
+        add(&quot;WH06&quot;, &quot;medium&quot;, &quot;endpoint configured for HMAC-SHA1 only&quot;)
+    return out
+
+
+def to_epoch(s):
+    return int(datetime.fromisoformat(s.replace(&quot;Z&quot;, &quot;+00:00&quot;)).astimezone(timezone.utc).timestamp())
+
+
+def run(data, now_override=None):
+    eps = {}
+    for name, ep in data.get(&quot;endpoints&quot;, {}).items():
+        ep = dict(ep); ep[&quot;name&quot;] = name; eps[name] = ep
+    now = to_epoch(now_override) if now_override else (to_epoch(data[&quot;now&quot;]) if data.get(&quot;now&quot;) else int(datetime.now(timezone.utc).timestamp()))
+    tol = int(data.get(&quot;tolerance_seconds&quot;, 300)); skew = int(data.get(&quot;future_skew_seconds&quot;, 60))
+    findings, results, seen = [], [], {}
+    for ep in eps.values():
+        findings += check_endpoint(ep)
+    for d in data.get(&quot;deliveries&quot;, []):
+        ep = eps.get(d.get(&quot;endpoint&quot;))
+        if ep is None:
+            findings.append({&quot;code&quot;: &quot;WH00&quot;, &quot;severity&quot;: &quot;high&quot;, &quot;delivery&quot;: d.get(&quot;id&quot;), &quot;endpoint&quot;: d.get(&quot;endpoint&quot;), &quot;message&quot;: &quot;unknown endpoint&quot;})
+            results.append({&quot;delivery&quot;: d.get(&quot;id&quot;), &quot;verdict&quot;: &quot;error&quot;}); continue
+        f, valid = check_delivery(d, ep, now, tol, skew, seen)
+        findings += f
+        hard = any(x[&quot;severity&quot;] == &quot;high&quot; for x in f)
+        verdict = &quot;reject&quot; if hard else (&quot;accept-rotate-secret&quot; if valid is None else (&quot;accept&quot; if valid else &quot;reject&quot;))
+        if any(x[&quot;code&quot;] == &quot;WH04&quot; for x in f) and verdict.startswith(&quot;accept&quot;):
+            verdict = &quot;accept-duplicate(skip side effects)&quot;
+        results.append({&quot;delivery&quot;: d.get(&quot;id&quot;), &quot;endpoint&quot;: ep[&quot;name&quot;], &quot;verdict&quot;: verdict})
+    findings.sort(key=lambda x: (SEV_ORDER[x[&quot;severity&quot;]], x[&quot;code&quot;], str(x[&quot;delivery&quot;])))
+    summary = Counter(x[&quot;severity&quot;] for x in findings)
+    return {&quot;now&quot;: now, &quot;tolerance_seconds&quot;: tol, &quot;results&quot;: results, &quot;findings&quot;: findings,
+            &quot;summary&quot;: {k: summary.get(k, 0) for k in (&quot;high&quot;, &quot;medium&quot;, &quot;low&quot;)}}
+
+
+def print_text(rep):
+    print(&quot;Webhook verification report (now=%s, tolerance %ss)&quot; % (datetime.fromtimestamp(rep[&quot;now&quot;], timezone.utc).strftime(&quot;%Y-%m-%d %H:%M:%SZ&quot;), rep[&quot;tolerance_seconds&quot;]))
+    print(&quot;\nDeliveries:&quot;)
+    for r in rep[&quot;results&quot;]:
+        print(&quot;  %-6s %-14s %s&quot; % (r[&quot;delivery&quot;], r.get(&quot;endpoint&quot;, &quot;?&quot;), r[&quot;verdict&quot;]))
+    print(&quot;\nFindings: %(high)d high, %(medium)d medium, %(low)d low&quot; % rep[&quot;summary&quot;])
+    for f in rep[&quot;findings&quot;]:
+        where = f[&quot;delivery&quot;] or (&quot;endpoint &quot; + str(f[&quot;endpoint&quot;]))
+        print(&quot;  [%s] %s %s: %s&quot; % (f[&quot;severity&quot;].upper(), f[&quot;code&quot;], where, f[&quot;message&quot;]))
+
+
+def self_test():
+    ok = 0; total = 0
+    def t(name, cond):
+        nonlocal ok, total
+        total += 1; ok += bool(cond)
+        print((&quot;PASS  &quot; if cond else &quot;FAIL  &quot;) + name)
+    sec = &quot;whsec_selftest_7f3a9c2e5b1d48a6b0c4e2f19d7a3b58&quot;
+    body = &#x27;{&quot;id&quot;:&quot;evt_1&quot;,&quot;type&quot;:&quot;invoice.paid&quot;,&quot;amount&quot;:4200}&#x27;
+    ts = 1794560400
+    def rep_for(dels, eps=None, now=ts + 10):
+        eps = eps or {&quot;s&quot;: {&quot;scheme&quot;: &quot;stripe&quot;, &quot;secret&quot;: sec, &quot;url&quot;: &quot;https://x.test/hook&quot;}}
+        return run({&quot;endpoints&quot;: eps, &quot;deliveries&quot;: dels}, datetime.fromtimestamp(now, timezone.utc).isoformat())
+    good = {&quot;id&quot;: &quot;a&quot;, &quot;endpoint&quot;: &quot;s&quot;, &quot;event_id&quot;: &quot;evt_1&quot;, &quot;headers&quot;: sign(&quot;stripe&quot;, sec, body, ts), &quot;body&quot;: body}
+    r = rep_for([good]); t(&quot;stripe valid accepted&quot;, r[&quot;results&quot;][0][&quot;verdict&quot;] == &quot;accept&quot; and r[&quot;summary&quot;][&quot;high&quot;] == 0)
+    r = rep_for([good], now=ts + 900); t(&quot;WH03 stale timestamp&quot;, any(f[&quot;code&quot;] == &quot;WH03&quot; for f in r[&quot;findings&quot;]))
+    r = rep_for([good], now=ts - 600); t(&quot;WH05 future timestamp&quot;, any(f[&quot;code&quot;] == &quot;WH05&quot; for f in r[&quot;findings&quot;]))
+    r = rep_for([good, dict(good, id=&quot;b&quot;)]); t(&quot;WH04 duplicate id&quot;, any(f[&quot;code&quot;] == &quot;WH04&quot; for f in r[&quot;findings&quot;]) and r[&quot;results&quot;][1][&quot;verdict&quot;].startswith(&quot;accept-duplicate&quot;))
+    pretty = json.dumps(json.loads(body))
+    bad = dict(good, id=&quot;c&quot;, body=pretty, headers=sign(&quot;stripe&quot;, sec, body, ts))
+    r = rep_for([bad]); t(&quot;WH01 re-serialized body diagnosed&quot;, any(f[&quot;code&quot;] == &quot;WH01&quot; and &quot;re-serialized&quot; in f[&quot;message&quot;] for f in r[&quot;findings&quot;]))
+    eps = {&quot;g&quot;: {&quot;scheme&quot;: &quot;github&quot;, &quot;secret&quot;: sec, &quot;previous_secrets&quot;: [&quot;old_secret_value_1234567890abcdef&quot;], &quot;url&quot;: &quot;https://x.test/gh&quot;}}
+    old = {&quot;id&quot;: &quot;d&quot;, &quot;endpoint&quot;: &quot;g&quot;, &quot;event_id&quot;: &quot;g1&quot;, &quot;headers&quot;: sign(&quot;github&quot;, &quot;old_secret_value_1234567890abcdef&quot;, body), &quot;body&quot;: body}
+    r = rep_for([old], eps); t(&quot;WH07 previous secret&quot;, any(f[&quot;code&quot;] == &quot;WH07&quot; for f in r[&quot;findings&quot;]) and r[&quot;results&quot;][0][&quot;verdict&quot;] == &quot;accept-rotate-secret&quot;)
+    nohdr = {&quot;id&quot;: &quot;e&quot;, &quot;endpoint&quot;: &quot;g&quot;, &quot;event_id&quot;: &quot;g2&quot;, &quot;headers&quot;: {&quot;X-Hub-Signature&quot;: &quot;sha1=abc&quot;}, &quot;body&quot;: body}
+    r = rep_for([nohdr], eps); t(&quot;WH02 + WH06 legacy sha1 only&quot;, {&quot;WH02&quot;, &quot;WH06&quot;} &lt;= {f[&quot;code&quot;] for f in r[&quot;findings&quot;]})
+    eps2 = {&quot;sl&quot;: {&quot;scheme&quot;: &quot;slack&quot;, &quot;secret&quot;: &quot;short&quot;, &quot;url&quot;: &quot;http://x.test/slack&quot;}}
+    sl = {&quot;id&quot;: &quot;f&quot;, &quot;endpoint&quot;: &quot;sl&quot;, &quot;headers&quot;: sign(&quot;slack&quot;, &quot;short&quot;, body, ts), &quot;body&quot;: body}
+    r = rep_for([sl], eps2); codes = {f[&quot;code&quot;] for f in r[&quot;findings&quot;]}
+    t(&quot;slack valid + WH08 weak secret + WH09 http + WH10 no id&quot;, {&quot;WH08&quot;, &quot;WH09&quot;, &quot;WH10&quot;} &lt;= codes and &quot;WH01&quot; not in codes)
+    nots = {&quot;id&quot;: &quot;g&quot;, &quot;endpoint&quot;: &quot;s&quot;, &quot;event_id&quot;: &quot;e9&quot;, &quot;headers&quot;: {&quot;Stripe-Signature&quot;: &quot;t=%d,v1=%s&quot; % (ts, digest(sec, body, &quot;sha256&quot;, &quot;hex&quot;))}, &quot;body&quot;: body}
+    r = rep_for([nots]); t(&quot;WH01 missing timestamp in signed string diagnosed&quot;, any(&quot;timestamp prefix&quot; in f[&quot;message&quot;] for f in r[&quot;findings&quot;]))
+    eps3 = {&quot;sh&quot;: {&quot;scheme&quot;: &quot;shopify&quot;, &quot;secret&quot;: sec, &quot;url&quot;: &quot;https://x.test/shop&quot;}}
+    hexsig = {&quot;id&quot;: &quot;h&quot;, &quot;endpoint&quot;: &quot;sh&quot;, &quot;event_id&quot;: &quot;s1&quot;, &quot;headers&quot;: {&quot;X-Shopify-Hmac-Sha256&quot;: digest(sec, body, &quot;sha256&quot;, &quot;hex&quot;)}, &quot;body&quot;: body}
+    r = rep_for([hexsig], eps3); t(&quot;WH01 hex vs base64 diagnosed&quot;, any(&quot;encoding&quot; in f[&quot;message&quot;] for f in r[&quot;findings&quot;]))
+    eps4 = {&quot;gen&quot;: {&quot;scheme&quot;: &quot;generic&quot;, &quot;header&quot;: &quot;X-Signature&quot;, &quot;alg&quot;: &quot;sha512&quot;, &quot;enc&quot;: &quot;hex&quot;, &quot;prefix&quot;: &quot;&quot;, &quot;template&quot;: &quot;{body}&quot;, &quot;secret&quot;: sec, &quot;url&quot;: &quot;https://x.test/g&quot;}}
+    gen = {&quot;id&quot;: &quot;i&quot;, &quot;endpoint&quot;: &quot;gen&quot;, &quot;event_id&quot;: &quot;x1&quot;, &quot;headers&quot;: {&quot;X-Signature&quot;: digest(sec, body, &quot;sha512&quot;, &quot;hex&quot;)}, &quot;body&quot;: body}
+    r = rep_for([gen], eps4); t(&quot;generic sha512 scheme accepted&quot;, r[&quot;results&quot;][0][&quot;verdict&quot;] == &quot;accept&quot;)
+    print(&quot;%d/%d passed&quot; % (ok, total))
+    return 0 if ok == total else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--now&quot;); ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--sign&quot;, choices=sorted(SCHEMES)); ap.add_argument(&quot;--secret&quot;); ap.add_argument(&quot;--body-file&quot;); ap.add_argument(&quot;--timestamp&quot;, type=int)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if a.sign:
+        if not (a.secret and a.body_file):
+            print(&quot;--sign needs --secret and --body-file&quot;, file=sys.stderr); return 2
+        body = open(a.body_file, encoding=&quot;utf-8&quot;, newline=&quot;&quot;).read()
+        ts = a.timestamp or int(datetime.now(timezone.utc).timestamp())
+        print(json.dumps(sign(a.sign, a.secret, body, ts), indent=2)); return 0
+    if not a.file:
+        ap.print_help(); return 2
+    try:
+        with open(a.file, encoding=&quot;utf-8&quot;) as fh:
+            data = json.load(fh)
+        rep = run(data, a.now)
+    except (OSError, ValueError, KeyError) as e:
+        print(&quot;bad input: %s&quot; % e, file=sys.stderr); return 2
+    if a.json:
+        print(json.dumps(rep, indent=2))
+    else:
+        print_text(rep)
+    return 1 if rep[&quot;summary&quot;][&quot;high&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/webhook-signature-verifier-and-replay-guard',TI="Webhook Signature Verifier and Replay Guard";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

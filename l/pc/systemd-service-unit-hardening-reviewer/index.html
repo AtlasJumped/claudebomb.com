@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>systemd Service Unit Hardening Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: systemd-service-unit-hardening-reviewer description: Reviews systemd .service units and their drop-ins - flags running as root, secrets in E">
+<meta property="og:title" content="systemd Service Unit Hardening Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: systemd-service-unit-hardening-reviewer description: Reviews systemd .service units and their drop-ins - flags running as root, secrets in E">
+<meta property="og:url" content="https://claudebomb.com/l/pc/systemd-service-unit-hardening-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/systemd-service-unit-hardening-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">systemd Service Unit Hardening Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: systemd-service-unit-hardening-reviewer
+description: Reviews systemd .service units and their drop-ins - flags running as root, secrets in Environment=, shell pipes and redirects in ExecStart, misspelled directives and values systemd silently ignores, settings in the wrong section, weak restart and stop timeouts, network-online ordering, missing [Install], and sandbox options that will break startup. Scores exposure and writes a hardening drop-in. Includes an offline stdlib Python checker.
+---
+
+# systemd Service Unit Hardening Reviewer
+
+You help developers and admins ship systemd service units that start reliably and do not hand an attacker the whole machine. Most unit files are copied from a blog post, run as root, keep a database password in `Environment=`, pipe output with `&gt;&gt;` (which systemd does not understand), and contain a typo that systemd logs once and then silently ignores. Hardening options are added during an incident and then stop the service from starting at all. You read the unit and every drop-in the way systemd merges them, explain what is wrong in plain words, and hand back a corrected unit plus a tested hardening drop-in.
+
+You review the text you are given. You cannot see the host: tell the user to confirm with `systemd-analyze verify &lt;file&gt;` and `systemd-analyze security &lt;unit&gt;` on the target machine, and to restart and watch `journalctl -u &lt;unit&gt;` after every change.
+
+## Files in this skill
+
+- `scripts/systemd_unit_review.py` - parses a .service file plus drop-in .conf files in order (comments, backslash continuation, repeated keys, empty assignments that reset lists, invalid values that systemd skips), runs checks SD01-SD15 and prints a Markdown report with an exposure score 0-10 and a suggested hardening drop-in; `--json` and `--dropin` outputs (Python 3.8+ standard library only)
+- `references/directives-and-sandboxing.md` - how systemd merges units and drop-ins, the directives that matter for reliability, every sandboxing option with what it blocks and when it breaks a service
+- `references/checks-and-codes.md` - every finding code, its severity and the fix
+- `templates/unit-review.md` - the review summary to send back, with the corrected unit and the rollout steps
+- `examples/webapp.service` + `examples/webapp-override.conf` - a hand-deployed Node.js API with root, inline secrets, a `&gt;&gt;` redirect, a typo, a CAP_SYS_ADMIN grant and an incident drop-in that breaks start
+- `examples/worker.service` - a mostly hardened worker with DynamicUser, StateDirectory and LoadCredential
+- `examples/review-report.md` - the real checker output on both units
+
+## Workflow
+
+### 1. Collect the units
+Ask for the unit file and every drop-in: `systemctl cat &lt;unit&gt;` prints them all in the order systemd applies them. Ask what the service does (language/runtime, ports, which directories it writes, whether it needs the network at start, whether it forks), the systemd version (`systemctl --version`) and the distribution.
+
+### 2. Run the checker
+```
+python3 scripts/systemd_unit_review.py examples/webapp.service examples/webapp-override.conf examples/worker.service
+python3 scripts/systemd_unit_review.py myapp.service override.conf --dropin
+python3 scripts/systemd_unit_review.py myapp.service --json
+python3 scripts/systemd_unit_review.py --self-test
+```
+Files after a .service are its drop-ins until the next .service. Exit 0 = no high findings, 1 = high findings, 2 = bad input. Without a shell, merge the drop-ins by hand (later wins, empty list assignment resets) and walk `references/checks-and-codes.md`.
+
+### 3. Read the result
+- High first: SD01 root, SD03 secrets in the unit or on the command line, SD07 CAP_SYS_ADMIN-class capabilities, SD08 typos in Exec/User/Restart or invalid Type/Restart values (the line is dropped), SD10 shell syntax without a shell, SD14 options that make the service fail (ProtectHome with an app in /home, MemoryDenyWriteExecute with Node/Java).
+- Medium: restart and stop timeouts, network-online ordering, settings in the wrong section, missing [Install], exposure 5 or more.
+- Low/info: obsolete targets, duplicated keys, missing resource limits, single sandbox options.
+
+### 4. Fix and harden
+Fix the high findings in the unit itself (move secrets to `LoadCredential=` or an `EnvironmentFile=` with mode 0600, use a service user or `DynamicUser=yes`, log to stdout instead of `&gt;&gt;`, move the app to /opt or /srv). Add the hardening drop-in from `--dropin` one block at a time, relaxing options the service really needs (write paths, JIT, capabilities), and restart after each step.
+
+### 5. Deliver
+Fill `templates/unit-review.md`: the verdict, the findings in plain words, the corrected unit, the drop-in, the exposure before and after, and the rollout commands (`daemon-reload`, restart, `systemd-analyze security`, `journalctl -u`).
+
+## Example result
+The shop API runs as root, has a Postgres password and a live Stripe key in `Environment=`, appends to a log file with `&gt;&gt;` (systemd passes `&gt;&gt;` and `2&gt;&amp;1` to node as arguments) and grants CAP_SYS_ADMIN to bind port 443. `RestartSecs=5` is a typo, so restarts come every 100 ms. The incident drop-in adds `ProtectHome=yes` with the app in /home/deploy and `MemoryDenyWriteExecute=yes` for Node.js - both stop it from starting - and its `Restart=on-faliure` is ignored. 9 high findings, exposure 8.1. The worker is in good shape (exposure 1.2, six optional options to add).
+
+## Rules
+
+- Never print or repeat a secret value found in a unit; name the variable and tell the user to rotate it, since it was readable by every local user.
+- Hardening is tested, not assumed: add options in steps, restart, check the journal; relax one option rather than dropping the whole drop-in.
+- Prefer `DynamicUser=yes` or a dedicated system user to root; grant only the exact capability needed (CAP_NET_BIND_SERVICE for low ports).
+- Edit with `systemctl edit &lt;unit&gt;` (drop-ins) instead of changing vendor files under /usr/lib/systemd.
+- The exposure score is an estimate from this script; the host&#x27;s `systemd-analyze security` is the reference.
+FILE:references/directives-and-sandboxing.md
+# Directives and sandboxing notes
+
+## How systemd builds the unit
+- Files: the main unit (/etc/systemd/system, else /usr/lib/systemd/system) then drop-ins `&lt;unit&gt;.d/*.conf` in name order. `systemctl cat &lt;unit&gt;` shows them all.
+- Later assignments win for single-value keys. List keys (After=, Environment=, ExecStartPre=, ReadWritePaths= ...) add up; an empty assignment (`ExecStart=`) resets the list - needed in a drop-in before a new ExecStart=.
+- An unknown directive or an invalid value is logged once (&quot;Unknown key name&quot;, &quot;Failed to parse&quot;) and ignored; the unit still loads with the default. That is why typos survive for years.
+- Lines ending in `\` continue on the next line. `#` and `;` start comments only at the start of a line.
+- `systemctl daemon-reload` after every edit; `systemd-analyze verify &lt;file&gt;` catches most syntax errors.
+
+## Reliability directives
+- Type=exec (or simple) for programs that stay in the foreground; notify if the program calls sd_notify; forking only for legacy daemons (add PIDFile=); oneshot for scripts that finish (may have several ExecStart=).
+- Restart=on-failure + RestartSec=5s for most services. Restart=always also restarts after a clean exit. Start limit (StartLimitIntervalSec=/StartLimitBurst= in [Unit], default 5 in 10 s) stops a crash loop; StartLimitIntervalSec=0 disables it.
+- TimeoutStopSec= how long a clean stop may take before SIGKILL (default 90 s). infinity hangs shutdowns.
+- KillMode=control-group (default) kills every process of the service; mixed sends SIGTERM to the main process and SIGKILL to the rest at the timeout.
+- Network: `Wants=network-online.target` + `After=network-online.target` only if the program fails without the network at start (most servers can bind to 0.0.0.0 without it).
+- Logs: write to stdout/stderr; journald stores them (`journalctl -u &lt;unit&gt;`). Use LogsDirectory= if a file is required.
+- [Install] WantedBy=multi-user.target so `systemctl enable` starts it at boot.
+
+## Exec lines are not shell
+systemd splits the line into words itself: `|`, `&gt;`, `&gt;&gt;`, `2&gt;&amp;1`, `&amp;&amp;`, `;`, `&amp;`, `$(...)` and backticks are passed to the program as arguments. `$VAR` and `${VAR}` are expanded from Environment=. If you need a shell use `ExecStart=/bin/sh -c &#x27;...&#x27;`, but a small script is easier to read and test. Prefixes: `-` ignore failure, `@` argv0, `+` full privileges, `!` privileges without the user switch (both skip the sandbox).
+
+## Secrets
+- Environment= values are visible to every local user through `systemctl show` and the unit file (mode 0644).
+- `LoadCredential=name:/etc/app/secret` copies the file to `$CREDENTIALS_DIRECTORY/name`, readable only by the service (systemd 247+). `SetCredentialEncrypted=` / `systemd-creds` for encrypted ones (250+).
+- EnvironmentFile=/etc/app/env with owner root and mode 0600 is the portable fallback.
+- Command-line secrets are visible in `ps` and /proc/&lt;pid&gt;/cmdline.
+
+## Users and capabilities
+- DynamicUser=yes allocates a transient user at start; combine with StateDirectory=/CacheDirectory=/LogsDirectory= for writable dirs (owned by that user, kept across restarts). Implies ProtectSystem=strict, ProtectHome=read-only, PrivateTmp.
+- Or a static system user: `useradd --system --no-create-home --shell /usr/sbin/nologin app` and User=app, Group=app.
+- Port below 1024 as non-root: `AmbientCapabilities=CAP_NET_BIND_SERVICE` and `CapabilityBoundingSet=CAP_NET_BIND_SERVICE`. CAP_SYS_ADMIN is almost root - never for a web app.
+
+## Sandboxing options (what they block, when they break)
+| Option | Blocks | Breaks when |
+|---|---|---|
+| NoNewPrivileges=yes | setuid binaries, privilege gain on exec | the service runs sudo/ping/setuid helpers |
+| ProtectSystem=strict | writes anywhere except /dev, /proc, /sys, and the listed paths | the service writes outside ReadWritePaths=/StateDirectory=/LogsDirectory=/RuntimeDirectory= |
+| ProtectHome=yes | /home, /root, /run/user (tmpfs = empty, read-only = visible) | the app, its config or data live in a home directory |
+| PrivateTmp=yes | other services&#x27; /tmp | another process shares files through /tmp |
+| PrivateDevices=yes | raw devices (/dev/sda, /dev/mem) | the service needs GPUs, serial ports or USB |
+| ProtectKernelTunables/Modules/Logs=yes | /proc/sys writes, module loading, kernel log | the service tunes sysctls or loads modules |
+| ProtectControlGroups=yes | cgroup writes | container runtimes |
+| ProtectClock / ProtectHostname=yes | clock and hostname changes | NTP clients, hostname tools |
+| RestrictSUIDSGID=yes | creating setuid files | installers |
+| RestrictNamespaces=yes | creating namespaces | container tools, Chromium sandbox |
+| RestrictRealtime=yes | realtime scheduling | audio servers |
+| LockPersonality=yes | changing the execution domain | almost never |
+| MemoryDenyWriteExecute=yes | writable+executable memory | JIT runtimes: Node.js, Java, .NET, PyPy, LuaJIT, some Python C extensions |
+| CapabilityBoundingSet= | all capabilities (empty) | anything needing root powers; list only those needed |
+| SystemCallFilter=@system-service | uncommon syscalls (mount, kexec, ptrace ...) | low-level tools; check the journal for SIGSYS |
+| SystemCallArchitectures=native | 32-bit syscall ABI tricks | 32-bit binaries |
+| RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 | netlink, packet, bluetooth sockets | tools that read routing tables (add AF_NETLINK) |
+| UMask=0077 | world-readable new files | other users must read the files |
+
+Rollout: apply in two or three steps (filesystem options, then kernel/namespace options, then syscalls and capabilities), restart, run the health check, read `journalctl -u &lt;unit&gt; -b`, then `systemd-analyze security &lt;unit&gt;`.
+FILE:references/checks-and-codes.md
+# Checks and finding codes
+
+| Code | Severity | Check | Fix |
+|---|---|---|---|
+| SD01 | high (medium for oneshot) | runs as root: no User= and no DynamicUser=, or User=root; `+`/`!` Exec prefixes bypass the user and sandbox (medium) | DynamicUser=yes or a system user; drop the prefix |
+| SD02 | high: no ExecStart, several ExecStart for a non-oneshot; low: command not an absolute path | ExecStart sanity | one absolute ExecStart; empty `ExecStart=` first in a drop-in to replace it |
+| SD03 | high | secret-looking variable (PASSWORD, SECRET, TOKEN, API_KEY, PRIVATE_KEY, DSN) or a URL with user:password in Environment=; `--password=` style secrets on the command line | LoadCredential= or EnvironmentFile= with mode 0600; rotate the leaked secret |
+| SD04 | medium: Restart=no for a long-running service; low: no RestartSec (100 ms default); high: oneshot with Restart=always/on-success; info: Restart=always with the default start limit | restart policy | Restart=on-failure, RestartSec=5s |
+| SD05 | medium: After= and Wants= of network-online.target not paired; low: obsolete syslog.target / network.service | ordering | add the missing half |
+| SD06 | medium if exposure &gt;= 5, else low | sandboxing options missing (weighted exposure score) | the `--dropin` output, tested step by step |
+| SD07 | high: CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_PTRACE, CAP_SYS_RAWIO; medium: CAP_DAC_OVERRIDE, CAP_NET_ADMIN, CAP_SETUID/SETGID; low: others | dangerous capabilities in AmbientCapabilities / CapabilityBoundingSet | keep only what is needed |
+| SD08 | high: unknown Exec*/User*/Restart* directive or invalid Type/Restart value; medium: other unknown directive, invalid value, bad boolean, line without `=`, assignment before a section, unknown section | systemd logs a warning and ignores the line | fix the spelling (suggestion shown) |
+| SD09 | medium | directive in the wrong section (StartLimitBurst in [Service], WantedBy in [Service], old StartLimitInterval) | move it |
+| SD10 | high: pipes, redirects, `&amp;&amp;`, `;`, `&amp;` or `$( )` in an Exec line without `/bin/sh -c`; medium: nohup / --daemon with Type=simple/exec; low: Type=forking without PIDFile | systemd does not use a shell | a script, `sh -c`, or foreground mode |
+| SD11 | medium: no WantedBy/RequiredBy/Alias; low: WantedBy=default.target or graphical.target for a system service | enable at boot | WantedBy=multi-user.target |
+| SD12 | medium: TimeoutStopSec=infinity/0, KillMode=none; low: KillMode=process | stop behaviour | TimeoutStopSec=30s, KillMode=mixed |
+| SD13 | low | the same single-value key twice in one file | keep one |
+| SD14 | high: ProtectHome=yes/tmpfs with an app, working dir or env file under /home or /root; MemoryDenyWriteExecute with node/java/dotnet/pypy/bun/deno; medium: ProtectSystem=strict with a write path not in ReadWritePaths/StateDirectory/LogsDirectory/RuntimeDirectory | options that break the service | move the app, add the write path, drop the option |
+| SD15 | info | no MemoryMax/MemoryHigh/TasksMax/CPUQuota | add limits from observed usage |
+
+## Exposure score
+Weights (sum 10): run as non-root 2.0, ProtectSystem=strict 1.0 (full/yes counts half), NoNewPrivileges 0.8, ProtectHome 0.6, CapabilityBoundingSet without dangerous caps 0.6, PrivateTmp 0.5, PrivateDevices 0.5, ProtectKernelTunables 0.4, ProtectKernelModules 0.4, RestrictNamespaces 0.4, SystemCallFilter 0.4, RestrictAddressFamilies 0.4, ProtectControlGroups 0.3, RestrictSUIDSGID 0.3, MemoryDenyWriteExecute 0.3, ProtectKernelLogs 0.2, ProtectClock 0.2, RestrictRealtime 0.2, UMask 0077/0027 0.2, ProtectHostname 0.1, LockPersonality 0.1, SystemCallArchitectures=native 0.1.
+Rating: under 2 OK, under 5 MEDIUM, under 8 EXPOSED, 8 or more UNSAFE.
+
+## Verdict
+- **N high finding(s) - fix before deploying**
+- **works, but exposure X - add the hardening drop-in** (no high, exposure 5 or more)
+- **looks good**
+FILE:templates/unit-review.md
+# systemd unit review: &lt;unit name&gt;
+
+**Host:** &lt;distro, systemd version&gt;   **Runtime:** &lt;Node.js 20 / Go binary / Python&gt;   **Reviewed:** &lt;YYYY-MM-DD&gt;
+**Verdict:** &lt;9 high findings - fix before deploying&gt;   **Exposure:** &lt;8.1 before -&gt; 1.5 after&gt;
+
+## Must fix
+| # | Problem | Why it matters | Fix |
+|---|---|---|---|
+| 1 | &lt;runs as root&gt; | &lt;an exploit owns the machine&gt; | &lt;DynamicUser=yes + CAP_NET_BIND_SERVICE for port 443&gt; |
+| 2 | &lt;secret STRIPE_SECRET_KEY in Environment=&gt; | &lt;readable by every local user - rotate it&gt; | &lt;LoadCredential=stripe:/etc/shop-api/stripe&gt; |
+
+## Should fix
+- &lt;Restart/RestartSec, network-online pairing, [Install], stop timeout&gt;
+
+## Corrected unit
+```ini
+&lt;full corrected .service file&gt;
+```
+
+## Hardening drop-in (`systemctl edit &lt;unit&gt;`)
+```ini
+&lt;drop-in from --dropin, adjusted for this service&gt;
+```
+
+## Rollout
+1. Rotate the leaked secrets; put the new ones in /etc/&lt;name&gt;/ (mode 0600).
+2. `systemd-analyze verify /etc/systemd/system/&lt;unit&gt;`
+3. `systemctl daemon-reload &amp;&amp; systemctl restart &lt;unit&gt;`; check `journalctl -u &lt;unit&gt; -b` and the health endpoint.
+4. `systemd-analyze security &lt;unit&gt;` - expect &lt;exposure&gt;.
+5. Roll back: `systemctl revert &lt;unit&gt;` removes the drop-ins.
+
+## Open questions
+- [ ] &lt;which directories does it write?&gt;
+- [ ] &lt;does it need the network at start?&gt;
+FILE:examples/webapp.service
+# /etc/systemd/system/shopapi.service - Node.js shop API, deployed by hand in 2023
+[Unit]
+Description=Shop API (Node.js)
+After=network-online.target syslog.target
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=/home/deploy/shop-api
+Environment=NODE_ENV=production PORT=443
+Environment=&quot;DATABASE_URL=postgres://shop:Winter2024@db.internal:5432/shop&quot;
+Environment=STRIPE_SECRET_KEY=sk_live_EXAMPLE_not_a_real_key
+ExecStartPre=/usr/bin/npm run migrate
+ExecStart=/usr/bin/node server.js &gt;&gt; /var/log/shop-api.log 2&gt;&amp;1
+Restart=always
+RestartSecs=5
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_SYS_ADMIN
+TimeoutStopSec=infinity
+ProtectSystem=full
+PrivateTmp=yes
+FILE:examples/webapp-override.conf
+# /etc/systemd/system/shopapi.service.d/override.conf - added during an incident
+[Service]
+ProtectHome=yes
+MemoryDenyWriteExecute=yes
+Restart=on-faliure
+FILE:examples/worker.service
+# /etc/systemd/system/thumbnailer.service - image thumbnail worker
+[Unit]
+Description=Thumbnail worker
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/thumbnailer \
+    --queue redis://127.0.0.1:6379/2 \
+    --out /var/lib/thumbnailer
+DynamicUser=yes
+StateDirectory=thumbnailer
+LoadCredential=s3-key:/etc/thumbnailer/s3-key
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=1G
+TasksMax=128
+
+[Install]
+WantedBy=multi-user.target
+FILE:examples/review-report.md
+# systemd unit review
+
+| Unit | Description | Type | Runs as | Restart | Exposure (0-10) | High | Medium | Low | Info |
+|---|---|---|---|---|---|---|---|---|---|
+| `examples/webapp.service + examples/webapp-override.conf` | Shop API (Node.js) | simple | root | always | 8.1 UNSAFE | 9 | 4 | 2 | 1 |
+| `examples/worker.service` | Thumbnail worker | exec | DynamicUser | on-failure | 1.2 OK | 0 | 0 | 1 | 0 |
+
+## examples/webapp.service + examples/webapp-override.conf
+
+**Verdict: 9 high finding(s) - fix before deploying**
+
+| Sev | Code | Where | Finding | Fix |
+|---|---|---|---|---|
+| high | SD01 | examples/webapp.service | runs as root (no User= or DynamicUser=) - a bug or exploit in the service owns the whole machine | add DynamicUser=yes, or create a system user (useradd --system --no-create-home &lt;name&gt;) and set User=/Group= |
+| high | SD03 | examples/webapp.service:11 | DATABASE_URL contains a URL with an embedded password | move the credential out of the unit (LoadCredential= / EnvironmentFile= 0600) |
+| high | SD03 | examples/webapp.service:12 | secret STRIPE_SECRET_KEY is written in the unit file - unit files are world-readable and shown by `systemctl show` | use LoadCredential=stripe_secret_key:/etc/&lt;name&gt;/stripe_secret_key (read from $CREDENTIALS_DIRECTORY) or EnvironmentFile=/etc/&lt;name&gt;/env with mode 0600 |
+| high | SD07 | examples/webapp.service:17 | grants CAP_SYS_ADMIN - close to full root | remove it; to bind ports below 1024 only CAP_NET_BIND_SERVICE is needed |
+| high | SD08 | examples/webapp-override.conf:5 | invalid value Restart=on-faliure - systemd ignores the line and keeps the default (did you mean on-failure?) | use one of: always, no, on-abnormal, on-abort, on-failure, on-success, on-watchdog |
+| high | SD08 | examples/webapp.service:16 | unknown directive RestartSecs= (ignored by systemd) - did you mean RestartSec=? | rename to RestartSec= |
+| high | SD10 | examples/webapp.service:14 | ExecStart= uses shell syntax (pipes, redirects, &amp;&amp;, ;, &amp; or $( )) but systemd does not run a shell - the symbols are passed as plain arguments | wrap it: ExecStart=/bin/sh -c &#x27;...&#x27; or better move the logic into a script; log to stdout (journald) instead of &gt;&gt; file |
+| high | SD14 | examples/webapp-override.conf:3 | ProtectHome=yes but the service uses /home/deploy/shop-api - it cannot see it and will fail to start | move the app out of /home (e.g. /opt/&lt;name&gt;, /srv/&lt;name&gt;) or use ProtectHome=read-only with ReadWritePaths= for the exact directory |
+| high | SD14 | examples/webapp-override.conf:4 | MemoryDenyWriteExecute=yes with a JIT runtime (/usr/bin/node) - it will crash on start | remove MemoryDenyWriteExecute= for this service |
+| medium | SD05 | examples/webapp.service:4 | After=network-online.target without Wants=network-online.target - the ordering does nothing unless something else pulls the target in | add Wants=network-online.target |
+| medium | SD06 | examples/webapp.service | 19 sandboxing option(s) missing: User, NoNewPrivileges, ProtectSystem, PrivateDevices, ProtectKernelTunables, ProtectKernelModules, ProtectKernelLogs, ProtectControlGroups, ProtectClock, ProtectHostname, RestrictSUIDSGID, RestrictNamespaces, RestrictRealtime, LockPersonality, CapabilityBoundingSet, SystemCallFilter, SystemCallArchitectures, RestrictAddressFamilies, UMask | add the suggested drop-in (systemctl edit &lt;name&gt;), restart, and test the service |
+| medium | SD11 | examples/webapp.service | no [Install] WantedBy= - `systemctl enable` does nothing, so the service will not start at boot | add [Install] WantedBy=multi-user.target |
+| medium | SD12 | examples/webapp.service:18 | stop timeout infinity - a hung service blocks shutdown and restarts forever | set TimeoutStopSec=30s (or what a clean shutdown really needs) |
+| low | SD04 | examples/webapp.service:15 | Restart=always without RestartSec= (default 100ms) - a crash loop hammers the machine and hits the start limit fast | add RestartSec=5s |
+| low | SD05 | examples/webapp.service:4 | After=syslog.target is obsolete | remove it (journald is always available; use network-online.target) |
+| info | SD15 | examples/webapp.service | no resource limits (MemoryMax=, TasksMax=, CPUQuota=) - a leak can starve the host | add MemoryMax= and TasksMax= sized from normal usage |
+
+Suggested drop-in (test after applying; relax an option if the service needs it):
+
+```ini
+# /etc/systemd/system/&lt;name&gt;.service.d/hardening.conf  (systemctl edit &lt;name&gt;)
+[Service]
+# or User=&lt;service account&gt;; a non-root user needs AmbientCapabilities=CAP_NET_BIND_SERVICE for ports below 1024
+DynamicUser=yes
+NoNewPrivileges=yes
+# currently full; add ReadWritePaths=/StateDirectory= for paths it writes
+ProtectSystem=strict
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+# empty = no capabilities; or list only what you need, e.g. CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0077
+# then: systemctl daemon-reload &amp;&amp; systemctl restart &lt;name&gt; &amp;&amp; systemd-analyze security &lt;name&gt;
+```
+
+## examples/worker.service
+
+**Verdict: looks good (exposure 1.2)**
+
+| Sev | Code | Where | Finding | Fix |
+|---|---|---|---|---|
+| low | SD06 | examples/worker.service | 6 sandboxing option(s) missing: ProtectKernelLogs, ProtectClock, ProtectHostname, RestrictRealtime, MemoryDenyWriteExecute, UMask | add the suggested drop-in (systemctl edit &lt;name&gt;), restart, and test the service |
+
+Suggested drop-in (test after applying; relax an option if the service needs it):
+
+```ini
+# /etc/systemd/system/&lt;name&gt;.service.d/hardening.conf  (systemctl edit &lt;name&gt;)
+[Service]
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+# not for JIT runtimes (Node.js, Java, .NET, PyPy)
+MemoryDenyWriteExecute=yes
+UMask=0077
+# then: systemctl daemon-reload &amp;&amp; systemctl restart &lt;name&gt; &amp;&amp; systemd-analyze security &lt;name&gt;
+```
+
+Exposure is this script&#x27;s weighted estimate, not the systemd-analyze number; run `systemd-analyze security &lt;unit&gt;` and `systemd-analyze verify &lt;file&gt;` on the target host to confirm.
+FILE:scripts/systemd_unit_review.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;systemd service unit hardening reviewer (stdlib only, Python 3.8+).
+
+Reads one or more systemd .service unit files (and drop-in .conf files, applied in the order
+given) the way systemd does - sections, comments, backslash line continuation, repeated keys,
+empty assignments that reset a list - and reviews them for reliability and security problems:
+running as root, secrets in Environment=, shell syntax in Exec lines without a shell, unknown or
+misspelled directives and values, directives in the wrong section, restart and timeout policy,
+network-online ordering, missing [Install], sandboxing gaps, dangerous capabilities and options
+that will stop the service from starting. Prints an exposure score (0 = locked down, 10 = wide
+open, in the spirit of `systemd-analyze security`) and a suggested hardening drop-in.
+
+Usage:
+  systemd_unit_review.py UNIT.service [DROPIN.conf ...] [--json] [--dropin]
+  systemd_unit_review.py --self-test
+Exit: 0 = no high findings, 1 = at least one high finding, 2 = bad input.
+&quot;&quot;&quot;
+import argparse, difflib, json, re, sys
+
+SEV = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2, &quot;info&quot;: 3}
+
+UNIT_KEYS = {&quot;Description&quot;, &quot;Documentation&quot;, &quot;Requires&quot;, &quot;Requisite&quot;, &quot;Wants&quot;, &quot;BindsTo&quot;, &quot;PartOf&quot;,
+             &quot;Upholds&quot;, &quot;Conflicts&quot;, &quot;Before&quot;, &quot;After&quot;, &quot;OnFailure&quot;, &quot;OnSuccess&quot;, &quot;PropagatesReloadTo&quot;,
+             &quot;ReloadPropagatedFrom&quot;, &quot;JoinsNamespaceOf&quot;, &quot;RequiresMountsFor&quot;, &quot;OnFailureJobMode&quot;,
+             &quot;IgnoreOnIsolate&quot;, &quot;StopWhenUnneeded&quot;, &quot;RefuseManualStart&quot;, &quot;RefuseManualStop&quot;,
+             &quot;AllowIsolate&quot;, &quot;DefaultDependencies&quot;, &quot;CollectMode&quot;, &quot;FailureAction&quot;, &quot;SuccessAction&quot;,
+             &quot;JobTimeoutSec&quot;, &quot;JobRunningTimeoutSec&quot;, &quot;StartLimitIntervalSec&quot;, &quot;StartLimitBurst&quot;,
+             &quot;StartLimitAction&quot;, &quot;RebootArgument&quot;, &quot;SourcePath&quot;, &quot;ConditionPathExists&quot;,
+             &quot;ConditionPathIsDirectory&quot;, &quot;ConditionFileNotEmpty&quot;, &quot;ConditionHost&quot;, &quot;ConditionVirtualization&quot;,
+             &quot;ConditionKernelCommandLine&quot;, &quot;ConditionACPower&quot;, &quot;ConditionUser&quot;, &quot;ConditionGroup&quot;,
+             &quot;AssertPathExists&quot;, &quot;AssertFileNotEmpty&quot;, &quot;ConditionEnvironment&quot;, &quot;ConditionSecurity&quot;}
+SERVICE_KEYS = {&quot;Type&quot;, &quot;ExitType&quot;, &quot;RemainAfterExit&quot;, &quot;GuessMainPID&quot;, &quot;PIDFile&quot;, &quot;BusName&quot;,
+                &quot;ExecStart&quot;, &quot;ExecStartPre&quot;, &quot;ExecStartPost&quot;, &quot;ExecCondition&quot;, &quot;ExecReload&quot;, &quot;ExecStop&quot;,
+                &quot;ExecStopPost&quot;, &quot;RestartSec&quot;, &quot;RestartSteps&quot;, &quot;RestartMaxDelaySec&quot;, &quot;TimeoutStartSec&quot;,
+                &quot;TimeoutStopSec&quot;, &quot;TimeoutAbortSec&quot;, &quot;TimeoutSec&quot;, &quot;TimeoutStartFailureMode&quot;,
+                &quot;TimeoutStopFailureMode&quot;, &quot;RuntimeMaxSec&quot;, &quot;WatchdogSec&quot;, &quot;Restart&quot;, &quot;RestartMode&quot;,
+                &quot;SuccessExitStatus&quot;, &quot;RestartPreventExitStatus&quot;, &quot;RestartForceExitStatus&quot;, &quot;RootDirectoryStartOnly&quot;,
+                &quot;NonBlocking&quot;, &quot;NotifyAccess&quot;, &quot;Sockets&quot;, &quot;FileDescriptorStoreMax&quot;, &quot;USBFunctionDescriptors&quot;,
+                &quot;OOMPolicy&quot;, &quot;OpenFile&quot;, &quot;ReloadSignal&quot;,
+                # exec
+                &quot;WorkingDirectory&quot;, &quot;RootDirectory&quot;, &quot;RootImage&quot;, &quot;User&quot;, &quot;Group&quot;, &quot;DynamicUser&quot;,
+                &quot;SupplementaryGroups&quot;, &quot;PAMName&quot;, &quot;UMask&quot;, &quot;Environment&quot;, &quot;EnvironmentFile&quot;, &quot;PassEnvironment&quot;,
+                &quot;UnsetEnvironment&quot;, &quot;StandardInput&quot;, &quot;StandardOutput&quot;, &quot;StandardError&quot;, &quot;SyslogIdentifier&quot;,
+                &quot;LogLevelMax&quot;, &quot;LogRateLimitIntervalSec&quot;, &quot;LogRateLimitBurst&quot;, &quot;Nice&quot;, &quot;OOMScoreAdjust&quot;,
+                &quot;CPUSchedulingPolicy&quot;, &quot;IOSchedulingClass&quot;, &quot;LimitNOFILE&quot;, &quot;LimitNPROC&quot;, &quot;LimitCORE&quot;,
+                &quot;LimitMEMLOCK&quot;, &quot;LimitAS&quot;, &quot;LimitFSIZE&quot;, &quot;CapabilityBoundingSet&quot;, &quot;AmbientCapabilities&quot;,
+                &quot;NoNewPrivileges&quot;, &quot;SecureBits&quot;, &quot;ProtectSystem&quot;, &quot;ProtectHome&quot;, &quot;RuntimeDirectory&quot;,
+                &quot;StateDirectory&quot;, &quot;CacheDirectory&quot;, &quot;LogsDirectory&quot;, &quot;ConfigurationDirectory&quot;,
+                &quot;RuntimeDirectoryMode&quot;, &quot;StateDirectoryMode&quot;, &quot;RuntimeDirectoryPreserve&quot;, &quot;ReadWritePaths&quot;,
+                &quot;ReadOnlyPaths&quot;, &quot;InaccessiblePaths&quot;, &quot;ExecPaths&quot;, &quot;NoExecPaths&quot;, &quot;TemporaryFileSystem&quot;,
+                &quot;BindPaths&quot;, &quot;BindReadOnlyPaths&quot;, &quot;PrivateTmp&quot;, &quot;PrivateDevices&quot;, &quot;PrivateNetwork&quot;,
+                &quot;PrivateUsers&quot;, &quot;PrivateIPC&quot;, &quot;PrivateMounts&quot;, &quot;ProtectHostname&quot;, &quot;ProtectClock&quot;,
+                &quot;ProtectKernelTunables&quot;, &quot;ProtectKernelModules&quot;, &quot;ProtectKernelLogs&quot;, &quot;ProtectControlGroups&quot;,
+                &quot;ProtectProc&quot;, &quot;ProcSubset&quot;, &quot;RestrictAddressFamilies&quot;, &quot;RestrictNamespaces&quot;,
+                &quot;LockPersonality&quot;, &quot;MemoryDenyWriteExecute&quot;, &quot;RestrictRealtime&quot;, &quot;RestrictSUIDSGID&quot;,
+                &quot;RemoveIPC&quot;, &quot;SystemCallFilter&quot;, &quot;SystemCallArchitectures&quot;, &quot;SystemCallErrorNumber&quot;,
+                &quot;DevicePolicy&quot;, &quot;DeviceAllow&quot;, &quot;IPAddressAllow&quot;, &quot;IPAddressDeny&quot;, &quot;LoadCredential&quot;,
+                &quot;LoadCredentialEncrypted&quot;, &quot;SetCredential&quot;, &quot;SetCredentialEncrypted&quot;, &quot;KeyringMode&quot;,
+                &quot;TTYPath&quot;, &quot;UtmpIdentifier&quot;, &quot;SELinuxContext&quot;, &quot;AppArmorProfile&quot;, &quot;KillMode&quot;, &quot;KillSignal&quot;,
+                &quot;SendSIGKILL&quot;, &quot;SendSIGHUP&quot;, &quot;FinalKillSignal&quot;, &quot;RestartKillSignal&quot;,
+                # resource control
+                &quot;CPUQuota&quot;, &quot;CPUWeight&quot;, &quot;MemoryMax&quot;, &quot;MemoryHigh&quot;, &quot;MemoryLow&quot;, &quot;MemoryMin&quot;, &quot;MemorySwapMax&quot;,
+                &quot;TasksMax&quot;, &quot;IOWeight&quot;, &quot;Slice&quot;, &quot;Delegate&quot;, &quot;CPUAccounting&quot;, &quot;MemoryAccounting&quot;,
+                &quot;IOAccounting&quot;, &quot;TasksAccounting&quot;, &quot;IPAccounting&quot;, &quot;ManagedOOMSwap&quot;,
+                &quot;ManagedOOMMemoryPressure&quot;}
+INSTALL_KEYS = {&quot;Alias&quot;, &quot;WantedBy&quot;, &quot;RequiredBy&quot;, &quot;UpheldBy&quot;, &quot;Also&quot;, &quot;DefaultInstance&quot;}
+SECTIONS = {&quot;Unit&quot;: UNIT_KEYS, &quot;Service&quot;: SERVICE_KEYS, &quot;Install&quot;: INSTALL_KEYS}
+LIST_KEYS = {&quot;Requires&quot;, &quot;Wants&quot;, &quot;After&quot;, &quot;Before&quot;, &quot;BindsTo&quot;, &quot;PartOf&quot;, &quot;Conflicts&quot;, &quot;Documentation&quot;,
+             &quot;Environment&quot;, &quot;EnvironmentFile&quot;, &quot;ExecStartPre&quot;, &quot;ExecStartPost&quot;, &quot;ExecStop&quot;, &quot;ExecStopPost&quot;,
+             &quot;ExecReload&quot;, &quot;ExecCondition&quot;, &quot;ReadWritePaths&quot;, &quot;ReadOnlyPaths&quot;, &quot;InaccessiblePaths&quot;,
+             &quot;SupplementaryGroups&quot;, &quot;CapabilityBoundingSet&quot;, &quot;AmbientCapabilities&quot;, &quot;SystemCallFilter&quot;,
+             &quot;RestrictAddressFamilies&quot;, &quot;DeviceAllow&quot;, &quot;LoadCredential&quot;, &quot;SetCredential&quot;, &quot;WantedBy&quot;,
+             &quot;RequiredBy&quot;, &quot;Alias&quot;, &quot;Also&quot;, &quot;BindPaths&quot;, &quot;BindReadOnlyPaths&quot;, &quot;IPAddressAllow&quot;,
+             &quot;IPAddressDeny&quot;, &quot;OnFailure&quot;, &quot;SuccessExitStatus&quot;, &quot;RestartPreventExitStatus&quot;,
+             &quot;TemporaryFileSystem&quot;, &quot;PassEnvironment&quot;, &quot;UnsetEnvironment&quot;, &quot;RequiresMountsFor&quot;,
+             &quot;StateDirectory&quot;, &quot;RuntimeDirectory&quot;, &quot;CacheDirectory&quot;, &quot;LogsDirectory&quot;, &quot;ExecStart&quot;,
+             &quot;ConditionPathExists&quot;, &quot;AssertPathExists&quot;}
+VALUES = {
+    &quot;Type&quot;: {&quot;simple&quot;, &quot;exec&quot;, &quot;forking&quot;, &quot;oneshot&quot;, &quot;dbus&quot;, &quot;notify&quot;, &quot;notify-reload&quot;, &quot;idle&quot;},
+    &quot;Restart&quot;: {&quot;no&quot;, &quot;on-success&quot;, &quot;on-failure&quot;, &quot;on-abnormal&quot;, &quot;on-watchdog&quot;, &quot;on-abort&quot;, &quot;always&quot;},
+    &quot;ProtectSystem&quot;: {&quot;yes&quot;, &quot;no&quot;, &quot;true&quot;, &quot;false&quot;, &quot;full&quot;, &quot;strict&quot;, &quot;1&quot;, &quot;0&quot;, &quot;on&quot;, &quot;off&quot;},
+    &quot;ProtectHome&quot;: {&quot;yes&quot;, &quot;no&quot;, &quot;true&quot;, &quot;false&quot;, &quot;read-only&quot;, &quot;tmpfs&quot;, &quot;1&quot;, &quot;0&quot;, &quot;on&quot;, &quot;off&quot;},
+    &quot;KillMode&quot;: {&quot;control-group&quot;, &quot;mixed&quot;, &quot;process&quot;, &quot;none&quot;},
+    &quot;StandardOutput&quot;: None, &quot;NotifyAccess&quot;: {&quot;none&quot;, &quot;main&quot;, &quot;exec&quot;, &quot;all&quot;},
+}
+BOOL = {&quot;yes&quot;, &quot;no&quot;, &quot;true&quot;, &quot;false&quot;, &quot;1&quot;, &quot;0&quot;, &quot;on&quot;, &quot;off&quot;}
+BOOL_KEYS = {&quot;NoNewPrivileges&quot;, &quot;PrivateTmp&quot;, &quot;PrivateDevices&quot;, &quot;PrivateNetwork&quot;, &quot;PrivateUsers&quot;,
+             &quot;ProtectKernelTunables&quot;, &quot;ProtectKernelModules&quot;, &quot;ProtectKernelLogs&quot;, &quot;ProtectControlGroups&quot;,
+             &quot;ProtectHostname&quot;, &quot;ProtectClock&quot;, &quot;LockPersonality&quot;, &quot;MemoryDenyWriteExecute&quot;,
+             &quot;RestrictRealtime&quot;, &quot;RestrictSUIDSGID&quot;, &quot;RemoveIPC&quot;, &quot;DynamicUser&quot;, &quot;RemainAfterExit&quot;,
+             &quot;PrivateIPC&quot;, &quot;PrivateMounts&quot;, &quot;DefaultDependencies&quot;}
+TRUE = {&quot;yes&quot;, &quot;true&quot;, &quot;1&quot;, &quot;on&quot;}
+SECRET_RE = re.compile(r&quot;(PASS(WORD|WD)?|SECRET|TOKEN|API_?KEY|PRIVATE_?KEY|CREDENTIALS?|DSN)&quot;, re.I)
+SHELL_RE = re.compile(r&quot;(\|\||&amp;&amp;|(?&lt;![\\])[|;]|&gt;&gt;?|&lt;|\$\(|`|(?:^|\s)&amp;\s*$|\s&amp;$)&quot;)
+DANGER_CAPS = {&quot;CAP_SYS_ADMIN&quot;: &quot;high&quot;, &quot;CAP_SYS_MODULE&quot;: &quot;high&quot;, &quot;CAP_SYS_PTRACE&quot;: &quot;high&quot;,
+               &quot;CAP_DAC_OVERRIDE&quot;: &quot;medium&quot;, &quot;CAP_SYS_RAWIO&quot;: &quot;high&quot;, &quot;CAP_NET_ADMIN&quot;: &quot;medium&quot;,
+               &quot;CAP_SETUID&quot;: &quot;medium&quot;, &quot;CAP_SETGID&quot;: &quot;medium&quot;, &quot;CAP_CHOWN&quot;: &quot;low&quot;, &quot;CAP_SYS_CHROOT&quot;: &quot;low&quot;}
+# (directive, wanted value test, weight, recommended line) - weights sum to 10.0
+HARDEN = [
+    (&quot;User&quot;, None, 2.0, &quot;DynamicUser=yes|or User=&lt;service account&gt;; a non-root user needs AmbientCapabilities=CAP_NET_BIND_SERVICE for ports below 1024&quot;),
+    (&quot;NoNewPrivileges&quot;, &quot;bool&quot;, 0.8, &quot;NoNewPrivileges=yes&quot;),
+    (&quot;ProtectSystem&quot;, &quot;strict&quot;, 1.0, &quot;ProtectSystem=strict&quot;),
+    (&quot;ProtectHome&quot;, &quot;home&quot;, 0.6, &quot;ProtectHome=yes&quot;),
+    (&quot;PrivateTmp&quot;, &quot;bool&quot;, 0.5, &quot;PrivateTmp=yes&quot;),
+    (&quot;PrivateDevices&quot;, &quot;bool&quot;, 0.5, &quot;PrivateDevices=yes&quot;),
+    (&quot;ProtectKernelTunables&quot;, &quot;bool&quot;, 0.4, &quot;ProtectKernelTunables=yes&quot;),
+    (&quot;ProtectKernelModules&quot;, &quot;bool&quot;, 0.4, &quot;ProtectKernelModules=yes&quot;),
+    (&quot;ProtectKernelLogs&quot;, &quot;bool&quot;, 0.2, &quot;ProtectKernelLogs=yes&quot;),
+    (&quot;ProtectControlGroups&quot;, &quot;bool&quot;, 0.3, &quot;ProtectControlGroups=yes&quot;),
+    (&quot;ProtectClock&quot;, &quot;bool&quot;, 0.2, &quot;ProtectClock=yes&quot;),
+    (&quot;ProtectHostname&quot;, &quot;bool&quot;, 0.1, &quot;ProtectHostname=yes&quot;),
+    (&quot;RestrictSUIDSGID&quot;, &quot;bool&quot;, 0.3, &quot;RestrictSUIDSGID=yes&quot;),
+    (&quot;RestrictNamespaces&quot;, &quot;ns&quot;, 0.4, &quot;RestrictNamespaces=yes&quot;),
+    (&quot;RestrictRealtime&quot;, &quot;bool&quot;, 0.2, &quot;RestrictRealtime=yes&quot;),
+    (&quot;LockPersonality&quot;, &quot;bool&quot;, 0.1, &quot;LockPersonality=yes&quot;),
+    (&quot;MemoryDenyWriteExecute&quot;, &quot;bool&quot;, 0.3, &quot;MemoryDenyWriteExecute=yes|not for JIT runtimes (Node.js, Java, .NET, PyPy)&quot;),
+    (&quot;CapabilityBoundingSet&quot;, &quot;caps&quot;, 0.6, &quot;CapabilityBoundingSet=|empty = no capabilities; or list only what you need, e.g. CAP_NET_BIND_SERVICE&quot;),
+    (&quot;SystemCallFilter&quot;, &quot;set&quot;, 0.4, &quot;SystemCallFilter=@system-service&quot;),
+    (&quot;SystemCallArchitectures&quot;, &quot;native&quot;, 0.1, &quot;SystemCallArchitectures=native&quot;),
+    (&quot;RestrictAddressFamilies&quot;, &quot;set&quot;, 0.4, &quot;RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6&quot;),
+    (&quot;UMask&quot;, &quot;umask&quot;, 0.2, &quot;UMask=0077&quot;),
+]
+
+
+class InputError(Exception):
+    pass
+
+
+# ---------------------------------------------------------------- parse
+def parse(text, fname, unit=None):
+    &quot;&quot;&quot;Return unit dict: {section: {key: [(value, line, file)]}} plus raw entries list.&quot;&quot;&quot;
+    unit = unit if unit is not None else {&quot;sections&quot;: {}, &quot;entries&quot;: [], &quot;files&quot;: []}
+    unit[&quot;files&quot;].append(fname)
+    sec = None
+    lines = text.splitlines()
+    i = 0
+    while i &lt; len(lines):
+        ln, raw = i + 1, lines[i]
+        i += 1
+        s = raw.strip()
+        if not s or s[0] in &quot;#;&quot;:
+            continue
+        while s.endswith(&quot;\\&quot;) and i &lt; len(lines):
+            nxt = lines[i].strip()
+            i += 1
+            if nxt.startswith((&quot;#&quot;, &quot;;&quot;)):
+                continue
+            s = s[:-1].rstrip() + &quot; &quot; + nxt
+        if s.startswith(&quot;[&quot;):
+            if not s.endswith(&quot;]&quot;):
+                raise InputError(&quot;%s:%d: broken section header %r&quot; % (fname, ln, s))
+            sec = s[1:-1].strip()
+            unit[&quot;sections&quot;].setdefault(sec, {})
+            unit[&quot;entries&quot;].append((&quot;section&quot;, sec, None, ln, fname))
+            continue
+        if &quot;=&quot; not in s:
+            unit[&quot;entries&quot;].append((&quot;noeq&quot;, sec, s, ln, fname))
+            continue
+        if sec is None:
+            unit[&quot;entries&quot;].append((&quot;nosec&quot;, None, s, ln, fname))
+            continue
+        k, v = s.split(&quot;=&quot;, 1)
+        k, v = k.strip(), v.strip()
+        unit[&quot;entries&quot;].append((&quot;kv&quot;, sec, (k, v), ln, fname))
+        d = unit[&quot;sections&quot;][sec]
+        if v == &quot;&quot; and k in LIST_KEYS:
+            d[k] = [(&quot;&quot;, ln, fname)]  # empty assignment resets the list
+            continue
+        d.setdefault(k, []).append((v, ln, fname))
+    return unit
+
+
+def get(unit, sec, key):
+    vals = unit[&quot;sections&quot;].get(sec, {}).get(key, [])
+    vals = [v for v in vals if v[0] != &quot;&quot;] if key in LIST_KEYS else vals
+    return vals
+
+
+def valid(key, v):
+    vl = v.lower()
+    if key in VALUES and VALUES[key]:
+        return vl in VALUES[key]
+    if key in BOOL_KEYS:
+        return vl in BOOL
+    return True
+
+
+def last(unit, sec, key, default=None):
+    &quot;&quot;&quot;Effective value: the last assignment systemd accepts (invalid values are ignored).&quot;&quot;&quot;
+    for v in reversed(unit[&quot;sections&quot;].get(sec, {}).get(key) or []):
+        if v[0] == &quot;&quot; or valid(key, v[0]):
+            return v[0]
+    return default
+
+
+def where(unit, sec, key):
+    v = [x for x in unit[&quot;sections&quot;].get(sec, {}).get(key) or [] if x[0] == &quot;&quot; or valid(key, x[0])]
+    return &quot;%s:%d&quot; % (v[-1][2], v[-1][1]) if v else unit[&quot;files&quot;][0]
+
+
+def words(unit, sec, key):
+    out = []
+    for v, _, _ in get(unit, sec, key):
+        out += v.split()
+    return out
+
+
+# ---------------------------------------------------------------- review
+def review(unit):
+    F = []
+    add = lambda sev, code, loc, msg, fix: F.append((sev, code, loc, msg, fix))
+    S = unit[&quot;sections&quot;]
+    svc = S.get(&quot;Service&quot;, {})
+    f0 = unit[&quot;files&quot;][0]
+    if &quot;Service&quot; not in S:
+        raise InputError(&quot;%s has no [Service] section - not a service unit&quot; % f0)
+
+    # SD08 / SD13 / structure
+    for kind, sec, val, ln, fn in unit[&quot;entries&quot;]:
+        loc = &quot;%s:%d&quot; % (fn, ln)
+        if kind == &quot;noeq&quot;:
+            add(&quot;medium&quot;, &quot;SD08&quot;, loc, &quot;line is not Key=Value and is ignored: %r&quot; % val, &quot;fix the line or comment it out with #&quot;)
+        elif kind == &quot;nosec&quot;:
+            add(&quot;medium&quot;, &quot;SD08&quot;, loc, &quot;assignment before any [Section] is ignored: %r&quot; % val, &quot;move it under [Unit], [Service] or [Install]&quot;)
+        elif kind == &quot;section&quot; and sec not in SECTIONS and not sec.startswith(&quot;X-&quot;):
+            add(&quot;medium&quot;, &quot;SD08&quot;, loc, &quot;unknown section [%s] - its settings are ignored&quot; % sec, &quot;use [Unit], [Service] or [Install] (custom sections must start with X-)&quot;)
+        elif kind == &quot;kv&quot; and sec in SECTIONS:
+            k, v = val
+            if k.startswith(&quot;X-&quot;):
+                continue
+            if k not in SECTIONS[sec]:
+                other = [s for s in SECTIONS if k in SECTIONS[s]]
+                if other:
+                    sev = &quot;medium&quot;
+                    add(sev, &quot;SD09&quot;, loc, &quot;%s= belongs in [%s], not [%s] - systemd ignores it here&quot; % (k, other[0], sec),
+                        &quot;move %s=%s to [%s]&quot; % (k, v, other[0]))
+                else:
+                    allk = set().union(*SECTIONS.values())
+                    close = difflib.get_close_matches(k, sorted(allk), 1, 0.75)
+                    add(&quot;high&quot; if sec == &quot;Service&quot; and close and close[0].startswith((&quot;Exec&quot;, &quot;User&quot;, &quot;Restart&quot;)) else &quot;medium&quot;,
+                        &quot;SD08&quot;, loc, &quot;unknown directive %s= (ignored by systemd)%s&quot; % (k, &quot; - did you mean %s=?&quot; % close[0] if close else &quot;&quot;),
+                        &quot;rename to %s=&quot; % close[0] if close else &quot;remove it or check `man systemd.directives`&quot;)
+                continue
+            vl = v.lower()
+            if k in VALUES and VALUES[k] and v and vl not in VALUES[k]:
+                close = difflib.get_close_matches(vl, sorted(VALUES[k]), 1, 0.6)
+                add(&quot;high&quot; if k in (&quot;Type&quot;, &quot;Restart&quot;) else &quot;medium&quot;, &quot;SD08&quot;, loc,
+                    &quot;invalid value %s=%s - systemd ignores the line and keeps the default%s&quot; % (k, v, &quot; (did you mean %s?)&quot; % close[0] if close else &quot;&quot;),
+                    &quot;use one of: %s&quot; % &quot;, &quot;.join(sorted(VALUES[k])))
+            elif k in BOOL_KEYS and v and vl not in BOOL:
+                add(&quot;medium&quot;, &quot;SD08&quot;, loc, &quot;%s= expects a boolean, got %r (line ignored)&quot; % (k, v), &quot;use yes or no&quot;)
+    seen = {}
+    for kind, sec, val, ln, fn in unit[&quot;entries&quot;]:
+        if kind == &quot;kv&quot; and val[0] not in LIST_KEYS and sec in SECTIONS:
+            key = (sec, val[0])
+            if key in seen and seen[key][2] == fn:
+                add(&quot;low&quot;, &quot;SD13&quot;, &quot;%s:%d&quot; % (fn, ln), &quot;%s= set again (first at line %d) - the last one wins: %s&quot; % (val[0], seen[key][1], val[1]),
+                    &quot;keep one %s= line&quot; % val[0])
+            seen[key] = (val[1], ln, fn)
+
+    typ = (last(unit, &quot;Service&quot;, &quot;Type&quot;, &quot;simple&quot;) or &quot;simple&quot;).lower()
+    execs = get(unit, &quot;Service&quot;, &quot;ExecStart&quot;)
+    # SD02 ExecStart
+    if not execs:
+        add(&quot;high&quot;, &quot;SD02&quot;, f0, &quot;no ExecStart= - the service cannot start&quot;, &quot;add ExecStart=/absolute/path/to/binary args&quot;)
+    if len(execs) &gt; 1 and typ != &quot;oneshot&quot;:
+        add(&quot;high&quot;, &quot;SD02&quot;, where(unit, &quot;Service&quot;, &quot;ExecStart&quot;), &quot;%d ExecStart= lines but Type=%s allows only one (only oneshot may have several)&quot; % (len(execs), typ),
+            &quot;keep one ExecStart=, or reset with an empty ExecStart= first in a drop-in&quot;)
+    for key in (&quot;ExecStartPre&quot;, &quot;ExecStart&quot;, &quot;ExecStartPost&quot;, &quot;ExecReload&quot;, &quot;ExecStop&quot;, &quot;ExecStopPost&quot;):
+        for v, ln, fn in get(unit, &quot;Service&quot;, key):
+            loc = &quot;%s:%d&quot; % (fn, ln)
+            cmd = v.lstrip(&quot;-@:+!&quot;)
+            first = cmd.split()[0] if cmd.split() else &quot;&quot;
+            is_shell = re.match(r&quot;^(/usr)?/bin/(ba|da|z)?sh$&quot;, first) is not None
+            if first and not first.startswith(&quot;/&quot;) and not first.startswith(&quot;$&quot;):
+                add(&quot;low&quot;, &quot;SD02&quot;, loc, &quot;%s= command %r is not an absolute path (systemd searches only its fixed PATH)&quot; % (key, first),
+                    &quot;use the full path, e.g. /usr/bin/%s&quot; % first)
+            if not is_shell and SHELL_RE.search(cmd.split(None, 1)[1] if len(cmd.split(None, 1)) &gt; 1 else &quot;&quot;):
+                add(&quot;high&quot;, &quot;SD10&quot;, loc, &quot;%s= uses shell syntax (pipes, redirects, &amp;&amp;, ;, &amp; or $( )) but systemd does not run a shell - the symbols are passed as plain arguments&quot; % key,
+                    &quot;wrap it: %s=/bin/sh -c &#x27;...&#x27; or better move the logic into a script; log to stdout (journald) instead of &gt;&gt; file&quot; % key)
+            if re.search(r&quot;(^|\s)(nohup|daemon|--daemon(ize)?|-d)(\s|$)&quot;, cmd) and typ in (&quot;simple&quot;, &quot;exec&quot;):
+                add(&quot;medium&quot;, &quot;SD10&quot;, loc, &quot;%s= looks like it forks into the background (nohup/--daemon) while Type=%s expects the process to stay in the foreground&quot; % (key, typ),
+                    &quot;run it in the foreground (drop --daemon / nohup) or use Type=forking with PIDFile=&quot;)
+            if v.startswith(&quot;+&quot;) or v.startswith(&quot;!&quot;):
+                add(&quot;medium&quot;, &quot;SD01&quot;, loc, &quot;%s= prefix %s runs this command with full privileges, bypassing User= and the sandbox&quot; % (key, v[0]), &quot;drop the prefix unless this step really needs root&quot;)
+    if typ == &quot;forking&quot; and not get(unit, &quot;Service&quot;, &quot;PIDFile&quot;):
+        add(&quot;low&quot;, &quot;SD10&quot;, where(unit, &quot;Service&quot;, &quot;Type&quot;), &quot;Type=forking without PIDFile= - systemd has to guess the main process&quot;, &quot;add PIDFile=/run/&lt;name&gt;/&lt;name&gt;.pid or run in the foreground with Type=exec&quot;)
+
+    # SD01 user
+    user = last(unit, &quot;Service&quot;, &quot;User&quot;)
+    dyn = (last(unit, &quot;Service&quot;, &quot;DynamicUser&quot;, &quot;no&quot;) or &quot;no&quot;).lower() in TRUE
+    root = (not dyn) and (user is None or user in (&quot;root&quot;, &quot;0&quot;))
+    if root:
+        add(&quot;high&quot; if typ != &quot;oneshot&quot; else &quot;medium&quot;, &quot;SD01&quot;, where(unit, &quot;Service&quot;, &quot;User&quot;) if user else f0,
+            &quot;runs as root (%s) - a bug or exploit in the service owns the whole machine&quot; % (&quot;User=%s&quot; % user if user else &quot;no User= or DynamicUser=&quot;),
+            &quot;add DynamicUser=yes, or create a system user (useradd --system --no-create-home &lt;name&gt;) and set User=/Group=&quot;)
+    caps = words(unit, &quot;Service&quot;, &quot;AmbientCapabilities&quot;) + words(unit, &quot;Service&quot;, &quot;CapabilityBoundingSet&quot;)
+    for c in sorted(set(x.lstrip(&quot;~&quot;) for x in caps)):
+        if c.upper() in DANGER_CAPS and not any(x.startswith(&quot;~&quot;) for x in caps):
+            add(DANGER_CAPS[c.upper()], &quot;SD07&quot;, where(unit, &quot;Service&quot;, &quot;AmbientCapabilities&quot; if c in words(unit, &quot;Service&quot;, &quot;AmbientCapabilities&quot;) else &quot;CapabilityBoundingSet&quot;),
+                &quot;grants %s - close to full root&quot; % c if DANGER_CAPS[c.upper()] == &quot;high&quot; else &quot;grants %s&quot; % c,
+                &quot;remove it; to bind ports below 1024 only CAP_NET_BIND_SERVICE is needed&quot;)
+
+    # SD03 secrets
+    for v, ln, fn in get(unit, &quot;Service&quot;, &quot;Environment&quot;):
+        for m in re.finditer(r&#x27;&quot;?([A-Za-z_][A-Za-z0-9_]*)=(&quot;[^&quot;]*&quot;|\S*)&#x27;, v):
+            name, val = m.group(1), m.group(2).strip(&#x27;&quot;&#x27;)
+            if SECRET_RE.search(name) and val and not val.startswith(&quot;%&quot;) and not val.startswith(&quot;$&quot;):
+                add(&quot;high&quot;, &quot;SD03&quot;, &quot;%s:%d&quot; % (fn, ln), &quot;secret %s is written in the unit file - unit files are world-readable and shown by `systemctl show`&quot; % name,
+                    &quot;use LoadCredential=%s:/etc/&lt;name&gt;/%s (read from $CREDENTIALS_DIRECTORY) or EnvironmentFile=/etc/&lt;name&gt;/env with mode 0600&quot; % (name.lower(), name.lower()))
+            if re.search(r&quot;://[^/\s:@]+:[^@\s]+@&quot;, val):
+                add(&quot;high&quot;, &quot;SD03&quot;, &quot;%s:%d&quot; % (fn, ln), &quot;%s contains a URL with an embedded password&quot; % name, &quot;move the credential out of the unit (LoadCredential= / EnvironmentFile= 0600)&quot;)
+    for v, ln, fn in get(unit, &quot;Service&quot;, &quot;ExecStart&quot;):
+        if re.search(r&quot;--(password|passwd|token|secret|api-key)[= ]\S+&quot;, v, re.I):
+            add(&quot;high&quot;, &quot;SD03&quot;, &quot;%s:%d&quot; % (fn, ln), &quot;a secret is passed on the command line - visible to every user in ps and /proc&quot;, &quot;read it from a file or $CREDENTIALS_DIRECTORY instead&quot;)
+
+    # SD04 restart policy
+    restart = (last(unit, &quot;Service&quot;, &quot;Restart&quot;, &quot;no&quot;) or &quot;no&quot;).lower()
+    if typ != &quot;oneshot&quot; and restart == &quot;no&quot;:
+        add(&quot;medium&quot;, &quot;SD04&quot;, where(unit, &quot;Service&quot;, &quot;Restart&quot;) if last(unit, &quot;Service&quot;, &quot;Restart&quot;) else f0,
+            &quot;Restart=no (default) - a crash leaves the service down until someone notices&quot;, &quot;add Restart=on-failure and RestartSec=5s&quot;)
+    if restart in (&quot;always&quot;, &quot;on-failure&quot;, &quot;on-abnormal&quot;) and not last(unit, &quot;Service&quot;, &quot;RestartSec&quot;):
+        add(&quot;low&quot;, &quot;SD04&quot;, where(unit, &quot;Service&quot;, &quot;Restart&quot;), &quot;Restart=%s without RestartSec= (default 100ms) - a crash loop hammers the machine and hits the start limit fast&quot; % restart, &quot;add RestartSec=5s&quot;)
+    if typ == &quot;oneshot&quot; and restart in (&quot;always&quot;, &quot;on-success&quot;):
+        add(&quot;high&quot;, &quot;SD04&quot;, where(unit, &quot;Service&quot;, &quot;Restart&quot;), &quot;Type=oneshot does not allow Restart=%s - systemd refuses to load the unit&quot; % restart, &quot;use Restart=on-failure or run it from a .timer&quot;)
+    tstop = (last(unit, &quot;Service&quot;, &quot;TimeoutStopSec&quot;) or last(unit, &quot;Service&quot;, &quot;TimeoutSec&quot;) or &quot;&quot;).lower()
+    if tstop in (&quot;infinity&quot;, &quot;0&quot;):
+        add(&quot;medium&quot;, &quot;SD12&quot;, where(unit, &quot;Service&quot;, &quot;TimeoutStopSec&quot;) if last(unit, &quot;Service&quot;, &quot;TimeoutStopSec&quot;) else where(unit, &quot;Service&quot;, &quot;TimeoutSec&quot;),
+            &quot;stop timeout %s - a hung service blocks shutdown and restarts forever&quot; % tstop, &quot;set TimeoutStopSec=30s (or what a clean shutdown really needs)&quot;)
+    km = (last(unit, &quot;Service&quot;, &quot;KillMode&quot;, &quot;&quot;) or &quot;&quot;).lower()
+    if km == &quot;none&quot;:
+        add(&quot;medium&quot;, &quot;SD12&quot;, where(unit, &quot;Service&quot;, &quot;KillMode&quot;), &quot;KillMode=none is deprecated - leftover processes survive stop and restart&quot;, &quot;use KillMode=mixed or the default control-group&quot;)
+    elif km == &quot;process&quot;:
+        add(&quot;low&quot;, &quot;SD12&quot;, where(unit, &quot;Service&quot;, &quot;KillMode&quot;), &quot;KillMode=process kills only the main process; children keep running after stop&quot;, &quot;use KillMode=mixed unless the children must outlive the service&quot;)
+
+    # SD05 ordering
+    after = words(unit, &quot;Unit&quot;, &quot;After&quot;)
+    wants = words(unit, &quot;Unit&quot;, &quot;Wants&quot;) + words(unit, &quot;Unit&quot;, &quot;Requires&quot;)
+    if &quot;network-online.target&quot; in after and &quot;network-online.target&quot; not in wants:
+        add(&quot;medium&quot;, &quot;SD05&quot;, where(unit, &quot;Unit&quot;, &quot;After&quot;), &quot;After=network-online.target without Wants=network-online.target - the ordering does nothing unless something else pulls the target in&quot;,
+            &quot;add Wants=network-online.target&quot;)
+    if &quot;network-online.target&quot; in wants and &quot;network-online.target&quot; not in after:
+        add(&quot;medium&quot;, &quot;SD05&quot;, where(unit, &quot;Unit&quot;, &quot;Wants&quot;), &quot;Wants=network-online.target without After=network-online.target - the service still starts before the network is up&quot;, &quot;add After=network-online.target&quot;)
+    for v in (&quot;syslog.target&quot;, &quot;network.service&quot;):
+        if v in after:
+            add(&quot;low&quot;, &quot;SD05&quot;, where(unit, &quot;Unit&quot;, &quot;After&quot;), &quot;After=%s is obsolete&quot; % v, &quot;remove it (journald is always available; use network-online.target)&quot;)
+    sl = [k for k in (&quot;StartLimitIntervalSec&quot;, &quot;StartLimitBurst&quot;) if k in S.get(&quot;Unit&quot;, {})]
+    for k, ln in ((&quot;StartLimitInterval&quot;, None),):
+        if k in svc:
+            add(&quot;medium&quot;, &quot;SD09&quot;, where(unit, &quot;Service&quot;, k), &quot;StartLimitInterval= is the old name and in [Service] it is ignored&quot;, &quot;use StartLimitIntervalSec= in [Unit]&quot;)
+    if restart == &quot;always&quot; and not sl and &quot;StartLimitIntervalSec&quot; not in svc:
+        add(&quot;info&quot;, &quot;SD04&quot;, f0, &quot;Restart=always with the default start limit (5 starts in 10 s) - after that the unit stays failed&quot;, &quot;if you want endless retries set StartLimitIntervalSec=0 in [Unit] and RestartSec= to a sane delay&quot;)
+
+    # SD11 install
+    wb = words(unit, &quot;Install&quot;, &quot;WantedBy&quot;) + words(unit, &quot;Install&quot;, &quot;RequiredBy&quot;)
+    if not wb and not get(unit, &quot;Install&quot;, &quot;Alias&quot;):
+        add(&quot;medium&quot;, &quot;SD11&quot;, f0, &quot;no [Install] WantedBy= - `systemctl enable` does nothing, so the service will not start at boot&quot;, &quot;add [Install] WantedBy=multi-user.target&quot;)
+    elif &quot;default.target&quot; in wb or &quot;graphical.target&quot; in wb:
+        add(&quot;low&quot;, &quot;SD11&quot;, where(unit, &quot;Install&quot;, &quot;WantedBy&quot;), &quot;WantedBy=%s for a system service&quot; % [w for w in wb if w in (&quot;default.target&quot;, &quot;graphical.target&quot;)][0], &quot;use WantedBy=multi-user.target (default.target is for user services)&quot;)
+
+    # SD14 conflicts that break start
+    ph = (last(unit, &quot;Service&quot;, &quot;ProtectHome&quot;, &quot;no&quot;) or &quot;no&quot;).lower()
+    wd = last(unit, &quot;Service&quot;, &quot;WorkingDirectory&quot;, &quot;&quot;) or &quot;&quot;
+    paths = [wd] + [(e[0].lstrip(&quot;-@:+!&quot;).split() or [&quot;&quot;])[0] for e in execs] + [x.lstrip(&quot;-&quot;) for x in words(unit, &quot;Service&quot;, &quot;EnvironmentFile&quot;)]
+    if ph in TRUE or ph in (&quot;tmpfs&quot;, &quot;read-only&quot;):
+        for p in paths:
+            if p.startswith(&quot;/home/&quot;) or p.startswith(&quot;/root/&quot;):
+                add(&quot;high&quot; if ph != &quot;read-only&quot; else &quot;medium&quot;, &quot;SD14&quot;, where(unit, &quot;Service&quot;, &quot;ProtectHome&quot;),
+                    &quot;ProtectHome=%s but the service uses %s - it %s&quot; % (ph, p, &quot;cannot see it and will fail to start&quot; if ph != &quot;read-only&quot; else &quot;cannot write there&quot;),
+                    &quot;move the app out of /home (e.g. /opt/&lt;name&gt;, /srv/&lt;name&gt;) or use ProtectHome=read-only with ReadWritePaths= for the exact directory&quot;)
+                break
+    ps_ = (last(unit, &quot;Service&quot;, &quot;ProtectSystem&quot;, &quot;no&quot;) or &quot;no&quot;).lower()
+    rw = words(unit, &quot;Service&quot;, &quot;ReadWritePaths&quot;) + [&quot;/var/lib/&quot; + x for x in words(unit, &quot;Service&quot;, &quot;StateDirectory&quot;)] + \
+        [&quot;/var/log/&quot; + x for x in words(unit, &quot;Service&quot;, &quot;LogsDirectory&quot;)] + [&quot;/run/&quot; + x for x in words(unit, &quot;Service&quot;, &quot;RuntimeDirectory&quot;)]
+    if ps_ == &quot;strict&quot;:
+        for v, ln, fn in execs + get(unit, &quot;Service&quot;, &quot;ExecStartPre&quot;):
+            for m in re.finditer(r&quot;&gt;&gt;?\s*(/\S+)|--(?:log|pid|data|out)[-a-z]*[= ](/\S+)&quot;, v):
+                p = m.group(1) or m.group(2)
+                if not any(p.startswith(x.lstrip(&quot;-&quot;)) for x in rw) and not p.startswith((&quot;/tmp&quot;, &quot;/dev/&quot;)):
+                    add(&quot;medium&quot;, &quot;SD14&quot;, &quot;%s:%d&quot; % (fn, ln), &quot;ProtectSystem=strict makes %s read-only - writes will fail&quot; % p,
+                        &quot;use StateDirectory=/LogsDirectory=/RuntimeDirectory= or ReadWritePaths=%s&quot; % p.rsplit(&quot;/&quot;, 1)[0])
+    if (last(unit, &quot;Service&quot;, &quot;MemoryDenyWriteExecute&quot;, &quot;no&quot;) or &quot;&quot;).lower() in TRUE and paths and re.search(r&quot;(node|java|dotnet|pypy|bun|deno)&quot;, &quot; &quot;.join(paths)):
+        add(&quot;high&quot;, &quot;SD14&quot;, where(unit, &quot;Service&quot;, &quot;MemoryDenyWriteExecute&quot;), &quot;MemoryDenyWriteExecute=yes with a JIT runtime (%s) - it will crash on start&quot; % [p for p in paths if re.search(r&quot;(node|java|dotnet|pypy|bun|deno)&quot;, p)][0],
+            &quot;remove MemoryDenyWriteExecute= for this service&quot;)
+    if dyn and user:
+        add(&quot;info&quot;, &quot;SD01&quot;, where(unit, &quot;Service&quot;, &quot;DynamicUser&quot;), &quot;DynamicUser=yes with User=%s - a transient user with that name is allocated&quot; % user, &quot;fine; do not rely on files owned by a static %s user&quot; % user)
+
+    # SD15 resources
+    if not any(k in svc for k in (&quot;MemoryMax&quot;, &quot;MemoryHigh&quot;, &quot;TasksMax&quot;, &quot;CPUQuota&quot;)):
+        add(&quot;info&quot;, &quot;SD15&quot;, f0, &quot;no resource limits (MemoryMax=, TasksMax=, CPUQuota=) - a leak can starve the host&quot;, &quot;add MemoryMax= and TasksMax= sized from normal usage&quot;)
+
+    # SD06 exposure
+    exposure, missing = 0.0, []
+    for key, test, w, rec in HARDEN:
+        v = (last(unit, &quot;Service&quot;, key) or &quot;&quot;)
+        vl = v.lower()
+        if key == &quot;User&quot;:
+            ok = not root
+        elif test == &quot;bool&quot;:
+            ok = vl in TRUE
+        elif test == &quot;strict&quot;:
+            ok = vl == &quot;strict&quot;
+            if vl in (&quot;full&quot;, &quot;yes&quot;, &quot;true&quot;):
+                exposure += w * 0.5
+                missing.append((key, &quot;ProtectSystem=strict|currently %s; add ReadWritePaths=/StateDirectory= for paths it writes&quot; % v))
+                continue
+        elif test == &quot;home&quot;:
+            ok = vl in TRUE or vl in (&quot;read-only&quot;, &quot;tmpfs&quot;)
+        elif test == &quot;ns&quot;:
+            ok = vl in TRUE or (v != &quot;&quot; and vl not in (&quot;no&quot;, &quot;false&quot;, &quot;0&quot;, &quot;off&quot;))
+        elif test == &quot;caps&quot;:
+            ok = key in svc and all(c.upper() not in DANGER_CAPS or c.startswith(&quot;~&quot;) for c in words(unit, &quot;Service&quot;, key))
+        elif test == &quot;set&quot;:
+            ok = bool(words(unit, &quot;Service&quot;, key))
+        elif test == &quot;native&quot;:
+            ok = vl == &quot;native&quot;
+        elif test == &quot;umask&quot;:
+            ok = v in (&quot;0077&quot;, &quot;077&quot;, &quot;0027&quot;, &quot;027&quot;)
+        else:
+            ok = bool(v)
+        if not ok:
+            exposure += w
+            missing.append((key, rec))
+    exposure = round(min(exposure, 10.0), 1)
+    if missing:
+        add(&quot;medium&quot; if exposure &gt;= 5 else &quot;low&quot;, &quot;SD06&quot;, f0, &quot;%d sandboxing option(s) missing: %s&quot; % (len(missing), &quot;, &quot;.join(k for k, _ in missing)),
+            &quot;add the suggested drop-in (systemctl edit &lt;name&gt;), restart, and test the service&quot;)
+    F.sort(key=lambda x: (SEV[x[0]], x[1], x[2]))
+    rating = &quot;OK&quot; if exposure &lt; 2 else &quot;MEDIUM&quot; if exposure &lt; 5 else &quot;EXPOSED&quot; if exposure &lt; 8 else &quot;UNSAFE&quot;
+    return {&quot;files&quot;: unit[&quot;files&quot;], &quot;name&quot;: last(unit, &quot;Unit&quot;, &quot;Description&quot;, &quot;&quot;) or unit[&quot;files&quot;][0], &quot;type&quot;: typ,
+            &quot;user&quot;: &quot;DynamicUser&quot; if dyn else (user or &quot;root&quot;), &quot;restart&quot;: restart, &quot;exposure&quot;: exposure, &quot;rating&quot;: rating,
+            &quot;missing&quot;: missing, &quot;findings&quot;: F}
+
+
+def dropin(r):
+    lines = [&quot;# /etc/systemd/system/&lt;name&gt;.service.d/hardening.conf  (systemctl edit &lt;name&gt;)&quot;, &quot;[Service]&quot;]
+    for k, rec in r[&quot;missing&quot;]:
+        line, _, note = rec.partition(&quot;|&quot;)
+        if note:
+            lines.append(&quot;# &quot; + note)
+        lines.append(line)
+    if any(f[1] == &quot;SD04&quot; and &quot;Restart=no&quot; in f[3] for f in r[&quot;findings&quot;]):
+        lines += [&quot;Restart=on-failure&quot;, &quot;RestartSec=5s&quot;]
+    lines += [&quot;# then: systemctl daemon-reload &amp;&amp; systemctl restart &lt;name&gt; &amp;&amp; systemd-analyze security &lt;name&gt;&quot;]
+    return &quot;\n&quot;.join(lines)
+
+
+def counts(F):
+    c = {s: 0 for s in SEV}
+    for f in F:
+        c[f[0]] += 1
+    return c
+
+
+def report(results):
+    out = [&quot;# systemd unit review&quot;, &quot;&quot;]
+    out.append(&quot;| Unit | Description | Type | Runs as | Restart | Exposure (0-10) | High | Medium | Low | Info |&quot;)
+    out.append(&quot;|---|---|---|---|---|---|---|---|---|---|&quot;)
+    for r in results:
+        c = counts(r[&quot;findings&quot;])
+        out.append(&quot;| `%s` | %s | %s | %s | %s | %.1f %s | %d | %d | %d | %d |&quot; % (&quot; + &quot;.join(r[&quot;files&quot;]), r[&quot;name&quot;], r[&quot;type&quot;], r[&quot;user&quot;], r[&quot;restart&quot;],
+                                                                         r[&quot;exposure&quot;], r[&quot;rating&quot;], c[&quot;high&quot;], c[&quot;medium&quot;], c[&quot;low&quot;], c[&quot;info&quot;]))
+    for r in results:
+        c = counts(r[&quot;findings&quot;])
+        out += [&quot;&quot;, &quot;## %s&quot; % &quot; + &quot;.join(r[&quot;files&quot;]), &quot;&quot;]
+        if c[&quot;high&quot;]:
+            v = &quot;%d high finding(s) - fix before deploying&quot; % c[&quot;high&quot;]
+        elif r[&quot;exposure&quot;] &gt;= 5:
+            v = &quot;works, but exposure %.1f - add the hardening drop-in&quot; % r[&quot;exposure&quot;]
+        else:
+            v = &quot;looks good (exposure %.1f)&quot; % r[&quot;exposure&quot;]
+        out.append(&quot;**Verdict: %s**&quot; % v)
+        out += [&quot;&quot;, &quot;| Sev | Code | Where | Finding | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for s, code, loc, msg, fix in r[&quot;findings&quot;]:
+            out.append(&quot;| %s | %s | %s | %s | %s |&quot; % (s, code, loc, msg.replace(&quot;|&quot;, &quot;\\|&quot;), fix.replace(&quot;|&quot;, &quot;\\|&quot;)))
+        if r[&quot;missing&quot;]:
+            out += [&quot;&quot;, &quot;Suggested drop-in (test after applying; relax an option if the service needs it):&quot;, &quot;&quot;, &quot;```ini&quot;, dropin(r), &quot;```&quot;]
+    out += [&quot;&quot;, &quot;Exposure is this script&#x27;s weighted estimate, not the systemd-analyze number; run `systemd-analyze security &lt;unit&gt;` and `systemd-analyze verify &lt;file&gt;` on the target host to confirm.&quot;]
+    return &quot;\n&quot;.join(out) + &quot;\n&quot;
+
+
+def run_files(paths):
+    unit = None
+    for p in paths:
+        try:
+            with open(p, encoding=&quot;utf-8&quot;) as fh:
+                txt = fh.read()
+        except OSError as e:
+            raise InputError(&quot;cannot read %s: %s&quot; % (p, e))
+        unit = parse(txt, p, unit)
+    return review(unit)
+
+
+# ---------------------------------------------------------------- self-test
+def self_test():
+    tests = []
+    def t(name, cond):
+        tests.append((name, bool(cond)))
+    def R(txt, *drop):
+        u = parse(txt, &quot;a.service&quot;)
+        for i, d in enumerate(drop):
+            u = parse(d, &quot;d%d.conf&quot; % i, u)
+        return review(u)
+    def codes(txt, *drop):
+        return [(f[0], f[1]) for f in R(txt, *drop)[&quot;findings&quot;]]
+    base = &quot;[Unit]\nDescription=x\n[Service]\nExecStart=/usr/bin/app\n[Install]\nWantedBy=multi-user.target\n&quot;
+    good = (&quot;[Unit]\nDescription=good\nWants=network-online.target\nAfter=network-online.target\n[Service]\nType=exec\nExecStart=/usr/bin/app\n&quot;
+            &quot;DynamicUser=yes\nRestart=on-failure\nRestartSec=5s\nNoNewPrivileges=yes\nProtectSystem=strict\nProtectHome=yes\nPrivateTmp=yes\n&quot;
+            &quot;PrivateDevices=yes\nProtectKernelTunables=yes\nProtectKernelModules=yes\nProtectKernelLogs=yes\nProtectControlGroups=yes\n&quot;
+            &quot;ProtectClock=yes\nProtectHostname=yes\nRestrictSUIDSGID=yes\nRestrictNamespaces=yes\nRestrictRealtime=yes\nLockPersonality=yes\n&quot;
+            &quot;MemoryDenyWriteExecute=yes\nCapabilityBoundingSet=\nSystemCallFilter=@system-service\nSystemCallArchitectures=native\n&quot;
+            &quot;RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6\nUMask=0077\nMemoryMax=512M\nTasksMax=64\n[Install]\nWantedBy=multi-user.target\n&quot;)
+    g = R(good)
+    t(&quot;fully hardened unit: exposure 0, no high/medium&quot;, g[&quot;exposure&quot;] == 0 and not [f for f in g[&quot;findings&quot;] if f[0] in (&quot;high&quot;, &quot;medium&quot;)])
+    t(&quot;root by default -&gt; SD01 high&quot;, (&quot;high&quot;, &quot;SD01&quot;) in codes(base))
+    t(&quot;root oneshot -&gt; SD01 medium&quot;, (&quot;medium&quot;, &quot;SD01&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nType=oneshot\n&quot;)))
+    t(&quot;User=svc clears SD01&quot;, &quot;SD01&quot; not in [c for _, c in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nUser=svc\n&quot;))])
+    t(&quot;missing ExecStart -&gt; SD02 high&quot;, (&quot;high&quot;, &quot;SD02&quot;) in codes(&quot;[Service]\nUser=a\n[Install]\nWantedBy=multi-user.target\n&quot;))
+    t(&quot;relative command -&gt; SD02 low&quot;, (&quot;low&quot;, &quot;SD02&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;app&quot;)))
+    t(&quot;two ExecStart with simple -&gt; SD02 high&quot;, (&quot;high&quot;, &quot;SD02&quot;) in codes(base.replace(&quot;ExecStart=/usr/bin/app&quot;, &quot;ExecStart=/a\nExecStart=/b&quot;)))
+    t(&quot;empty ExecStart= in drop-in resets&quot;, (&quot;high&quot;, &quot;SD02&quot;) not in codes(base, &quot;[Service]\nExecStart=\nExecStart=/usr/bin/other\n&quot;))
+    t(&quot;pipe in ExecStart -&gt; SD10 high&quot;, (&quot;high&quot;, &quot;SD10&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/app | logger&quot;)))
+    t(&quot;redirect &gt;&gt; -&gt; SD10 high&quot;, (&quot;high&quot;, &quot;SD10&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/app &gt;&gt; /var/log/app.log&quot;)))
+    t(&quot;sh -c is allowed&quot;, (&quot;high&quot;, &quot;SD10&quot;) not in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/bin/sh -c &#x27;/usr/bin/app | logger&#x27;&quot;)))
+    t(&quot;--daemon with simple -&gt; SD10 medium&quot;, (&quot;medium&quot;, &quot;SD10&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/app --daemon&quot;)))
+    t(&quot;secret in Environment -&gt; SD03 high&quot;, (&quot;high&quot;, &quot;SD03&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nEnvironment=DB_PASSWORD=hunter2\n&quot;)))
+    t(&quot;quoted env with URL password -&gt; SD03&quot;, (&quot;high&quot;, &quot;SD03&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &#x27;[Service]\nEnvironment=&quot;DATABASE_URL=postgres://u:pw@db/x&quot; &quot;PORT=80&quot;\n&#x27;)))
+    t(&quot;non-secret env is fine&quot;, &quot;SD03&quot; not in [c for _, c in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nEnvironment=PORT=8080 LOG_LEVEL=info\n&quot;))])
+    t(&quot;--password on cmdline -&gt; SD03&quot;, (&quot;high&quot;, &quot;SD03&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/app --password=s3cret&quot;)))
+    t(&quot;Restart missing -&gt; SD04 medium&quot;, (&quot;medium&quot;, &quot;SD04&quot;) in codes(base))
+    t(&quot;Restart=always no RestartSec -&gt; SD04 low&quot;, (&quot;low&quot;, &quot;SD04&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nRestart=always\n&quot;)))
+    t(&quot;oneshot + Restart=always -&gt; SD04 high&quot;, (&quot;high&quot;, &quot;SD04&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nType=oneshot\nRestart=always\n&quot;)))
+    t(&quot;After online without Wants -&gt; SD05&quot;, (&quot;medium&quot;, &quot;SD05&quot;) in codes(base.replace(&quot;[Unit]\n&quot;, &quot;[Unit]\nAfter=network-online.target\n&quot;)))
+    t(&quot;Wants online without After -&gt; SD05&quot;, (&quot;medium&quot;, &quot;SD05&quot;) in codes(base.replace(&quot;[Unit]\n&quot;, &quot;[Unit]\nWants=network-online.target\n&quot;)))
+    t(&quot;syslog.target obsolete -&gt; SD05 low&quot;, (&quot;low&quot;, &quot;SD05&quot;) in codes(base.replace(&quot;[Unit]\n&quot;, &quot;[Unit]\nAfter=syslog.target\n&quot;)))
+    t(&quot;typo directive -&gt; SD08 with suggestion&quot;, any(&quot;did you mean RestartSec&quot; in f[3] for f in R(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nRestartSecs=5\n&quot;))[&quot;findings&quot;]))
+    t(&quot;invalid Restart value -&gt; SD08 high&quot;, (&quot;high&quot;, &quot;SD08&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nRestart=on-faliure\n&quot;)))
+    t(&quot;invalid value ignored, earlier valid one stays effective&quot;, R(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nRestart=always\n&quot;), &quot;[Service]\nRestart=on-faliure\n&quot;)[&quot;restart&quot;] == &quot;always&quot;)
+    t(&quot;drop-in lines are valid key=value&quot;, all(&quot;=&quot; in l or l.startswith((&quot;#&quot;, &quot;[&quot;)) for l in dropin(R(base)).splitlines()))
+    t(&quot;bad boolean -&gt; SD08 medium&quot;, (&quot;medium&quot;, &quot;SD08&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nPrivateTmp=maybe\n&quot;)))
+    t(&quot;StartLimitBurst in [Service] -&gt; SD09&quot;, (&quot;medium&quot;, &quot;SD09&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nStartLimitBurst=3\n&quot;)))
+    t(&quot;WantedBy in [Service] -&gt; SD09&quot;, (&quot;medium&quot;, &quot;SD09&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nWantedBy=multi-user.target\n&quot;)))
+    t(&quot;no [Install] -&gt; SD11 medium&quot;, (&quot;medium&quot;, &quot;SD11&quot;) in codes(&quot;[Service]\nExecStart=/usr/bin/a\n&quot;))
+    t(&quot;WantedBy=default.target -&gt; SD11 low&quot;, (&quot;low&quot;, &quot;SD11&quot;) in codes(base.replace(&quot;multi-user.target&quot;, &quot;default.target&quot;)))
+    t(&quot;duplicate scalar -&gt; SD13&quot;, (&quot;low&quot;, &quot;SD13&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nUser=a\nUser=b\n&quot;)))
+    t(&quot;drop-in override is not a duplicate&quot;, (&quot;low&quot;, &quot;SD13&quot;) not in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nUser=a\n&quot;), &quot;[Service]\nUser=b\n&quot;))
+    t(&quot;drop-in value wins&quot;, R(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nUser=a\n&quot;), &quot;[Service]\nUser=b\n&quot;)[&quot;user&quot;] == &quot;b&quot;)
+    t(&quot;ProtectHome with /home app -&gt; SD14 high&quot;, (&quot;high&quot;, &quot;SD14&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/home/deploy/app/run&quot;).replace(&quot;[Service]\n&quot;, &quot;[Service]\nProtectHome=yes\n&quot;)))
+    t(&quot;MDWE with node -&gt; SD14 high&quot;, (&quot;high&quot;, &quot;SD14&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/node server.js&quot;).replace(&quot;[Service]\n&quot;, &quot;[Service]\nMemoryDenyWriteExecute=yes\n&quot;)))
+    t(&quot;ProtectSystem=strict write path -&gt; SD14&quot;, (&quot;medium&quot;, &quot;SD14&quot;) in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/app --log-file=/var/log/app/app.log&quot;).replace(&quot;[Service]\n&quot;, &quot;[Service]\nProtectSystem=strict\n&quot;)))
+    t(&quot;LogsDirectory clears strict write&quot;, (&quot;medium&quot;, &quot;SD14&quot;) not in codes(base.replace(&quot;/usr/bin/app&quot;, &quot;/usr/bin/app --log-file=/var/log/app/app.log&quot;).replace(&quot;[Service]\n&quot;, &quot;[Service]\nProtectSystem=strict\nLogsDirectory=app\n&quot;)))
+    t(&quot;CAP_SYS_ADMIN -&gt; SD07 high&quot;, (&quot;high&quot;, &quot;SD07&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nAmbientCapabilities=CAP_SYS_ADMIN\n&quot;)))
+    t(&quot;+ prefix -&gt; SD01 medium&quot;, (&quot;medium&quot;, &quot;SD01&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nUser=a\nExecStartPre=+/usr/bin/setup\n&quot;)))
+    t(&quot;TimeoutStopSec=infinity -&gt; SD12&quot;, (&quot;medium&quot;, &quot;SD12&quot;) in codes(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nTimeoutStopSec=infinity\n&quot;)))
+    t(&quot;continuation lines joined&quot;, R(&quot;[Service]\nExecStart=/usr/bin/app \\\n  --port 80\nUser=a\n[Install]\nWantedBy=multi-user.target\n&quot;)[&quot;findings&quot;] is not None and
+      parse(&quot;[Service]\nExecStart=/usr/bin/app \\\n  --port 80\n&quot;, &quot;x&quot;)[&quot;sections&quot;][&quot;Service&quot;][&quot;ExecStart&quot;][0][0] == &quot;/usr/bin/app --port 80&quot;)
+    t(&quot;bare exposure of minimal unit is 10&quot;, R(base)[&quot;exposure&quot;] == 10.0)
+    t(&quot;ProtectSystem=full counts half&quot;, abs(R(base.replace(&quot;[Service]\n&quot;, &quot;[Service]\nProtectSystem=full\n&quot;))[&quot;exposure&quot;] - 9.5) &lt; 0.01)
+    try:
+        R(&quot;[Unit]\nDescription=x\n&quot;)
+        t(&quot;no [Service] rejected&quot;, False)
+    except InputError:
+        t(&quot;no [Service] rejected&quot;, True)
+    t(&quot;report has verdict and table&quot;, &quot;**Verdict:&quot; in report([R(base)]) and &quot;| Sev | Code |&quot; in report([R(base)]))
+    for n, ok in tests:
+        print(&quot;%s  %s&quot; % (&quot;PASS&quot; if ok else &quot;FAIL&quot;, n))
+    p = sum(ok for _, ok in tests)
+    print(&quot;%d/%d passed&quot; % (p, len(tests)))
+    return 0 if p == len(tests) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Review systemd .service units for reliability and hardening.&quot;)
+    ap.add_argument(&quot;units&quot;, nargs=&quot;*&quot;, help=&quot;UNIT.service, optionally followed by drop-in .conf files; use &#x27;,&#x27; between separate units&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--dropin&quot;, action=&quot;store_true&quot;, help=&quot;print only the suggested hardening drop-in(s)&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.units:
+        ap.error(&quot;give at least one .service file&quot;)
+    groups, cur = [], []
+    for u in a.units:
+        if u == &quot;,&quot;:
+            groups.append(cur); cur = []
+        elif u.endswith(&quot;.service&quot;) and cur:
+            groups.append(cur); cur = [u]
+        else:
+            cur.append(u)
+    groups.append(cur)
+    try:
+        res = [run_files(g) for g in groups if g]
+    except InputError as e:
+        print(&quot;error: %s&quot; % e, file=sys.stderr)
+        return 2
+    if a.json:
+        print(json.dumps([{**r, &quot;findings&quot;: [dict(zip((&quot;severity&quot;, &quot;code&quot;, &quot;where&quot;, &quot;finding&quot;, &quot;fix&quot;), f)) for f in r[&quot;findings&quot;]]} for r in res], indent=2))
+    elif a.dropin:
+        print(&quot;\n\n&quot;.join(dropin(r) for r in res))
+    else:
+        sys.stdout.write(report(res))
+    return 1 if any(f[0] == &quot;high&quot; for r in res for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/systemd-service-unit-hardening-reviewer',TI="systemd Service Unit Hardening Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

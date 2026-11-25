@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Invoice Line Item and VAT Total Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: invoice-line-item-and-vat-total-checker description: Checks invoices before you pay or send them - recomputes every line (quantity x unit pr">
+<meta property="og:title" content="Invoice Line Item and VAT Total Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: invoice-line-item-and-vat-total-checker description: Checks invoices before you pay or send them - recomputes every line (quantity x unit pr">
+<meta property="og:url" content="https://claudebomb.com/l/pc/invoice-line-item-and-vat-total-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/invoice-line-item-and-vat-total-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Invoice Line Item and VAT Total Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: invoice-line-item-and-vat-total-checker
+description: Checks invoices before you pay or send them - recomputes every line (quantity x unit price minus discount) and the VAT or sales tax per line, the tax breakdown and the totals from a JSON or CSV export. Reports arithmetic errors, rates outside your list, per-line vs per-invoice rounding, discounts, duplicate lines and invoices, missing required fields and date problems. Includes an offline stdlib Python checker. Not tax advice.
+---
+
+# Invoice Line Item and VAT Total Checker
+
+You help small businesses, freelancers and finance assistants catch invoice mistakes before money moves: a line total that does not equal quantity x price, a tax amount worked out on the wrong base, a rate that is not one you use, a delivery line taxed at a rate from another country, the same invoice entered twice, a credit note with no VAT ID. You recompute everything from the lines, compare with what the invoice says, and hand back a discrepancy report someone can act on.
+
+You check arithmetic and consistency against the rules the user gives you. You do not decide which tax rate legally applies, whether tax is due or which fields the law requires; say so in every report and point to an accountant or the tax authority for those questions.
+
+## Files in this skill
+
+- `scripts/invoice_check.py` - loads an invoices JSON (header, lines, stated totals, optional tax breakdown) or a flat line-items CSV (one row per line, grouped by invoice number and seller); recomputes line net, tax and gross with Decimal arithmetic, per-line or per-invoice tax rounding, half-up or half-even, tax-exclusive or tax-inclusive prices, line and invoice discounts; reports findings IV01-IV13 and a per-invoice line table (Python 3.8+ standard library only)
+- `references/checks-and-codes.md` - every finding code, its severity and what to do about it
+- `references/tax-math-and-rounding.md` - the formulas, rounding methods, discounts, credit notes and tolerance
+- `templates/discrepancy-report.md` - the report to send to the supplier, client or bookkeeper
+- `examples/invoices.json` - five purchase invoices of a design studio: one clean, one with a wrong line, a non-listed rate, a duplicated line and a category rate mismatch, a cloud bill with fractional quantities and a due date before the invoice date, a duplicate entry and a credit note without a VAT ID
+- `examples/vat-rules.json` - example rules: allowed rates 20/10/0, a category -&gt; rate list, per-line rounding, required fields (replace the rates with yours)
+- `examples/invoice-lines.csv` - two of the studio&#x27;s own sales invoices as a line-items export, one with a tax error, a line left out of the totals, a missing buyer and a currency that changes mid-invoice
+- `examples/invoice-report.md` - the real checker output on invoices.json
+
+## Workflow
+
+### 1. Collect the invoices and the rules
+Ask for the invoices as an export (accounting tool CSV, e-invoice JSON) or paste the lines; one file can hold a whole batch. Then ask for the rules: the tax rates the business actually uses, any item categories with their own rate (from their accountant, not from you), whether prices are tax-exclusive or tax-inclusive, how the tool rounds tax (per line or per invoice), the currency decimals and which header fields their invoices must carry. Write them into a rules JSON like `examples/vat-rules.json`.
+
+### 2. Run the checker
+```
+python3 scripts/invoice_check.py examples/invoices.json --rules examples/vat-rules.json --today 2026-11-03
+python3 scripts/invoice_check.py examples/invoice-lines.csv --rules examples/vat-rules.json
+python3 scripts/invoice_check.py batch.json --rules rules.json --json
+python3 scripts/invoice_check.py --self-test
+```
+Exit 0 = no high findings, 1 = high findings, 2 = bad input. Without a shell, recompute by hand with `references/tax-math-and-rounding.md`: each line net = round(qty x unit price x (1 - discount)), tax = round(net x rate), then sum per rate and compare with the stated totals.
+
+### 3. Read the result
+- High first: IV02/IV03 (a line is wrong), IV05 (totals do not add up), IV04 (a rate not in your list), IV07 (same invoice number twice), IV01 (no number, date, quantity or price). Do not pay or send these.
+- Medium: category rate mismatches, duplicate lines, negative lines on a normal invoice, due dates before the invoice date, missing VAT IDs or buyer names, a header that changes between CSV rows.
+- Low/info: rounding-method differences (IV06) and extra decimals (IV12) - usually explainable, note them.
+- A wrong total often comes from one wrong line: fix the line, then re-run before reporting the total.
+
+### 4. Decide and write it up
+For each invoice: OK to pay/send, ask for a corrected invoice or credit note, or check internally (duplicate entry, wrong rule). Fill `templates/discrepancy-report.md` with the line, the stated and recomputed amounts and the exact correction you need. Keep the tone factual: &quot;line 1: 250 x 0.38 = 95.00, invoiced 98.00&quot;.
+
+### 5. Deliver
+Return the per-invoice verdicts, the discrepancy report(s), a list of questions for the accountant (rates, required fields) and any rule changes for next time (e.g. switch to per-invoice rounding if that is what the supplier&#x27;s system does).
+
+## Example result
+On `examples/invoices.json` 2 of 5 invoices must not be paid as they are. Brightline Print 2026/0877 bills 250 business cards at 0.38 as 98.00 instead of 95.00 (IV02), taxes delivery at 18%, which is not in the studio&#x27;s rates (IV04), repeats the flyer line (IV07) and taxes catering at 20% where the studio&#x27;s list says 10% (IV04, medium); its totals are 3.00 net / 0.60 tax too high (IV05). Northwind&#x27;s INV-2026-1041 was entered twice (IV07, high). CloudNest&#x27;s tax of 7.38 is per-invoice rounding instead of 7.39 per line (IV06 info, within tolerance) but its due date is before the invoice date; the Brightline credit note has no seller VAT ID. The clean Northwind invoice passes.
+
+## Rules
+
+- Recompute from the lines; never trust a stated total, and report the first wrong line before the totals it breaks.
+- Use only the rates and categories the user gives you. If asked which rate applies, say that is a tax question for their accountant or tax authority.
+- Use exact decimal arithmetic and the user&#x27;s rounding method; a 0.01 rounding difference is not an error unless their rules say so.
+- Treat duplicates as &quot;possible&quot;: show both invoices and let the user confirm.
+- Never change an invoice yourself; ask the issuer for a corrected invoice or a credit note.
+- Keep invoice data private: do not paste it into public tools or share it beyond the people who need it.
+FILE:references/checks-and-codes.md
+# Checks and finding codes
+
+| Code | Severity | Check | Typical fix |
+|---|---|---|---|
+| IV01 | high: number, date, qty, price, no lines, no totals; medium: other fields | required invoice and line fields present and parseable (fields come from `required_invoice_fields` / `required_line_fields`) | ask for a corrected invoice with the missing field |
+| IV02 | high | line net = round(qty x unit price x (1 - discount%)); line gross = net + tax | corrected invoice for that line |
+| IV03 | high | line tax = round(line net x rate); a tax that is consistent with an already wrong net is not reported twice | corrected invoice |
+| IV04 | high: rate not in `allowed_vat_rates`; medium: rate differs from your `category_rates`; low: rate written as a fraction (0.2) | rate sanity against YOUR list | check the rate with your accountant, then ask the issuer |
+| IV05 | high (medium if within tolerance x lines) | stated net, tax and grand total vs the recomputed sums; grand total = net + tax | corrected invoice; often follows from IV02/IV03 |
+| IV06 | low (info if within tolerance) | tax total matches the other rounding method (per invoice vs per line) | accept, or set `vat_rounding` to what the issuer uses |
+| IV07 | high: same seller + invoice number twice; medium: same seller, date and total under another number, or a repeated line | duplicates | confirm with the issuer before paying twice |
+| IV08 | high: discount outside 0-100%; info: invoice-level discount applied | discounts reduce the taxable base before tax | corrected invoice |
+| IV09 | medium: negative qty/price on a normal invoice; low: zero qty/price | returns belong on a credit note (`&quot;type&quot;: &quot;credit_note&quot;`) | ask for a credit note |
+| IV10 | high: invalid invoice date; medium: invalid or earlier due date, invoice date in the future | dates | corrected invoice / check the entry |
+| IV11 | medium | stated tax breakdown per rate vs the lines | corrected invoice |
+| IV12 | low | stated amounts with more decimals than `currency_decimals` (unit prices may have more) | usually cosmetic |
+| IV13 | medium | CSV export: header values (currency, buyer, date...) differ between rows of one invoice | fix the export or the source record |
+
+## Verdicts
+- **FIX**: at least one high finding. Do not pay or send.
+- **CHECK**: medium findings only. Usually a question for the issuer or an internal check.
+- **OK**: nothing, or only low/info.
+
+## Input fields
+JSON invoice: `number, date, due_date, type (invoice|credit_note), seller{name, vat_id}, buyer{name, vat_id}, currency, invoice_discount_pct, lines[], totals{net, vat, gross}, vat_breakdown[{rate, net, vat}]`.
+JSON line: `sku, description, category, qty, unit_price, discount_pct, vat_rate, net, vat, gross` (stated amounts are optional - lines without them are only recomputed).
+CSV columns: `invoice_number, invoice_date, due_date, type, seller_name, seller_vat_id, buyer_name, buyer_vat_id, currency, invoice_discount_pct, sku, description, category, qty, unit_price, discount_pct, vat_rate, line_net, vat_amount, line_gross, total_net, total_vat, total_gross` (totals on any row of the invoice). Decimal commas (12,50 and 1.234,56) are accepted.
+FILE:references/tax-math-and-rounding.md
+# Tax math and rounding
+
+This is arithmetic, not tax law. Rates, exemptions, reverse charge and required invoice fields depend on the country and the transaction: take them from the user&#x27;s accountant or tax authority.
+
+## Tax-exclusive prices (default)
+```
+line net   = round(qty x unit_price x (1 - discount_pct / 100))
+line tax   = round(line net x rate / 100)              per-line rounding
+line gross = line net + line tax
+net total  = sum(line net)  (x (1 - invoice_discount_pct / 100) per rate, rounded)
+tax total  = sum(line tax)                             per-line rounding
+           = sum over rates of round(net of that rate x rate / 100)   per-invoice rounding
+grand total = net total + tax total
+```
+
+## Tax-inclusive prices (`prices_include_vat: true`)
+```
+line gross = round(qty x unit_price x (1 - discount_pct / 100))
+line tax   = round(line gross x rate / (100 + rate))
+line net   = line gross - line tax
+```
+Example: gross 12.00 at 20% -&gt; tax 2.00, net 10.00.
+
+## Rounding
+- `half_up` (default): 0.005 -&gt; 0.01. Most invoicing tools and many tax authorities use it.
+- `half_even` (banker&#x27;s rounding): 0.005 -&gt; 0.00, 0.015 -&gt; 0.02. Some ERP and spreadsheet functions use it.
+- Per-line vs per-invoice rounding can differ by up to 0.005 x number of lines. Ten lines of 0.05 at 10%: per line 10 x 0.01 = 0.10, per invoice round(0.50 x 10%) = 0.05. Both can be legitimate; check which method the issuer uses and set `vat_rounding`.
+- `tolerance` (default 0.01) is the difference accepted per amount; differences at or below it are not errors (IV06 info shows when they come from the rounding method).
+
+## Discounts
+- Line discounts reduce the line net before tax.
+- An invoice-level discount (`invoice_discount_pct`) reduces the taxable base of every rate proportionally before tax; the checker applies it per rate.
+- Early-payment (settlement) discounts that are only taken later are not modelled; check them separately.
+
+## Credit notes and negative lines
+- A credit note (`&quot;type&quot;: &quot;credit_note&quot;`) has negative quantities or prices and negative totals; tax is negative too.
+- A negative line on a normal invoice (a return netted off) is flagged (IV09) because many systems and auditors expect a separate credit note.
+
+## Multi-currency
+- All amounts of one invoice must be in one currency; a currency that changes between CSV rows is flagged (IV13).
+- Conversion to your book currency is out of scope: convert after the check with the rate your bookkeeping uses.
+FILE:templates/discrepancy-report.md
+# Invoice discrepancy report
+
+**To:** &lt;supplier / client / bookkeeper&gt;   **From:** &lt;name&gt;   **Date:** &lt;YYYY-MM-DD&gt;
+**Invoice:** &lt;number&gt; dated &lt;date&gt;, total &lt;stated total&gt; &lt;currency&gt;
+
+We checked this invoice line by line before &lt;paying / sending&gt; it and found the following. Please send a corrected invoice or a credit note for the difference.
+
+| # | Line / field | Invoiced | Should be | Difference | Note |
+|---|---|---|---|---|---|
+| 1 | &lt;line 1: 250 x 0.38&gt; | &lt;98.00&gt; | &lt;95.00&gt; | &lt;3.00&gt; | &lt;quantity x unit price&gt; |
+| 2 | &lt;tax rate on delivery&gt; | &lt;18%&gt; | &lt;rate we expect, confirmed by our accountant&gt; | &lt;...&gt; | &lt;...&gt; |
+
+**Totals**
+| | Invoiced | Recomputed |
+|---|---|---|
+| Net | &lt;...&gt; | &lt;...&gt; |
+| Tax | &lt;...&gt; | &lt;...&gt; |
+| Total | &lt;...&gt; | &lt;...&gt; |
+
+**Other points**
+- &lt;duplicate line / missing VAT ID / due date before invoice date&gt;
+
+**What we need:** &lt;corrected invoice | credit note for X | confirmation that invoice Y is a duplicate&gt;
+
+*Recomputed from the invoice lines with &lt;rounding&gt; rounding, tolerance &lt;0.01&gt;. This is an arithmetic check, not tax advice.*
+FILE:examples/invoices.json
+{
+  &quot;invoices&quot;: [
+    {
+      &quot;number&quot;: &quot;INV-2026-1041&quot;,
+      &quot;date&quot;: &quot;2026-10-05&quot;,
+      &quot;due_date&quot;: &quot;2026-11-04&quot;,
+      &quot;seller&quot;: {&quot;name&quot;: &quot;Northwind Office Supplies&quot;, &quot;vat_id&quot;: &quot;GB123456789&quot;},
+      &quot;buyer&quot;: {&quot;name&quot;: &quot;Lumen Studio Ltd&quot;},
+      &quot;currency&quot;: &quot;GBP&quot;,
+      &quot;lines&quot;: [
+        {&quot;sku&quot;: &quot;PAP-A4-5&quot;, &quot;description&quot;: &quot;A4 copy paper, box of 5 reams&quot;, &quot;qty&quot;: 4, &quot;unit_price&quot;: &quot;21.50&quot;, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;86.00&quot;, &quot;vat&quot;: &quot;17.20&quot;, &quot;gross&quot;: &quot;103.20&quot;},
+        {&quot;sku&quot;: &quot;TON-HP-26X&quot;, &quot;description&quot;: &quot;Toner cartridge 26X&quot;, &quot;qty&quot;: 2, &quot;unit_price&quot;: &quot;89.99&quot;, &quot;discount_pct&quot;: 5, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;170.98&quot;, &quot;vat&quot;: &quot;34.20&quot;, &quot;gross&quot;: &quot;205.18&quot;},
+        {&quot;sku&quot;: &quot;BK-TYPO&quot;, &quot;description&quot;: &quot;Book: Thinking with Type&quot;, &quot;category&quot;: &quot;books&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;24.00&quot;, &quot;vat_rate&quot;: 0, &quot;net&quot;: &quot;24.00&quot;, &quot;vat&quot;: &quot;0.00&quot;, &quot;gross&quot;: &quot;24.00&quot;}
+      ],
+      &quot;totals&quot;: {&quot;net&quot;: &quot;280.98&quot;, &quot;vat&quot;: &quot;51.40&quot;, &quot;gross&quot;: &quot;332.38&quot;},
+      &quot;vat_breakdown&quot;: [{&quot;rate&quot;: 20, &quot;net&quot;: &quot;256.98&quot;, &quot;vat&quot;: &quot;51.40&quot;}, {&quot;rate&quot;: 0, &quot;net&quot;: &quot;24.00&quot;, &quot;vat&quot;: &quot;0.00&quot;}]
+    },
+    {
+      &quot;number&quot;: &quot;2026/0877&quot;,
+      &quot;date&quot;: &quot;2026-10-12&quot;,
+      &quot;due_date&quot;: &quot;2026-10-26&quot;,
+      &quot;seller&quot;: {&quot;name&quot;: &quot;Brightline Print&quot;, &quot;vat_id&quot;: &quot;GB987654321&quot;},
+      &quot;buyer&quot;: {&quot;name&quot;: &quot;Lumen Studio Ltd&quot;},
+      &quot;currency&quot;: &quot;GBP&quot;,
+      &quot;lines&quot;: [
+        {&quot;sku&quot;: &quot;BC-350&quot;, &quot;description&quot;: &quot;Business cards, 350gsm&quot;, &quot;qty&quot;: 250, &quot;unit_price&quot;: &quot;0.38&quot;, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;98.00&quot;, &quot;vat&quot;: &quot;19.60&quot;, &quot;gross&quot;: &quot;117.60&quot;},
+        {&quot;sku&quot;: &quot;FLY-A5&quot;, &quot;description&quot;: &quot;A5 flyers, double-sided&quot;, &quot;qty&quot;: 1000, &quot;unit_price&quot;: &quot;0.12&quot;, &quot;discount_pct&quot;: 10, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;108.00&quot;, &quot;vat&quot;: &quot;21.60&quot;, &quot;gross&quot;: &quot;129.60&quot;},
+        {&quot;sku&quot;: &quot;FLY-A5&quot;, &quot;description&quot;: &quot;A5 flyers, double-sided&quot;, &quot;qty&quot;: 1000, &quot;unit_price&quot;: &quot;0.12&quot;, &quot;discount_pct&quot;: 10, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;108.00&quot;, &quot;vat&quot;: &quot;21.60&quot;, &quot;gross&quot;: &quot;129.60&quot;},
+        {&quot;sku&quot;: &quot;DEL-STD&quot;, &quot;description&quot;: &quot;Delivery&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;12.50&quot;, &quot;vat_rate&quot;: 18, &quot;net&quot;: &quot;12.50&quot;, &quot;vat&quot;: &quot;2.25&quot;, &quot;gross&quot;: &quot;14.75&quot;},
+        {&quot;sku&quot;: &quot;CAT-01&quot;, &quot;description&quot;: &quot;Catering for launch event&quot;, &quot;category&quot;: &quot;catering&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;150.00&quot;, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;150.00&quot;, &quot;vat&quot;: &quot;30.00&quot;, &quot;gross&quot;: &quot;180.00&quot;}
+      ],
+      &quot;totals&quot;: {&quot;net&quot;: &quot;476.50&quot;, &quot;vat&quot;: &quot;95.05&quot;, &quot;gross&quot;: &quot;571.55&quot;}
+    },
+    {
+      &quot;number&quot;: &quot;CN-8841&quot;,
+      &quot;date&quot;: &quot;2026-10-31&quot;,
+      &quot;due_date&quot;: &quot;2026-10-01&quot;,
+      &quot;seller&quot;: {&quot;name&quot;: &quot;CloudNest Hosting&quot;, &quot;vat_id&quot;: &quot;IE6388047V&quot;},
+      &quot;buyer&quot;: {&quot;name&quot;: &quot;Lumen Studio Ltd&quot;},
+      &quot;currency&quot;: &quot;GBP&quot;,
+      &quot;lines&quot;: [
+        {&quot;description&quot;: &quot;Object storage, GB-month&quot;, &quot;qty&quot;: &quot;412.5&quot;, &quot;unit_price&quot;: &quot;0.0185&quot;, &quot;vat_rate&quot;: 20},
+        {&quot;description&quot;: &quot;Egress, GB&quot;, &quot;qty&quot;: &quot;96.3&quot;, &quot;unit_price&quot;: &quot;0.0725&quot;, &quot;vat_rate&quot;: 20},
+        {&quot;description&quot;: &quot;Load balancer hours&quot;, &quot;qty&quot;: 744, &quot;unit_price&quot;: &quot;0.0225&quot;, &quot;vat_rate&quot;: 20},
+        {&quot;description&quot;: &quot;Snapshot storage, GB-month&quot;, &quot;qty&quot;: &quot;38.4&quot;, &quot;unit_price&quot;: &quot;0.0420&quot;, &quot;vat_rate&quot;: 20},
+        {&quot;description&quot;: &quot;DNS queries, per million&quot;, &quot;qty&quot;: &quot;1.7&quot;, &quot;unit_price&quot;: &quot;0.35&quot;, &quot;vat_rate&quot;: 20},
+        {&quot;description&quot;: &quot;Static IP hours&quot;, &quot;qty&quot;: 744, &quot;unit_price&quot;: &quot;0.0045&quot;, &quot;vat_rate&quot;: 20}
+      ],
+      &quot;totals&quot;: {&quot;net&quot;: &quot;36.91&quot;, &quot;vat&quot;: &quot;7.38&quot;, &quot;gross&quot;: &quot;44.29&quot;}
+    },
+    {
+      &quot;number&quot;: &quot;INV-2026-1041&quot;,
+      &quot;date&quot;: &quot;2026-10-05&quot;,
+      &quot;seller&quot;: {&quot;name&quot;: &quot;Northwind Office Supplies&quot;, &quot;vat_id&quot;: &quot;GB123456789&quot;},
+      &quot;buyer&quot;: {&quot;name&quot;: &quot;Lumen Studio Ltd&quot;},
+      &quot;currency&quot;: &quot;GBP&quot;,
+      &quot;lines&quot;: [
+        {&quot;sku&quot;: &quot;PAP-A4-5&quot;, &quot;description&quot;: &quot;A4 copy paper, box of 5 reams&quot;, &quot;qty&quot;: 4, &quot;unit_price&quot;: &quot;21.50&quot;, &quot;vat_rate&quot;: 20},
+        {&quot;sku&quot;: &quot;TON-HP-26X&quot;, &quot;description&quot;: &quot;Toner cartridge 26X&quot;, &quot;qty&quot;: 2, &quot;unit_price&quot;: &quot;89.99&quot;, &quot;discount_pct&quot;: 5, &quot;vat_rate&quot;: 20},
+        {&quot;sku&quot;: &quot;BK-TYPO&quot;, &quot;description&quot;: &quot;Book: Thinking with Type&quot;, &quot;category&quot;: &quot;books&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;24.00&quot;, &quot;vat_rate&quot;: 0}
+      ],
+      &quot;totals&quot;: {&quot;net&quot;: &quot;280.98&quot;, &quot;vat&quot;: &quot;51.40&quot;, &quot;gross&quot;: &quot;332.38&quot;}
+    },
+    {
+      &quot;number&quot;: &quot;CR-0012&quot;,
+      &quot;type&quot;: &quot;credit_note&quot;,
+      &quot;date&quot;: &quot;2026-10-20&quot;,
+      &quot;seller&quot;: {&quot;name&quot;: &quot;Brightline Print&quot;},
+      &quot;buyer&quot;: {&quot;name&quot;: &quot;Lumen Studio Ltd&quot;},
+      &quot;currency&quot;: &quot;GBP&quot;,
+      &quot;lines&quot;: [
+        {&quot;sku&quot;: &quot;BC-350&quot;, &quot;description&quot;: &quot;Credit: misprinted business cards&quot;, &quot;qty&quot;: -50, &quot;unit_price&quot;: &quot;0.38&quot;, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;-19.00&quot;, &quot;vat&quot;: &quot;-3.80&quot;, &quot;gross&quot;: &quot;-22.80&quot;}
+      ],
+      &quot;totals&quot;: {&quot;net&quot;: &quot;-19.00&quot;, &quot;vat&quot;: &quot;-3.80&quot;, &quot;gross&quot;: &quot;-22.80&quot;}
+    }
+  ]
+}
+FILE:examples/vat-rules.json
+{
+  &quot;name&quot;: &quot;Example rules for a studio&#x27;s purchase invoices - replace the rates with the ones that apply to you&quot;,
+  &quot;currency_decimals&quot;: 2,
+  &quot;rounding&quot;: &quot;half_up&quot;,
+  &quot;vat_rounding&quot;: &quot;line&quot;,
+  &quot;tolerance&quot;: &quot;0.01&quot;,
+  &quot;prices_include_vat&quot;: false,
+  &quot;allowed_vat_rates&quot;: [20, 10, 0],
+  &quot;category_rates&quot;: {&quot;books&quot;: 0, &quot;catering&quot;: 10, &quot;food&quot;: 10},
+  &quot;required_invoice_fields&quot;: [&quot;number&quot;, &quot;date&quot;, &quot;seller.name&quot;, &quot;seller.vat_id&quot;, &quot;buyer.name&quot;, &quot;currency&quot;],
+  &quot;required_line_fields&quot;: [&quot;description&quot;, &quot;qty&quot;, &quot;unit_price&quot;, &quot;vat_rate&quot;],
+  &quot;max_discount_pct&quot;: 100
+}
+FILE:examples/invoice-lines.csv
+invoice_number,invoice_date,due_date,seller_name,seller_vat_id,buyer_name,currency,sku,description,category,qty,unit_price,discount_pct,vat_rate,line_net,vat_amount,line_gross,total_net,total_vat,total_gross
+S-1001,2026-10-28,2026-11-27,Lumen Studio Ltd,GB555000111,Harbour Cafe,GBP,LOGO,&quot;Logo design, 3 concepts&quot;,,1,850.00,,20,850.00,170.00,1020.00,1170.00,234.00,1404.00
+S-1001,2026-10-28,2026-11-27,Lumen Studio Ltd,GB555000111,Harbour Cafe,GBP,MENU,Menu layout (A4 folded),,2,160.00,,20,320.00,64.00,384.00,,,
+S-1002,2026-10-30,2026-11-29,Lumen Studio Ltd,GB555000111,,GBP,WEB-DAY,Website build - day rate,,4.5,480.00,10,20,1944.00,388.80,2332.80,2104.00,420.80,2524.80
+S-1002,2026-10-30,2026-11-29,Lumen Studio Ltd,GB555000111,,GBP,PHOTO,&quot;Stock photo licence, 5 images&quot;,,5,32.00,,20,160.00,23.00,183.00,,,
+S-1002,2026-10-30,2026-11-29,Lumen Studio Ltd,GB555000111,,EUR,BOOK,Brand guidelines book (printed),books,1,45.00,,0,45.00,0.00,45.00,,,
+FILE:examples/invoice-report.md
+# Invoice check: examples/invoices.json
+
+5 invoice(s), 18 line(s). Rules: half up rounding, tax rounded per line, tolerance 0.01, prices exclude tax, allowed rates 20/10/0%.
+
+**Verdict: 2 of 5 invoice(s) have high findings - do not pay/send until fixed**
+
+Findings: 5 high, 4 medium, 0 low, 1 info.
+
+This is an arithmetic and consistency check against your own rules, not tax advice: confirm rates and required invoice fields with your accountant or tax authority.
+
+## Invoices
+
+| Invoice | Seller | Lines | Stated total | Recomputed | Difference | High | Medium | Low | Status |
+|---|---|---|---|---|---|---|---|---|---|
+| INV-2026-1041 | Northwind Office Supplies | 3 | 332.38 GBP | 332.38 | 0.00 | 0 | 0 | 0 | OK |
+| 2026/0877 | Brightline Print | 5 | 571.55 GBP | 567.95 | 3.60 | 4 | 2 | 0 | FIX |
+| CN-8841 | CloudNest Hosting | 6 | 44.29 GBP | 44.30 | -0.01 | 0 | 1 | 0 | CHECK |
+| INV-2026-1041 (#4) | Northwind Office Supplies | 3 | 332.38 GBP | 332.38 | 0.00 | 1 | 0 | 0 | FIX |
+| CR-0012 (credit note) | Brightline Print | 1 | -22.80 GBP | -22.80 | 0.00 | 0 | 1 | 0 | CHECK |
+
+## 2026/0877 - Brightline Print
+
+| # | Item | Qty | Unit price | Disc % | Rate % | Net (stated / calc) | Tax (stated / calc) | Issues |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Business cards, 350gsm | 250 | 0.38 |  | 20 | 98.00 / 95.00 | 19.60 / 19.00 | net |
+| 2 | A5 flyers, double-sided | 1000 | 0.12 | 10 | 20 | 108.00 / 108.00 | 21.60 / 21.60 | ok |
+| 3 | A5 flyers, double-sided | 1000 | 0.12 | 10 | 20 | 108.00 / 108.00 | 21.60 / 21.60 | duplicate |
+| 4 | Delivery | 1 | 12.50 |  | 18 | 12.50 / 12.50 | 2.25 / 2.25 | rate |
+| 5 | Catering for launch event | 1 | 150.00 |  | 20 | 150.00 / 150.00 | 30.00 / 30.00 | category rate |
+
+| Totals | Stated | Recomputed |
+|---|---|---|
+| Net | 476.50 | 473.50 |
+| Tax | 95.05 | 94.45 |
+| Total | 571.55 | 567.95 |
+| Tax by rate | | 20%: 92.20 on 461.00; 18%: 2.25 on 12.50 |
+
+- **HIGH IV02** line 1 (Business cards, 350gsm): line net 98.00 but 250 x 0.38 = 95.00 (diff 3.00)
+- **HIGH IV04** line 4 (Delivery): tax rate 18% is not in your allowed rates (0, 10, 20)
+- **HIGH IV05** stated net total 476.50 but the lines add up to 473.50 (diff 3.00)
+- **HIGH IV05** stated tax total 95.05 but the lines add up to 94.45 (diff 0.60)
+- **MEDIUM IV04** line 5 (Catering for launch event): category &#x27;catering&#x27; is 10% in your rate list but the line uses 20%
+- **MEDIUM IV07** line 3 (A5 flyers, double-sided) repeats line 2 (same item, quantity and price) - duplicate?
+
+## CN-8841 - CloudNest Hosting
+
+| # | Item | Qty | Unit price | Disc % | Rate % | Net (stated / calc) | Tax (stated / calc) | Issues |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Object storage, GB-month | 412.5 | 0.0185 |  | 20 | - / 7.63 | - / 1.53 | ok |
+| 2 | Egress, GB | 96.3 | 0.0725 |  | 20 | - / 6.98 | - / 1.40 | ok |
+| 3 | Load balancer hours | 744 | 0.0225 |  | 20 | - / 16.74 | - / 3.35 | ok |
+| 4 | Snapshot storage, GB-month | 38.4 | 0.0420 |  | 20 | - / 1.61 | - / 0.32 | ok |
+| 5 | DNS queries, per million | 1.7 | 0.35 |  | 20 | - / 0.60 | - / 0.12 | ok |
+| 6 | Static IP hours | 744 | 0.0045 |  | 20 | - / 3.35 | - / 0.67 | ok |
+
+| Totals | Stated | Recomputed |
+|---|---|---|
+| Net | 36.91 | 36.91 |
+| Tax | 7.38 | 7.39 |
+| Total | 44.29 | 44.30 |
+
+- **MEDIUM IV10** due date 2026-10-01 is before the invoice date 2026-10-31
+- **INFO IV06** tax total 7.38 is per-invoice rounding (line rounding gives 7.39) - within tolerance
+
+## INV-2026-1041 (#4) - Northwind Office Supplies
+
+| # | Item | Qty | Unit price | Disc % | Rate % | Net (stated / calc) | Tax (stated / calc) | Issues |
+|---|---|---|---|---|---|---|---|---|
+| 1 | A4 copy paper, box of 5 reams | 4 | 21.50 |  | 20 | - / 86.00 | - / 17.20 | ok |
+| 2 | Toner cartridge 26X | 2 | 89.99 | 5 | 20 | - / 170.98 | - / 34.20 | ok |
+| 3 | Book: Thinking with Type | 1 | 24.00 |  | 0 | - / 24.00 | - / 0.00 | ok |
+
+| Totals | Stated | Recomputed |
+|---|---|---|
+| Net | 280.98 | 280.98 |
+| Tax | 51.40 | 51.40 |
+| Total | 332.38 | 332.38 |
+| Tax by rate | | 20%: 51.40 on 256.98; 0%: 0.00 on 24.00 |
+
+- **HIGH IV07** invoice number INV-2026-1041 from this seller already appears (invoice #1) - duplicate invoice?
+
+## CR-0012 - Brightline Print
+
+| # | Item | Qty | Unit price | Disc % | Rate % | Net (stated / calc) | Tax (stated / calc) | Issues |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Credit: misprinted business cards | -50 | 0.38 |  | 20 | -19.00 / -19.00 | -3.80 / -3.80 | ok |
+
+| Totals | Stated | Recomputed |
+|---|---|---|
+| Net | -19.00 | -19.00 |
+| Tax | -3.80 | -3.80 |
+| Total | -22.80 | -22.80 |
+
+- **MEDIUM IV01** missing invoice field &#x27;seller.vat_id&#x27;
+
+FILE:scripts/invoice_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Invoice line item and VAT / sales-tax total checker (stdlib only, Python 3.8+).
+
+Recomputes every line (qty x unit price - discount, tax per line) and every invoice total from
+an invoices JSON or a flat line-items CSV, compares them with the stated amounts and reports
+arithmetic errors, tax rates outside your list, rounding-method differences, discounts,
+duplicate lines and invoices, missing required fields and date problems.
+It checks numbers against the rules YOU give it; it does not decide which tax rate applies.
+
+Usage:
+  invoice_check.py INVOICES.json|LINES.csv [--rules RULES.json] [--today YYYY-MM-DD] [--json]
+  invoice_check.py --self-test
+Exit: 0 = no high findings, 1 = high findings (wrong totals, wrong rate, missing number/date,
+duplicate invoice), 2 = bad input.
+&quot;&quot;&quot;
+import argparse, csv, datetime, io, json, re, sys
+from decimal import Decimal, ROUND_HALF_UP, ROUND_HALF_EVEN, InvalidOperation
+
+DEFAULT_RULES = {
+    &quot;currency_decimals&quot;: 2,
+    &quot;rounding&quot;: &quot;half_up&quot;,            # half_up | half_even
+    &quot;vat_rounding&quot;: &quot;line&quot;,           # line = round tax per line then sum; invoice = per rate on the total
+    &quot;tolerance&quot;: &quot;0.01&quot;,              # accepted difference per amount
+    &quot;prices_include_vat&quot;: False,      # unit prices are gross (tax-inclusive)
+    &quot;allowed_vat_rates&quot;: None,        # e.g. [20, 10, 1, 0]; None = do not check
+    &quot;category_rates&quot;: {},             # your own mapping, e.g. {&quot;books&quot;: 0}
+    &quot;required_invoice_fields&quot;: [&quot;number&quot;, &quot;date&quot;, &quot;seller.name&quot;, &quot;seller.vat_id&quot;, &quot;buyer.name&quot;, &quot;currency&quot;],
+    &quot;required_line_fields&quot;: [&quot;description&quot;, &quot;qty&quot;, &quot;unit_price&quot;, &quot;vat_rate&quot;],
+    &quot;max_discount_pct&quot;: 100,
+}
+SEV = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2, &quot;info&quot;: 3}
+CSV_MAP = {&quot;invoice_number&quot;: &quot;number&quot;, &quot;invoice_date&quot;: &quot;date&quot;, &quot;due_date&quot;: &quot;due_date&quot;, &quot;type&quot;: &quot;type&quot;,
+           &quot;seller_name&quot;: &quot;seller.name&quot;, &quot;seller_vat_id&quot;: &quot;seller.vat_id&quot;, &quot;buyer_name&quot;: &quot;buyer.name&quot;,
+           &quot;buyer_vat_id&quot;: &quot;buyer.vat_id&quot;, &quot;currency&quot;: &quot;currency&quot;, &quot;invoice_discount_pct&quot;: &quot;invoice_discount_pct&quot;,
+           &quot;total_net&quot;: &quot;totals.net&quot;, &quot;total_vat&quot;: &quot;totals.vat&quot;, &quot;total_gross&quot;: &quot;totals.gross&quot;}
+LINE_MAP = {&quot;sku&quot;: &quot;sku&quot;, &quot;description&quot;: &quot;description&quot;, &quot;category&quot;: &quot;category&quot;, &quot;qty&quot;: &quot;qty&quot;,
+            &quot;unit_price&quot;: &quot;unit_price&quot;, &quot;discount_pct&quot;: &quot;discount_pct&quot;, &quot;line_net&quot;: &quot;net&quot;, &quot;vat_rate&quot;: &quot;vat_rate&quot;,
+            &quot;vat_amount&quot;: &quot;vat&quot;, &quot;line_gross&quot;: &quot;gross&quot;}
+
+
+class InputError(Exception):
+    pass
+
+
+def D(v, what=&quot;number&quot;):
+    if v is None or (isinstance(v, str) and not v.strip()):
+        return None
+    if isinstance(v, float):
+        v = repr(v)
+    try:
+        s = str(v).strip().replace(&quot; &quot;, &quot;&quot;)
+        if re.match(r&quot;^-?\d{1,3}(\.\d{3})+,\d+$&quot;, s):      # 1.234,56
+            s = s.replace(&quot;.&quot;, &quot;&quot;).replace(&quot;,&quot;, &quot;.&quot;)
+        elif re.match(r&quot;^-?\d+,\d+$&quot;, s):                   # 12,50
+            s = s.replace(&quot;,&quot;, &quot;.&quot;)
+        else:
+            s = s.replace(&quot;,&quot;, &quot;&quot;)                          # 1,234.56
+        s = s.rstrip(&quot;%&quot;)
+        return Decimal(s)
+    except (InvalidOperation, ValueError):
+        raise InputError(&quot;not a %s: %r&quot; % (what, v))
+
+
+def get(d, path):
+    for k in path.split(&quot;.&quot;):
+        if not isinstance(d, dict):
+            return None
+        d = d.get(k)
+    return d
+
+
+def setp(d, path, v):
+    ks = path.split(&quot;.&quot;)
+    for k in ks[:-1]:
+        d = d.setdefault(k, {})
+    d[ks[-1]] = v
+
+
+def blank(v):
+    return v is None or (isinstance(v, str) and not v.strip())
+
+
+# ---------------------------------------------------------------- loading
+def load_invoices(path_or_text, is_csv=None):
+    text = path_or_text
+    if is_csv is None:
+        is_csv = not text.lstrip().startswith((&quot;{&quot;, &quot;[&quot;))
+    if not is_csv:
+        try:
+            data = json.loads(text)
+        except ValueError as e:
+            raise InputError(&quot;invalid JSON: %s&quot; % e)
+        invs = data.get(&quot;invoices&quot;) if isinstance(data, dict) else data
+        if not isinstance(invs, list):
+            raise InputError(&quot;JSON must be a list of invoices or {\&quot;invoices\&quot;: [...]}&quot;)
+        rules = data.get(&quot;rules&quot;) if isinstance(data, dict) else None
+        return invs, rules, []
+    rows = list(csv.DictReader(io.StringIO(text.lstrip(&quot;\ufeff&quot;))))
+    if not rows:
+        raise InputError(&quot;CSV has no rows&quot;)
+    cols = set(rows[0].keys())
+    if &quot;invoice_number&quot; not in cols or not ({&quot;qty&quot;, &quot;unit_price&quot;} &lt;= cols):
+        raise InputError(&quot;CSV needs at least invoice_number, qty and unit_price columns&quot;)
+    invs, order, notes = {}, [], []
+    for n, row in enumerate(rows, 2):
+        key = ((row.get(&quot;seller_vat_id&quot;) or row.get(&quot;seller_name&quot;) or &quot;&quot;).strip(), (row.get(&quot;invoice_number&quot;) or &quot;&quot;).strip())
+        if key not in invs:
+            inv = {&quot;_rows&quot;: [n]}
+            for c, p in CSV_MAP.items():
+                if c in row and not blank(row[c]):
+                    setp(inv, p, row[c].strip())
+            invs[key] = inv; order.append(key)
+        else:
+            inv = invs[key]; inv[&quot;_rows&quot;].append(n)
+            for c, p in CSV_MAP.items():
+                if c in row and not blank(row[c]) and not blank(get(inv, p)) and str(get(inv, p)) != row[c].strip():
+                    notes.append((inv, &quot;row %d: %s is &#x27;%s&#x27; but earlier rows say &#x27;%s&#x27;&quot; % (n, c, row[c].strip(), get(inv, p))))
+                elif c in row and not blank(row[c]) and blank(get(inv, p)):
+                    setp(inv, p, row[c].strip())
+        line = {&quot;_row&quot;: n}
+        for c, p in LINE_MAP.items():
+            if c in row and not blank(row[c]):
+                line[p] = row[c].strip()
+        inv.setdefault(&quot;lines&quot;, []).append(line)
+    return [invs[k] for k in order], None, notes
+
+
+def parse_date(s):
+    try:
+        return datetime.date.fromisoformat(str(s)[:10]) if not blank(s) else None
+    except ValueError:
+        return &quot;bad&quot;
+
+
+# ---------------------------------------------------------------- checking
+def check(invoices, rules, today=None, csv_notes=()):
+    R = dict(DEFAULT_RULES); R.update(rules or {})
+    q = Decimal(1).scaleb(-int(R[&quot;currency_decimals&quot;]))
+    mode = ROUND_HALF_EVEN if R[&quot;rounding&quot;] == &quot;half_even&quot; else ROUND_HALF_UP
+    tol = Decimal(str(R[&quot;tolerance&quot;]))
+    rnd = lambda x: x.quantize(q, rounding=mode)
+    allowed = None if R[&quot;allowed_vat_rates&quot;] is None else {Decimal(str(r)) for r in R[&quot;allowed_vat_rates&quot;]}
+    catmap = {k.lower(): Decimal(str(v)) for k, v in (R.get(&quot;category_rates&quot;) or {}).items()}
+    results, seen_numbers, seen_amounts = [], {}, {}
+    notes_by = {}
+    for inv, msg in csv_notes:
+        notes_by.setdefault(id(inv), []).append(msg)
+    for idx, inv in enumerate(invoices):
+        F = []
+        def f(sev, code, msg):
+            F.append((sev, code, msg))
+        num = inv.get(&quot;number&quot;)
+        label = str(num) if not blank(num) else &quot;#%d (no number)&quot; % (idx + 1)
+        if any(str(o.get(&quot;number&quot;)) == str(num) for o in invoices[:idx]) and not blank(num):
+            label += &quot; (#%d)&quot; % (idx + 1)
+        credit = str(inv.get(&quot;type&quot;, &quot;&quot;)).lower().replace(&quot; &quot;, &quot;_&quot;) in (&quot;credit_note&quot;, &quot;credit&quot;, &quot;refund&quot;)
+        for p in R[&quot;required_invoice_fields&quot;]:
+            if blank(get(inv, p)):
+                f(&quot;high&quot; if p in (&quot;number&quot;, &quot;date&quot;) else &quot;medium&quot;, &quot;IV01&quot;, &quot;missing invoice field &#x27;%s&#x27;&quot; % p)
+        for m in notes_by.get(id(inv), []):
+            f(&quot;medium&quot;, &quot;IV13&quot;, &quot;inconsistent header across CSV rows: &quot; + m)
+        d = parse_date(inv.get(&quot;date&quot;)); dd = parse_date(inv.get(&quot;due_date&quot;))
+        if d == &quot;bad&quot;:
+            f(&quot;high&quot;, &quot;IV10&quot;, &quot;invoice date &#x27;%s&#x27; is not YYYY-MM-DD&quot; % inv.get(&quot;date&quot;)); d = None
+        if dd == &quot;bad&quot;:
+            f(&quot;medium&quot;, &quot;IV10&quot;, &quot;due date &#x27;%s&#x27; is not YYYY-MM-DD&quot; % inv.get(&quot;due_date&quot;)); dd = None
+        if d and dd and dd &lt; d:
+            f(&quot;medium&quot;, &quot;IV10&quot;, &quot;due date %s is before the invoice date %s&quot; % (dd, d))
+        if d and today and d &gt; today:
+            f(&quot;medium&quot;, &quot;IV10&quot;, &quot;invoice date %s is in the future (today %s)&quot; % (d, today))
+        lines, per_rate, sigs = [], {}, {}
+        sum_net = sum_vat_line = Decimal(0)
+        for ln_i, ln in enumerate(inv.get(&quot;lines&quot;) or [], 1):
+            L = {&quot;n&quot;: ln_i, &quot;desc&quot;: str(ln.get(&quot;description&quot;) or ln.get(&quot;sku&quot;) or &quot;&quot;)[:40], &quot;issues&quot;: []}
+            where = &quot;line %d (%s)&quot; % (ln_i, L[&quot;desc&quot;] or &quot;no description&quot;)
+            for p in R[&quot;required_line_fields&quot;]:
+                if blank(ln.get(p)):
+                    f(&quot;high&quot; if p in (&quot;qty&quot;, &quot;unit_price&quot;) else &quot;medium&quot;, &quot;IV01&quot;, &quot;%s: missing &#x27;%s&#x27;&quot; % (where, p)); L[&quot;issues&quot;].append(&quot;missing &quot; + p)
+            try:
+                qty = D(ln.get(&quot;qty&quot;), &quot;quantity&quot;); up = D(ln.get(&quot;unit_price&quot;), &quot;unit price&quot;)
+                disc = D(ln.get(&quot;discount_pct&quot;), &quot;discount&quot;) or Decimal(0)
+                rate = D(ln.get(&quot;vat_rate&quot;), &quot;tax rate&quot;)
+                s_net, s_vat, s_gross = D(ln.get(&quot;net&quot;)), D(ln.get(&quot;vat&quot;)), D(ln.get(&quot;gross&quot;))
+            except InputError as e:
+                f(&quot;high&quot;, &quot;IV01&quot;, &quot;%s: %s&quot; % (where, e)); L[&quot;issues&quot;].append(&quot;unparseable&quot;); lines.append(L); continue
+            if rate is not None and Decimal(0) &lt; rate &lt; 1:
+                f(&quot;low&quot;, &quot;IV04&quot;, &quot;%s: tax rate %s looks like a fraction - read as %s%%&quot; % (where, rate, rate * 100)); rate = rate * 100
+            if qty is None or up is None:
+                lines.append(L); continue
+            if disc &lt; 0 or disc &gt; Decimal(str(R[&quot;max_discount_pct&quot;])):
+                f(&quot;high&quot;, &quot;IV08&quot;, &quot;%s: discount %s%% is outside 0-%s%%&quot; % (where, disc, R[&quot;max_discount_pct&quot;])); L[&quot;issues&quot;].append(&quot;discount&quot;)
+            if (qty &lt; 0 or up &lt; 0) and not credit:
+                f(&quot;medium&quot;, &quot;IV09&quot;, &quot;%s: negative quantity or price on an invoice - should this be a credit note?&quot; % where); L[&quot;issues&quot;].append(&quot;negative&quot;)
+            if qty == 0 or up == 0:
+                f(&quot;low&quot;, &quot;IV09&quot;, &quot;%s: zero quantity or price&quot; % where)
+            r = rate if rate is not None else Decimal(0)
+            base = qty * up * (1 - disc / 100)
+            if R[&quot;prices_include_vat&quot;]:
+                gross = rnd(base); vat = rnd(gross * r / (100 + r)); net = gross - vat
+            else:
+                net = rnd(base); vat = rnd(net * r / 100); gross = net + vat
+            L.update(qty=qty, up=up, disc=disc, rate=rate, net=net, vat=vat, gross=gross, s_net=s_net, s_vat=s_vat, s_gross=s_gross)
+            if rate is not None:
+                if allowed is not None and rate not in allowed:
+                    f(&quot;high&quot;, &quot;IV04&quot;, &quot;%s: tax rate %s%% is not in your allowed rates (%s)&quot; % (where, plain(rate), &quot;, &quot;.join(plain(x) for x in sorted(allowed))))
+                    L[&quot;issues&quot;].append(&quot;rate&quot;)
+                cat = str(ln.get(&quot;category&quot;) or &quot;&quot;).lower()
+                if cat in catmap and catmap[cat] != rate:
+                    f(&quot;medium&quot;, &quot;IV04&quot;, &quot;%s: category &#x27;%s&#x27; is %s%% in your rate list but the line uses %s%%&quot; % (where, cat, plain(catmap[cat]), plain(rate)))
+                    L[&quot;issues&quot;].append(&quot;category rate&quot;)
+            if s_net is not None and abs(s_net - net) &gt; tol:
+                f(&quot;high&quot;, &quot;IV02&quot;, &quot;%s: line net %s but %s x %s%s = %s (diff %s)&quot; % (where, s_net, plain(qty), up, &quot; - %s%%&quot; % plain(disc) if disc else &quot;&quot;, net, s_net - net))
+                L[&quot;issues&quot;].append(&quot;net&quot;)
+            if s_vat is not None and abs(s_vat - vat) &gt; tol:
+                exp_on_stated = rnd((s_net if s_net is not None else net) * r / 100)
+                if s_net is not None and abs(s_vat - exp_on_stated) &lt;= tol:
+                    pass  # consistent with its own (wrong) net; already reported as IV02
+                else:
+                    f(&quot;high&quot;, &quot;IV03&quot;, &quot;%s: tax %s but %s%% of %s = %s (diff %s)&quot; % (where, s_vat, plain(r), net, vat, s_vat - vat))
+                    L[&quot;issues&quot;].append(&quot;tax&quot;)
+            if s_gross is not None and s_net is not None and s_vat is not None and abs(s_gross - (s_net + s_vat)) &gt; tol:
+                f(&quot;high&quot;, &quot;IV02&quot;, &quot;%s: line gross %s is not net %s + tax %s&quot; % (where, s_gross, s_net, s_vat)); L[&quot;issues&quot;].append(&quot;gross&quot;)
+            for v, nm in ((s_net, &quot;net&quot;), (s_vat, &quot;tax&quot;), (s_gross, &quot;gross&quot;)):
+                if v is not None and v != v.quantize(q, rounding=mode):
+                    f(&quot;low&quot;, &quot;IV12&quot;, &quot;%s: stated %s %s has more than %s decimals&quot; % (where, nm, v, R[&quot;currency_decimals&quot;]))
+            sig = (str(ln.get(&quot;sku&quot;) or &quot;&quot;).lower(), L[&quot;desc&quot;].lower(), qty, up)
+            if sig in sigs:
+                f(&quot;medium&quot;, &quot;IV07&quot;, &quot;%s repeats line %d (same item, quantity and price) - duplicate?&quot; % (where, sigs[sig])); L[&quot;issues&quot;].append(&quot;duplicate&quot;)
+            else:
+                sigs[sig] = ln_i
+            pr = per_rate.setdefault(r, [Decimal(0), Decimal(0)])
+            pr[0] += net; pr[1] += vat
+            sum_net += net; sum_vat_line += vat
+            lines.append(L)
+        if not lines:
+            f(&quot;high&quot;, &quot;IV01&quot;, &quot;invoice has no lines&quot;)
+        # invoice-level discount reduces the taxable base proportionally
+        idisc = D(inv.get(&quot;invoice_discount_pct&quot;), &quot;invoice discount&quot;) if not blank(inv.get(&quot;invoice_discount_pct&quot;)) else None
+        if idisc:
+            if idisc &lt; 0 or idisc &gt; 100:
+                f(&quot;high&quot;, &quot;IV08&quot;, &quot;invoice discount %s%% is outside 0-100%%&quot; % idisc)
+            factor = 1 - idisc / 100
+            for r in per_rate:
+                n_r = rnd(per_rate[r][0] * factor)
+                per_rate[r] = [n_r, rnd(n_r * r / 100)]
+            sum_net = sum(v[0] for v in per_rate.values())
+            sum_vat_line = sum(v[1] for v in per_rate.values())
+            f(&quot;info&quot;, &quot;IV08&quot;, &quot;invoice discount %s%% applied before tax (taxable base reduced on every rate)&quot; % idisc)
+        vat_invoice_mode = sum((rnd(v[0] * r / 100) for r, v in per_rate.items()), Decimal(0))
+        exp_vat = sum_vat_line if R[&quot;vat_rounding&quot;] == &quot;line&quot; else vat_invoice_mode
+        alt_vat = vat_invoice_mode if R[&quot;vat_rounding&quot;] == &quot;line&quot; else sum_vat_line
+        exp = {&quot;net&quot;: sum_net, &quot;vat&quot;: exp_vat, &quot;gross&quot;: sum_net + exp_vat}
+        if R[&quot;prices_include_vat&quot;] and not idisc:
+            exp[&quot;gross&quot;] = sum(L.get(&quot;gross&quot;, 0) for L in lines)
+            exp[&quot;net&quot;] = exp[&quot;gross&quot;] - exp_vat
+        T = inv.get(&quot;totals&quot;) or {}
+        try:
+            st = {k: D(T.get(k), &quot;total&quot;) for k in (&quot;net&quot;, &quot;vat&quot;, &quot;gross&quot;)}
+        except InputError as e:
+            f(&quot;high&quot;, &quot;IV05&quot;, str(e)); st = {&quot;net&quot;: None, &quot;vat&quot;: None, &quot;gross&quot;: None}
+        if all(v is None for v in st.values()):
+            f(&quot;high&quot;, &quot;IV01&quot;, &quot;no stated totals (net / tax / gross) to check&quot;)
+        for k, nm in ((&quot;net&quot;, &quot;net total&quot;), (&quot;vat&quot;, &quot;tax total&quot;), (&quot;gross&quot;, &quot;grand total&quot;)):
+            if st[k] is None:
+                continue
+            diff = st[k] - exp[k]
+            if abs(diff) &lt;= tol:
+                if k == &quot;vat&quot; and diff and st[k] == alt_vat:
+                    f(&quot;info&quot;, &quot;IV06&quot;, &quot;tax total %s is %s rounding (%s rounding gives %s) - within tolerance&quot; % (
+                        st[k], &quot;per-invoice&quot; if R[&quot;vat_rounding&quot;] == &quot;line&quot; else &quot;per-line&quot;, R[&quot;vat_rounding&quot;], exp_vat))
+                continue
+            if k == &quot;vat&quot; and abs(st[k] - alt_vat) &lt;= tol:
+                f(&quot;low&quot;, &quot;IV06&quot;, &quot;tax total %s matches %s rounding (%s) instead of your %s rounding (%s) - a rounding-method difference of %s&quot; % (
+                    st[k], &quot;per-invoice&quot; if R[&quot;vat_rounding&quot;] == &quot;line&quot; else &quot;per-line&quot;, alt_vat, R[&quot;vat_rounding&quot;], exp_vat, diff))
+                exp[&quot;vat&quot;] = alt_vat; exp[&quot;gross&quot;] = exp[&quot;net&quot;] + alt_vat
+                continue
+            if k == &quot;gross&quot; and st[&quot;net&quot;] is not None and st[&quot;vat&quot;] is not None and abs(st[&quot;gross&quot;] - (st[&quot;net&quot;] + st[&quot;vat&quot;])) &lt;= tol and (abs(st[&quot;net&quot;] - exp[&quot;net&quot;]) &gt; tol or abs(st[&quot;vat&quot;] - exp[&quot;vat&quot;]) &gt; tol):
+                continue  # follows from the net/tax error already reported
+            sev = &quot;high&quot; if abs(diff) &gt; tol * max(1, len(lines)) else &quot;medium&quot;
+            f(sev, &quot;IV05&quot;, &quot;stated %s %s but the lines add up to %s (diff %s)&quot; % (nm, st[k], exp[k], diff))
+        if st[&quot;net&quot;] is not None and st[&quot;vat&quot;] is not None and st[&quot;gross&quot;] is not None and abs(st[&quot;gross&quot;] - st[&quot;net&quot;] - st[&quot;vat&quot;]) &gt; tol:
+            f(&quot;high&quot;, &quot;IV05&quot;, &quot;stated grand total %s is not stated net %s + tax %s&quot; % (st[&quot;gross&quot;], st[&quot;net&quot;], st[&quot;vat&quot;]))
+        for b in inv.get(&quot;vat_breakdown&quot;) or []:
+            try:
+                br, bn, bv = D(b.get(&quot;rate&quot;)), D(b.get(&quot;net&quot;)), D(b.get(&quot;vat&quot;))
+            except InputError as e:
+                f(&quot;medium&quot;, &quot;IV11&quot;, &quot;tax breakdown: %s&quot; % e); continue
+            got = per_rate.get(br)
+            if got is None:
+                f(&quot;medium&quot;, &quot;IV11&quot;, &quot;tax breakdown lists %s%% but no line uses that rate&quot; % br)
+            elif (bn is not None and abs(bn - got[0]) &gt; tol) or (bv is not None and abs(bv - got[1]) &gt; tol and abs(bv - rnd(got[0] * br / 100)) &gt; tol):
+                f(&quot;medium&quot;, &quot;IV11&quot;, &quot;tax breakdown %s%%: stated base %s / tax %s, lines give %s / %s&quot; % (br, bn, bv, got[0], got[1]))
+        seller = str(get(inv, &quot;seller.vat_id&quot;) or get(inv, &quot;seller.name&quot;) or &quot;&quot;).strip().lower()
+        if not blank(num):
+            k = (seller, str(num).strip().lower())
+            if k in seen_numbers:
+                f(&quot;high&quot;, &quot;IV07&quot;, &quot;invoice number %s from this seller already appears (invoice #%d) - duplicate invoice?&quot; % (num, seen_numbers[k] + 1))
+            else:
+                seen_numbers[k] = idx
+        if st[&quot;gross&quot;] is not None and d:
+            k = (seller, d, st[&quot;gross&quot;])
+            if k in seen_amounts and str(invoices[seen_amounts[k]].get(&quot;number&quot;)) != str(num):
+                f(&quot;medium&quot;, &quot;IV07&quot;, &quot;same seller, date and total %s as invoice %s - possible duplicate under a new number&quot; % (st[&quot;gross&quot;], invoices[seen_amounts[k]].get(&quot;number&quot;)))
+            seen_amounts.setdefault(k, idx)
+        F.sort(key=lambda x: (SEV[x[0]], x[1]))
+        results.append({&quot;label&quot;: label, &quot;seller&quot;: get(inv, &quot;seller.name&quot;) or &quot;&quot;, &quot;currency&quot;: inv.get(&quot;currency&quot;) or &quot;&quot;,
+                        &quot;credit&quot;: credit, &quot;lines&quot;: lines, &quot;per_rate&quot;: per_rate, &quot;expected&quot;: exp, &quot;stated&quot;: st,
+                        &quot;findings&quot;: F, &quot;rows&quot;: inv.get(&quot;_rows&quot;)})
+    return results, R
+
+
+# ---------------------------------------------------------------- rendering
+def plain(v):
+    &quot;&quot;&quot;Plain decimal without exponent or trailing zeros (250, 0.0185, 12.5).&quot;&quot;&quot;
+    if v is None:
+        return &quot;-&quot;
+    t = format(v.normalize(), &quot;f&quot;)
+    return t
+
+
+def money(v):
+    return &quot;-&quot; if v is None else &quot;{:,.2f}&quot;.format(v)
+
+
+def report(results, R, src):
+    tot = {s: sum(1 for r in results for f in r[&quot;findings&quot;] if f[0] == s) for s in SEV}
+    bad = [r for r in results if any(f[0] == &quot;high&quot; for f in r[&quot;findings&quot;])]
+    out = [&quot;# Invoice check: %s&quot; % src, &quot;&quot;]
+    out.append(&quot;%d invoice(s), %d line(s). Rules: %s rounding, tax rounded per %s, tolerance %s, prices %s tax%s.&quot; % (
+        len(results), sum(len(r[&quot;lines&quot;]) for r in results), R[&quot;rounding&quot;].replace(&quot;_&quot;, &quot; &quot;), R[&quot;vat_rounding&quot;], R[&quot;tolerance&quot;],
+        &quot;include&quot; if R[&quot;prices_include_vat&quot;] else &quot;exclude&quot;,
+        &quot;, allowed rates &quot; + &quot;/&quot;.join(str(x) for x in R[&quot;allowed_vat_rates&quot;]) + &quot;%&quot; if R[&quot;allowed_vat_rates&quot;] is not None else &quot;&quot;))
+    out += [&quot;&quot;, &quot;**Verdict: %s**&quot; % (&quot;%d of %d invoice(s) have high findings - do not pay/send until fixed&quot; % (len(bad), len(results)) if bad else &quot;no high findings&quot;),
+            &quot;&quot;, &quot;Findings: %d high, %d medium, %d low, %d info.&quot; % (tot[&quot;high&quot;], tot[&quot;medium&quot;], tot[&quot;low&quot;], tot[&quot;info&quot;]), &quot;&quot;,
+            &quot;This is an arithmetic and consistency check against your own rules, not tax advice: confirm rates and required invoice fields with your accountant or tax authority.&quot;, &quot;&quot;,
+            &quot;## Invoices&quot;, &quot;&quot;, &quot;| Invoice | Seller | Lines | Stated total | Recomputed | Difference | High | Medium | Low | Status |&quot;, &quot;|---|---|---|---|---|---|---|---|---|---|&quot;]
+    for r in results:
+        c = {s: sum(1 for f in r[&quot;findings&quot;] if f[0] == s) for s in SEV}
+        sg, eg = r[&quot;stated&quot;][&quot;gross&quot;], r[&quot;expected&quot;][&quot;gross&quot;]
+        out.append(&quot;| %s%s | %s | %d | %s %s | %s | %s | %d | %d | %d | %s |&quot; % (
+            r[&quot;label&quot;], &quot; (credit note)&quot; if r[&quot;credit&quot;] else &quot;&quot;, r[&quot;seller&quot;], len(r[&quot;lines&quot;]), money(sg), r[&quot;currency&quot;], money(eg),
+            money(sg - eg) if sg is not None else &quot;-&quot;, c[&quot;high&quot;], c[&quot;medium&quot;], c[&quot;low&quot;],
+            &quot;FIX&quot; if c[&quot;high&quot;] else (&quot;CHECK&quot; if c[&quot;medium&quot;] else &quot;OK&quot;)))
+    for r in results:
+        if not r[&quot;findings&quot;] or all(f[0] == &quot;info&quot; for f in r[&quot;findings&quot;]):
+            continue
+        out += [&quot;&quot;, &quot;## %s - %s&quot; % (r[&quot;label&quot;], r[&quot;seller&quot;]), &quot;&quot;]
+        out += [&quot;| # | Item | Qty | Unit price | Disc % | Rate % | Net (stated / calc) | Tax (stated / calc) | Issues |&quot;, &quot;|---|---|---|---|---|---|---|---|---|&quot;]
+        for L in r[&quot;lines&quot;]:
+            if &quot;net&quot; not in L:
+                out.append(&quot;| %d | %s | - | - | - | - | - | - | %s |&quot; % (L[&quot;n&quot;], L[&quot;desc&quot;], &quot;, &quot;.join(L[&quot;issues&quot;])))
+                continue
+            out.append(&quot;| %d | %s | %s | %s | %s | %s | %s / %s | %s / %s | %s |&quot; % (
+                L[&quot;n&quot;], L[&quot;desc&quot;], plain(L[&quot;qty&quot;]), L[&quot;up&quot;], plain(L[&quot;disc&quot;]) if L[&quot;disc&quot;] else &quot;&quot;, plain(L[&quot;rate&quot;]),
+                money(L[&quot;s_net&quot;]), money(L[&quot;net&quot;]), money(L[&quot;s_vat&quot;]), money(L[&quot;vat&quot;]), &quot;, &quot;.join(L[&quot;issues&quot;]) or &quot;ok&quot;))
+        out += [&quot;&quot;, &quot;| Totals | Stated | Recomputed |&quot;, &quot;|---|---|---|&quot;]
+        for k, nm in ((&quot;net&quot;, &quot;Net&quot;), (&quot;vat&quot;, &quot;Tax&quot;), (&quot;gross&quot;, &quot;Total&quot;)):
+            out.append(&quot;| %s | %s | %s |&quot; % (nm, money(r[&quot;stated&quot;][k]), money(r[&quot;expected&quot;][k])))
+        if len(r[&quot;per_rate&quot;]) &gt; 1:
+            out.append(&quot;| Tax by rate | | %s |&quot; % &quot;; &quot;.join(&quot;%s%%: %s on %s&quot; % (plain(k), money(v[1]), money(v[0])) for k, v in sorted(r[&quot;per_rate&quot;].items(), reverse=True)))
+        out += [&quot;&quot;] + [&quot;- **%s %s** %s&quot; % (s.upper(), c, m) for s, c, m in r[&quot;findings&quot;]]
+    out.append(&quot;&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+# ---------------------------------------------------------------- self-test
+def self_test():
+    tests = []
+    def t(name, cond):
+        tests.append((name, bool(cond)))
+    def inv(lines, totals, **kw):
+        base = {&quot;number&quot;: &quot;A1&quot;, &quot;date&quot;: &quot;2026-10-01&quot;, &quot;seller&quot;: {&quot;name&quot;: &quot;S&quot;, &quot;vat_id&quot;: &quot;X1&quot;}, &quot;buyer&quot;: {&quot;name&quot;: &quot;B&quot;},
+                &quot;currency&quot;: &quot;EUR&quot;, &quot;lines&quot;: lines, &quot;totals&quot;: totals}
+        base.update(kw); return base
+    codes = lambda res: {f[1] for f in res[0][&quot;findings&quot;]}
+    sev = lambda res, c: {f[0] for f in res[0][&quot;findings&quot;] if f[1] == c}
+    ok = [{&quot;description&quot;: &quot;a&quot;, &quot;qty&quot;: 2, &quot;unit_price&quot;: &quot;10.00&quot;, &quot;vat_rate&quot;: 20, &quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;}]
+    res, _ = check([inv(ok, {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;})], {})
+    t(&quot;clean invoice has no findings&quot;, not res[0][&quot;findings&quot;])
+    res, _ = check([inv([dict(ok[0], net=&quot;22.00&quot;, vat=&quot;4.40&quot;, gross=&quot;26.40&quot;)], {&quot;net&quot;: &quot;22.00&quot;, &quot;vat&quot;: &quot;4.40&quot;, &quot;gross&quot;: &quot;26.40&quot;})], {})
+    t(&quot;wrong line net -&gt; IV02 high&quot;, &quot;high&quot; in sev(res, &quot;IV02&quot;))
+    t(&quot;tax consistent with wrong net not double-reported&quot;, &quot;IV03&quot; not in codes(res))
+    res, _ = check([inv([dict(ok[0], vat=&quot;3.60&quot;, gross=&quot;23.60&quot;)], {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;3.60&quot;, &quot;gross&quot;: &quot;23.60&quot;})], {})
+    t(&quot;wrong line tax -&gt; IV03&quot;, &quot;IV03&quot; in codes(res))
+    res, _ = check([inv(ok, {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;})], {&quot;allowed_vat_rates&quot;: [10, 0]})
+    t(&quot;rate not allowed -&gt; IV04 high&quot;, &quot;high&quot; in sev(res, &quot;IV04&quot;))
+    res, _ = check([inv([dict(ok[0], category=&quot;books&quot;)], {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;})], {&quot;category_rates&quot;: {&quot;books&quot;: 0}})
+    t(&quot;category rate mismatch -&gt; IV04 medium&quot;, &quot;medium&quot; in sev(res, &quot;IV04&quot;))
+    ten = [{&quot;description&quot;: &quot;x%d&quot; % i, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;0.05&quot;, &quot;vat_rate&quot;: 10} for i in range(10)]
+    res, _ = check([inv(ten, {&quot;net&quot;: &quot;0.50&quot;, &quot;vat&quot;: &quot;0.05&quot;, &quot;gross&quot;: &quot;0.55&quot;})], {})
+    t(&quot;per-invoice rounding detected -&gt; IV06 low&quot;, &quot;IV06&quot; in codes(res) and &quot;IV05&quot; not in codes(res))
+    res, _ = check([inv(ten, {&quot;net&quot;: &quot;0.50&quot;, &quot;vat&quot;: &quot;0.10&quot;, &quot;gross&quot;: &quot;0.60&quot;})], {})
+    res2, _ = check([inv(ten[:2], {&quot;net&quot;: &quot;0.10&quot;, &quot;vat&quot;: &quot;0.01&quot;, &quot;gross&quot;: &quot;0.11&quot;})], {})
+    t(&quot;rounding difference within tolerance -&gt; IV06 info&quot;, sev(res2, &quot;IV06&quot;) == {&quot;info&quot;})
+    t(&quot;per-line rounding: 10 x 0.01 = 0.10 ok&quot;, not res[0][&quot;findings&quot;])
+    res, _ = check([inv(ten, {&quot;net&quot;: &quot;0.50&quot;, &quot;vat&quot;: &quot;0.05&quot;, &quot;gross&quot;: &quot;0.55&quot;})], {&quot;vat_rounding&quot;: &quot;invoice&quot;})
+    t(&quot;vat_rounding=invoice accepts 0.05&quot;, not res[0][&quot;findings&quot;])
+    res, _ = check([inv(ok, {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;25.00&quot;})], {})
+    t(&quot;grand total wrong -&gt; IV05 high&quot;, &quot;high&quot; in sev(res, &quot;IV05&quot;))
+    d = [{&quot;description&quot;: &quot;a&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;100&quot;, &quot;discount_pct&quot;: 15, &quot;vat_rate&quot;: 20}]
+    res, _ = check([inv(d, {&quot;net&quot;: &quot;85.00&quot;, &quot;vat&quot;: &quot;17.00&quot;, &quot;gross&quot;: &quot;102.00&quot;})], {})
+    t(&quot;line discount applied before tax&quot;, not res[0][&quot;findings&quot;])
+    res, _ = check([inv(d, {&quot;net&quot;: &quot;85.00&quot;, &quot;vat&quot;: &quot;17.00&quot;, &quot;gross&quot;: &quot;102.00&quot;}, invoice_discount_pct=&quot;10&quot;)], {})
+    t(&quot;invoice discount reduces base&quot;, res[0][&quot;expected&quot;][&quot;gross&quot;] == Decimal(&quot;91.80&quot;))
+    res, _ = check([inv(ok + ok, {&quot;net&quot;: &quot;40.00&quot;, &quot;vat&quot;: &quot;8.00&quot;, &quot;gross&quot;: &quot;48.00&quot;})], {})
+    t(&quot;duplicate line -&gt; IV07 medium&quot;, &quot;medium&quot; in sev(res, &quot;IV07&quot;))
+    a = inv(ok, {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;})
+    res, _ = check([a, dict(a)], {})
+    t(&quot;duplicate invoice number -&gt; IV07 high&quot;, any(f[1] == &quot;IV07&quot; and f[0] == &quot;high&quot; for f in res[1][&quot;findings&quot;]))
+    res, _ = check([a, dict(a, number=&quot;A2&quot;)], {})
+    t(&quot;same seller/date/total new number -&gt; IV07 medium&quot;, any(f[1] == &quot;IV07&quot; and f[0] == &quot;medium&quot; for f in res[1][&quot;findings&quot;]))
+    res, _ = check([inv(ok, {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;}, number=&quot;&quot;, seller={&quot;name&quot;: &quot;S&quot;})], {})
+    t(&quot;missing number high, missing vat id medium&quot;, &quot;high&quot; in sev(res, &quot;IV01&quot;) and &quot;medium&quot; in sev(res, &quot;IV01&quot;))
+    res, _ = check([inv(ok, {&quot;net&quot;: &quot;20.00&quot;, &quot;vat&quot;: &quot;4.00&quot;, &quot;gross&quot;: &quot;24.00&quot;}, due_date=&quot;2026-09-01&quot;)], {}, today=datetime.date(2026, 9, 1))
+    t(&quot;due before date + future date -&gt; IV10&quot;, len([f for f in res[0][&quot;findings&quot;] if f[1] == &quot;IV10&quot;]) == 2)
+    neg = [{&quot;description&quot;: &quot;return&quot;, &quot;qty&quot;: -1, &quot;unit_price&quot;: &quot;10&quot;, &quot;vat_rate&quot;: 20}]
+    res, _ = check([inv(neg, {&quot;net&quot;: &quot;-10.00&quot;, &quot;vat&quot;: &quot;-2.00&quot;, &quot;gross&quot;: &quot;-12.00&quot;})], {})
+    t(&quot;negative line on invoice -&gt; IV09&quot;, &quot;IV09&quot; in codes(res))
+    res, _ = check([inv(neg, {&quot;net&quot;: &quot;-10.00&quot;, &quot;vat&quot;: &quot;-2.00&quot;, &quot;gross&quot;: &quot;-12.00&quot;}, type=&quot;credit_note&quot;)], {})
+    t(&quot;negative ok on credit note&quot;, &quot;IV09&quot; not in codes(res))
+    g = [{&quot;description&quot;: &quot;a&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: &quot;12.00&quot;, &quot;vat_rate&quot;: 20}]
+    res, _ = check([inv(g, {&quot;net&quot;: &quot;10.00&quot;, &quot;vat&quot;: &quot;2.00&quot;, &quot;gross&quot;: &quot;12.00&quot;})], {&quot;prices_include_vat&quot;: True})
+    t(&quot;tax-inclusive prices&quot;, not res[0][&quot;findings&quot;])
+    t(&quot;decimal comma parsing&quot;, D(&quot;1.234,56&quot;) == Decimal(&quot;1234.56&quot;) and D(&quot;12,5&quot;) == Decimal(&quot;12.5&quot;) and D(&quot;1,234.56&quot;) == Decimal(&quot;1234.56&quot;))
+    csvt = (&quot;invoice_number,invoice_date,seller_name,seller_vat_id,buyer_name,currency,description,qty,unit_price,vat_rate,line_net,vat_amount,total_net,total_vat,total_gross\n&quot;
+            &quot;C1,2026-10-01,S,X1,B,EUR,a,1,10,20,10.00,2.00,15.00,3.00,18.00\nC1,2026-10-01,S,X1,B,USD,b,1,5,20,5.00,1.00,,,\n&quot;)
+    invs, _, notes = load_invoices(csvt)
+    res, _ = check(invs, {}, csv_notes=notes)
+    t(&quot;CSV grouped into one invoice&quot;, len(invs) == 1 and len(invs[0][&quot;lines&quot;]) == 2 and not any(f[0] == &quot;high&quot; for f in res[0][&quot;findings&quot;]))
+    t(&quot;CSV inconsistent header -&gt; IV13&quot;, &quot;IV13&quot; in codes(res))
+    try:
+        load_invoices(&quot;{not json&quot;); okk = False
+    except InputError:
+        okk = True
+    t(&quot;bad JSON rejected&quot;, okk)
+    res, _ = check([inv([dict(ok[0], qty=&quot;two&quot;)], {&quot;gross&quot;: &quot;24&quot;})], {})
+    t(&quot;unparseable qty -&gt; IV01 high&quot;, &quot;high&quot; in sev(res, &quot;IV01&quot;))
+    rep = report(*check([a], {}), &quot;x&quot;)
+    t(&quot;report has verdict and not-tax-advice line&quot;, &quot;Verdict&quot; in rep and &quot;not tax advice&quot; in rep)
+    for name, okk in tests:
+        print((&quot;PASS  &quot; if okk else &quot;FAIL  &quot;) + name)
+    n = sum(1 for _, okk in tests if okk)
+    print(&quot;%d/%d passed&quot; % (n, len(tests)))
+    return 0 if n == len(tests) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split(&quot;\n&quot;)[0])
+    ap.add_argument(&quot;invoices&quot;, nargs=&quot;?&quot;, help=&quot;invoices .json or line items .csv&quot;)
+    ap.add_argument(&quot;--rules&quot;, help=&quot;rules JSON (rates, rounding, tolerance, required fields)&quot;)
+    ap.add_argument(&quot;--today&quot;, help=&quot;YYYY-MM-DD for future-date checks (default: today)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.invoices:
+        ap.error(&quot;invoices file required (or --self-test)&quot;)
+    try:
+        try:
+            text = open(a.invoices, encoding=&quot;utf-8-sig&quot;).read()
+        except OSError as e:
+            raise InputError(str(e))
+        invs, emb_rules, notes = load_invoices(text, a.invoices.lower().endswith(&quot;.csv&quot;) or None)
+        rules = dict(emb_rules or {})
+        if a.rules:
+            try:
+                rules.update(json.load(open(a.rules, encoding=&quot;utf-8&quot;)))
+            except (OSError, ValueError) as e:
+                raise InputError(&quot;rules: %s&quot; % e)
+        unknown = set(rules) - set(DEFAULT_RULES) - {&quot;name&quot;, &quot;note&quot;}
+        if unknown:
+            raise InputError(&quot;unknown rules key(s): %s&quot; % &quot;, &quot;.join(sorted(unknown)))
+        if rules.get(&quot;vat_rounding&quot;, &quot;line&quot;) not in (&quot;line&quot;, &quot;invoice&quot;) or rules.get(&quot;rounding&quot;, &quot;half_up&quot;) not in (&quot;half_up&quot;, &quot;half_even&quot;):
+            raise InputError(&quot;vat_rounding must be line|invoice and rounding half_up|half_even&quot;)
+        today = datetime.date.fromisoformat(a.today) if a.today else datetime.date.today()
+        results, R = check(invs, rules, today, notes)
+    except (InputError, ValueError) as e:
+        print(&quot;error: %s&quot; % e, file=sys.stderr)
+        return 2
+    if a.json:
+        conv = lambda v: str(v) if isinstance(v, Decimal) else v
+        out = [{&quot;invoice&quot;: r[&quot;label&quot;], &quot;seller&quot;: r[&quot;seller&quot;], &quot;currency&quot;: r[&quot;currency&quot;],
+                &quot;stated&quot;: {k: conv(v) for k, v in r[&quot;stated&quot;].items()}, &quot;recomputed&quot;: {k: conv(v) for k, v in r[&quot;expected&quot;].items()},
+                &quot;tax_by_rate&quot;: {str(k): [str(v[0]), str(v[1])] for k, v in r[&quot;per_rate&quot;].items()},
+                &quot;findings&quot;: [{&quot;severity&quot;: s, &quot;code&quot;: c, &quot;message&quot;: m} for s, c, m in r[&quot;findings&quot;]]} for r in results]
+        print(json.dumps({&quot;invoices&quot;: out}, indent=2))
+    else:
+        print(report(results, R, a.invoices))
+    return 1 if any(f[0] == &quot;high&quot; for r in results for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/invoice-line-item-and-vat-total-checker',TI="Invoice Line Item and VAT Total Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

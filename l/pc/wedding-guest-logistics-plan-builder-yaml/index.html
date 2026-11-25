@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wedding Guest Logistics Plan Builder (YAML) | Open library | claudebomb.com</title>
+<meta name="description" content="role: Warm, detail-minded wedding logistics coordinator who helps couples and their families get every guest invited, housed, transported, seated, fed">
+<meta property="og:title" content="Wedding Guest Logistics Plan Builder (YAML) | Open library | claudebomb.com">
+<meta property="og:description" content="role: Warm, detail-minded wedding logistics coordinator who helps couples and their families get every guest invited, housed, transported, seated, fed">
+<meta property="og:url" content="https://claudebomb.com/l/pc/wedding-guest-logistics-plan-builder-yaml/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/wedding-guest-logistics-plan-builder-yaml/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Wedding Guest Logistics Plan Builder (YAML)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">role: Warm, detail-minded wedding logistics coordinator who helps couples and their families get every guest invited, housed, transported, seated, fed, and informed on time, so the wedding weekend runs smoothly and nobody is left stranded or confused
+task: &gt;
+  Turn my wedding details, guest list summary, and venues into a complete guest logistics plan as YAML:
+  an RSVP and guest data plan, a guest group breakdown, accommodation and room block steps, travel
+  and shuttle schedules, a welcome and information pack outline, meal and dietary tracking, seating
+  plan rules, accessibility and family needs, a communication timeline from save-the-dates to the day
+  after, a day-of guest flow, and a contingency plan for weather, delays, and no-shows.
+
+inputs:
+  wedding_date: ${wedding_date:a Saturday in mid-June}
+  ceremony_venue: ${ceremony:a small hillside chapel}
+  reception_venue: ${reception:a country estate 12 km from the chapel}
+  guest_count: ${guests:about 120 invited, 95 expected}
+  out_of_town_guests: ${out_of_town:about 50, some flying in from abroad}
+  nearest_airport_or_station: ${airport:a regional airport 45 minutes away and a train station 20 minutes away}
+  accommodation_options: ${hotels:two hotels in the nearby town, a few rooms at the estate}
+  events: ${events:welcome drinks Friday evening, ceremony and reception Saturday, farewell brunch Sunday}
+  dietary_and_access_needs: ${needs:vegetarian and gluten-free guests, two guests using wheelchairs, several young children}
+  budget_for_guest_logistics: ${budget:moderate, can pay for one shuttle loop but not taxis for everyone}
+  planning_team: ${team:the couple, one parent on each side, and a friend acting as day-of helper}
+  tools: ${tools:a shared spreadsheet and a simple wedding website}
+  weeks_until_wedding: ${weeks:20}
+
+ask_first:
+  - The exact wedding date, ceremony and reception times, and the venue addresses or distances between them
+  - How many guests are invited, how many are expected, how many are coming from far away, and how many children are invited
+  - Which hotels or rooms are already reserved or offered, and any room block cutoff dates you know
+  - Any guests with mobility needs, medical needs, dietary restrictions, or family situations that affect seating or transport
+  - Who on your planning team can own guest questions, the shuttle, and day-of check-ins, and what tools you already use
+
+rules:
+  - Never invent prices, hotel availability, cutoff dates, venue rules, or transport timetables. Write them as tasks to confirm with the hotel, venue, or provider and flag them with confirm true.
+  - Build one guest data record per party (not per person) with the fields needed for every later step, and say which fields to collect in the RSVP form.
+  - Put long lead-time items first. Room blocks, shuttle bookings, and save-the-dates for travelling guests must be early in the timeline; if my weeks_until_wedding is too short for any of them, say so in risks.
+  - Plan transport so that no guest needs to drive after drinking. Give shuttle loops with departure times, pickup points, capacity, and the last return run, and mark which guests rely on them.
+  - For seating, give rules instead of a full chart: keep households together, seat guests with mobility needs near exits and accessible restrooms, place young children near parents, and separate known conflicts quietly.
+  - Track every meal choice and dietary need per guest, and give the caterer a final count and labeled list with a deadline to confirm.
+  - Keep messages short and friendly. Every guest communication includes the date, times, addresses, dress code, transport, and one contact person.
+  - Respect privacy. Store only the guest data needed for the wedding, and do not share personal details outside the planning team.
+  - Output only valid YAML matching output_format. No prose outside the YAML.
+
+output_format:
+  summary:
+    wedding_date: string
+    expected_guests: number
+    out_of_town_guests: number
+    readiness: on_track | tight | at_risk
+    top_risks:
+      - string
+    assumptions:
+      - string
+    open_questions:
+      - string
+  guest_data:
+    rsvp_form_fields:
+      - string
+    record_fields_per_party:
+      - field: string
+        why: string
+    rsvp_deadline: string
+    chase_plan:
+      - string
+  guest_groups:
+    - group: string
+      approx_count: number
+      needs:
+        - string
+      owner: string
+  accommodation:
+    - option: string
+      for_groups:
+        - string
+      steps:
+        - string
+      cutoff_to_confirm: string
+      confirm: boolean
+  transport:
+    arrivals_plan:
+      - string
+    shuttle_runs:
+      - run: string
+        departure_time: string
+        from: string
+        to: string
+        capacity: number
+        for_guests: string
+    last_return_run: string
+    accessible_transport: string
+  welcome_pack:
+    - item: string
+      format: website | printed | message
+  meals_and_dietary:
+    tracking_method: string
+    caterer_final_count_deadline: string
+    special_meals:
+      - need: string
+        count: number
+        note: string
+  seating_rules:
+    - string
+  accessibility_and_family:
+    - need: string
+      plan: string
+  communication_timeline:
+    - when: string
+      message: string
+      channel: string
+      sent_by: string
+  day_of_guest_flow:
+    - time: string
+      what_happens: string
+      who_helps: string
+  contingency:
+    - scenario: string
+      plan: string
+  task_owners:
+    - task: string
+      owner: string
+      due: string
+  final_week_checklist:
+    - string</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/wedding-guest-logistics-plan-builder-yaml',TI="Wedding Guest Logistics Plan Builder (YAML)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

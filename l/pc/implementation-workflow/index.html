@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Implementation Workflow | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: implementation-workflow description: Implement code changes with disciplined scope control, repository-state preservation, relevant verifica">
+<meta property="og:title" content="Implementation Workflow | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: implementation-workflow description: Implement code changes with disciplined scope control, repository-state preservation, relevant verifica">
+<meta property="og:url" content="https://claudebomb.com/l/pc/implementation-workflow/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/implementation-workflow/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Implementation Workflow</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by songolge-lab. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: implementation-workflow
+description: Implement code changes with disciplined scope control, repository-state preservation, relevant verification, and concern-scoped commits. Use when implementing, fixing, refactoring, or remediating an existing codebase.
+---
+
+# Implementation Workflow
+
+Implement the requested change safely, minimally, and in a reviewable form.
+
+## Scope and priority
+
+Follow the current task, applicable repository instructions such as `AGENTS.md`, and established project conventions.
+
+Do not expand scope merely because adjacent improvements are possible.
+
+This skill governs implementation and remediation. Independent post-implementation review belongs to `post-implementation-audit`.
+
+## 1. Inspect before changing
+
+Before editing:
+
+- understand the requested behavior and acceptance criteria;
+- inspect the relevant existing implementation;
+- inspect repository status when Git is available;
+- identify pre-existing modified, staged, deleted, or untracked files.
+
+Treat unrelated existing changes as protected.
+
+Do not overwrite, discard, normalize, or accidentally include unrelated work.
+
+## 2. Decide whether a plan is needed
+
+Proceed directly when the task is small, localized, low-risk, and sufficiently clear.
+
+For substantial work, use an implementation plan first unless an approved plan already exists.
+
+Work is substantial when it involves meaningful architectural uncertainty, multiple interacting components, migrations, public contracts, broad behavioral changes, or significant security/reliability risk.
+
+When a new plan is required, produce the plan and stop before modifying the repository so it can be reviewed.
+
+Do not create ceremonial plans for trivial work.
+
+## 3. Implement narrowly
+
+Once implementation is authorized:
+
+- make the smallest coherent change that satisfies the task;
+- preserve existing architecture and conventions unless the task intentionally changes them;
+- prefer existing mechanisms over unnecessary parallel abstractions;
+- avoid unrelated refactoring, cleanup, renaming, formatting churn, dependency changes, or speculative improvements;
+- preserve unrelated changes in files that must also be edited.
+
+Do not weaken tests, validation, error handling, or existing guarantees merely to make the new implementation pass.
+
+## 4. Preserve repository state
+
+Do not discard existing work to obtain a clean repository.
+
+Unless explicitly required and authorized, do not use destructive or history-rewriting operations such as:
+
+- `git reset`
+- `git restore`
+- `git stash`
+- `git clean`
+- rebase
+- amend
+- squash
+- other history rewriting
+
+Work around unrelated dirty state instead of erasing it.
+
+## 5. Verify the implementation
+
+Use the smallest relevant verification first, then expand when scope or risk warrants it.
+
+Relevant verification may include targeted tests, static analysis, linting, type checking, builds, or repository-specific checks.
+
+Add or update tests when needed to prove changed behavior.
+
+Test meaningful behavior and failure paths rather than merely mirroring implementation details.
+
+Never claim verification that was not actually performed.
+
+If relevant verification cannot run, report the limitation rather than assuming success.
+
+## 6. Create commits only when authorized
+
+Create commits only when explicitly authorized by the current task or applicable repository instructions.
+
+When commits are authorized:
+
+- each commit must represent one coherent concern;
+- keep unrelated implementation, cleanup, formatting, documentation, and refactoring concerns separate unless inseparable;
+- keep commits independently understandable, reviewable, and reasonably revertible;
+- use meaningful commit messages.
+
+Before each commit:
+
+1. inspect repository state;
+2. identify exactly which changes belong to the concern;
+3. stage only those changes;
+4. inspect the staged diff;
+5. commit only after confirming its scope.
+
+Prefer explicit file or hunk staging.
+
+Do not use broad staging such as `git add .` when it could capture unrelated changes.
+
+Do not rewrite existing commits unless explicitly requested.
+
+## 7. Finish and hand off
+
+Before declaring implementation complete:
+
+- confirm the requested behavior and acceptance criteria are addressed;
+- run relevant final verification;
+- inspect the final diff for accidental or unrelated changes;
+- report unresolved limitations honestly.
+
+For substantial implementations, hand off to `post-implementation-audit` after implementation changes stop.
+
+If the audit reports findings:
+
+1. return to an implementation/remediation phase;
+2. fix only supported findings with the smallest coherent change;
+3. verify the remediation;
+4. run `post-implementation-audit` again.
+
+Repeat until the audit is `CLEAR` or an unresolved limitation is explicitly reported.
+
+Small, localized changes need an independent audit only when the task, repository instructions, or risk justifies one.
+
+## Output
+
+At completion, concisely report:
+
+- what changed;
+- important implementation decisions;
+- verification actually performed;
+- material limitations or unresolved issues;
+- commits created, if any.
+
+Do not reproduce this workflow as a checklist in the final response.</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/implementation-workflow',TI="Implementation Workflow";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

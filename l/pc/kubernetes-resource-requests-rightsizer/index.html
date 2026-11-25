@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kubernetes Resource Requests Rightsizer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: kubernetes-resource-requests-rightsizer description: Rightsizes Kubernetes CPU and memory requests and limits from real usage (p50, p95 and ">
+<meta property="og:title" content="Kubernetes Resource Requests Rightsizer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: kubernetes-resource-requests-rightsizer description: Rightsizes Kubernetes CPU and memory requests and limits from real usage (p50, p95 and ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/kubernetes-resource-requests-rightsizer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/kubernetes-resource-requests-rightsizer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Kubernetes Resource Requests Rightsizer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: kubernetes-resource-requests-rightsizer
+description: Rightsizes Kubernetes CPU and memory requests and limits from real usage (p50, p95 and max per container). Recommends requests at p95 plus headroom, memory limits above the peak and no CPU limits, and estimates the cores, GiB and money freed. Flags OOM kills, memory above the request, CPU throttling, missing requests or memory limits, overprovisioning and short data windows. Includes a stdlib Python rightsizer with --self-test.
+---
+
+# Kubernetes Resource Requests Rightsizer
+
+You help platform engineers, SREs and developers set Kubernetes container requests and limits from evidence instead of guesses. From usage percentiles exported from Prometheus, Datadog or a VPA recommender, you propose new requests and limits per container, explain the risky ones first (OOM kills, throttling, eviction risk), estimate what the cluster saves, and plan a safe rollout.
+
+## Files in this skill
+
+- `scripts/rightsize.py` - reads a CSV of current settings and usage percentiles per container and prints recommended requests and limits, findings and the requests freed (Python 3 standard library only)
+- `references/sizing-method.md` - what requests and limits do, the sizing rules, which metrics to collect (with PromQL), and how to read throttled or OOM-killed containers
+- `references/rollout-and-guardrails.md` - change order, safe rollout and rollback, LimitRange, ResourceQuota, VPA, alerts, and when not to cut
+- `templates/rightsizing-plan.md` - a rightsizing plan to share with the team or attach to a change ticket
+- `examples/shop-cluster-usage.csv` - six containers of a shop: an oversized API, its sidecar, an OOM-killed throttled search service, a worker without a memory limit, Redis and a log shipper with no requests
+
+## Workflow
+
+### 1. Collect usage
+Ask for at least 7 days (better 14-28) of per-container numbers: replicas, current requests and limits, CPU p50/p95/max in millicores, memory working set p50/p95/max in MiB, throttled percentage and OOM kills. `references/sizing-method.md` has the PromQL for each. Ask what each workload does, how traffic varies (weekly peaks, sales, batch jobs) and whether an HPA scales it.
+
+### 2. Run the rightsizer
+```
+python3 scripts/rightsize.py examples/shop-cluster-usage.csv --core-month 24 --gib-month 3.2
+python3 scripts/rightsize.py usage.csv --headroom 25 --keep-cpu-limits --json
+python3 scripts/rightsize.py --self-test
+```
+Prices are optional and per requested core or GiB per month. Exit code 1 means CRITICAL or HIGH findings, 2 means bad input.
+
+### 3. Explain and plan
+Start with CRITICAL and HIGH containers: say what goes wrong today, the evidence, and the change. For throttled or OOM-killed containers, say the usage numbers are capped and plan a second measurement after the fix. Then list the biggest savings (replicas multiply them). Check the cases in `references/rollout-and-guardrails.md` where cutting is unsafe, and mention HPA retuning when requests change.
+
+### 4. Deliver
+Fill `templates/rightsizing-plan.md` with the table, a YAML patch per workload, the rollout order, what to watch and the re-measure date.
+
+## Example result
+For `examples/shop-cluster-usage.csv`: shop/catalog-search/app is CRITICAL (3 OOM kills at a 1536Mi limit, memory p95 1180Mi above its 1024Mi request, 31% CPU throttling at a 500m limit) and gets 570m / 1360Mi requests, a 1872Mi memory limit and no CPU limit; ops/log-shipper has no requests at all (HIGH, 8 replicas); shop/image-resizer needs a memory limit and more memory; shop/checkout-api/app drops from 1000m / 2048Mi to 485m / 912Mi on 6 replicas. In total 1.76 cores and 4.06 GiB of requests are freed, about 55 a month at 24 per core and 3.2 per GiB.
+
+## Rules
+
+- Fix reliability risks before savings, and never recommend removing a memory limit.
+- Say which percentile, window and headroom every number comes from, and that rare peaks outside the window are not covered.
+- Treat usage of throttled or OOM-killed containers as a floor, not the real demand.
+- Give changes as manifest or Helm values patches for review; do not run `kubectl` commands against a live cluster yourself.
+- Report savings as requests freed until nodes are actually removed.
+FILE:references/sizing-method.md
+# Sizing Method
+
+## What requests and limits do
+- **CPU request:** what the scheduler reserves on a node and the container&#x27;s share of CPU when the node is busy. Too low: the pod lands on crowded nodes and slows down under load. Too high: nodes look full while sitting idle, so you pay for empty cores.
+- **CPU limit:** a hard cap enforced by CFS quota in 100 ms periods. A container that hits it is throttled, even when the node has idle CPU. Latency-sensitive services (APIs, proxies, JVMs and Go programs with many threads) suffer most.
+- **Memory request:** what the scheduler reserves. Pods using more than their request are the first to be evicted when a node runs out of memory.
+- **Memory limit:** a hard cap; going over it means an OOM kill (exit code 137, reason `OOMKilled`). Memory cannot be throttled.
+- **QoS classes:** Guaranteed (requests = limits for every container), Burstable (some requests set), BestEffort (nothing set, evicted first).
+
+## The rules used by `scripts/rightsize.py`
+| Setting | Rule | Why |
+|---|---|---|
+| CPU request | p95 x (1 + headroom), up to 5m steps, at least 10m | covers normal busy periods; the rest is shared idle CPU |
+| CPU limit | removed (or `--keep-cpu-limits`: max(max x 1.2, 2 x request)) | limits throttle bursts even on idle nodes |
+| Memory request | p95 x (1 + headroom), up to 16Mi steps, at least 32Mi | keeps the pod out of the eviction line |
+| Memory limit | max(max x 1.25, request), up to 16Mi steps | room for peaks; never removed, a leak must not take the node down |
+
+Default headroom is 15%. Use 25-30% for spiky traffic, batch jobs or when the data window is short.
+
+## Which numbers to collect
+Per container, over at least 7 days (14-28 days catches weekly and month-end peaks):
+- CPU in millicores: p50, p95 and max of `rate(container_cpu_usage_seconds_total[5m]) * 1000`
+- Memory in MiB: p50, p95 and max of `container_memory_working_set_bytes / 2^20` (working set is what the OOM killer and eviction look at, not RSS or cache)
+- Throttling: `container_cpu_cfs_throttled_periods_total / container_cpu_cfs_periods_total * 100`
+- OOM kills: `kube_pod_container_status_last_terminated_reason{reason=&quot;OOMKilled&quot;}` or restarts with exit code 137
+- Current settings: `kubectl get deploy -o jsonpath` or `kube_pod_container_resource_requests` / `_limits`
+
+## Reading the results
+- **Throttled containers** report usage capped at the limit, so p95 understates real demand. Raise or remove the limit first, measure again for a few days, then size.
+- **OOM kills** mean the max is unknown (the container died at the limit). Raise the memory limit by 50% or more, find the leak or the large request, then re-measure.
+- **JVM, Node.js and Go** read their heap from settings: change `-Xmx`, `--max-old-space-size` or `GOMEMLIMIT` together with the memory limit (heap around 70-75% of the limit).
+- **Sidecars** (istio-proxy, log shippers) are sized separately; their numbers multiply by every replica.
+- **HPA on CPU** scales on usage divided by the request. Lowering the request makes the HPA scale out earlier, so lower `averageUtilization` targets or the replica count may change. Rightsize first, then retune the HPA.
+
+## Limits of this method
+- Percentiles over a window miss rare events: a monthly batch, a sale, a cache rebuild after deploys.
+- Usage per container is averaged over replicas; a hot shard or leader pod needs its own row.
+- Node bin-packing, DaemonSet overhead and allocatable memory decide the real saving; freed requests only turn into money when nodes are removed.
+FILE:references/rollout-and-guardrails.md
+# Rollout and Guardrails
+
+## Change order
+1. **Fix risk first:** OOM kills, memory p95 above the request, heavy throttling, missing requests. These cause incidents; savings can wait.
+2. **Then cut waste:** OVERPROVISIONED containers, largest replica count first, because the saving multiplies.
+3. **One workload at a time,** in staging first when it has real traffic, then production in a quiet window.
+
+## Safe rollout steps
+1. Change requests and limits in Git (Helm values, Kustomize patch or the manifest), never with `kubectl edit` on production.
+2. Keep the rollout gradual: `maxUnavailable: 0`, `maxSurge: 25%` and a PodDisruptionBudget, so new pods with new sizes come up before old ones go.
+3. Watch for 24-48 hours: p95 latency, error rate, throttling, OOM kills, restarts, evictions and HPA replica counts.
+4. Rollback = revert the commit. Lowering a request never kills running pods, but pods are recreated by the rollout.
+
+## Example patch
+```yaml
+resources:
+  requests:
+    cpu: 485m
+    memory: 912Mi
+  limits:
+    memory: 1136Mi   # no cpu limit on purpose: avoid CFS throttling
+```
+
+## Cluster guardrails
+- **LimitRange** per namespace: default requests and a default memory limit, so BestEffort pods cannot appear.
+- **ResourceQuota** per namespace: caps total requests so one team cannot fill the cluster.
+- **Vertical Pod Autoscaler** in `updateMode: &quot;Off&quot;` gives recommendations to compare with this skill&#x27;s numbers without restarting pods. Do not let VPA (Auto) and an HPA on CPU or memory control the same workload.
+- **Alerts:** OOMKilled in the last hour, throttling over 25% for 15 minutes, memory working set over 90% of the limit, pods Pending for lack of resources.
+
+## When not to cut
+- Workloads with known rare peaks the data window did not include (month-end, Black Friday, quarterly reports).
+- Pods whose start-up uses much more CPU than steady state (JVM warm-up): keep a higher request or use a startup probe with a generous delay.
+- Databases and caches with a configured memory size (Redis `maxmemory`, PostgreSQL `shared_buffers`): the memory limit must stay above the configured size plus overhead.
+- Guaranteed QoS needed on purpose (latency-critical, CPU pinning with the static CPU manager policy): keep requests equal to limits.
+
+## Turning freed requests into savings
+Freed requests only lower the bill when the cluster autoscaler (or Karpenter) can remove nodes. Check node utilisation by requests after the change and allow a day for consolidation. Report savings as &quot;requests freed&quot; until node counts actually drop.
+FILE:templates/rightsizing-plan.md
+# Rightsizing Plan - &lt;cluster / namespace&gt; - &lt;date&gt;
+
+**Data:** &lt;Prometheus / Datadog / other&gt;, &lt;first day&gt; to &lt;last day&gt; (&lt;n&gt; days)  **Headroom:** &lt;15&gt;%  **Owner:** &lt;name&gt;
+
+## Risks to fix first
+| Container | Finding | Evidence | Change | Due |
+|---|---|---|---|---|
+| | | | | |
+
+## Requests and limits
+| Container | Replicas | CPU req (now -&gt; new) | CPU limit | Mem req (now -&gt; new) | Mem limit (now -&gt; new) | Status |
+|---|---|---|---|---|---|---|
+| | | | | | | |
+
+## Savings
+- Requests freed: &lt;cores&gt; cores, &lt;GiB&gt; GiB
+- Estimated monthly saving: &lt;amount&gt; (at &lt;price per core&gt; / &lt;price per GiB&gt;); real once nodes scale down
+
+## Rollout
+| Step | Workload | Environment | Date | Watch | Rollback |
+|---|---|---|---|---|---|
+| 1 | | staging | | latency, OOM, throttling | revert commit |
+
+## Follow-up
+- Re-measure on &lt;date&gt; with fresh percentiles
+- Guardrails: LimitRange defaults &lt;...&gt;, alerts &lt;...&gt;
+FILE:examples/shop-cluster-usage.csv
+namespace,workload,container,replicas,cpu_request_m,cpu_limit_m,mem_request_mi,mem_limit_mi,cpu_p50_m,cpu_p95_m,cpu_max_m,mem_p50_mi,mem_p95_mi,mem_max_mi,throttled_pct,oom_kills,days
+shop,checkout-api,app,6,1000,2000,2048,2048,180,420,1350,610,780,905,0,0,14
+shop,checkout-api,istio-proxy,6,100,2000,128,1024,35,90,240,70,95,120,0,0,14
+shop,catalog-search,app,4,500,500,1024,1536,310,495,500,900,1180,1490,31,3,14
+shop,image-resizer,worker,3,250,1000,512,,120,380,950,340,610,1720,4,0,14
+shop,cart-redis,redis,1,200,,768,1024,40,75,160,690,712,730,0,0,14
+ops,log-shipper,fluent-bit,8,,,,,25,60,180,45,70,95,0,0,5
+FILE:scripts/rightsize.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Kubernetes resource requests rightsizer (Python 3 standard library only).
+
+Input: CSV with a header row, one row per container, columns
+  namespace,workload,container,replicas,
+  cpu_request_m,cpu_limit_m,mem_request_mi,mem_limit_mi,
+  cpu_p50_m,cpu_p95_m,cpu_max_m,mem_p50_mi,mem_p95_mi,mem_max_mi,
+  throttled_pct,oom_kills,days
+CPU in millicores (m), memory in MiB (Mi). Empty request/limit cells mean &quot;not set&quot;.
+throttled_pct = share of CFS periods throttled (0-100); oom_kills and days may be empty (0 / unknown).
+
+Recommendation per container (headroom default 15%, --headroom):
+  cpu request  = p95 x (1 + headroom), rounded up to 5m, at least 10m
+  cpu limit    = none (recommended), unless --keep-cpu-limits: max(cpu max x 1.2, 2 x request), 50m steps
+  mem request  = p95 x (1 + headroom), rounded up to 16Mi, at least 32Mi
+  mem limit    = max(mem max x 1.25, request), rounded up to 16Mi (never removed)
+Findings (severity):
+  CRITICAL OOM_RISK           OOM kills seen, or memory max &gt;= 95% of the memory limit
+  HIGH     NO_REQUESTS        cpu or memory request missing (BestEffort / poor scheduling)
+  HIGH     MEM_UNDER_REQUEST  memory p95 above the memory request (eviction risk under node pressure)
+  HIGH     CPU_THROTTLED      throttled_pct &gt;= 25
+  MEDIUM   CPU_THROTTLED      throttled_pct 10-25
+  MEDIUM   CPU_UNDER_REQUEST  cpu p95 above 1.2 x cpu request (noisy neighbours, slow under load)
+  MEDIUM   NO_MEMORY_LIMIT    memory limit missing (one leak can take the node down)
+  LOW      OVERPROVISIONED    recommended cpu or memory request &lt; 50% of current
+  LOW      SHORT_WINDOW       under 7 days of data (misses weekly peaks; trust less)
+Savings: (current - recommended requests) x replicas, totals in cores and GiB, and a monthly
+estimate when --core-month and --gib-month prices are given.
+Usage:
+  python3 rightsize.py usage.csv
+  python3 rightsize.py usage.csv --headroom 25 --core-month 24 --gib-month 3.2 --json
+  python3 rightsize.py --self-test
+Exit code: 0 no CRITICAL/HIGH, 1 CRITICAL or HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import csv
+import io
+import json
+import math
+import sys
+
+COLUMNS = (&quot;namespace&quot;, &quot;workload&quot;, &quot;container&quot;, &quot;replicas&quot;, &quot;cpu_request_m&quot;, &quot;cpu_limit_m&quot;,
+           &quot;mem_request_mi&quot;, &quot;mem_limit_mi&quot;, &quot;cpu_p50_m&quot;, &quot;cpu_p95_m&quot;, &quot;cpu_max_m&quot;,
+           &quot;mem_p50_mi&quot;, &quot;mem_p95_mi&quot;, &quot;mem_max_mi&quot;, &quot;throttled_pct&quot;, &quot;oom_kills&quot;, &quot;days&quot;)
+OPTIONAL = {&quot;cpu_request_m&quot;, &quot;cpu_limit_m&quot;, &quot;mem_request_mi&quot;, &quot;mem_limit_mi&quot;, &quot;throttled_pct&quot;, &quot;oom_kills&quot;, &quot;days&quot;}
+SEV_ORDER = {&quot;CRITICAL&quot;: 0, &quot;HIGH&quot;: 1, &quot;MEDIUM&quot;: 2, &quot;LOW&quot;: 3}
+
+
+class DataError(ValueError):
+    pass
+
+
+def up(x, step):
+    return int(math.ceil(x / step - 1e-9) * step)
+
+
+def num(row, col, line):
+    v = row.get(col, &quot;&quot;)
+    if v == &quot;&quot;:
+        if col in OPTIONAL:
+            return None
+        raise DataError(f&quot;line {line}: {col} is required&quot;)
+    try:
+        x = float(v)
+    except ValueError:
+        raise DataError(f&quot;line {line}: {col} must be a number, got {v!r}&quot;)
+    if x &lt; 0:
+        raise DataError(f&quot;line {line}: {col} must be &gt;= 0&quot;)
+    return x
+
+
+def read_rows(text):
+    rd = csv.DictReader(io.StringIO(text))
+    if not rd.fieldnames:
+        raise DataError(&quot;empty CSV&quot;)
+    missing = [c for c in COLUMNS if c not in {f.strip() for f in rd.fieldnames}]
+    if missing:
+        raise DataError(&quot;CSV header is missing: &quot; + &quot;, &quot;.join(missing))
+    rows = []
+    for n, raw in enumerate(rd, start=2):
+        row = {k.strip(): (v or &quot;&quot;).strip() for k, v in raw.items() if k}
+        if not any(row.values()):
+            continue
+        r = {c: row[c] for c in (&quot;namespace&quot;, &quot;workload&quot;, &quot;container&quot;)}
+        for c in COLUMNS[3:]:
+            r[c] = num(row, c, n)
+        if r[&quot;replicas&quot;] &lt; 1:
+            raise DataError(f&quot;line {n}: replicas must be &gt;= 1&quot;)
+        if r[&quot;cpu_p95_m&quot;] &gt; r[&quot;cpu_max_m&quot;] or r[&quot;mem_p95_mi&quot;] &gt; r[&quot;mem_max_mi&quot;]:
+            raise DataError(f&quot;line {n}: p95 cannot be above max&quot;)
+        rows.append(r)
+    if not rows:
+        raise DataError(&quot;no data rows&quot;)
+    return rows
+
+
+def analyze(r, headroom=0.15, keep_cpu_limits=False):
+    h = 1 + headroom
+    rec = {
+        &quot;cpu_request_m&quot;: max(10, up(r[&quot;cpu_p95_m&quot;] * h, 5)),
+        &quot;mem_request_mi&quot;: max(32, up(r[&quot;mem_p95_mi&quot;] * h, 16)),
+    }
+    rec[&quot;cpu_limit_m&quot;] = max(up(r[&quot;cpu_max_m&quot;] * 1.2, 50), up(2 * rec[&quot;cpu_request_m&quot;], 50)) if keep_cpu_limits else None
+    rec[&quot;mem_limit_mi&quot;] = max(rec[&quot;mem_request_mi&quot;], up(r[&quot;mem_max_mi&quot;] * 1.25, 16))
+    findings = []
+
+    def f(sev, code, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;message&quot;: msg})
+
+    cr, cl, mr, ml = r[&quot;cpu_request_m&quot;], r[&quot;cpu_limit_m&quot;], r[&quot;mem_request_mi&quot;], r[&quot;mem_limit_mi&quot;]
+    oom = r[&quot;oom_kills&quot;] or 0
+    if oom &gt; 0:
+        f(&quot;CRITICAL&quot;, &quot;OOM_RISK&quot;, f&quot;{oom:g} OOM kill(s); memory max {r[&#x27;mem_max_mi&#x27;]:g}Mi vs limit {fmt(ml, &#x27;Mi&#x27;)}&quot;)
+    elif ml and r[&quot;mem_max_mi&quot;] &gt;= 0.95 * ml:
+        f(&quot;CRITICAL&quot;, &quot;OOM_RISK&quot;, f&quot;memory max {r[&#x27;mem_max_mi&#x27;]:g}Mi is {r[&#x27;mem_max_mi&#x27;] / ml:.0%} of the {ml:g}Mi limit&quot;)
+    if cr is None or mr is None:
+        f(&quot;HIGH&quot;, &quot;NO_REQUESTS&quot;, &quot;missing &quot; + &quot; and &quot;.join(x for x, v in ((&quot;cpu request&quot;, cr), (&quot;memory request&quot;, mr)) if v is None))
+    if mr and r[&quot;mem_p95_mi&quot;] &gt; mr:
+        f(&quot;HIGH&quot;, &quot;MEM_UNDER_REQUEST&quot;, f&quot;memory p95 {r[&#x27;mem_p95_mi&#x27;]:g}Mi &gt; request {mr:g}Mi&quot;)
+    th = r[&quot;throttled_pct&quot;] or 0
+    if th &gt;= 25:
+        f(&quot;HIGH&quot;, &quot;CPU_THROTTLED&quot;, f&quot;{th:g}% of CPU periods throttled at limit {fmt(cl, &#x27;m&#x27;)}; usage is capped, so real demand is higher&quot;)
+    elif th &gt;= 10:
+        f(&quot;MEDIUM&quot;, &quot;CPU_THROTTLED&quot;, f&quot;{th:g}% of CPU periods throttled at limit {fmt(cl, &#x27;m&#x27;)}&quot;)
+    if cr and r[&quot;cpu_p95_m&quot;] &gt; 1.2 * cr:
+        f(&quot;MEDIUM&quot;, &quot;CPU_UNDER_REQUEST&quot;, f&quot;cpu p95 {r[&#x27;cpu_p95_m&#x27;]:g}m &gt; 1.2 x request {cr:g}m&quot;)
+    if ml is None:
+        f(&quot;MEDIUM&quot;, &quot;NO_MEMORY_LIMIT&quot;, &quot;no memory limit set&quot;)
+    over = []
+    if cr and rec[&quot;cpu_request_m&quot;] &lt; 0.5 * cr:
+        over.append(f&quot;cpu {cr:g}m -&gt; {rec[&#x27;cpu_request_m&#x27;]}m&quot;)
+    if mr and rec[&quot;mem_request_mi&quot;] &lt; 0.5 * mr:
+        over.append(f&quot;memory {mr:g}Mi -&gt; {rec[&#x27;mem_request_mi&#x27;]}Mi&quot;)
+    if over:
+        f(&quot;LOW&quot;, &quot;OVERPROVISIONED&quot;, &quot;; &quot;.join(over))
+    if r[&quot;days&quot;] is not None and r[&quot;days&quot;] &lt; 7:
+        f(&quot;LOW&quot;, &quot;SHORT_WINDOW&quot;, f&quot;only {r[&#x27;days&#x27;]:g} days of data&quot;)
+    findings.sort(key=lambda x: SEV_ORDER[x[&quot;severity&quot;]])
+    status = findings[0][&quot;severity&quot;] if findings and findings[0][&quot;severity&quot;] != &quot;LOW&quot; else &quot;OK&quot;
+    n = r[&quot;replicas&quot;]
+    d_cpu = ((cr or 0) - rec[&quot;cpu_request_m&quot;]) * n
+    d_mem = ((mr or 0) - rec[&quot;mem_request_mi&quot;]) * n
+    return {&quot;id&quot;: f&quot;{r[&#x27;namespace&#x27;]}/{r[&#x27;workload&#x27;]}/{r[&#x27;container&#x27;]}&quot;, &quot;replicas&quot;: int(n), &quot;current&quot;: {
+        &quot;cpu_request_m&quot;: cr, &quot;cpu_limit_m&quot;: cl, &quot;mem_request_mi&quot;: mr, &quot;mem_limit_mi&quot;: ml},
+        &quot;recommended&quot;: rec, &quot;delta_cpu_m&quot;: d_cpu, &quot;delta_mem_mi&quot;: d_mem, &quot;status&quot;: status, &quot;findings&quot;: findings}
+
+
+def run(text, headroom=0.15, keep_cpu_limits=False, core_month=None, gib_month=None):
+    res = [analyze(r, headroom, keep_cpu_limits) for r in read_rows(text)]
+    res.sort(key=lambda x: (SEV_ORDER.get(x[&quot;status&quot;], 4), x[&quot;id&quot;]))
+    tot_cpu = sum(x[&quot;delta_cpu_m&quot;] for x in res) / 1000
+    tot_mem = sum(x[&quot;delta_mem_mi&quot;] for x in res) / 1024
+    out = {&quot;containers&quot;: res, &quot;freed_cores&quot;: round(tot_cpu, 3), &quot;freed_gib&quot;: round(tot_mem, 3)}
+    if core_month is not None and gib_month is not None:
+        out[&quot;monthly_saving&quot;] = round(tot_cpu * core_month + tot_mem * gib_month, 2)
+    return out
+
+
+def fmt(v, unit):
+    return &quot;none&quot; if v is None else f&quot;{v:g}{unit}&quot;
+
+
+def report(out, headroom):
+    L = [&quot;# Kubernetes rightsizing report&quot;, &quot;&quot;,
+         f&quot;Requests = p95 + {headroom:.0%} headroom; CPU limits removed unless kept; memory limit = max x 1.25.&quot;, &quot;&quot;,
+         &quot;| Container | Replicas | Status | CPU req | CPU limit | Mem req | Mem limit |&quot;,
+         &quot;|---|---|---|---|---|---|---|&quot;]
+    for x in out[&quot;containers&quot;]:
+        c, r = x[&quot;current&quot;], x[&quot;recommended&quot;]
+        L.append(f&quot;| {x[&#x27;id&#x27;]} | {x[&#x27;replicas&#x27;]} | {x[&#x27;status&#x27;]} | {fmt(c[&#x27;cpu_request_m&#x27;], &#x27;m&#x27;)} -&gt; {r[&#x27;cpu_request_m&#x27;]}m&quot;
+                 f&quot; | {fmt(c[&#x27;cpu_limit_m&#x27;], &#x27;m&#x27;)} -&gt; {fmt(r[&#x27;cpu_limit_m&#x27;], &#x27;m&#x27;)}&quot;
+                 f&quot; | {fmt(c[&#x27;mem_request_mi&#x27;], &#x27;Mi&#x27;)} -&gt; {r[&#x27;mem_request_mi&#x27;]}Mi&quot;
+                 f&quot; | {fmt(c[&#x27;mem_limit_mi&#x27;], &#x27;Mi&#x27;)} -&gt; {r[&#x27;mem_limit_mi&#x27;]}Mi |&quot;)
+    L += [&quot;&quot;, &quot;## Findings&quot;]
+    any_f = False
+    for x in out[&quot;containers&quot;]:
+        for f in x[&quot;findings&quot;]:
+            any_f = True
+            L.append(f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]} {x[&#x27;id&#x27;]}: {f[&#x27;message&#x27;]}&quot;)
+    if not any_f:
+        L.append(&quot;- none&quot;)
+    L += [&quot;&quot;, &quot;## Requests freed (negative = more needed)&quot;,
+          f&quot;- CPU: {out[&#x27;freed_cores&#x27;]:g} cores&quot;, f&quot;- Memory: {out[&#x27;freed_gib&#x27;]:g} GiB&quot;]
+    if &quot;monthly_saving&quot; in out:
+        L.append(f&quot;- Estimated monthly saving: {out[&#x27;monthly_saving&#x27;]:,.2f}&quot;)
+    return &quot;\n&quot;.join(L) + &quot;\n&quot;
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append(bool(cond))
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    hdr = &quot;,&quot;.join(COLUMNS) + &quot;\n&quot;
+
+    def row(**kw):
+        base = dict(namespace=&quot;ns&quot;, workload=&quot;w&quot;, container=&quot;c&quot;, replicas=1, cpu_request_m=500, cpu_limit_m=1000,
+                    mem_request_mi=512, mem_limit_mi=1024, cpu_p50_m=100, cpu_p95_m=200, cpu_max_m=300,
+                    mem_p50_mi=200, mem_p95_mi=300, mem_max_mi=400, throttled_pct=0, oom_kills=0, days=14)
+        base.update(kw)
+        return &quot;,&quot;.join(&quot;&quot; if base[c] is None else str(base[c]) for c in COLUMNS) + &quot;\n&quot;
+
+    def one(**kw):
+        return run(hdr + row(**kw))[&quot;containers&quot;][0]
+
+    def codes(x):
+        return {(f[&quot;severity&quot;], f[&quot;code&quot;]) for f in x[&quot;findings&quot;]}
+
+    x = one()
+    ok(&quot;cpu request = p95 x 1.15 rounded to 5m (230)&quot;, x[&quot;recommended&quot;][&quot;cpu_request_m&quot;] == 230)
+    ok(&quot;mem request = 300 x 1.15 = 345 -&gt; 352Mi&quot;, x[&quot;recommended&quot;][&quot;mem_request_mi&quot;] == 352)
+    ok(&quot;mem limit = 400 x 1.25 = 500 -&gt; 512Mi&quot;, x[&quot;recommended&quot;][&quot;mem_limit_mi&quot;] == 512)
+    ok(&quot;cpu limit removed by default&quot;, x[&quot;recommended&quot;][&quot;cpu_limit_m&quot;] is None)
+    ok(&quot;healthy container is OK&quot;, x[&quot;status&quot;] == &quot;OK&quot;)
+    ok(&quot;headroom 0.25 changes cpu request (250)&quot;, run(hdr + row(), headroom=0.25)[&quot;containers&quot;][0][&quot;recommended&quot;][&quot;cpu_request_m&quot;] == 250)
+    k = run(hdr + row(), keep_cpu_limits=True)[&quot;containers&quot;][0][&quot;recommended&quot;][&quot;cpu_limit_m&quot;]
+    ok(&quot;kept cpu limit = max(360-&gt;400, 460-&gt;500) = 500&quot;, k == 500)
+    ok(&quot;minimums 10m / 32Mi&quot;, one(cpu_p50_m=0, cpu_p95_m=1, cpu_max_m=2, mem_p50_mi=1, mem_p95_mi=2, mem_max_mi=3)[&quot;recommended&quot;]
+       == {&quot;cpu_request_m&quot;: 10, &quot;mem_request_mi&quot;: 32, &quot;cpu_limit_m&quot;: None, &quot;mem_limit_mi&quot;: 32})
+    ok(&quot;OOM kills -&gt; CRITICAL&quot;, (&quot;CRITICAL&quot;, &quot;OOM_RISK&quot;) in codes(one(oom_kills=2)) and one(oom_kills=2)[&quot;status&quot;] == &quot;CRITICAL&quot;)
+    ok(&quot;max at 98% of limit -&gt; OOM_RISK&quot;, (&quot;CRITICAL&quot;, &quot;OOM_RISK&quot;) in codes(one(mem_max_mi=1004, mem_p95_mi=500)))
+    ok(&quot;missing requests -&gt; HIGH NO_REQUESTS&quot;, (&quot;HIGH&quot;, &quot;NO_REQUESTS&quot;) in codes(one(cpu_request_m=None)))
+    ok(&quot;mem p95 above request -&gt; HIGH&quot;, (&quot;HIGH&quot;, &quot;MEM_UNDER_REQUEST&quot;) in codes(one(mem_request_mi=256)))
+    ok(&quot;throttling 30% -&gt; HIGH&quot;, (&quot;HIGH&quot;, &quot;CPU_THROTTLED&quot;) in codes(one(throttled_pct=30)))
+    ok(&quot;throttling 12% -&gt; MEDIUM&quot;, (&quot;MEDIUM&quot;, &quot;CPU_THROTTLED&quot;) in codes(one(throttled_pct=12)))
+    ok(&quot;cpu p95 &gt; 1.2 x request -&gt; MEDIUM&quot;, (&quot;MEDIUM&quot;, &quot;CPU_UNDER_REQUEST&quot;) in codes(one(cpu_request_m=150)))
+    ok(&quot;no memory limit -&gt; MEDIUM&quot;, (&quot;MEDIUM&quot;, &quot;NO_MEMORY_LIMIT&quot;) in codes(one(mem_limit_mi=None)))
+    big = one(cpu_request_m=2000, mem_request_mi=4096)
+    ok(&quot;overprovisioned flagged LOW, status stays OK&quot;, (&quot;LOW&quot;, &quot;OVERPROVISIONED&quot;) in codes(big) and big[&quot;status&quot;] == &quot;OK&quot;)
+    ok(&quot;short window flagged&quot;, (&quot;LOW&quot;, &quot;SHORT_WINDOW&quot;) in codes(one(days=3)))
+    two = run(hdr + row(replicas=3) + row(workload=&quot;b&quot;, replicas=2, cpu_request_m=100, mem_request_mi=256),
+              core_month=20, gib_month=4)
+    # w: (500-230)*3=810m, (512-352)*3=480Mi ; b: (100-230)*2=-260m, (256-352)*2=-192Mi
+    ok(&quot;freed cores = (810-260)/1000 = 0.55&quot;, two[&quot;freed_cores&quot;] == 0.55)
+    ok(&quot;freed GiB = (480-192)/1024 = 0.281&quot;, two[&quot;freed_gib&quot;] == 0.281)
+    ok(&quot;monthly saving = 0.55 x 20 + 0.28125 x 4 = 12.125&quot;, abs(two[&quot;monthly_saving&quot;] - 12.125) &lt; 0.01)
+    ok(&quot;sorted by severity&quot;, two[&quot;containers&quot;][0][&quot;id&quot;] == &quot;ns/b/c&quot;)
+    for bad, label in ((&quot;a,b\n1,2\n&quot;, &quot;missing columns&quot;), (hdr, &quot;no rows&quot;), (hdr + row(cpu_p95_m=&quot;x&quot;), &quot;bad number&quot;),
+                       (hdr + row(cpu_p95_m=900), &quot;p95 above max&quot;), (hdr + row(replicas=0), &quot;zero replicas&quot;),
+                       (hdr + row(cpu_p95_m=None), &quot;missing usage&quot;)):
+        try:
+            run(bad)
+            ok(label + &quot; rejected&quot;, False)
+        except DataError:
+            ok(label + &quot; rejected&quot;, True)
+    print(f&quot;{sum(cases)}/{len(cases)} passed&quot;)
+    return 0 if all(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Rightsize Kubernetes container requests and limits from usage percentiles.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;CSV with the columns listed in the module docstring&quot;)
+    ap.add_argument(&quot;--headroom&quot;, type=float, default=15, help=&quot;percent added to p95 for requests (default 15)&quot;)
+    ap.add_argument(&quot;--keep-cpu-limits&quot;, action=&quot;store_true&quot;, help=&quot;recommend CPU limits instead of removing them&quot;)
+    ap.add_argument(&quot;--core-month&quot;, type=float, help=&quot;price of one requested core per month&quot;)
+    ap.add_argument(&quot;--gib-month&quot;, type=float, help=&quot;price of one requested GiB of memory per month&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.file:
+        ap.error(&quot;give a CSV file or --self-test&quot;)
+    try:
+        out = run(open(a.file, encoding=&quot;utf-8&quot;).read(), a.headroom / 100, a.keep_cpu_limits, a.core_month, a.gib_month)
+    except (OSError, DataError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(out, indent=2) if a.json else report(out, a.headroom / 100), end=&quot;\n&quot; if a.json else &quot;&quot;)
+    return 1 if any(x[&quot;status&quot;] in (&quot;CRITICAL&quot;, &quot;HIGH&quot;) for x in out[&quot;containers&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/kubernetes-resource-requests-rightsizer',TI="Kubernetes Resource Requests Rightsizer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

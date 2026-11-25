@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dependency License Audit | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: dependency-license-audit description: Audits the licenses of your project&#x27;s dependencies for how you actually ship (SaaS, distributed app or">
+<meta property="og:title" content="Dependency License Audit | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: dependency-license-audit description: Audits the licenses of your project&#x27;s dependencies for how you actually ship (SaaS, distributed app or">
+<meta property="og:url" content="https://claudebomb.com/l/pc/dependency-license-audit/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/dependency-license-audit/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Dependency License Audit</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: dependency-license-audit
+description: Audits the licenses of your project&#x27;s dependencies for how you actually ship (SaaS, distributed app or library, or internal tool): normalizes license names to SPDX, resolves OR and AND expressions, flags missing, AGPL, GPL, source-available, and incompatible licenses, and writes a ranked fix plan and notices list. Includes a tested stdlib Python auditor.
+---
+
+# Dependency License Audit
+
+You help engineering teams find license problems in their dependencies before a release, an acquisition review, or a customer security questionnaire finds them. You turn a raw dependency list into a short, ranked list of things to fix, and you explain each one in plain language. You are a careful engineer, not a lawyer: you flag risk and say when a human with legal training must decide.
+
+## Files in this skill
+
+- `scripts/audit_licenses.py` - normalizes and classifies every dependency license and rates it for the chosen distribution model (Python 3 standard library only)
+- `references/license-categories.md` - what permissive, weak copyleft, strong copyleft, network copyleft, and source-available mean in practice, with common SPDX ids
+- `references/remediation-playbook.md` - how to fix each kind of finding, from replacing a package to adding notices
+- `templates/license-audit-report.md` - the report layout
+- `examples/example-saas-audit.md` - a worked audit of a Node.js SaaS backend
+
+## Workflow
+
+### 1. Understand how the project is shipped
+Ask, or infer and state as an assumption:
+- Project license: proprietary (closed source) or an open source license (SPDX id).
+- Distribution: `saas` (users only reach it over a network), `distributed` (mobile or desktop apps, on-prem installs, devices, SDKs, published libraries, container images given to customers), or `internal` (only employees use it).
+- Any company policy: always-allowed and always-blocked licenses.
+The same dependency can be fine for one model and a blocker for another, so never skip this step.
+
+### 2. Get the dependency inventory
+Prefer a tool&#x27;s output over a hand-made list, and include transitive dependencies:
+- Python: `pip-licenses --format=json --with-system` (or `pip-licenses --format=csv`).
+- Node.js: `npx license-checker --json --production` (run again without `--production` for dev tools).
+- Anything else: a CSV with `name,version,license,scope` exported from an SBOM or the package manager.
+Mark build, test, and lint tools as `scope=dev`; they are not shipped, so their findings drop to INFO.
+
+### 3. Run the audit
+```bash
+python3 scripts/audit_licenses.py deps.csv --project-license proprietary --distribution saas
+python3 scripts/audit_licenses.py licenses.json --distribution distributed --deny AGPL-3.0-only
+python3 scripts/audit_licenses.py deps.csv --json
+```
+The script prints severity counts, a table of every package with its normalized license and category, findings with reasons, version-to-version license changes, and the licenses that need text in your third-party notices. Exit code 1 means at least one HIGH finding.
+
+If you cannot run the script, classify each license by hand with `references/license-categories.md` and say so in the report.
+
+### 4. Verify before you conclude
+- For every HIGH or WARN finding, check the package&#x27;s actual LICENSE file in its repository or package archive; metadata is often wrong or outdated.
+- For &quot;missing&quot; or &quot;SEE LICENSE IN&quot; entries, open the referenced file and classify it by its text.
+- For dual-licensed packages (OR), record which option you choose.
+- For packages whose license changed between versions, confirm which version is actually installed (lock file).
+
+### 5. Recommend and report
+Use `references/remediation-playbook.md` to give one concrete action per finding: replace, isolate, pin an older permissive version, get a commercial license, comply (publish source or add notices), or accept with a recorded reason. Fill in `templates/license-audit-report.md`, as in `examples/example-saas-audit.md`.
+
+## Rules
+- Never say a license &quot;is fine&quot; or &quot;is illegal&quot; as a legal conclusion. Say what the license usually requires and when to ask legal counsel.
+- Do not guess a license from a package name or popularity. Unknown stays unknown until someone reads the license text.
+- Rate risk for the user&#x27;s distribution model, and note what would change if the model changes (for example SaaS today, on-prem next year).
+- Keep the report short: blockers first, then obligations (notices, source offers), then the clean list as a count.
+- Treat the audit as a snapshot; recommend running it in CI on every dependency change.
+FILE:references/license-categories.md
+# License categories in practice
+
+Severity in the script depends on the category and on how the project is shipped. This page explains the categories in plain language. It is an engineering summary, not legal advice.
+
+## Public domain and near public domain
+SPDX: `0BSD`, `Unlicense`, `CC0-1.0`, `MIT-0`, `WTFPL`
+- No meaningful obligations. Keeping a notice is still good practice.
+
+## Permissive
+SPDX: `MIT`, `ISC`, `BSD-2-Clause`, `BSD-3-Clause`, `Apache-2.0`, `Zlib`, `BSL-1.0` (Boost), `PSF-2.0`, `Python-2.0`, `CC-BY-4.0` (data such as caniuse-lite)
+- Use, modify, and ship in closed source products.
+- Keep the copyright notice and license text, usually in a third-party notices file or an &quot;About / Licenses&quot; screen.
+- Apache-2.0 also requires keeping any NOTICE file, stating significant changes to its files, and includes a patent grant that ends if you sue over patents in that code.
+- BSD-3-Clause forbids using the authors&#x27; names to promote your product.
+
+## Weak copyleft (file or library level)
+SPDX: `LGPL-2.1-*`, `LGPL-3.0-*`, `MPL-2.0`, `EPL-1.0`, `EPL-2.0`, `CDDL-1.0`, `CDDL-1.1`, GPL with a linking exception (for example `GPL-2.0-only WITH Classpath-exception-2.0`)
+- You may combine them with closed source code, but changes to the library&#x27;s own files must be shared under the same license when you distribute.
+- LGPL: users must be able to replace the library with their own version. Dynamic linking (shared library, separate jar, npm package) normally makes this easy; static linking or bundling into one binary needs care.
+- MPL-2.0: copyleft applies per file. Keep MPL files separate and publish changes to those files.
+
+## Strong copyleft
+SPDX: `GPL-2.0-only`, `GPL-2.0-or-later`, `GPL-3.0-only`, `GPL-3.0-or-later`
+- If you distribute software that includes or links GPL code, the combined work must be offered under the GPL with its source code.
+- Running GPL software on your own servers and letting users reach it over a network is not distribution, so pure SaaS use is usually allowed. Shipping an app, an on-prem installer, a device firmware, or a container image to customers is distribution.
+- Version matters: `GPL-2.0-only` code cannot be combined with GPL-3.0 or Apache-2.0 code in one work. `-or-later` gives more room.
+
+## Network copyleft
+SPDX: `AGPL-3.0-only`, `AGPL-3.0-or-later`, `SSPL-1.0` (not OSI approved)
+- Like the GPL, plus: if users interact with a modified version over a network, you must offer them its source code.
+- For a closed source SaaS product this is the most common blocker. Even unmodified use triggers internal reviews at most companies.
+- SSPL goes further: offering the software as a service can require releasing the source of your whole service stack.
+
+## Source-available and non-commercial
+SPDX or names: `BUSL-1.1` (Business Source License), `Elastic-2.0`, Commons Clause add-ons, `CC-BY-NC-*`, `PolyForm-Noncommercial-1.0.0`
+- Source is visible, but use is restricted: often no competing hosted service, no production use above a limit, or no commercial use at all, sometimes until a change date.
+- Always needs a review of the exact terms. Many of these switch to an open license after a few years, so an older or newer version may differ.
+
+## Unknown
+- Empty license fields, `UNKNOWN`, `NOASSERTION`, `UNLICENSED`, `SEE LICENSE IN &lt;file&gt;`, `LicenseRef-*`, or a name the script does not recognize.
+- &quot;No license&quot; means all rights reserved: you have no permission to use it. Find the real terms or replace the package.
+
+## Expressions
+- `MIT OR Apache-2.0`: you may choose either; pick the one that suits you and record the choice.
+- `MIT AND BSD-3-Clause`: you must follow both; the strictest one sets the category.
+- `GPL-2.0-only WITH &lt;exception&gt;`: the exception narrows the copyleft; read it.
+FILE:references/remediation-playbook.md
+# Remediation playbook
+
+Pick one action per finding and write it down with an owner. Prefer the cheapest action that removes the risk.
+
+## Order of work
+1. Unknown and missing licenses (you may have no right to use the code at all).
+2. Network copyleft and source-available packages in shipped or hosted code.
+3. Strong copyleft in distributed products, and version incompatibilities in open source projects.
+4. Weak copyleft obligations (linking, publishing changes).
+5. Notices for everything else.
+
+## Actions
+
+### Find the real license
+- Open the package&#x27;s repository and archive, read LICENSE, COPYING, or the header of the main source file.
+- Check whether the metadata is just stale (a common case for old packages and forks).
+- If there is truly no license, ask the maintainer to add one (link to choosealicense.com in the request) or replace the package.
+
+### Replace the package
+- Search for a maintained alternative with a permissive license and similar API.
+- Estimate effort in hours and add it to the backlog with the release it blocks.
+- For transitive dependencies, look for the direct dependency that pulls it in; a different version or a configuration flag often drops it.
+
+### Pin a version under the old license
+- When a project switched from a permissive license to source-available (or the reverse), the old versions keep their old license.
+- Pinning is a short-term fix: no security updates. Schedule a proper replacement.
+
+### Isolate it
+- Run the copyleft tool as a separate process or service that talks to your code over a command line, HTTP, or a queue, instead of linking it into your code.
+- Keep it unmodified if possible. Document the boundary.
+- This is a common way to use GPL command line tools, but have legal counsel confirm it for AGPL and SSPL.
+
+### Buy a commercial license
+- Many dual-licensed projects (open source plus commercial) sell a license that removes copyleft obligations. Note the price and renewal terms.
+
+### Comply
+- Weak copyleft: keep the library as a separate, replaceable file or package; publish any changes to its own files; include its license.
+- GPL in a distributed product: only if the whole product can be open source under compatible terms. This is a business decision, not an engineering one.
+- AGPL in a hosted service: offer the corresponding source to users of the service, including your changes.
+
+### Accept with a recorded reason
+- Dev-only tools (linters, test runners, build tools) that never ship are usually fine. Record &quot;dev only, not distributed&quot;.
+- Internal-only use of GPL or AGPL tools is usually fine. Record who uses it and that it is not exposed to outside users.
+
+## Third-party notices
+- Generate a notices file from the inventory: package, version, license, copyright line, full license text (one copy per distinct license text).
+- Include Apache NOTICE files as they are.
+- Ship it inside apps (&quot;Settings &gt; About &gt; Licenses&quot;), installers, and container images; for SaaS, link it from the footer or docs.
+
+## Keep it clean
+- Run the audit in CI on every change to a lock file and fail the build on HIGH.
+- Keep an allow list (for example MIT, BSD, ISC, Apache-2.0) and a deny list (for example AGPL-3.0, SSPL-1.0, BUSL-1.1) agreed with legal counsel, and pass them with `--allow` and `--deny`.
+FILE:templates/license-audit-report.md
+# Dependency License Audit: &lt;project name&gt;
+
+Date: &lt;YYYY-MM-DD&gt;
+Project license: &lt;proprietary | SPDX id&gt;
+Distribution: &lt;saas | distributed | internal&gt; (&lt;one line: how users get the software&gt;)
+Inventory source: &lt;tool and command, lock file commit&gt;
+Packages audited: &lt;n&gt; (&lt;runtime n&gt;, &lt;dev n&gt;)
+
+## Summary
+- Blockers (HIGH): &lt;n&gt; - &lt;one line naming them&gt;
+- Obligations (WARN): &lt;n&gt; - &lt;one line&gt;
+- Notes (INFO): &lt;n&gt;
+- Clean (OK): &lt;n&gt;
+- Verdict: &lt;ready to ship | ship after fixes | blocked&gt; because &lt;reason&gt;.
+
+## Blockers
+| Package | Version | License (as found) | Category | Why it matters for us | Action | Owner | Due |
+|---|---|---|---|---|---|---|---|
+| | | | | | | | |
+
+## Obligations
+| Package | License | What we must do | Done? |
+|---|---|---|---|
+| | | | |
+
+## Verified by hand
+- &lt;package&gt;: metadata said &lt;x&gt;, LICENSE file says &lt;y&gt;.
+
+## Decisions and assumptions
+- Dual-licensed packages and the option chosen: &lt;package: option&gt;
+- Accepted risks with reason: &lt;package: reason, approved by&gt;
+- Assumptions: &lt;for example &quot;the admin dashboard is internal only&quot;&gt;
+
+## What changes if we change how we ship
+- &lt;for example: &quot;If we ship an on-prem version, readline-sync (GPL-3.0) becomes a blocker.&quot;&gt;
+
+## Third-party notices
+Licenses that need full text in the notices file: &lt;list&gt;
+Notices file location: &lt;path or URL&gt;
+
+## Next audit
+Run in CI on every lock file change; full review before &lt;next release or date&gt;.
+
+_This report is an engineering triage, not legal advice. Blockers must be confirmed by legal counsel before relying on any exception._
+FILE:examples/example-saas-audit.md
+# Example: license audit of a Node.js SaaS backend
+
+## The request
+&quot;We&#x27;re a closed source B2B SaaS. Enterprise customers keep sending security questionnaires asking about open source licenses, and next year we may sell an on-prem version. Here is our dependency export. Anything we should worry about?&quot;
+
+Inventory (`deps.csv`, exported from the lock file, 18 rows):
+```
+name,version,license,scope
+express,4.19.2,MIT,runtime
+lodash,4.17.21,MIT,runtime
+pg,8.12.0,MIT,runtime
+sharp,0.33.4,Apache-2.0,runtime
+dompurify,3.1.6,(MPL-2.0 OR Apache-2.0),runtime
+ghostscript-wrapper,2.1.0,AGPL-3.0-only,runtime
+chart-kit-pro,1.4.0,SEE LICENSE IN LICENSE.md,runtime
+readline-sync,1.4.10,GPL-3.0,runtime
+mariadb-connector,3.3.1,LGPL-2.1-or-later,runtime
+fast-csv-lite,0.9.0,,runtime
+redis-om,0.4.3,Business Source License 1.1,runtime
+jest,29.7.0,MIT,dev
+eslint-plugin-gpl-thing,1.0.2,GPL-2.0-only,dev
+argparse,2.0.1,Python-2.0,runtime
+tslib,2.6.3,0BSD,runtime
+lodash,3.10.1,MIT,runtime
+search-client,7.10.2,Apache-2.0,runtime
+search-client,8.1.0,Elastic License 2.0,runtime
+```
+
+## Script run
+```
+$ python3 scripts/audit_licenses.py deps.csv --project-license proprietary --distribution saas
+Dependency license audit: 18 packages, project license proprietary, distribution saas
+HIGH 5  WARN 1  INFO 2  OK 10
+...
+HIGH  chart-kit-pro@1.4.0           SEE LICENSE IN LICENSE.md    unknown           runtime
+HIGH  fast-csv-lite@0.9.0           (missing)                    unknown           runtime
+HIGH  redis-om@0.4.3                BUSL-1.1                     source-available  runtime
+HIGH  search-client@8.1.0           Elastic-2.0                  source-available  runtime
+HIGH  ghostscript-wrapper@2.1.0     AGPL-3.0-only                network-copyleft  runtime
+WARN  readline-sync@1.4.10          GPL-3.0-only                 strong-copyleft   runtime
+INFO  eslint-plugin-gpl-thing@1.0.2 GPL-2.0-only                 strong-copyleft   dev
+INFO  mariadb-connector@3.3.1       LGPL-2.1-or-later            weak-copyleft     runtime
+...
+Notes:
+- search-client: different licenses across versions (Apache-2.0, Elastic-2.0); check which version you ship.
+```
+Exit code 1 (HIGH findings).
+
+## The report (filled template, shortened)
+
+# Dependency License Audit: acme-api
+
+Project license: proprietary. Distribution: saas (customers use the web app and REST API; nothing is installed on their machines today).
+Packages audited: 18 (16 runtime, 2 dev).
+
+### Summary
+- Blockers (HIGH): 5 - two packages with no usable license, two source-available packages, one AGPL package.
+- Obligations (WARN): 1 - a GPL-3.0 package that is fine for SaaS but blocks the planned on-prem version.
+- Verdict: ship after fixes. Nothing here is unusual, and each item has a cheap fix.
+
+### Blockers
+| Package | License (as found) | Why it matters for us | Action |
+|---|---|---|---|
+| chart-kit-pro 1.4.0 | SEE LICENSE IN LICENSE.md | The LICENSE.md is a commercial license that allows use only with a paid key. We have no key on record. | Confirm with the team that bought it, or replace with a permissive charting library. |
+| fast-csv-lite 0.9.0 | (missing) | No license means no permission to use. | Ask the maintainer to add a license; meanwhile switch to a maintained CSV parser with MIT terms. |
+| redis-om 0.4.3 | BUSL-1.1 | Business Source License limits production use until its change date; terms vary per project. | Read the exact &quot;Additional Use Grant&quot;. If it forbids our use, replace or buy a license. |
+| search-client 8.1.0 | Elastic-2.0 | Elastic License 2.0 forbids offering the software as a managed service. Version 7.10.2 in the same tree is Apache-2.0. | Check the lock file: which modules import 8.1.0? Pin both to the Apache-2.0 line or move to an Apache-licensed fork. |
+| ghostscript-wrapper 2.1.0 | AGPL-3.0-only | We render customer PDFs with it inside the API; AGPL network use requires offering source to users. | Move PDF rendering to a separate, unmodified worker service and have legal counsel confirm, or buy the commercial license. |
+
+### Obligations
+| Package | License | What we must do |
+|---|---|---|
+| readline-sync 1.4.10 | GPL-3.0-only | Fine for SaaS. It becomes a blocker if the on-prem version ships with it. It is only used by an admin CLI script, so remove it from the server image. |
+| mariadb-connector 3.3.1 | LGPL-2.1-or-later | Keep it as a normal npm dependency (replaceable); publish changes if we ever patch it. |
+
+### Verified by hand
+- dompurify: dual licensed `MPL-2.0 OR Apache-2.0`; we choose Apache-2.0.
+- eslint-plugin-gpl-thing: dev only, never shipped. Accepted.
+
+### What changes if we ship on-prem
+- readline-sync (GPL-3.0) becomes HIGH, mariadb-connector (LGPL) needs the replaceability check, and Apache-2.0 packages need their NOTICE files in the installer. Rerun with `--distribution distributed` before that release.
+
+### Third-party notices
+Licenses that need full text: Apache-2.0, LGPL-2.1-or-later, MIT, Python-2.0. Link the notices page from the app footer.
+
+_Engineering triage, not legal advice._
+
+## Why this is a good answer
+- It rates every package for this company&#x27;s real distribution model, and shows what changes with the on-prem plan.
+- It checks the facts the metadata cannot show (the commercial LICENSE.md, the duplicate search-client versions).
+- Every blocker has one concrete, cheap action.
+FILE:scripts/audit_licenses.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Audit third-party dependency licenses against how a project is shipped.
+
+Usage:
+  python3 audit_licenses.py deps.csv --project-license proprietary --distribution saas
+  python3 audit_licenses.py licenses.json --distribution distributed [--json]
+  cat deps.csv | python3 audit_licenses.py - [--allow LIC,LIC] [--deny LIC,LIC]
+
+Input (detected automatically):
+  CSV with a header: name,version,license[,scope]   (scope: runtime | dev; default runtime)
+  JSON list:   [{&quot;name&quot;: &quot;...&quot;, &quot;version&quot;: &quot;...&quot;, &quot;license&quot;: &quot;...&quot;, &quot;scope&quot;: &quot;dev&quot;}]
+  pip-licenses --format=json:  [{&quot;Name&quot;: &quot;...&quot;, &quot;Version&quot;: &quot;...&quot;, &quot;License&quot;: &quot;...&quot;}]
+  license-checker --json (npm): {&quot;pkg@1.2.3&quot;: {&quot;licenses&quot;: &quot;MIT&quot;}, ...}
+Options:
+  --project-license  your project&#x27;s license: proprietary (default) or an SPDX id such as MIT, Apache-2.0, GPL-3.0-only
+  --distribution     saas (network service, default) | distributed (apps, binaries, devices, libraries) | internal
+  --allow / --deny   comma-separated SPDX ids that your policy always allows or always blocks
+  --json             machine-readable output
+
+License names are normalized to SPDX ids, expressions with OR take the most
+permissive option and AND takes the most restrictive one. Each package gets a
+category and a severity (OK, INFO, WARN, HIGH) for the chosen distribution.
+Dev-only packages are not shipped, so their findings drop to INFO.
+Exit code: 0 no HIGH findings, 1 at least one HIGH, 2 usage or input error.
+This is an engineering triage aid, not legal advice. Standard library only.
+&quot;&quot;&quot;
+import argparse
+import csv
+import io
+import json
+import re
+import sys
+
+ALIASES = {  # lowercased common names -&gt; SPDX id
+    &quot;mit&quot;: &quot;MIT&quot;, &quot;mit license&quot;: &quot;MIT&quot;, &quot;the mit license&quot;: &quot;MIT&quot;, &quot;expat&quot;: &quot;MIT&quot;,
+    &quot;isc&quot;: &quot;ISC&quot;, &quot;isc license&quot;: &quot;ISC&quot;, &quot;isc license (iscl)&quot;: &quot;ISC&quot;,
+    &quot;apache 2.0&quot;: &quot;Apache-2.0&quot;, &quot;apache-2&quot;: &quot;Apache-2.0&quot;, &quot;apache 2&quot;: &quot;Apache-2.0&quot;, &quot;apache2&quot;: &quot;Apache-2.0&quot;,
+    &quot;apache license 2.0&quot;: &quot;Apache-2.0&quot;, &quot;apache license, version 2.0&quot;: &quot;Apache-2.0&quot;,
+    &quot;apache software license&quot;: &quot;Apache-2.0&quot;, &quot;apache license version 2.0&quot;: &quot;Apache-2.0&quot;,
+    &quot;bsd&quot;: &quot;BSD-3-Clause&quot;, &quot;bsd license&quot;: &quot;BSD-3-Clause&quot;, &quot;new bsd&quot;: &quot;BSD-3-Clause&quot;, &quot;bsd-3&quot;: &quot;BSD-3-Clause&quot;,
+    &quot;3-clause bsd&quot;: &quot;BSD-3-Clause&quot;, &quot;bsd 3-clause&quot;: &quot;BSD-3-Clause&quot;, &quot;simplified bsd&quot;: &quot;BSD-2-Clause&quot;,
+    &quot;bsd-2&quot;: &quot;BSD-2-Clause&quot;, &quot;2-clause bsd&quot;: &quot;BSD-2-Clause&quot;,
+    &quot;python software foundation license&quot;: &quot;PSF-2.0&quot;, &quot;psf&quot;: &quot;PSF-2.0&quot;, &quot;psfl&quot;: &quot;PSF-2.0&quot;,
+    &quot;mozilla public license 2.0 (mpl 2.0)&quot;: &quot;MPL-2.0&quot;, &quot;mpl 2.0&quot;: &quot;MPL-2.0&quot;, &quot;mpl-2&quot;: &quot;MPL-2.0&quot;, &quot;mpl2&quot;: &quot;MPL-2.0&quot;,
+    &quot;gplv2&quot;: &quot;GPL-2.0-only&quot;, &quot;gpl-2.0&quot;: &quot;GPL-2.0-only&quot;, &quot;gpl v2&quot;: &quot;GPL-2.0-only&quot;, &quot;gpl2&quot;: &quot;GPL-2.0-only&quot;,
+    &quot;gplv2+&quot;: &quot;GPL-2.0-or-later&quot;, &quot;gpl-2.0+&quot;: &quot;GPL-2.0-or-later&quot;,
+    &quot;gplv3&quot;: &quot;GPL-3.0-only&quot;, &quot;gpl-3.0&quot;: &quot;GPL-3.0-only&quot;, &quot;gpl v3&quot;: &quot;GPL-3.0-only&quot;, &quot;gpl3&quot;: &quot;GPL-3.0-only&quot;,
+    &quot;gplv3+&quot;: &quot;GPL-3.0-or-later&quot;, &quot;gpl-3.0+&quot;: &quot;GPL-3.0-or-later&quot;, &quot;gpl&quot;: &quot;GPL-3.0-or-later&quot;,
+    &quot;gnu general public license v2 (gplv2)&quot;: &quot;GPL-2.0-only&quot;, &quot;gnu general public license v3 (gplv3)&quot;: &quot;GPL-3.0-only&quot;,
+    &quot;gnu general public license v2 or later (gplv2+)&quot;: &quot;GPL-2.0-or-later&quot;,
+    &quot;gnu general public license v3 or later (gplv3+)&quot;: &quot;GPL-3.0-or-later&quot;,
+    &quot;lgpl&quot;: &quot;LGPL-2.1-or-later&quot;, &quot;lgplv2&quot;: &quot;LGPL-2.1-only&quot;, &quot;lgplv2+&quot;: &quot;LGPL-2.1-or-later&quot;, &quot;lgpl-2.1&quot;: &quot;LGPL-2.1-only&quot;,
+    &quot;lgplv3&quot;: &quot;LGPL-3.0-only&quot;, &quot;lgplv3+&quot;: &quot;LGPL-3.0-or-later&quot;, &quot;lgpl-3.0&quot;: &quot;LGPL-3.0-only&quot;,
+    &quot;gnu lesser general public license v2 (lgplv2)&quot;: &quot;LGPL-2.1-only&quot;,
+    &quot;gnu lesser general public license v3 (lgplv3)&quot;: &quot;LGPL-3.0-only&quot;,
+    &quot;gnu lesser general public license v2 or later (lgplv2+)&quot;: &quot;LGPL-2.1-or-later&quot;,
+    &quot;agpl&quot;: &quot;AGPL-3.0-only&quot;, &quot;agplv3&quot;: &quot;AGPL-3.0-only&quot;, &quot;agpl-3.0&quot;: &quot;AGPL-3.0-only&quot;,
+    &quot;gnu affero general public license v3&quot;: &quot;AGPL-3.0-only&quot;, &quot;gnu affero general public license v3 (agplv3)&quot;: &quot;AGPL-3.0-only&quot;,
+    &quot;eclipse public license 2.0&quot;: &quot;EPL-2.0&quot;, &quot;epl 2.0&quot;: &quot;EPL-2.0&quot;, &quot;epl-2&quot;: &quot;EPL-2.0&quot;,
+    &quot;public domain&quot;: &quot;Unlicense&quot;, &quot;unlicense&quot;: &quot;Unlicense&quot;, &quot;the unlicense&quot;: &quot;Unlicense&quot;, &quot;cc0&quot;: &quot;CC0-1.0&quot;,
+    &quot;boost software license 1.0&quot;: &quot;BSL-1.0&quot;, &quot;zlib license&quot;: &quot;Zlib&quot;, &quot;zlib&quot;: &quot;Zlib&quot;,
+    &quot;business source license 1.1&quot;: &quot;BUSL-1.1&quot;, &quot;elastic license 2.0&quot;: &quot;Elastic-2.0&quot;,
+    &quot;server side public license&quot;: &quot;SSPL-1.0&quot;, &quot;sspl&quot;: &quot;SSPL-1.0&quot;,
+}
+CATEGORY = {  # SPDX id prefix -&gt; category
+    &quot;MIT&quot;: &quot;permissive&quot;, &quot;MIT-0&quot;: &quot;public-domain&quot;, &quot;ISC&quot;: &quot;permissive&quot;, &quot;BSD-2-Clause&quot;: &quot;permissive&quot;,
+    &quot;BSD-3-Clause&quot;: &quot;permissive&quot;, &quot;Apache-2.0&quot;: &quot;permissive&quot;, &quot;PSF-2.0&quot;: &quot;permissive&quot;, &quot;Python-2.0&quot;: &quot;permissive&quot;,
+    &quot;Zlib&quot;: &quot;permissive&quot;, &quot;BSL-1.0&quot;: &quot;permissive&quot;, &quot;X11&quot;: &quot;permissive&quot;, &quot;BlueOak-1.0.0&quot;: &quot;permissive&quot;,
+    &quot;CC-BY-4.0&quot;: &quot;permissive&quot;, &quot;CC-BY-3.0&quot;: &quot;permissive&quot;, &quot;Unicode-DFS-2016&quot;: &quot;permissive&quot;, &quot;Unicode-3.0&quot;: &quot;permissive&quot;,
+    &quot;0BSD&quot;: &quot;public-domain&quot;, &quot;Unlicense&quot;: &quot;public-domain&quot;, &quot;CC0-1.0&quot;: &quot;public-domain&quot;, &quot;WTFPL&quot;: &quot;public-domain&quot;,
+    &quot;MPL-2.0&quot;: &quot;weak-copyleft&quot;, &quot;EPL-1.0&quot;: &quot;weak-copyleft&quot;, &quot;EPL-2.0&quot;: &quot;weak-copyleft&quot;, &quot;CDDL-1.0&quot;: &quot;weak-copyleft&quot;,
+    &quot;CDDL-1.1&quot;: &quot;weak-copyleft&quot;, &quot;LGPL-2.1&quot;: &quot;weak-copyleft&quot;, &quot;LGPL-3.0&quot;: &quot;weak-copyleft&quot;, &quot;CC-BY-SA-4.0&quot;: &quot;weak-copyleft&quot;,
+    &quot;GPL-2.0&quot;: &quot;strong-copyleft&quot;, &quot;GPL-3.0&quot;: &quot;strong-copyleft&quot;,
+    &quot;AGPL-3.0&quot;: &quot;network-copyleft&quot;, &quot;SSPL-1.0&quot;: &quot;network-copyleft&quot;,
+    &quot;BUSL-1.1&quot;: &quot;source-available&quot;, &quot;Elastic-2.0&quot;: &quot;source-available&quot;, &quot;Commons-Clause&quot;: &quot;source-available&quot;,
+    &quot;CC-BY-NC-4.0&quot;: &quot;source-available&quot;, &quot;CC-BY-NC-SA-4.0&quot;: &quot;source-available&quot;, &quot;PolyForm-Noncommercial-1.0.0&quot;: &quot;source-available&quot;,
+}
+RANK = {&quot;public-domain&quot;: 0, &quot;permissive&quot;: 1, &quot;weak-copyleft&quot;: 2, &quot;strong-copyleft&quot;: 3,
+        &quot;network-copyleft&quot;: 4, &quot;source-available&quot;: 5, &quot;unknown&quot;: 6}
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;WARN&quot;: 1, &quot;INFO&quot;: 2, &quot;OK&quot;: 3}
+NOTICE_LICENSES = {&quot;Apache-2.0&quot;}
+
+
+def unwrap(text):
+    &quot;&quot;&quot;Remove parentheses that wrap the whole expression: &#x27;(MIT OR X)&#x27; -&gt; &#x27;MIT OR X&#x27;.&quot;&quot;&quot;
+    t = text.strip()
+    while t.startswith(&quot;(&quot;) and t.endswith(&quot;)&quot;):
+        depth = 0
+        for i, ch in enumerate(t):
+            depth += ch == &quot;(&quot;
+            depth -= ch == &quot;)&quot;
+            if depth == 0 and i &lt; len(t) - 1:
+                return t
+        t = t[1:-1].strip()
+    return t
+
+
+def normalize(token):
+    t = unwrap(token)
+    if not t:
+        return &quot;&quot;
+    key = t.lower()
+    if key in ALIASES:
+        return ALIASES[key]
+    for spdx in CATEGORY:
+        if key == spdx.lower() or key.startswith(spdx.lower() + &quot;-&quot;) or key == spdx.lower() + &quot;+&quot;:
+            return t if key.startswith(spdx.lower() + &quot;-&quot;) else spdx
+    return t
+
+
+def category_of(spdx):
+    if spdx.upper().startswith(&quot;LICENSEREF&quot;) or spdx.upper().startswith(&quot;SEE LICENSE&quot;):
+        return &quot;unknown&quot;
+    for prefix, cat in sorted(CATEGORY.items(), key=lambda kv: -len(kv[0])):
+        if spdx == prefix or spdx.startswith(prefix + &quot;-&quot;) or spdx.startswith(prefix + &quot;+&quot;):
+            return cat
+    return &quot;unknown&quot;
+
+
+def classify(expr):
+    &quot;&quot;&quot;Return (normalized expression, chosen license, category, exception) for a license expression.&quot;&quot;&quot;
+    raw = (expr or &quot;&quot;).strip()
+    if not raw or raw.upper() in (&quot;UNKNOWN&quot;, &quot;NONE&quot;, &quot;NOASSERTION&quot;, &quot;UNLICENSED&quot;, &quot;CUSTOM&quot;, &quot;N/A&quot;):
+        return raw or &quot;(missing)&quot;, raw or &quot;(missing)&quot;, &quot;unknown&quot;, None
+    if raw.upper().startswith(&quot;SEE LICENSE&quot;):
+        return raw, raw, &quot;unknown&quot;, None
+    whole = unwrap(raw)
+    if whole.lower() in ALIASES:  # long names such as &quot;... v2 or later (LGPLv2+)&quot; are one license
+        spdx = ALIASES[whole.lower()]
+        return spdx, spdx, category_of(spdx), None
+    text = re.sub(r&quot;\s+&quot;, &quot; &quot;, whole.replace(&quot;/&quot;, &quot; OR &quot;).replace(&quot;;&quot;, &quot; OR &quot;))
+    exception = None
+    m = re.search(r&quot;\bWITH\s+([\w.+-]+)&quot;, text, re.I)
+    if m:
+        exception = m.group(1)
+        text = text[:m.start()] + text[m.end():]
+    if re.search(r&quot;\sor\s&quot;, text, re.I) and not re.search(r&quot;\sand\s&quot;, text, re.I):
+        parts, mode = re.split(r&quot;\s+or\s+&quot;, text, flags=re.I), &quot;or&quot;
+    elif re.search(r&quot;\sand\s&quot;, text, re.I) and not re.search(r&quot;\sor\s&quot;, text, re.I):
+        parts, mode = re.split(r&quot;\s+and\s+&quot;, text, flags=re.I), &quot;and&quot;
+    elif re.search(r&quot;\s(or|and)\s&quot;, text, re.I):
+        parts, mode = re.split(r&quot;\s+(?:or|and)\s+&quot;, text, flags=re.I), &quot;and&quot;  # mixed: be conservative
+    else:
+        parts, mode = [text], &quot;single&quot;
+    lics = [normalize(p) for p in parts if normalize(p)]
+    if not lics:
+        return raw, raw, &quot;unknown&quot;, exception
+    scored = sorted(lics, key=lambda l: RANK[category_of(l)])
+    chosen = scored[0] if mode == &quot;or&quot; else scored[-1]
+    cat = category_of(chosen)
+    if exception and cat == &quot;strong-copyleft&quot; and re.search(r&quot;classpath|linking|gcc|runtime|autoconf|bison|bootloader&quot;, exception, re.I):
+        cat = &quot;weak-copyleft&quot;
+    joiner = &quot; OR &quot; if mode == &quot;or&quot; else &quot; AND &quot;
+    return joiner.join(lics) + (f&quot; WITH {exception}&quot; if exception else &quot;&quot;), chosen, cat, exception
+
+
+def assess(cat, chosen, distribution, project):
+    proj_cat = &quot;proprietary&quot; if project.lower() == &quot;proprietary&quot; else category_of(normalize(project))
+    project_spdx = normalize(project)
+    if cat == &quot;unknown&quot;:
+        return &quot;HIGH&quot;, &quot;License is missing or not recognized; find the real license text before shipping.&quot;
+    if cat == &quot;source-available&quot;:
+        return &quot;HIGH&quot;, &quot;Source-available or non-commercial terms usually restrict commercial use or hosting; needs a license review.&quot;
+    if project_spdx.startswith(&quot;GPL-2.0-only&quot;) and chosen.startswith(&quot;Apache-2.0&quot;):
+        return &quot;HIGH&quot;, &quot;Apache-2.0 is generally considered incompatible with GPL-2.0-only projects.&quot;
+    gpl3_family = re.match(r&quot;(A|L)?GPL-3\.0&quot;, chosen)
+    if project_spdx.startswith(&quot;GPL-2.0-only&quot;) and gpl3_family:
+        return &quot;HIGH&quot;, f&quot;{chosen} cannot be combined with a GPL-2.0-only project; the project would need GPL-3.0 terms.&quot;
+    if re.match(r&quot;GPL-3\.0|AGPL-3\.0&quot;, project_spdx) and chosen.startswith(&quot;GPL-2.0-only&quot;):
+        return &quot;HIGH&quot;, &quot;GPL-2.0-only code cannot be relicensed under GPL-3.0; ask upstream for &#x27;or later&#x27; terms or replace it.&quot;
+    if proj_cat in (&quot;strong-copyleft&quot;, &quot;network-copyleft&quot;) and cat in (&quot;strong-copyleft&quot;, &quot;network-copyleft&quot;):
+        if cat == &quot;network-copyleft&quot; and proj_cat != &quot;network-copyleft&quot; and distribution == &quot;saas&quot;:
+            return &quot;WARN&quot;, &quot;AGPL/SSPL in a GPL project run as a service: the whole service source must be offered to users.&quot;
+        return &quot;OK&quot;, &quot;Copyleft dependency in a copyleft project; check version compatibility (for example GPL-2.0-only vs GPL-3.0).&quot;
+    if cat == &quot;network-copyleft&quot;:
+        if distribution == &quot;internal&quot;:
+            return &quot;WARN&quot;, &quot;Network copyleft: fine for purely internal use, but exposing it to outside users triggers source obligations.&quot;
+        return &quot;HIGH&quot;, &quot;Network copyleft (AGPL/SSPL): offering the service or shipping it requires releasing the corresponding source.&quot;
+    if cat == &quot;strong-copyleft&quot;:
+        if distribution == &quot;distributed&quot;:
+            return &quot;HIGH&quot;, &quot;GPL code distributed with your product requires the combined work to be released under the GPL.&quot;
+        if distribution == &quot;saas&quot;:
+            return &quot;WARN&quot;, &quot;GPL is not triggered by network use alone, but any future distribution (apps, on-prem, SDKs) would be.&quot;
+        return &quot;INFO&quot;, &quot;GPL for internal use only has no distribution obligations; keep it out of anything you ship.&quot;
+    if cat == &quot;weak-copyleft&quot;:
+        if distribution == &quot;distributed&quot;:
+            return &quot;WARN&quot;, &quot;Weak copyleft: ship the license, keep the library replaceable (dynamic linking for LGPL), and publish changes to its files.&quot;
+        return &quot;INFO&quot;, &quot;Weak copyleft: publish any changes you make to this library&#x27;s own files if you distribute it later.&quot;
+    if chosen in NOTICE_LICENSES and distribution == &quot;distributed&quot;:
+        return &quot;INFO&quot;, &quot;Apache-2.0: include the license and any NOTICE file in your distribution.&quot;
+    return &quot;OK&quot;, &quot;Permissive: keep the copyright notice and license text in your third-party notices.&quot;
+
+
+def load(text):
+    stripped = text.lstrip()
+    if not stripped:
+        raise ValueError(&quot;input is empty&quot;)
+    if stripped[0] in &quot;[{&quot;:
+        data = json.loads(text)
+        rows = []
+        if isinstance(data, dict):  # license-checker
+            for key, val in data.items():
+                name, _, ver = key.rpartition(&quot;@&quot;)
+                if not name:
+                    name, ver = key, &quot;&quot;
+                lic = val.get(&quot;licenses&quot;, &quot;&quot;) if isinstance(val, dict) else val
+                if isinstance(lic, list):
+                    lic = &quot; OR &quot;.join(lic)
+                rows.append({&quot;name&quot;: name, &quot;version&quot;: ver, &quot;license&quot;: str(lic), &quot;scope&quot;: &quot;runtime&quot;})
+            return rows
+        for item in data:
+            if not isinstance(item, dict):
+                raise ValueError(&quot;JSON list items must be objects&quot;)
+            low = {k.lower(): v for k, v in item.items()}
+            lic = low.get(&quot;license&quot;, low.get(&quot;licenses&quot;, &quot;&quot;))
+            if isinstance(lic, list):
+                lic = &quot; OR &quot;.join(lic)
+            rows.append({&quot;name&quot;: str(low.get(&quot;name&quot;, &quot;&quot;)), &quot;version&quot;: str(low.get(&quot;version&quot;, &quot;&quot;)),
+                         &quot;license&quot;: str(lic or &quot;&quot;), &quot;scope&quot;: str(low.get(&quot;scope&quot;, &quot;runtime&quot;) or &quot;runtime&quot;).lower()})
+        return rows
+    reader = csv.DictReader(io.StringIO(text))
+    fields = [f.strip().lower() for f in (reader.fieldnames or [])]
+    if &quot;name&quot; not in fields or &quot;license&quot; not in fields:
+        raise ValueError(f&quot;CSV needs a header with at least &#x27;name&#x27; and &#x27;license&#x27; columns, got: {&#x27;, &#x27;.join(fields) or &#x27;(none)&#x27;}&quot;)
+    rows = []
+    for r in reader:
+        r = {(k or &quot;&quot;).strip().lower(): (v or &quot;&quot;).strip() for k, v in r.items()}
+        if not r.get(&quot;name&quot;):
+            continue
+        rows.append({&quot;name&quot;: r[&quot;name&quot;], &quot;version&quot;: r.get(&quot;version&quot;, &quot;&quot;), &quot;license&quot;: r.get(&quot;license&quot;, &quot;&quot;),
+                     &quot;scope&quot;: (r.get(&quot;scope&quot;) or &quot;runtime&quot;).lower()})
+    return rows
+
+
+def audit(rows, args):
+    allow = {normalize(x) for x in args.allow.split(&quot;,&quot;) if x.strip()} if args.allow else set()
+    deny = {normalize(x) for x in args.deny.split(&quot;,&quot;) if x.strip()} if args.deny else set()
+    results, seen = [], {}
+    for r in rows:
+        expr, chosen, cat, exc = classify(r[&quot;license&quot;])
+        sev, why = assess(cat, chosen, args.distribution, args.project_license)
+        if exc:
+            why += f&quot; License exception {exc} applies; read its exact scope.&quot;
+        if chosen in deny:
+            sev, why = &quot;HIGH&quot;, f&quot;{chosen} is on your deny list.&quot;
+        elif chosen in allow and sev != &quot;OK&quot;:
+            sev, why = &quot;OK&quot;, f&quot;{chosen} is on your allow list ({why})&quot;
+        dev = r[&quot;scope&quot;] in (&quot;dev&quot;, &quot;development&quot;, &quot;test&quot;, &quot;build&quot;)
+        if dev and sev in (&quot;HIGH&quot;, &quot;WARN&quot;) and chosen not in deny:
+            sev, why = &quot;INFO&quot;, &quot;Dev-only (not shipped): &quot; + why
+        results.append({&quot;name&quot;: r[&quot;name&quot;], &quot;version&quot;: r[&quot;version&quot;], &quot;license_raw&quot;: r[&quot;license&quot;],
+                        &quot;license&quot;: expr, &quot;effective&quot;: chosen, &quot;category&quot;: cat, &quot;scope&quot;: &quot;dev&quot; if dev else &quot;runtime&quot;,
+                        &quot;severity&quot;: sev, &quot;reason&quot;: why})
+        seen.setdefault(r[&quot;name&quot;].lower(), set()).add(expr)
+    notes = []
+    for name, lics in seen.items():
+        if len(lics) &gt; 1:
+            notes.append(f&quot;{name}: different licenses across versions ({&#x27;, &#x27;.join(sorted(lics))}); check which version you ship.&quot;)
+    results.sort(key=lambda x: (SEV_ORDER[x[&quot;severity&quot;]], -RANK[x[&quot;category&quot;]], x[&quot;name&quot;].lower()))
+    counts = {s: sum(1 for x in results if x[&quot;severity&quot;] == s) for s in SEV_ORDER}
+    cats = {}
+    for x in results:
+        cats[x[&quot;category&quot;]] = cats.get(x[&quot;category&quot;], 0) + 1
+    attribution = sorted({x[&quot;effective&quot;] for x in results if x[&quot;scope&quot;] == &quot;runtime&quot; and x[&quot;category&quot;] in (&quot;permissive&quot;, &quot;weak-copyleft&quot;)})
+    return {&quot;project_license&quot;: args.project_license, &quot;distribution&quot;: args.distribution, &quot;packages&quot;: len(results),
+            &quot;severity_counts&quot;: counts, &quot;category_counts&quot;: cats, &quot;attribution_licenses&quot;: attribution,
+            &quot;notes&quot;: notes, &quot;results&quot;: results}
+
+
+def print_text(rep):
+    print(f&quot;Dependency license audit: {rep[&#x27;packages&#x27;]} packages, project license {rep[&#x27;project_license&#x27;]}, distribution {rep[&#x27;distribution&#x27;]}&quot;)
+    c = rep[&quot;severity_counts&quot;]
+    print(f&quot;HIGH {c[&#x27;HIGH&#x27;]}  WARN {c[&#x27;WARN&#x27;]}  INFO {c[&#x27;INFO&#x27;]}  OK {c[&#x27;OK&#x27;]}&quot;)
+    print(&quot;Categories: &quot; + &quot;, &quot;.join(f&quot;{k} {v}&quot; for k, v in sorted(rep[&quot;category_counts&quot;].items(), key=lambda kv: RANK[kv[0]])))
+    print()
+    w = max([len(f&quot;{x[&#x27;name&#x27;]}@{x[&#x27;version&#x27;]}&quot;) for x in rep[&quot;results&quot;]] + [7])
+    print(f&quot;{&#x27;SEV&#x27;:&lt;5} {&#x27;PACKAGE&#x27;:&lt;{w}} {&#x27;LICENSE&#x27;:&lt;28} {&#x27;CATEGORY&#x27;:&lt;17} SCOPE&quot;)
+    for x in rep[&quot;results&quot;]:
+        pkg = f&quot;{x[&#x27;name&#x27;]}@{x[&#x27;version&#x27;]}&quot; if x[&quot;version&quot;] else x[&quot;name&quot;]
+        print(f&quot;{x[&#x27;severity&#x27;]:&lt;5} {pkg:&lt;{w}} {x[&#x27;license&#x27;][:28]:&lt;28} {x[&#x27;category&#x27;]:&lt;17} {x[&#x27;scope&#x27;]}&quot;)
+    findings = [x for x in rep[&quot;results&quot;] if x[&quot;severity&quot;] in (&quot;HIGH&quot;, &quot;WARN&quot;, &quot;INFO&quot;)]
+    if findings:
+        print(&quot;\nFindings:&quot;)
+        for x in findings:
+            print(f&quot;- [{x[&#x27;severity&#x27;]}] {x[&#x27;name&#x27;]} ({x[&#x27;license_raw&#x27;] or &#x27;no license field&#x27;}): {x[&#x27;reason&#x27;]}&quot;)
+    if rep[&quot;notes&quot;]:
+        print(&quot;\nNotes:&quot;)
+        for n in rep[&quot;notes&quot;]:
+            print(f&quot;- {n}&quot;)
+    if rep[&quot;attribution_licenses&quot;]:
+        print(&quot;\nThird-party notices must include license texts for: &quot; + &quot;, &quot;.join(rep[&quot;attribution_licenses&quot;]))
+    print(&quot;\nTriage aid only, not legal advice.&quot;)
+
+
+def main():
+    p = argparse.ArgumentParser(description=&quot;Audit dependency licenses.&quot;, add_help=True)
+    p.add_argument(&quot;path&quot;, help=&quot;CSV or JSON file, or - for stdin&quot;)
+    p.add_argument(&quot;--project-license&quot;, default=&quot;proprietary&quot;)
+    p.add_argument(&quot;--distribution&quot;, default=&quot;saas&quot;, choices=[&quot;saas&quot;, &quot;distributed&quot;, &quot;internal&quot;])
+    p.add_argument(&quot;--allow&quot;, default=&quot;&quot;)
+    p.add_argument(&quot;--deny&quot;, default=&quot;&quot;)
+    p.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    args = p.parse_args()
+    try:
+        text = sys.stdin.read() if args.path == &quot;-&quot; else open(args.path, encoding=&quot;utf-8&quot;).read()
+        rows = load(text)
+    except FileNotFoundError:
+        print(f&quot;error: file not found: {args.path}&quot;, file=sys.stderr)
+        return 2
+    except (ValueError, json.JSONDecodeError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    if not rows:
+        print(&quot;error: no dependencies found in the input&quot;, file=sys.stderr)
+        return 2
+    rep = audit(rows, args)
+    if args.json:
+        print(json.dumps(rep, indent=2))
+    else:
+        print_text(rep)
+    return 1 if rep[&quot;severity_counts&quot;][&quot;HIGH&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/dependency-license-audit',TI="Dependency License Audit";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

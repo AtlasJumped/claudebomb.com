@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backup Retention Policy Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: backup-retention-policy-planner description: Plans and audits backup retention (grandfather-father-son) policies. Simulates hourly, daily, w">
+<meta property="og:title" content="Backup Retention Policy Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: backup-retention-policy-planner description: Plans and audits backup retention (grandfather-father-son) policies. Simulates hourly, daily, w">
+<meta property="og:url" content="https://claudebomb.com/l/pc/backup-retention-policy-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/backup-retention-policy-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Backup Retention Policy Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: backup-retention-policy-planner
+description: Plans and audits backup retention (grandfather-father-son) policies. Simulates hourly, daily, weekly, monthly and yearly keep rules like restic or borg, lists the restore points you really keep and the gaps between them, and estimates storage and cost now and in 12 months. Flags missed RPO, short history, legal retention gaps, no offsite or immutable copy, stale restore tests and job overlap. Includes a stdlib Python planner with --self-test.
+---
+
+# Backup Retention Policy Planner
+
+You help engineers and small IT teams design a backup retention policy they can defend: enough restore points to recover from yesterday&#x27;s mistake and last quarter&#x27;s silent corruption, a copy that survives a ransomware attack or a lost account, a storage bill that fits the budget, and a restore that has actually been tested. You turn &quot;keep 7 daily, 4 weekly, 12 monthly&quot; into the concrete list of restore points it produces and check it against the requirements.
+
+## Files in this skill
+
+- `scripts/retention_plan.py` - simulates a GFS policy, lists kept restore points, gaps, storage and cost, and prints findings (Python 3 standard library only)
+- `references/retention-design.md` - how keep rules select points, choosing tiers from RPO and history needs, legal retention, storage models and cost
+- `references/resilience-checklist.md` - 3-2-1-1-0, immutability, encryption and keys, restore testing, monitoring and what each finding means
+- `templates/backup-policy.md` - a one-page backup policy to fill in and share with the team
+- `examples/clinic-postgres-policy.json` - a PostgreSQL database backed up nightly to S3 with a 4 h RPO and 3-year legal retention
+
+## Workflow
+
+### 1. Collect the facts
+Ask for: what is backed up and how (tool, full or incremental), backup frequency and how long a run takes, the current keep rules, data size, daily change rate and growth, where copies live (onsite, offsite, immutable/object lock, encrypted), the storage price, the date of the last successful restore test, and the requirements: RPO (maximum data loss), how far back they must be able to restore, any legal or contractual retention, and a storage budget. If they do not know the change rate, start with 2-5% per day for databases and 1% for file shares, and say so.
+
+### 2. Run the planner
+```
+python3 scripts/retention_plan.py examples/clinic-postgres-policy.json
+python3 scripts/retention_plan.py policy.json --json
+python3 scripts/retention_plan.py --self-test
+```
+Exit code 1 means HIGH findings, 2 means bad input.
+
+### 3. Explain the result
+Start with the restore points they really have (count, oldest, biggest gaps) because most people overestimate them. Then go through the findings by severity using `references/retention-design.md` and `references/resilience-checklist.md`, and give one concrete change for each: a new keep rule, WAL or log shipping for a tight RPO, object lock, a restore drill date. Re-run the planner with the proposed policy and show the before and after storage and cost.
+
+### 4. Deliver
+Fill `templates/backup-policy.md` with the final keep rules, copies, requirements, restore test plan and owners.
+
+## Example result
+For `examples/clinic-postgres-policy.json` (nightly backups, keep 7 daily, 4 weekly, 6 monthly): 14 restore points, oldest 4.8 months, gaps of up to 31 days after the first month, 968 GB now and 1550 GB in 12 months (22.27 to 35.66 USD/month). Findings: HIGH RPO_MISSED (24 h backups against a 4 h RPO; add WAL archiving or 4-hourly incrementals), HIGH LEGAL_RETENTION (3 years needed; set yearly to 5), MEDIUM RESTORE_TEST_OLD (193 days), MEDIUM NO_IMMUTABLE, MEDIUM STORAGE_OVER (1550 GB against a 1500 GB budget in 12 months).
+
+## Rules
+
+- A backup that has never been restored is not proven. Always ask for the last restore test and recommend a timed drill.
+- Keep rules count buckets, not days: &quot;monthly 12&quot; keeps the newest backup of each of the last 12 months that have one, including the current month.
+- Say which storage model you assumed; incremental estimates are an upper bound because deduplication and repeated block changes make the real size smaller.
+- RPO is set by backup frequency (or log shipping), not by retention; history depth is set by retention, not by frequency.
+- Never suggest deleting existing backups until the new policy has run and a restore from it has been tested.
+FILE:references/retention-design.md
+# Retention Design
+
+## How keep rules select restore points
+Tools such as restic (`forget --keep-daily 7 --keep-weekly 4`), borg (`prune --keep-daily 7`), pgBackRest and most backup appliances use the same idea. For each tier, walk the backups from newest to oldest and keep a backup when its bucket differs from the last one kept by that tier, until the tier&#x27;s count is used:
+
+| Tier | Bucket | &quot;keep N&quot; means |
+|---|---|---|
+| hourly | calendar hour | newest backup of each of the last N hours that have a backup |
+| daily | calendar day | newest backup of each of the last N days |
+| weekly | ISO week (Monday to Sunday) | newest backup of each of the last N weeks |
+| monthly | calendar month | newest backup of each of the last N months |
+| yearly | calendar year | newest backup of each of the last N years |
+
+Consequences people miss:
+- Every tier starts with the newest backup, so the tiers overlap. 7 daily + 4 weekly + 12 monthly is 20 points, not 23.
+- The current week, month and year count as one bucket each. &quot;monthly 12&quot; reaches back about 11 months, and &quot;yearly 3&quot; only reaches the end of the year before last (about 1.8 years in late October).
+- Monthly points are month-end backups (the newest in each month), weekly points are Sunday backups for ISO weeks.
+- Days without a backup do not use up a daily slot, so a failed week stretches daily history further back but leaves a hole.
+
+`scripts/retention_plan.py` reproduces this rule, prints every kept point with its tiers (D/W/M/Y/H) and lists the largest gaps.
+
+## Choosing tiers from requirements
+| Requirement | What sets it | Typical answer |
+|---|---|---|
+| RPO (max data loss) | backup frequency or log shipping | 24 h: nightly; 1-4 h: hourly snapshots or incrementals; minutes: database WAL/binlog archiving with point-in-time recovery |
+| Recover from a mistake noticed late | daily and weekly depth | at least 14-35 days: the time it takes someone to notice a bad deploy, a deleted folder or a bad import |
+| Silent corruption, audits | monthly depth | 6-13 months |
+| Legal or contractual retention | yearly tier or a separate archive | N years needs yearly N+2 to have an N-year-old point all year round; often better as a separate archive job with its own lock |
+| Budget | storage model and change rate | see below |
+
+A common, defensible starting point for business data: hourly 24 (if RPO &lt; 24 h), daily 14, weekly 8, monthly 12, yearly as required by law.
+
+Gaps: when a coarse tier starts long after the fine tier ends (daily 7 then monthly), restores between day 8 and the month end land on a point up to 30 days older than the one you wanted. Add weekly points or more daily points (`TIER_GAP`).
+
+## Storage models
+- **Full**: every kept point is a complete copy (tape, simple dump files, some snapshot exports). Storage = points x full size.
+- **Incremental / deduplicated** (restic, borg, pgBackRest incremental, ZFS/EBS snapshots): one full plus the data changed between kept points. The planner charges `daily_change_pct x days` between neighbouring points, capped at 100% of the full size. This is an upper bound: when the same blocks change every day, a monthly gap costs much less than 30 days of changes. Measure real numbers with `restic stats --mode raw-data`, `borg info` or the storage bill and adjust `daily_change_pct`.
+- Growth: `growth_pct_per_month` compounds for 12 months to show next year&#x27;s storage and cost.
+
+Cost levers, from cheapest to most impact on recovery: compress and deduplicate; move monthly and yearly points to a colder storage class (mind minimum storage durations and retrieval fees); drop hourly points after 2-3 days; reduce monthly points after the legal need is met by a yearly archive.
+
+## Worked example
+Nightly backups at 02:00, keep daily 7, weekly 4, monthly 6, as of 2026-10-24:
+- daily: 10-24 back to 10-18
+- weekly: 10-24 (current ISO week), 10-18, 10-11, 10-04
+- monthly: 10-24, 09-30, 08-31, 07-31, 06-30, 05-31
+- 14 distinct points; oldest 2026-05-31 (about 4.8 months); the gaps after the first month are 30-31 days.
+FILE:references/resilience-checklist.md
+# Resilience Checklist
+
+## 3-2-1-1-0
+- **3** copies of the data (production plus two backups)
+- **2** different storage types or systems
+- **1** copy offsite (another region, provider or building)
+- **1** copy immutable or offline (object lock in compliance mode, WORM storage, tape out of the library, a pull-based backup the source cannot delete)
+- **0** errors in the last verified restore
+
+## What each finding means and how to fix it
+| Code | Severity | Why it matters | Typical fix |
+|---|---|---|---|
+| RPO_MISSED | HIGH | A failure just before the next backup loses more data than the business accepted | Shorter interval, hourly incrementals, or continuous log shipping (PostgreSQL WAL archiving with pgBackRest/WAL-G, MySQL binlog, SQL Server log backups) |
+| HISTORY_SHORT | HIGH | Problems noticed late (bad import, deleted folder, slow corruption) cannot be undone | More daily/weekly points; at least the time it takes to notice a problem plus a margin |
+| LEGAL_RETENTION | HIGH | Contract, tax or health-record rules can require years of history | Yearly tier of N+2 or a separate yearly archive job with object lock retention set to the legal period |
+| NO_OFFSITE | HIGH | Fire, region outage or a compromised account removes production and backups together | Replicate to another region/provider with separate credentials |
+| NEVER_RESTORED | HIGH | Backups fail silently: missing files, wrong permissions, lost encryption keys, untested runbooks | Restore drill now; record the time it took (actual RTO) |
+| OVERLAP | HIGH | Jobs collide or get skipped, so the real interval is longer than planned | Incremental backups, faster storage, or a longer interval with log shipping |
+| RESTORE_TEST_OLD | MEDIUM | Systems change; last spring&#x27;s test says little about today | Quarterly drills; monthly automated restore-and-checksum for critical data |
+| NO_IMMUTABLE | MEDIUM | Ransomware and attackers delete backups first | S3 Object Lock / Azure immutable blob / GCS bucket lock, or an offline copy |
+| NOT_ENCRYPTED | MEDIUM | An offsite copy leaks all data if the bucket or tape is exposed | Client-side encryption; keys stored outside the backup system and escrowed |
+| STORAGE_OVER | MEDIUM | The budget forces someone to cut retention in a hurry later | Colder storage for old tiers, fewer monthly points, measure the real change rate |
+| TIER_GAP | LOW | Restores in the gap land on a much older point than wanted | Add weekly points or extend daily points |
+| TIGHT_WINDOW | LOW | Data growth will push the job into overlap | Plan incremental or parallel backups before it happens |
+
+## Restore drill (one page)
+1. Pick a random restore point, not the newest.
+2. Restore into an isolated environment using only the runbook and the escrowed keys.
+3. Check: row counts or file counts, application starts, a known record from that date exists.
+4. Record start and end time (actual RTO), problems and runbook fixes.
+5. Delete the restored copy and log the drill date; the planner&#x27;s `last_restore_test` is this date.
+
+## Monitoring
+- Alert when the newest backup is older than 1.5 x the interval.
+- Alert on failed or partial jobs, not only on missing ones.
+- Track backup size per run; a sudden drop often means a broken include path, a sudden jump can mean ransomware encryption.
+- Check that prune/forget jobs run; a policy that is never applied silently fills the storage.
+
+## Keys and access
+- Backup credentials should be write-only from the source where possible; deletion needs a different identity.
+- Keep encryption keys and the restore runbook somewhere that survives the loss of the main environment (password manager vault, printed sealed copy).
+FILE:templates/backup-policy.md
+# Backup Policy - &lt;system name&gt;
+
+**Owner:** &lt;team / person&gt;  **Reviewed:** &lt;date&gt;  **Next review:** &lt;date + 6 months&gt;
+
+## Scope
+- Data: &lt;databases, buckets, file shares, configs&gt;
+- Excluded: &lt;caches, rebuildable artifacts&gt;
+
+## Requirements
+| Item | Target | Source |
+|---|---|---|
+| RPO (max data loss) | &lt;4 h&gt; | &lt;business owner&gt; |
+| RTO (max restore time) | &lt;2 h&gt; | &lt;business owner&gt; |
+| Minimum history | &lt;35 days&gt; | &lt;ops&gt; |
+| Legal / contractual retention | &lt;3 years&gt; | &lt;contract, regulation&gt; |
+| Storage budget | &lt;1500 GB / 40 USD per month&gt; | &lt;finance&gt; |
+
+## Schedule and keep rules
+| Job | Frequency | Method | Keep rules |
+|---|---|---|---|
+| &lt;full/incremental&gt; | &lt;daily 02:00&gt; | &lt;pgBackRest incr to S3&gt; | &lt;daily 14, weekly 8, monthly 12, yearly 5&gt; |
+| &lt;log shipping&gt; | &lt;continuous&gt; | &lt;WAL archive&gt; | &lt;14 days&gt; |
+
+Restore points produced (from `scripts/retention_plan.py`): &lt;count&gt;, oldest &lt;age&gt;, largest gap &lt;days&gt;.
+
+## Copies (3-2-1-1-0)
+| Copy | Location | Immutable | Encrypted | Credentials |
+|---|---|---|---|---|
+| Primary backup | &lt;region A bucket&gt; | &lt;no&gt; | &lt;yes&gt; | &lt;backup-writer role&gt; |
+| Offsite | &lt;region B / provider B&gt; | &lt;object lock 35 d&gt; | &lt;yes&gt; | &lt;separate account&gt; |
+
+## Storage and cost
+- Now: &lt;GB&gt; / &lt;cost per month&gt;  - In 12 months: &lt;GB&gt; / &lt;cost per month&gt;
+
+## Restore testing
+- Cadence: &lt;quarterly drill, monthly automated check&gt;
+- Last test: &lt;date&gt;, result &lt;ok / issues&gt;, actual RTO &lt;time&gt;
+- Runbook: &lt;link&gt;  - Keys escrowed at: &lt;location&gt;
+
+## Monitoring and alerts
+- &lt;newest backup older than 36 h -&gt; page on-call&gt;
+- &lt;job failed / size change &gt; 30% -&gt; ticket&gt;
+
+## Open findings
+- &lt;severity code: action, owner, due date&gt;
+FILE:examples/clinic-postgres-policy.json
+{
+  &quot;name&quot;: &quot;clinic-booking PostgreSQL (pgBackRest to S3)&quot;,
+  &quot;today&quot;: &quot;2026-10-24&quot;,
+  &quot;backup_interval_hours&quot;: 24,
+  &quot;backup_duration_hours&quot;: 2.5,
+  &quot;policy&quot;: {&quot;daily&quot;: 7, &quot;weekly&quot;: 4, &quot;monthly&quot;: 6, &quot;yearly&quot;: 0},
+  &quot;size&quot;: {&quot;full_gb&quot;: 180, &quot;daily_change_pct&quot;: 3, &quot;growth_pct_per_month&quot;: 4, &quot;storage_model&quot;: &quot;incremental&quot;},
+  &quot;requirements&quot;: {
+    &quot;rpo_hours&quot;: 4,
+    &quot;min_history_days&quot;: 90,
+    &quot;legal_retention_years&quot;: 3,
+    &quot;max_storage_gb&quot;: 1500,
+    &quot;restore_test_max_age_days&quot;: 90
+  },
+  &quot;copies&quot;: {&quot;onsite&quot;: false, &quot;offsite&quot;: true, &quot;immutable&quot;: false, &quot;encrypted&quot;: true},
+  &quot;price_per_gb_month&quot;: 0.023,
+  &quot;currency&quot;: &quot;USD&quot;,
+  &quot;last_restore_test&quot;: &quot;2026-04-14&quot;
+}
+FILE:scripts/retention_plan.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Backup retention policy planner (Python 3 standard library only).
+
+Simulates a grandfather-father-son (GFS) retention policy the way restic/borg &quot;keep&quot; rules
+work, then reports the restore points you really keep, the gaps between them, storage and
+cost, and the gaps against your requirements (RPO, minimum history, legal retention, 3-2-1).
+
+Input JSON:
+  {&quot;name&quot;: &quot;orders-db&quot;, &quot;today&quot;: &quot;2026-10-24&quot;,
+   &quot;backup_interval_hours&quot;: 24, &quot;backup_duration_hours&quot;: 1.5,
+   &quot;policy&quot;: {&quot;hourly&quot;: 0, &quot;daily&quot;: 7, &quot;weekly&quot;: 4, &quot;monthly&quot;: 12, &quot;yearly&quot;: 3},
+   &quot;size&quot;: {&quot;full_gb&quot;: 120, &quot;daily_change_pct&quot;: 4, &quot;growth_pct_per_month&quot;: 3,
+            &quot;storage_model&quot;: &quot;incremental&quot;},          # or &quot;full&quot; (every point is a full copy)
+   &quot;requirements&quot;: {&quot;rpo_hours&quot;: 24, &quot;min_history_days&quot;: 35, &quot;legal_retention_years&quot;: 0,
+                    &quot;max_storage_gb&quot;: 0, &quot;restore_test_max_age_days&quot;: 90},
+   &quot;copies&quot;: {&quot;onsite&quot;: true, &quot;offsite&quot;: true, &quot;immutable&quot;: false, &quot;encrypted&quot;: true},
+   &quot;price_per_gb_month&quot;: 0.023, &quot;currency&quot;: &quot;USD&quot;,
+   &quot;last_restore_test&quot;: &quot;2026-03-02&quot;}                 # or null if never tested
+Selection rule per tier (newest backup first): keep a backup if its bucket (hour, day, ISO week,
+month, year) differs from the previous kept bucket of that tier, until the tier count is used.
+A backup kept by several tiers is stored once.
+Storage: &quot;full&quot; = points x full size; &quot;incremental&quot; = one full + each later point&#x27;s changed data
+(daily_change_pct x days since the previous kept point, capped at 100%).
+Findings (severity):
+  HIGH   RPO_MISSED          backup interval longer than the RPO
+  HIGH   HISTORY_SHORT       oldest restore point younger than min_history_days
+  HIGH   LEGAL_RETENTION     oldest point younger than legal_retention_years
+  HIGH   NO_OFFSITE          no offsite copy (breaks 3-2-1)
+  HIGH   NEVER_RESTORED      no restore test recorded
+  HIGH   OVERLAP             backup takes longer than the interval
+  MEDIUM RESTORE_TEST_OLD    last restore test older than restore_test_max_age_days
+  MEDIUM NO_IMMUTABLE        no immutable/air-gapped copy (ransomware can delete backups)
+  MEDIUM STORAGE_OVER        storage (now or in 12 months) above max_storage_gb
+  MEDIUM NOT_ENCRYPTED       offsite copy not encrypted
+  LOW    TIER_GAP            a coarse tier starts long after the finer tier ends (e.g. weekly
+                             4 then monthly: weeks 5-8 have one point a month)
+  LOW    TIGHT_WINDOW        backup duration above 50% of the interval
+Usage:
+  python3 retention_plan.py policy.json
+  python3 retention_plan.py policy.json --json
+  python3 retention_plan.py --self-test
+Exit code: 0 no HIGH findings, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import datetime as dt
+import json
+import sys
+
+TIERS = [&quot;hourly&quot;, &quot;daily&quot;, &quot;weekly&quot;, &quot;monthly&quot;, &quot;yearly&quot;]
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+
+
+class DataError(ValueError):
+    pass
+
+
+def bucket(tier, t):
+    if tier == &quot;hourly&quot;:
+        return t.strftime(&quot;%Y-%m-%d %H&quot;)
+    if tier == &quot;daily&quot;:
+        return t.date().isoformat()
+    if tier == &quot;weekly&quot;:
+        y, w, _ = t.isocalendar()
+        return f&quot;{y}-W{w:02d}&quot;
+    if tier == &quot;monthly&quot;:
+        return t.strftime(&quot;%Y-%m&quot;)
+    return str(t.year)
+
+
+def simulate(policy, interval_h, today):
+    &quot;&quot;&quot;Return (kept list of (datetime, [tiers])) newest first.&quot;&quot;&quot;
+    for k in policy:
+        if k not in TIERS:
+            raise DataError(f&quot;unknown policy tier &#x27;{k}&#x27; (use {&#x27;, &#x27;.join(TIERS)})&quot;)
+        if not isinstance(policy[k], int) or policy[k] &lt; 0:
+            raise DataError(f&quot;policy.{k} must be a whole number &gt;= 0&quot;)
+    if sum(policy.get(t, 0) for t in TIERS) == 0:
+        raise DataError(&quot;policy keeps nothing&quot;)
+    if not interval_h or interval_h &lt;= 0:
+        raise DataError(&quot;backup_interval_hours must be &gt; 0&quot;)
+    span_days = max(policy.get(&quot;hourly&quot;, 0) / 24, policy.get(&quot;daily&quot;, 0), policy.get(&quot;weekly&quot;, 0) * 7,
+                    policy.get(&quot;monthly&quot;, 0) * 31, policy.get(&quot;yearly&quot;, 0) * 366) + 400
+    newest = dt.datetime.combine(today, dt.time(2, 0))
+    step = dt.timedelta(hours=interval_h)
+    n = int(span_days * 24 / interval_h) + 1
+    times = [newest - i * step for i in range(n)]
+    kept = {}
+    for tier in TIERS:
+        want = policy.get(tier, 0)
+        last = None
+        for t in times:
+            if want == 0:
+                break
+            b = bucket(tier, t)
+            if b != last:
+                kept.setdefault(t, []).append(tier)
+                last = b
+                want -= 1
+    return sorted(kept.items(), key=lambda kv: kv[0], reverse=True)
+
+
+def storage_gb(kept, size):
+    full = float(size.get(&quot;full_gb&quot;, 0))
+    model = size.get(&quot;storage_model&quot;, &quot;incremental&quot;)
+    if model not in (&quot;incremental&quot;, &quot;full&quot;):
+        raise DataError(&quot;size.storage_model must be &#x27;incremental&#x27; or &#x27;full&#x27;&quot;)
+    if model == &quot;full&quot;:
+        return full * len(kept)
+    change = float(size.get(&quot;daily_change_pct&quot;, 5)) / 100
+    total = full
+    for (newer, _), (older, _) in zip(kept, kept[1:]):
+        days = (newer - older).total_seconds() / 86400
+        total += full * min(1.0, change * days)
+    return total
+
+
+def plan(cfg, today=None):
+    try:
+        today = today or dt.date.fromisoformat(cfg.get(&quot;today&quot;) or dt.date.today().isoformat())
+    except ValueError:
+        raise DataError(&quot;today must be YYYY-MM-DD&quot;)
+    policy = cfg.get(&quot;policy&quot;) or {}
+    interval = float(cfg.get(&quot;backup_interval_hours&quot;, 24))
+    kept = simulate(policy, interval, today)
+    newest = kept[0][0]
+    ages = [(newest - t).total_seconds() / 86400 for t, _ in kept]
+    oldest_days = ages[-1]
+    size = cfg.get(&quot;size&quot;) or {}
+    req = cfg.get(&quot;requirements&quot;) or {}
+    copies = cfg.get(&quot;copies&quot;) or {}
+    price = float(cfg.get(&quot;price_per_gb_month&quot;, 0))
+    gb = storage_gb(kept, size)
+    growth = float(size.get(&quot;growth_pct_per_month&quot;, 0)) / 100
+    gb12 = gb * (1 + growth) ** 12
+    tiers = []
+    for tier in TIERS:
+        pts = [(t, a) for (t, tl), a in zip(kept, ages) if tier in tl]
+        if pts:
+            tiers.append({&quot;tier&quot;: tier, &quot;count&quot;: len(pts), &quot;newest_age_days&quot;: round(pts[0][1], 1),
+                          &quot;oldest_age_days&quot;: round(pts[-1][1], 1)})
+    gaps = []
+    for (t1, _), (t2, _), a in zip(kept, kept[1:], ages[1:]):
+        gaps.append({&quot;from&quot;: t2.date().isoformat(), &quot;to&quot;: t1.date().isoformat(),
+                     &quot;gap_days&quot;: round((t1 - t2).total_seconds() / 86400, 1), &quot;age_days&quot;: round(a, 1)})
+    findings = []
+
+    def add(sev, code, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;message&quot;: msg})
+
+    rpo = req.get(&quot;rpo_hours&quot;)
+    if rpo and interval &gt; rpo:
+        add(&quot;HIGH&quot;, &quot;RPO_MISSED&quot;, f&quot;backups every {interval:g} h but RPO is {rpo:g} h; up to {interval:g} h of data can be lost&quot;)
+    mh = req.get(&quot;min_history_days&quot;)
+    if mh and oldest_days &lt; mh:
+        add(&quot;HIGH&quot;, &quot;HISTORY_SHORT&quot;, f&quot;oldest restore point is {oldest_days:.0f} days old; requirement is {mh} days&quot;)
+    ly = req.get(&quot;legal_retention_years&quot;)
+    if ly and oldest_days &lt; ly * 365:
+        add(&quot;HIGH&quot;, &quot;LEGAL_RETENTION&quot;, f&quot;oldest point {oldest_days / 365:.1f} years; legal retention needs {ly} years; yearly N also counts the current year, so set yearly &gt;= {ly + 2} to cover it all year round&quot;)
+    if not copies.get(&quot;offsite&quot;):
+        add(&quot;HIGH&quot;, &quot;NO_OFFSITE&quot;, &quot;no offsite copy; a site loss, account compromise or region outage takes every backup&quot;)
+    dur = cfg.get(&quot;backup_duration_hours&quot;)
+    if dur and dur &gt; interval:
+        add(&quot;HIGH&quot;, &quot;OVERLAP&quot;, f&quot;backup takes {dur:g} h but runs every {interval:g} h; jobs overlap or get skipped&quot;)
+    elif dur and dur &gt; interval / 2:
+        add(&quot;LOW&quot;, &quot;TIGHT_WINDOW&quot;, f&quot;backup takes {dur:g} h of a {interval:g} h interval; growth will push it into overlap&quot;)
+    lrt = cfg.get(&quot;last_restore_test&quot;)
+    max_age = req.get(&quot;restore_test_max_age_days&quot;, 90)
+    if not lrt:
+        add(&quot;HIGH&quot;, &quot;NEVER_RESTORED&quot;, &quot;no restore test recorded; an untested backup is a hope, not a backup&quot;)
+    else:
+        age = (today - dt.date.fromisoformat(lrt)).days
+        if age &gt; max_age:
+            add(&quot;MEDIUM&quot;, &quot;RESTORE_TEST_OLD&quot;, f&quot;last restore test {age} days ago (limit {max_age}); schedule a timed restore&quot;)
+    if not copies.get(&quot;immutable&quot;):
+        add(&quot;MEDIUM&quot;, &quot;NO_IMMUTABLE&quot;, &quot;no immutable or air-gapped copy; ransomware or a stolen admin key can delete every backup&quot;)
+    if copies.get(&quot;offsite&quot;) and copies.get(&quot;encrypted&quot;) is False:
+        add(&quot;MEDIUM&quot;, &quot;NOT_ENCRYPTED&quot;, &quot;offsite copy is not encrypted at rest&quot;)
+    mx = req.get(&quot;max_storage_gb&quot;)
+    if mx and max(gb, gb12) &gt; mx:
+        add(&quot;MEDIUM&quot;, &quot;STORAGE_OVER&quot;, f&quot;storage {gb:.0f} GB now, {gb12:.0f} GB in 12 months; budget {mx} GB&quot;)
+    order = [t for t in TIERS if policy.get(t, 0) &gt; 0]
+    span = {&quot;hourly&quot;: 1 / 24, &quot;daily&quot;: 1, &quot;weekly&quot;: 7, &quot;monthly&quot;: 30.4, &quot;yearly&quot;: 365}
+    for fine, coarse in zip(order, order[1:]):
+        fine_end = policy[fine] * span[fine]
+        if span[coarse] &gt;= 4 * fine_end and fine != &quot;hourly&quot;:
+            add(&quot;LOW&quot;, &quot;TIER_GAP&quot;, f&quot;{fine} points cover ~{fine_end:.0f} days, then only one {coarse} point per {span[coarse]:.0f} days&quot;)
+    findings.sort(key=lambda f: SEV_ORDER[f[&quot;severity&quot;]])
+    return {
+        &quot;name&quot;: cfg.get(&quot;name&quot;, &quot;backup set&quot;), &quot;today&quot;: today.isoformat(), &quot;interval_hours&quot;: interval,
+        &quot;restore_points&quot;: len(kept), &quot;oldest_age_days&quot;: round(oldest_days, 1),
+        &quot;tiers&quot;: tiers, &quot;largest_gaps&quot;: sorted(gaps, key=lambda g: -g[&quot;gap_days&quot;])[:5],
+        &quot;storage_gb&quot;: round(gb, 1), &quot;storage_gb_12m&quot;: round(gb12, 1),
+        &quot;monthly_cost&quot;: round(gb * price, 2), &quot;monthly_cost_12m&quot;: round(gb12 * price, 2),
+        &quot;currency&quot;: cfg.get(&quot;currency&quot;, &quot;USD&quot;), &quot;storage_model&quot;: size.get(&quot;storage_model&quot;, &quot;incremental&quot;),
+        &quot;kept&quot;: [{&quot;time&quot;: t.strftime(&quot;%Y-%m-%d %H:%M&quot;), &quot;tiers&quot;: tl} for t, tl in kept],
+        &quot;findings&quot;: findings,
+    }
+
+
+def age_label(d):
+    if d &lt; 2:
+        return f&quot;{d * 24:.0f} h&quot;
+    if d &lt; 60:
+        return f&quot;{d:.0f} d&quot;
+    if d &lt; 730:
+        return f&quot;{d / 30.4:.1f} mo&quot;
+    return f&quot;{d / 365:.1f} y&quot;
+
+
+def render(r):
+    out = [f&quot;# Backup retention plan: {r[&#x27;name&#x27;]} (as of {r[&#x27;today&#x27;]})&quot;, &quot;&quot;,
+           f&quot;Backups every {r[&#x27;interval_hours&#x27;]:g} h -&gt; {r[&#x27;restore_points&#x27;]} restore points kept, oldest {age_label(r[&#x27;oldest_age_days&#x27;])} old&quot;,
+           f&quot;Storage ({r[&#x27;storage_model&#x27;]}): {r[&#x27;storage_gb&#x27;]:.0f} GB now, {r[&#x27;storage_gb_12m&#x27;]:.0f} GB in 12 months&quot;
+           f&quot; -&gt; {r[&#x27;monthly_cost&#x27;]:.2f} -&gt; {r[&#x27;monthly_cost_12m&#x27;]:.2f} {r[&#x27;currency&#x27;]}/month&quot;, &quot;&quot;,
+           &quot;| Tier | Points | Newest age | Oldest age |&quot;, &quot;|---|---|---|---|&quot;]
+    for t in r[&quot;tiers&quot;]:
+        out.append(f&quot;| {t[&#x27;tier&#x27;]} | {t[&#x27;count&#x27;]} | {age_label(t[&#x27;newest_age_days&#x27;])} | {age_label(t[&#x27;oldest_age_days&#x27;])} |&quot;)
+    out += [&quot;&quot;, &quot;## Largest gaps between restore points&quot;, &quot;| Older point | Newer point | Gap | Age of older point |&quot;, &quot;|---|---|---|---|&quot;]
+    for g in r[&quot;largest_gaps&quot;]:
+        out.append(f&quot;| {g[&#x27;from&#x27;]} | {g[&#x27;to&#x27;]} | {g[&#x27;gap_days&#x27;]:g} d | {age_label(g[&#x27;age_days&#x27;])} |&quot;)
+    out += [&quot;&quot;, &quot;## Restore points kept&quot;]
+    out.append(&quot;, &quot;.join(f&quot;{k[&#x27;time&#x27;][:10]} ({&#x27;/&#x27;.join(x[0].upper() for x in k[&#x27;tiers&#x27;])})&quot; for k in r[&quot;kept&quot;]))
+    out += [&quot;&quot;, &quot;## Findings&quot;]
+    if not r[&quot;findings&quot;]:
+        out.append(&quot;- none&quot;)
+    for f in r[&quot;findings&quot;]:
+        out.append(f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]}: {f[&#x27;message&#x27;]}&quot;)
+    return &quot;\n&quot;.join(out) + &quot;\n&quot;
+
+
+def self_test():
+    ok = 0
+    tests = []
+
+    def check(name, cond):
+        nonlocal ok
+        tests.append(name)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+        ok += bool(cond)
+
+    today = dt.date(2026, 10, 24)
+    base = {&quot;today&quot;: &quot;2026-10-24&quot;, &quot;backup_interval_hours&quot;: 24, &quot;policy&quot;: {&quot;daily&quot;: 7, &quot;weekly&quot;: 4, &quot;monthly&quot;: 12},
+            &quot;size&quot;: {&quot;full_gb&quot;: 100, &quot;daily_change_pct&quot;: 2}, &quot;requirements&quot;: {&quot;rpo_hours&quot;: 24, &quot;min_history_days&quot;: 35},
+            &quot;copies&quot;: {&quot;offsite&quot;: True, &quot;immutable&quot;: True, &quot;encrypted&quot;: True}, &quot;last_restore_test&quot;: &quot;2026-10-01&quot;}
+    r = plan(base, today)
+    # daily 7 = 7 newest days; weekly 4 overlaps with dailies; monthly 12
+    check(&quot;daily 7 + weekly 4 + monthly 12 -&gt; 20 distinct points&quot;, r[&quot;restore_points&quot;] == 20)
+    check(&quot;clean policy has no findings&quot;, r[&quot;findings&quot;] == [])
+    check(&quot;oldest point is the 2025-11-30 monthly&quot;, r[&quot;kept&quot;][-1][&quot;time&quot;].startswith(&quot;2025-11-30&quot;))
+    k = simulate({&quot;daily&quot;: 3}, 24, today)
+    check(&quot;daily 3 keeps 3 newest days&quot;, [t.date().day for t, _ in k] == [24, 23, 22])
+    k = simulate({&quot;hourly&quot;: 6}, 1, today)
+    check(&quot;hourly 6 keeps 6 points one hour apart&quot;, len(k) == 6 and (k[0][0] - k[5][0]) == dt.timedelta(hours=5))
+    k = simulate({&quot;weekly&quot;: 2}, 24, today)
+    check(&quot;weekly keeps newest of each ISO week&quot;, [t.date().isoformat() for t, _ in k] == [&quot;2026-10-24&quot;, &quot;2026-10-18&quot;])
+    k = simulate({&quot;monthly&quot;: 2}, 24, today)
+    check(&quot;monthly keeps last day of previous month&quot;, [t.date().isoformat() for t, _ in k] == [&quot;2026-10-24&quot;, &quot;2026-09-30&quot;])
+    k = simulate({&quot;daily&quot;: 2, &quot;weekly&quot;: 1}, 24, today)
+    check(&quot;point kept by two tiers stored once&quot;, len(k) == 2 and k[0][1] == [&quot;daily&quot;, &quot;weekly&quot;])
+    k = simulate({&quot;daily&quot;: 7}, 12, today)
+    check(&quot;12 h interval: daily keeps newest per day&quot;, len(k) == 7 and [t.hour for t, _ in k[:2]] == [2, 14])
+    check(&quot;full storage = points x full&quot;, storage_gb([(dt.datetime(2026, 1, 2), []), (dt.datetime(2026, 1, 1), [])], {&quot;full_gb&quot;: 50, &quot;storage_model&quot;: &quot;full&quot;}) == 100)
+    check(&quot;incremental storage = full + change x days&quot;, abs(storage_gb([(dt.datetime(2026, 1, 11), []), (dt.datetime(2026, 1, 1), [])], {&quot;full_gb&quot;: 100, &quot;daily_change_pct&quot;: 2}) - 120) &lt; 1e-9)
+    check(&quot;incremental change capped at 100%&quot;, storage_gb([(dt.datetime(2026, 6, 1), []), (dt.datetime(2026, 1, 1), [])], {&quot;full_gb&quot;: 10, &quot;daily_change_pct&quot;: 5}) == 20)
+
+    def codes(**over):
+        c = json.loads(json.dumps(base))
+        for key, val in over.items():
+            if key != &quot;policy&quot; and isinstance(val, dict) and isinstance(c.get(key), dict):
+                c[key].update(val)
+            else:
+                c[key] = val
+        return {f[&quot;code&quot;] for f in plan(c, today)[&quot;findings&quot;]}
+
+    check(&quot;RPO missed HIGH&quot;, &quot;RPO_MISSED&quot; in codes(requirements={&quot;rpo_hours&quot;: 4}))
+    check(&quot;history short HIGH&quot;, &quot;HISTORY_SHORT&quot; in codes(policy={&quot;daily&quot;: 14}))
+    check(&quot;legal retention HIGH&quot;, &quot;LEGAL_RETENTION&quot; in codes(requirements={&quot;legal_retention_years&quot;: 7}))
+    check(&quot;yearly 9 satisfies legal 7, yearly 8 does not&quot;, &quot;LEGAL_RETENTION&quot; in codes(policy={&quot;daily&quot;: 7, &quot;monthly&quot;: 12, &quot;yearly&quot;: 8}, requirements={&quot;legal_retention_years&quot;: 7}) and &quot;LEGAL_RETENTION&quot; not in codes(policy={&quot;daily&quot;: 7, &quot;monthly&quot;: 12, &quot;yearly&quot;: 9}, requirements={&quot;legal_retention_years&quot;: 7}))
+    check(&quot;no offsite HIGH&quot;, &quot;NO_OFFSITE&quot; in codes(copies={&quot;offsite&quot;: False}))
+    check(&quot;never restored HIGH&quot;, &quot;NEVER_RESTORED&quot; in codes(last_restore_test=None))
+    check(&quot;restore test old MEDIUM&quot;, &quot;RESTORE_TEST_OLD&quot; in codes(last_restore_test=&quot;2026-01-01&quot;))
+    check(&quot;no immutable MEDIUM&quot;, &quot;NO_IMMUTABLE&quot; in codes(copies={&quot;immutable&quot;: False}))
+    check(&quot;not encrypted MEDIUM&quot;, &quot;NOT_ENCRYPTED&quot; in codes(copies={&quot;encrypted&quot;: False}))
+    check(&quot;overlap HIGH&quot;, &quot;OVERLAP&quot; in codes(backup_duration_hours=30))
+    check(&quot;tight window LOW&quot;, &quot;TIGHT_WINDOW&quot; in codes(backup_duration_hours=14))
+    check(&quot;storage over MEDIUM&quot;, &quot;STORAGE_OVER&quot; in codes(requirements={&quot;max_storage_gb&quot;: 150}))
+    check(&quot;tier gap LOW (daily 7 then monthly)&quot;, &quot;TIER_GAP&quot; in codes(policy={&quot;daily&quot;: 7, &quot;monthly&quot;: 12}))
+    try:
+        plan({&quot;policy&quot;: {&quot;daily&quot;: 0}}, today)
+        check(&quot;empty policy rejected&quot;, False)
+    except DataError:
+        check(&quot;empty policy rejected&quot;, True)
+    try:
+        plan({&quot;policy&quot;: {&quot;fortnightly&quot;: 2}}, today)
+        check(&quot;unknown tier rejected&quot;, False)
+    except DataError:
+        check(&quot;unknown tier rejected&quot;, True)
+    print(f&quot;{ok}/{len(tests)} passed&quot;)
+    return 0 if ok == len(tests) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Backup retention (GFS) policy planner&quot;)
+    ap.add_argument(&quot;policy&quot;, nargs=&quot;?&quot;, help=&quot;policy JSON file&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;, help=&quot;print JSON instead of Markdown&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.policy:
+        ap.error(&quot;policy file required&quot;)
+    try:
+        with open(a.policy, encoding=&quot;utf-8&quot;) as fh:
+            cfg = json.load(fh)
+        r = plan(cfg)
+    except (OSError, json.JSONDecodeError, DataError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else render(r), end=&quot;&quot; if not a.json else &quot;\n&quot;)
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/backup-retention-policy-planner',TI="Backup Retention Policy Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

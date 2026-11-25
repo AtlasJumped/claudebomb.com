@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Group Trip Expense Splitter | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: group-trip-expense-splitter description: Splits shared costs for a group trip, house share, or event: equal, subset, weighted, or exact spli">
+<meta property="og:title" content="Group Trip Expense Splitter | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: group-trip-expense-splitter description: Splits shared costs for a group trip, house share, or event: equal, subset, weighted, or exact spli">
+<meta property="og:url" content="https://claudebomb.com/l/pc/group-trip-expense-splitter/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/group-trip-expense-splitter/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Group Trip Expense Splitter</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: group-trip-expense-splitter
+description: Splits shared costs for a group trip, house share, or event: equal, subset, weighted, or exact splits, mixed currencies with stated rates, and repayments already made, all in integer cents so totals match. Produces per-person balances and a short &quot;who pays whom&quot; list (at most one transfer fewer than people). Use when friends ask &quot;who owes what?&quot; after a trip or a shared house month. Includes a stdlib Python splitter with --self-test.
+---
+
+# Group Trip Expense Splitter
+
+You help a group settle shared expenses fairly and without arguments. You collect what was bought, who paid, and who it was for, convert currencies with agreed rates, compute everyone&#x27;s balance to the cent, and propose a short list of payments (never more than one fewer than the number of people) that makes everyone even. You explain every number so anyone in the group can check it.
+
+## Files in this skill
+
+- `scripts/split_expenses.py` - computes paid, share, and net balance per person and the settle-up transfers; supports equal, among, shares, exact, and transfer_to entries (Python 3 standard library only)
+- `references/splitting-rules.md` - how to choose a split method for each kind of cost and handle common edge cases
+- `references/currency-and-rounding.md` - which exchange rate to use, card fees, and how cents are rounded
+- `templates/settle-up-summary.md` - a summary to paste into the group chat
+- `examples/trip.json` - a 4-person weekend with a skipped dinner, student tickets, weighted drinks, USD and GBP costs, and a cash repayment
+
+## Workflow
+
+### 1. Collect the expenses
+Ask for: the people, the settlement currency, and for each expense the description, amount, currency, who paid, and who it was for. Accept a messy list or receipts and turn it into the JSON shape in `examples/trip.json`. Ask about money that already changed hands (cash handed over, partial paybacks) and record it as `transfer_to`.
+
+### 2. Choose the split for each item
+Default is equal among everyone. Use `among` for costs that only some people shared, `shares` for &quot;Jonas had two drinks to Maya&#x27;s one&quot;, and `exact` for itemized bills. See `references/splitting-rules.md` and confirm unclear items with the group instead of guessing.
+
+### 3. Set currency rates
+Agree on one rate per currency (card statement rate, or a published rate on a stated date) and put it in `rates` as &quot;1 unit = X settlement units&quot;. See `references/currency-and-rounding.md`.
+
+### 4. Run the splitter
+```
+python3 scripts/split_expenses.py examples/trip.json
+python3 scripts/split_expenses.py trip.json --json &gt; settle.json
+python3 scripts/split_expenses.py --self-test
+```
+Exit code 2 with a clear message for unknown names, missing rates, negative amounts, or exact splits that do not add up.
+
+### 5. Share the result
+Fill `templates/settle-up-summary.md`: total spent, each person&#x27;s paid/share/net, the transfers, and the rates used. Keep it short enough for a group chat and offer the full expense table on request.
+
+## Rules
+
+- Never guess who shared an expense; ask, or split equally and say so.
+- Totals must match to the cent; mention who received rounding cents.
+- Show the exchange rates and their source; do not look up live rates silently.
+- Stay neutral: present numbers, not judgments about who spent more.
+- Do not handle payment credentials or send money; only list who should pay whom.
+FILE:references/splitting-rules.md
+# Splitting Rules and Edge Cases
+
+## Choosing a method
+| Situation | Method | Example |
+|---|---|---|
+| Everyone used it | equal (default) | accommodation, car rental, shared groceries |
+| Only some people took part | `among` | dinner one person skipped, a tour two people joined |
+| Uneven use of the same thing | `shares` | drinks, nights stayed (3 nights vs 2), fuel by distance |
+| Itemized bill or different prices | `exact` | student vs adult tickets, separate menu items |
+| Money already handed over | `transfer_to` | cash paid back, a bank transfer during the trip |
+
+## Edge cases
+- **Someone arrives late or leaves early.** Use `shares` by nights for the accommodation (e.g. 3, 3, 2, 3).
+- **Couples or families paying as one.** Either list them as one person, or keep them separate and give children a smaller share by agreement.
+- **Deposits and refunds.** Amounts must be positive, so lower the original expense by the refund. If the refund landed with someone other than the original payer, also add a `transfer_to` entry from the original payer to that person for the refunded amount, so the money they are holding counts against them.
+- **Tips and service charges.** Split like the bill they belong to.
+- **Gifts for one member (birthday dinner).** Use `among` with everyone except the guest.
+- **Shared kitty / common pot.** Treat the kitty holder as the payer of everything bought from the pot and add each contribution as `transfer_to` the holder.
+- **Personal items on a shared receipt.** Split the receipt into two entries: shared part (equal) and personal part (`exact` to that person).
+
+## Fairness checks before sharing
+1. Sum of everyone&#x27;s share equals total spent.
+2. Every expense has a payer who was actually there.
+3. Nobody&#x27;s share includes things they explicitly declined.
+4. The group agreed on the rates and on any unequal splits.
+FILE:references/currency-and-rounding.md
+# Currency and Rounding
+
+## Picking exchange rates
+- **Best:** the rate on the payer&#x27;s card or bank statement for that charge, including any foreign transaction fee, because that is what they actually paid.
+- **Simple:** one published rate (for example a central bank reference rate) on a stated date for the whole trip.
+- **Cash bought at an exchange office:** the rate they bought the cash at.
+Write rates as &quot;1 unit of foreign currency = X units of settlement currency&quot;: `&quot;USD&quot;: 0.92` means 1 USD = 0.92 EUR.
+
+## Fees
+- Card foreign transaction fees (often 1-3%) are a real cost of the shared purchase; add them to the expense amount if the group agrees.
+- Fees to send the settle-up money (bank or app transfer fees) are usually paid by the sender.
+
+## Rounding to the cent
+1. Each expense is converted and rounded once (half up) to whole cents.
+2. The amount is split by weight; each person gets the whole cents of their exact share.
+3. Leftover cents (at most one per person) go to people with the largest fractional parts, then alphabetically on ties.
+This keeps every expense exact to the cent and the result reproducible. Over a trip the rounding difference per person is a few cents at most.
+
+## Settling in more than one currency
+Settle in one currency where possible. If someone must pay in another currency, convert their final transfer at a rate both sides accept and note it in the summary.
+FILE:templates/settle-up-summary.md
+# Settle-up - &lt;trip or event name&gt;
+
+**Dates:** &lt;dates&gt;  **People:** &lt;names&gt;  **Settlement currency:** &lt;currency&gt;
+**Total spent:** &lt;amount&gt; across &lt;n&gt; expenses  **Rates used:** &lt;1 USD = 0.92 EUR (card statements), ...&gt;
+
+## Balances
+| Person | Paid | Share | Net (+ gets back / - owes) |
+|---|---|---|---|
+| | | | |
+
+## Who pays whom
+- &lt;name&gt; pays &lt;name&gt; &lt;amount&gt;
+- &lt;name&gt; pays &lt;name&gt; &lt;amount&gt;
+
+## Notes
+- Unequal splits: &lt;dinner without Leo, student tickets, drinks by count&gt;
+- Rounding cents went to: &lt;names&gt;
+- Already settled during the trip: &lt;cash or transfers&gt;
+
+## Group chat message
+&gt; Trip totals are in! We spent &lt;total&gt; together. To settle up: &lt;transfer 1&gt;; &lt;transfer 2&gt;; &lt;transfer 3&gt;. Full breakdown is in the thread. Shout if anything looks off by &lt;date&gt;.
+FILE:examples/trip.json
+{
+  &quot;trip&quot;: &quot;Lisbon long weekend, 4 friends&quot;,
+  &quot;currency&quot;: &quot;EUR&quot;,
+  &quot;rates&quot;: {&quot;USD&quot;: 0.92, &quot;GBP&quot;: 1.17},
+  &quot;people&quot;: [&quot;Maya&quot;, &quot;Jonas&quot;, &quot;Priya&quot;, &quot;Leo&quot;],
+  &quot;expenses&quot;: [
+    {&quot;desc&quot;: &quot;Apartment, 3 nights&quot;, &quot;amount&quot;: 486.00, &quot;paid_by&quot;: &quot;Maya&quot;},
+    {&quot;desc&quot;: &quot;Airport taxi&quot;, &quot;amount&quot;: 38.50, &quot;paid_by&quot;: &quot;Jonas&quot;},
+    {&quot;desc&quot;: &quot;Groceries for breakfasts&quot;, &quot;amount&quot;: 61.27, &quot;paid_by&quot;: &quot;Priya&quot;},
+    {&quot;desc&quot;: &quot;Seafood dinner (Leo skipped)&quot;, &quot;amount&quot;: 142.80, &quot;paid_by&quot;: &quot;Jonas&quot;, &quot;among&quot;: [&quot;Maya&quot;, &quot;Jonas&quot;, &quot;Priya&quot;]},
+    {&quot;desc&quot;: &quot;Sintra day tour, booked online&quot;, &quot;amount&quot;: 196.00, &quot;currency&quot;: &quot;USD&quot;, &quot;paid_by&quot;: &quot;Leo&quot;},
+    {&quot;desc&quot;: &quot;Fado show (Priya and Leo have student tickets)&quot;, &quot;amount&quot;: 84.00, &quot;paid_by&quot;: &quot;Maya&quot;, &quot;exact&quot;: {&quot;Maya&quot;: 25, &quot;Jonas&quot;: 25, &quot;Priya&quot;: 17, &quot;Leo&quot;: 17}},
+    {&quot;desc&quot;: &quot;Wine and pastel de nata tasting&quot;, &quot;amount&quot;: 72.00, &quot;paid_by&quot;: &quot;Priya&quot;, &quot;shares&quot;: {&quot;Maya&quot;: 1, &quot;Jonas&quot;: 2, &quot;Priya&quot;: 1, &quot;Leo&quot;: 2}},
+    {&quot;desc&quot;: &quot;Tram and metro cards&quot;, &quot;amount&quot;: 26.40, &quot;currency&quot;: &quot;GBP&quot;, &quot;paid_by&quot;: &quot;Leo&quot;},
+    {&quot;desc&quot;: &quot;Cash Jonas already handed Maya on day 2&quot;, &quot;amount&quot;: 30.00, &quot;paid_by&quot;: &quot;Jonas&quot;, &quot;transfer_to&quot;: &quot;Maya&quot;}
+  ]
+}
+FILE:scripts/split_expenses.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Group trip expense splitter and settle-up planner (Python 3 standard library only).
+
+Input JSON:
+{
+  &quot;currency&quot;: &quot;EUR&quot;,                         # settlement currency
+  &quot;rates&quot;: {&quot;USD&quot;: 0.92, &quot;TRY&quot;: 0.027},      # 1 unit of key = rate units of settlement currency
+  &quot;people&quot;: [&quot;Ana&quot;, &quot;Ben&quot;, &quot;Cem&quot;, &quot;Dee&quot;],
+  &quot;expenses&quot;: [
+    {&quot;desc&quot;: &quot;Villa&quot;, &quot;amount&quot;: 1200, &quot;paid_by&quot;: &quot;Ana&quot;},                                 # equal, everyone
+    {&quot;desc&quot;: &quot;Dinner&quot;, &quot;amount&quot;: 180, &quot;paid_by&quot;: &quot;Ben&quot;, &quot;among&quot;: [&quot;Ana&quot;, &quot;Ben&quot;, &quot;Cem&quot;]},   # equal, subset
+    {&quot;desc&quot;: &quot;Boat&quot;, &quot;amount&quot;: 300, &quot;currency&quot;: &quot;USD&quot;, &quot;paid_by&quot;: &quot;Cem&quot;,
+     &quot;shares&quot;: {&quot;Ana&quot;: 2, &quot;Ben&quot;: 1, &quot;Cem&quot;: 1}},                                         # weighted
+    {&quot;desc&quot;: &quot;Museum&quot;, &quot;amount&quot;: 54, &quot;paid_by&quot;: &quot;Dee&quot;, &quot;exact&quot;: {&quot;Dee&quot;: 18, &quot;Ana&quot;: 36}},  # exact amounts
+    {&quot;desc&quot;: &quot;Ana pays Ben back&quot;, &quot;amount&quot;: 50, &quot;paid_by&quot;: &quot;Ana&quot;, &quot;transfer_to&quot;: &quot;Ben&quot;}   # direct repayment
+  ]
+}
+All math is done in integer cents. Rounding remainders go to participants in a fixed order (largest
+fractional part first, then name), so totals always match to the cent and results are reproducible.
+Settle-up uses a greedy largest-creditor / largest-debtor match, which needs at most n-1 transfers.
+
+Usage:
+  python3 split_expenses.py trip.json
+  python3 split_expenses.py trip.json --json
+  python3 split_expenses.py --self-test
+Exit code: 0 OK, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import sys
+from decimal import Decimal, ROUND_HALF_UP
+
+
+class SplitError(ValueError):
+    pass
+
+
+def to_cents(amount, rate=Decimal(1)):
+    try:
+        d = Decimal(str(amount)) * Decimal(str(rate)) * 100
+    except Exception:
+        raise SplitError(f&quot;bad amount {amount!r}&quot;)
+    return int(d.quantize(Decimal(1), rounding=ROUND_HALF_UP))
+
+
+def fmt(cents, cur):
+    sign = &quot;-&quot; if cents &lt; 0 else &quot;&quot;
+    return f&quot;{sign}{abs(cents) // 100:,}.{abs(cents) % 100:02d} {cur}&quot;
+
+
+def allocate(total, weights):
+    &quot;&quot;&quot;Split integer total by weights {name: weight}; largest-remainder method, ties by name.&quot;&quot;&quot;
+    wsum = sum(weights.values())
+    if wsum &lt;= 0:
+        raise SplitError(&quot;weights must sum to more than zero&quot;)
+    raw = {n: Decimal(total) * Decimal(str(w)) / Decimal(str(wsum)) for n, w in weights.items()}
+    base = {n: int(v) for n, v in raw.items()}
+    left = total - sum(base.values())
+    order = sorted(weights, key=lambda n: (-(raw[n] - base[n]), n))
+    for n in order[:left]:
+        base[n] += 1
+    return base
+
+
+def compute(data):
+    cur = data.get(&quot;currency&quot;) or &quot;EUR&quot;
+    rates = {k.upper(): v for k, v in (data.get(&quot;rates&quot;) or {}).items()}
+    people = data.get(&quot;people&quot;) or []
+    if len(people) &lt; 2:
+        raise SplitError(&quot;need at least two people&quot;)
+    if len(set(people)) != len(people):
+        raise SplitError(&quot;duplicate names in people&quot;)
+    known = set(people)
+    paid = {p: 0 for p in people}
+    owed = {p: 0 for p in people}
+    lines = []
+    for i, e in enumerate(data.get(&quot;expenses&quot;) or [], start=1):
+        desc = e.get(&quot;desc&quot;) or f&quot;expense {i}&quot;
+        payer = e.get(&quot;paid_by&quot;)
+        if payer not in known:
+            raise SplitError(f&quot;{desc}: paid_by {payer!r} is not in people&quot;)
+        ecur = (e.get(&quot;currency&quot;) or cur).upper()
+        if ecur == cur.upper():
+            rate = 1
+        elif ecur in rates:
+            rate = rates[ecur]
+        else:
+            raise SplitError(f&quot;{desc}: no rate for {ecur} -&gt; {cur}; add it to &#x27;rates&#x27;&quot;)
+        total = to_cents(e.get(&quot;amount&quot;), rate)
+        if total &lt;= 0:
+            raise SplitError(f&quot;{desc}: amount must be positive&quot;)
+        modes = [k for k in (&quot;among&quot;, &quot;shares&quot;, &quot;exact&quot;, &quot;transfer_to&quot;) if k in e]
+        if len(modes) &gt; 1:
+            raise SplitError(f&quot;{desc}: use only one of among / shares / exact / transfer_to&quot;)
+        if &quot;transfer_to&quot; in e:
+            to = e[&quot;transfer_to&quot;]
+            if to not in known or to == payer:
+                raise SplitError(f&quot;{desc}: transfer_to must be another person&quot;)
+            split = {to: total}
+        elif &quot;exact&quot; in e:
+            ex = e[&quot;exact&quot;]
+            for n in ex:
+                if n not in known:
+                    raise SplitError(f&quot;{desc}: unknown person {n!r}&quot;)
+            split = {n: to_cents(v, rate) for n, v in ex.items()}
+            diff = total - sum(split.values())
+            if abs(diff) &gt; len(split):  # allow only currency-conversion rounding
+                raise SplitError(f&quot;{desc}: exact amounts add up to {fmt(sum(split.values()), cur)}, not {fmt(total, cur)}&quot;)
+            if diff:
+                split[sorted(split)[0]] += diff
+        elif &quot;shares&quot; in e:
+            sh = e[&quot;shares&quot;]
+            for n, w in sh.items():
+                if n not in known:
+                    raise SplitError(f&quot;{desc}: unknown person {n!r}&quot;)
+                if float(w) &lt; 0:
+                    raise SplitError(f&quot;{desc}: negative share for {n}&quot;)
+            split = allocate(total, {n: w for n, w in sh.items() if float(w) &gt; 0})
+        else:
+            among = e.get(&quot;among&quot;) or people
+            for n in among:
+                if n not in known:
+                    raise SplitError(f&quot;{desc}: unknown person {n!r}&quot;)
+            split = allocate(total, {n: 1 for n in among})
+        paid[payer] += total
+        for n, c in split.items():
+            owed[n] += c
+        lines.append({&quot;desc&quot;: desc, &quot;paid_by&quot;: payer, &quot;amount&quot;: total, &quot;original&quot;: f&quot;{e.get(&#x27;amount&#x27;)} {ecur}&quot;,
+                      &quot;split&quot;: split, &quot;kind&quot;: modes[0] if modes else &quot;equal&quot;})
+    net = {p: paid[p] - owed[p] for p in people}
+    assert sum(net.values()) == 0, &quot;internal error: balances do not sum to zero&quot;
+    return {&quot;currency&quot;: cur, &quot;people&quot;: people, &quot;expenses&quot;: lines, &quot;paid&quot;: paid, &quot;owed&quot;: owed,
+            &quot;net&quot;: net, &quot;transfers&quot;: settle(net),
+            &quot;total_spent&quot;: sum(l[&quot;amount&quot;] for l in lines if l[&quot;kind&quot;] != &quot;transfer_to&quot;)}
+
+
+def settle(net):
+    cred = sorted([[c, n] for n, c in net.items() if c &gt; 0], key=lambda x: (-x[0], x[1]))
+    debt = sorted([[-c, n] for n, c in net.items() if c &lt; 0], key=lambda x: (-x[0], x[1]))
+    out = []
+    while cred and debt:
+        amt = min(cred[0][0], debt[0][0])
+        out.append({&quot;from&quot;: debt[0][1], &quot;to&quot;: cred[0][1], &quot;amount&quot;: amt})
+        cred[0][0] -= amt
+        debt[0][0] -= amt
+        cred = sorted([x for x in cred if x[0] &gt; 0], key=lambda x: (-x[0], x[1]))
+        debt = sorted([x for x in debt if x[0] &gt; 0], key=lambda x: (-x[0], x[1]))
+    return out
+
+
+def to_markdown(r):
+    c = r[&quot;currency&quot;]
+    lines = [&quot;# Trip settle-up&quot;, &quot;&quot;, f&quot;Total spent: {fmt(r[&#x27;total_spent&#x27;], c)} across {len([e for e in r[&#x27;expenses&#x27;] if e[&#x27;kind&#x27;] != &#x27;transfer_to&#x27;])} expenses&quot;, &quot;&quot;,
+             &quot;## Expenses&quot;, &quot;| # | Expense | Paid by | Amount | Split |&quot;, &quot;|---|---|---|---|---|&quot;]
+    for i, e in enumerate(r[&quot;expenses&quot;], 1):
+        split = &quot;, &quot;.join(f&quot;{n} {fmt(v, c)}&quot; for n, v in sorted(e[&quot;split&quot;].items()))
+        conv = &quot;&quot; if e[&quot;original&quot;].endswith(c.upper()) else f&quot; ({e[&#x27;original&#x27;]})&quot;
+        lines.append(f&quot;| {i} | {e[&#x27;desc&#x27;]} | {e[&#x27;paid_by&#x27;]} | {fmt(e[&#x27;amount&#x27;], c)}{conv} | {e[&#x27;kind&#x27;]}: {split} |&quot;)
+    lines += [&quot;&quot;, &quot;## Balances&quot;, &quot;| Person | Paid | Share | Net |&quot;, &quot;|---|---|---|---|&quot;]
+    for p in r[&quot;people&quot;]:
+        lines.append(f&quot;| {p} | {fmt(r[&#x27;paid&#x27;][p], c)} | {fmt(r[&#x27;owed&#x27;][p], c)} | {fmt(r[&#x27;net&#x27;][p], c)} |&quot;)
+    lines += [&quot;&quot;, &quot;## Who pays whom&quot;]
+    if not r[&quot;transfers&quot;]:
+        lines.append(&quot;Everyone is even.&quot;)
+    lines += [f&quot;- {t[&#x27;from&#x27;]} pays {t[&#x27;to&#x27;]} {fmt(t[&#x27;amount&#x27;], c)}&quot; for t in r[&quot;transfers&quot;]]
+    return &quot;\n&quot;.join(lines)
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append((name, bool(cond)))
+
+    base = {&quot;currency&quot;: &quot;EUR&quot;, &quot;people&quot;: [&quot;Ana&quot;, &quot;Ben&quot;, &quot;Cem&quot;]}
+    r = compute(dict(base, expenses=[{&quot;desc&quot;: &quot;Taxi&quot;, &quot;amount&quot;: 10, &quot;paid_by&quot;: &quot;Ana&quot;}]))
+    ok(&quot;10.00 split three ways sums exactly&quot;, sum(r[&quot;owed&quot;].values()) == 1000 and sorted(r[&quot;owed&quot;].values()) == [333, 333, 334])
+    ok(&quot;remainder cent goes to first name on tie&quot;, r[&quot;owed&quot;][&quot;Ana&quot;] == 334)
+    ok(&quot;two transfers to the payer&quot;, sorted((t[&quot;from&quot;], t[&quot;amount&quot;]) for t in r[&quot;transfers&quot;]) == [(&quot;Ben&quot;, 333), (&quot;Cem&quot;, 333)])
+    r = compute(dict(base, expenses=[{&quot;desc&quot;: &quot;A&quot;, &quot;amount&quot;: 30, &quot;paid_by&quot;: &quot;Ana&quot;}, {&quot;desc&quot;: &quot;B&quot;, &quot;amount&quot;: 30, &quot;paid_by&quot;: &quot;Ben&quot;}, {&quot;desc&quot;: &quot;C&quot;, &quot;amount&quot;: 30, &quot;paid_by&quot;: &quot;Cem&quot;}]))
+    ok(&quot;equal spending means no transfers&quot;, r[&quot;transfers&quot;] == [])
+    r = compute(dict(base, expenses=[{&quot;desc&quot;: &quot;Dinner&quot;, &quot;amount&quot;: 90, &quot;paid_by&quot;: &quot;Ben&quot;, &quot;among&quot;: [&quot;Ana&quot;, &quot;Ben&quot;]}]))
+    ok(&quot;subset split excludes others&quot;, r[&quot;owed&quot;][&quot;Cem&quot;] == 0 and r[&quot;net&quot;][&quot;Ana&quot;] == -4500)
+    r = compute(dict(base, expenses=[{&quot;desc&quot;: &quot;Boat&quot;, &quot;amount&quot;: 100, &quot;paid_by&quot;: &quot;Cem&quot;, &quot;shares&quot;: {&quot;Ana&quot;: 2, &quot;Ben&quot;: 1, &quot;Cem&quot;: 1}}]))
+    ok(&quot;weighted shares&quot;, r[&quot;owed&quot;] == {&quot;Ana&quot;: 5000, &quot;Ben&quot;: 2500, &quot;Cem&quot;: 2500})
+    r = compute(dict(base, expenses=[{&quot;desc&quot;: &quot;Tickets&quot;, &quot;amount&quot;: 50, &quot;paid_by&quot;: &quot;Ana&quot;, &quot;exact&quot;: {&quot;Ben&quot;: 20, &quot;Cem&quot;: 30}}]))
+    ok(&quot;exact amounts&quot;, r[&quot;net&quot;] == {&quot;Ana&quot;: 5000, &quot;Ben&quot;: -2000, &quot;Cem&quot;: -3000})
+    r = compute(dict(base, rates={&quot;USD&quot;: 0.9}, expenses=[{&quot;desc&quot;: &quot;Gas&quot;, &quot;amount&quot;: 30, &quot;currency&quot;: &quot;USD&quot;, &quot;paid_by&quot;: &quot;Ben&quot;}]))
+    ok(&quot;currency conversion to cents&quot;, r[&quot;paid&quot;][&quot;Ben&quot;] == 2700 and sum(r[&quot;owed&quot;].values()) == 2700)
+    r = compute(dict(base, expenses=[{&quot;desc&quot;: &quot;Hotel&quot;, &quot;amount&quot;: 300, &quot;paid_by&quot;: &quot;Ana&quot;}, {&quot;desc&quot;: &quot;Payback&quot;, &quot;amount&quot;: 100, &quot;paid_by&quot;: &quot;Ben&quot;, &quot;transfer_to&quot;: &quot;Ana&quot;}]))
+    ok(&quot;direct repayment reduces debt&quot;, r[&quot;net&quot;] == {&quot;Ana&quot;: 10000, &quot;Ben&quot;: 0, &quot;Cem&quot;: -10000})
+    ok(&quot;repayment not counted as spending&quot;, r[&quot;total_spent&quot;] == 30000)
+    big = {&quot;currency&quot;: &quot;EUR&quot;, &quot;people&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;],
+           &quot;expenses&quot;: [{&quot;desc&quot;: f&quot;x{i}&quot;, &quot;amount&quot;: 17.33 * (i + 1), &quot;paid_by&quot;: &quot;ABCDE&quot;[i % 5], &quot;among&quot;: list(&quot;ABCDE&quot;[: 2 + i % 4])} for i in range(12)]}
+    r = compute(big)
+    ok(&quot;balances sum to zero&quot;, sum(r[&quot;net&quot;].values()) == 0)
+    ok(&quot;at most n-1 transfers&quot;, len(r[&quot;transfers&quot;]) &lt;= 4)
+    after = dict(r[&quot;net&quot;])
+    for t in r[&quot;transfers&quot;]:
+        after[t[&quot;from&quot;]] += t[&quot;amount&quot;]
+        after[t[&quot;to&quot;]] -= t[&quot;amount&quot;]
+    ok(&quot;transfers settle everyone to zero&quot;, all(v == 0 for v in after.values()))
+    ok(&quot;deterministic output&quot;, compute(big)[&quot;transfers&quot;] == r[&quot;transfers&quot;])
+    bad_inputs = [
+        (dict(base, expenses=[{&quot;desc&quot;: &quot;X&quot;, &quot;amount&quot;: 10, &quot;paid_by&quot;: &quot;Zed&quot;}]), &quot;unknown payer rejected&quot;),
+        (dict(base, expenses=[{&quot;desc&quot;: &quot;X&quot;, &quot;amount&quot;: 10, &quot;currency&quot;: &quot;GBP&quot;, &quot;paid_by&quot;: &quot;Ana&quot;}]), &quot;missing rate rejected&quot;),
+        (dict(base, expenses=[{&quot;desc&quot;: &quot;X&quot;, &quot;amount&quot;: 10, &quot;paid_by&quot;: &quot;Ana&quot;, &quot;exact&quot;: {&quot;Ben&quot;: 3}}]), &quot;exact mismatch rejected&quot;),
+        (dict(base, expenses=[{&quot;desc&quot;: &quot;X&quot;, &quot;amount&quot;: -5, &quot;paid_by&quot;: &quot;Ana&quot;}]), &quot;negative amount rejected&quot;),
+        ({&quot;people&quot;: [&quot;Solo&quot;], &quot;expenses&quot;: []}, &quot;single person rejected&quot;),
+    ]
+    for data, label in bad_inputs:
+        try:
+            compute(data)
+            ok(label, False)
+        except SplitError:
+            ok(label, True)
+    ok(&quot;markdown has settle-up section&quot;, &quot;## Who pays whom&quot; in to_markdown(compute(dict(base, expenses=[{&quot;desc&quot;: &quot;Taxi&quot;, &quot;amount&quot;: 10, &quot;paid_by&quot;: &quot;Ana&quot;}]))))
+    passed = sum(c for _, c in cases)
+    for name, c in cases:
+        print((&quot;PASS &quot; if c else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Split shared trip expenses and plan a short list of settle-up transfers.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;trip JSON file, or &#x27;-&#x27; for stdin&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.file:
+        ap.error(&quot;trip JSON required (or --self-test)&quot;)
+    try:
+        data = json.load(sys.stdin if a.file == &quot;-&quot; else open(a.file, encoding=&quot;utf-8&quot;))
+        r = compute(data)
+    except (OSError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2, ensure_ascii=False) if a.json else to_markdown(r))
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/group-trip-expense-splitter',TI="Group Trip Expense Splitter";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

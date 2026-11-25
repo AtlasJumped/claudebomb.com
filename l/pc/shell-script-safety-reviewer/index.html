@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shell Script Safety Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: shell-script-safety-reviewer description: Reviews bash and POSIX sh scripts before they run in CI, cron or production. Flags missing strict ">
+<meta property="og:title" content="Shell Script Safety Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: shell-script-safety-reviewer description: Reviews bash and POSIX sh scripts before they run in CI, cron or production. Flags missing strict ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/shell-script-safety-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/shell-script-safety-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Shell Script Safety Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: shell-script-safety-reviewer
+description: Reviews bash and POSIX sh scripts before they run in CI, cron or production. Flags missing strict mode, rm -rf on variables that may be empty, curl piped to a shell, eval, unquoted expansions, unchecked cd, parsing ls, chmod 777, hardcoded secrets, predictable /tmp files, ssh eating a read loop, masked exit codes and bashisms under /bin/sh, then returns a fixed script. Includes a stdlib Python linter with --self-test.
+---
+
+# Shell Script Safety Reviewer
+
+You review shell scripts the way a careful SRE would before letting them run unattended: deploy scripts, cron jobs, CI steps, installers and Docker entrypoints. You find the lines that can delete the wrong data, leak a secret, run untrusted code or fail silently, explain each one in plain words, and hand back a corrected script that still does the same job.
+
+## Files in this skill
+
+- `scripts/shell_lint.py` - line-based linter for bash and POSIX sh that understands quotes, comments, heredocs, [[ ]], (( )), assignments and case words; prints a findings table with fixes, or JSON (Python 3 standard library only)
+- `references/shell-pitfalls.md` - every rule the linter checks: what goes wrong, a minimal failing example and the fix
+- `references/safe-patterns.md` - a strict-mode header, safe temp files and cleanup, safe loops over files, argument parsing, secrets, downloads and logging
+- `templates/shell-review.md` - the review to hand back
+- `examples/deploy.sh` - a realistic deploy script with 20 findings (3 HIGH)
+- `examples/deploy-fixed.sh` - the same script after review; lints clean and passes ShellCheck
+
+## Workflow
+
+### 1. Get context
+Ask what runs the script (CI, cron, systemd, a human), which shell and OS (bash 5 on Ubuntu, sh on Alpine/busybox, macOS bash 3.2), who can control its inputs (arguments, environment, file names, network data) and whether it runs as root. Ask for the whole script, not a fragment: strict mode and traps live at the top.
+
+### 2. Run the linter
+```
+python3 scripts/shell_lint.py examples/deploy.sh
+python3 scripts/shell_lint.py deploy.sh entrypoint.sh --min-severity MEDIUM
+python3 scripts/shell_lint.py install.sh --json --ignore BACKTICKS
+python3 scripts/shell_lint.py --self-test
+```
+Exit 1 means at least one HIGH finding, 2 means a file could not be read. Silence a deliberate line with `# shell-lint: disable=CODE`. If ShellCheck is available, run it too (`shellcheck -f gcc script.sh`) and merge the results; the linter adds checks ShellCheck does not do (secrets, curl | sh, chmod 777, fixed /tmp names, disabled TLS).
+
+### 3. Review by hand
+The linter is a first pass. Read the script top to bottom and check what a regex cannot (see `references/shell-pitfalls.md`):
+- Which inputs are untrusted, and do they reach rm, eval, ssh, sql or a path?
+- Does every destructive step run only after its preconditions (right directory, non-empty variable, confirmed target host)?
+- Is it idempotent: can it run twice, or resume after failing halfway?
+- Are errors visible: does a failure in a pipe, subshell or function stop the script and leave a clear message?
+- Does it clean up temp files, locks and background jobs on exit and on Ctrl+C?
+
+### 4. Fix and deliver
+Fill `templates/shell-review.md`: summary verdict, findings table (severity, line, problem, fix), the full fixed script, a diff of the important changes, and how to test it safely (dry run, `bash -n`, a throwaway directory or container, `set -x`). Keep the script&#x27;s behavior; call out every behavior change.
+
+## Example result
+`examples/deploy.sh`: 20 findings, 3 HIGH. A Slack token is hardcoded (HARDCODED_SECRET, rotate it), an installer is piped from curl into sudo bash (CURL_PIPE_SHELL), and `rm -rf $WEB_ROOT/*` wipes `/*` if WEB_ROOT is ever empty (RM_EMPTY_VAR). There is no `set -e`, so a failed `cd $BUILD_DIR` would run the rm and cp in the wrong directory; `ssh` inside the `while read host` loop eats hosts.txt, so only the first host restarts (SSH_STDIN_LOOP); `local count=$(...)` hides failures. `examples/deploy-fixed.sh` fixes all of them and lints clean.
+
+## Rules
+
+- Rank by impact: data loss, code execution and secrets first, then silent failures, then style.
+- Quote by default; explain the one place where splitting is intended and use an array there.
+- Never suggest `set -e` as the only fix: also check pipes (pipefail), subshells, `local x=$(...)` and `if cmd` contexts where errexit is off.
+- Rotate any secret found in a script, even if the repo is private, and say so.
+- Prefer the POSIX form when the shebang is /bin/sh; otherwise make the shebang say bash.
+- Do not run a reviewed script against real systems to &quot;test&quot; it; use bash -n, a container or a dry-run flag.
+FILE:references/shell-pitfalls.md
+# Shell pitfalls checked by shell_lint.py
+
+Severity: HIGH = can delete data, run untrusted code or leak a secret. MEDIUM = wrong result or silent failure under realistic input. LOW = fragile or legacy style.
+
+## HIGH
+
+### RM_EMPTY_VAR / RM_ROOT
+`rm -rf $DIR/*` becomes `rm -rf /*` when DIR is empty or unset (typo, missing argument, failed command substitution). Steam&#x27;s Linux client shipped exactly this bug in 2015.
+```bash
+rm -rf -- &quot;${DIR:?DIR is empty}&quot;/*      # aborts with a message if DIR is empty
+```
+`set -u` alone does not help when the variable is set to an empty string.
+
+### CURL_PIPE_SHELL
+`curl https://x/install.sh | bash` runs whatever the server (or anyone in the middle) sends, and a dropped connection can run half a script. Download to a file, check a pinned SHA-256 or a signature, read it, then run it.
+
+### EVAL_VAR
+`eval &quot;$cmd&quot;` executes any `;`, `$(...)` or backticks inside the data. Build commands as arrays: `cmd=(rsync -a -- &quot;$src&quot; &quot;$dst&quot;); &quot;${cmd[@]}&quot;`. For dispatch, use `case`.
+
+### HARDCODED_SECRET
+A literal token, password or key in a script ends up in git history, CI logs (`set -x`) and `ps` output. Read it from the environment or a secret manager and fail early: `TOKEN=&quot;${TOKEN:?}&quot;`. Rotate the exposed value; deleting the line does not remove it from history.
+
+## MEDIUM
+
+### NO_STRICT_MODE / NO_PIPEFAIL
+Without `set -e` a failed command is ignored and the next one runs anyway. Without `pipefail`, `build | tee log` succeeds when build fails. Use `set -euo pipefail` in bash and `set -eu` in POSIX sh. Know the gaps: errexit is ignored inside `if`, `while`, `&amp;&amp;`/`||` lists and functions called from them, and `local x=$(cmd)` (see below).
+
+### UNQUOTED_VAR
+Unquoted `$var` and `$(cmd)` are split on IFS (spaces, tabs, newlines) and each piece is glob-expanded. `cp $src $dst` with `src=&quot;My File.txt&quot;` copies two wrong files; `rm $f` with `f=&#x27;*&#x27;` removes everything. Quote every expansion; use `&quot;$@&quot;` for all arguments and `&quot;${arr[@]}&quot;` for arrays. Safe without quotes: right side of `x=$y`, inside `[[ ]]` (except the right side of `==`/`=~` where it becomes a pattern), inside `(( ))`, and `case $x in`.
+
+### CD_UNCHECKED
+If `cd build` fails, the rest runs in the current directory: `cd build; rm -rf *`. Use `cd -- &quot;$dir&quot; || exit 1` or strict mode. In loops, use a subshell: `(cd -- &quot;$d&quot; &amp;&amp; make)`.
+
+### LS_PARSING
+`for f in $(ls *.log)` breaks on spaces and newlines and runs the glob twice. Use the glob directly: `for f in ./*.log; do [ -e &quot;$f&quot; ] || continue; ...; done`, or `find . -name &#x27;*.log&#x27; -print0 | while IFS= read -r -d &#x27;&#x27; f; do ...; done`.
+
+### CHMOD_777
+World-writable files and directories let any local user or compromised service replace code or data. Use 755/644, 700/600 for private data, or `u=rwX,g=rX,o=`.
+
+### PREDICTABLE_TMP / NO_TRAP_CLEANUP (LOW)
+A fixed `/tmp/app.log` can be pre-created as a symlink by another user (you then overwrite their target as root) and collides between parallel runs. Use `mktemp`/`mktemp -d` and remove it with `trap &#x27;...&#x27; EXIT`.
+
+### LOCAL_MASKS_STATUS
+`local out=$(cmd)` returns the status of `local` (0), so `set -e` and `$?` never see cmd fail. The same goes for `export` and `readonly`. Declare first, assign on the next line.
+
+### SSH_STDIN_LOOP
+`while read host; do ssh &quot;$host&quot; cmd; done &lt; hosts.txt` stops after the first host because ssh reads the rest of stdin. Use `ssh -n` or `&lt; /dev/null`. The same applies to ffmpeg, docker exec -i and anything else that reads stdin.
+
+### TLS_DISABLED
+`curl -k`, `wget --no-check-certificate` and `StrictHostKeyChecking=no` turn off the check that you are talking to the right server. Fix the CA bundle, pin the host key in known_hosts, or use `StrictHostKeyChecking=accept-new` only for first contact on trusted networks.
+
+### BASHISM_IN_SH
+Under `#!/bin/sh` (dash on Debian/Ubuntu, busybox on Alpine) these fail: `[[ ]]`, `==` in `[ ]`, `function f`, arrays, `source`, `&lt;&lt;&lt;`, `&amp;&gt;`, `$&#x27;...&#x27;`. Switch the shebang to bash or use `[ ]`, `=`, `.`, and positional parameters.
+
+## LOW
+
+- NO_SHEBANG: the caller&#x27;s shell runs it; behavior differs between bash, zsh and sh.
+- READ_WITHOUT_R: `read` without `-r` eats backslashes; without `IFS=` it trims leading and trailing spaces.
+- BACKTICKS: hard to nest and quote; use `$(...)`.
+
+## Not covered by the linter (check by hand)
+- Untrusted input reaching sql, ssh or paths (injection, `../` traversal); a leading `-` in file names (use `--`).
+- Race conditions on lock files; use `flock`.
+- Missing `wait` for background jobs, and orphaned jobs on exit.
+- Locale and tool differences (GNU vs BSD sed -i, date -d, readlink -f on macOS).
+- Logging secrets with `set -x`; turn xtrace off around secret handling.
+FILE:references/safe-patterns.md
+# Safe patterns for bash and sh scripts
+
+## Header
+```bash
+#!/usr/bin/env bash
+# What it does, how to call it, what it needs (env vars, tools).
+set -euo pipefail
+IFS=$&#x27;\n\t&#x27;                      # optional: no splitting on spaces
+readonly SCRIPT_DIR=&quot;$(cd -- &quot;$(dirname -- &quot;${BASH_SOURCE[0]}&quot;)&quot; &amp;&amp; pwd)&quot;
+```
+POSIX sh: `set -eu` (pipefail exists in dash 0.5.11+ and busybox, but not everywhere).
+
+## Fail with a message
+```bash
+die() { printf &#x27;error: %s\n&#x27; &quot;$*&quot; &gt;&amp;2; exit 1; }
+command -v jq &gt;/dev/null 2&gt;&amp;1 || die &quot;jq is required&quot;
+[ -d &quot;$TARGET&quot; ] || die &quot;no such directory: $TARGET&quot;
+```
+
+## Arguments
+```bash
+usage() { echo &quot;usage: $0 [-n] &lt;release&gt;&quot; &gt;&amp;2; exit 2; }
+dry_run=0
+while getopts &quot;:n&quot; opt; do
+  case $opt in
+    n) dry_run=1 ;;
+    *) usage ;;
+  esac
+done
+shift $((OPTIND - 1))
+release=&quot;${1:-}&quot;; [ -n &quot;$release&quot; ] || usage
+```
+
+## Temp files and cleanup
+```bash
+tmpdir=&quot;$(mktemp -d)&quot;
+cleanup() { rm -rf -- &quot;$tmpdir&quot;; }
+trap cleanup EXIT
+trap &#x27;exit 130&#x27; INT TERM          # EXIT trap still runs
+```
+
+## Destructive steps
+```bash
+target=&quot;${WEB_ROOT:?WEB_ROOT is empty}&quot;
+case $target in /|/usr|/etc|&quot;$HOME&quot;) die &quot;refusing to clean $target&quot; ;; esac
+run() { if [ &quot;$dry_run&quot; -eq 1 ]; then echo &quot;+ $*&quot;; else &quot;$@&quot;; fi; }
+run rm -rf -- &quot;$target&quot;/*
+```
+
+## Loops over files and lines
+```bash
+for f in &quot;$dir&quot;/*.csv; do [ -e &quot;$f&quot; ] || continue; process &quot;$f&quot;; done
+find &quot;$dir&quot; -type f -name &#x27;*.log&#x27; -print0 | while IFS= read -r -d &#x27;&#x27; f; do gzip -- &quot;$f&quot;; done
+while IFS= read -r line || [ -n &quot;$line&quot; ]; do echo &quot;$line&quot;; done &lt; input.txt   # last line without newline
+```
+
+## Commands as data
+```bash
+args=(--archive --delete -- &quot;$src/&quot; &quot;$dst/&quot;)
+[ &quot;$dry_run&quot; -eq 1 ] &amp;&amp; args=(--dry-run &quot;${args[@]}&quot;)
+rsync &quot;${args[@]}&quot;
+```
+
+## Secrets
+- Read from the environment or a file with 600 permissions: `token=&quot;$(&lt;&quot;$CRED_FILE&quot;)&quot;`.
+- Pass to tools via stdin or env, not command-line arguments (visible in `ps`): `curl -H @- &lt;&lt;&lt;&quot;Authorization: Bearer $token&quot;`.
+- `set +x` around secret handling.
+
+## Downloads
+```bash
+curl -fsSL --retry 3 -o &quot;$tmpdir/tool.tgz&quot; &quot;$URL&quot;
+echo &quot;$SHA256  $tmpdir/tool.tgz&quot; | sha256sum -c -
+```
+`-f` makes HTTP errors fail instead of saving the error page.
+
+## Locking and idempotency
+```bash
+exec 9&gt;/var/lock/deploy.lock
+flock -n 9 || die &quot;another deploy is running&quot;
+mkdir -p -- &quot;$dir&quot;                 # no error if it exists
+ln -sfn -- &quot;$release_dir&quot; current  # atomic switch of a symlink
+```
+
+## Logging
+```bash
+log() { printf &#x27;%s %s\n&#x27; &quot;$(date -u +%FT%TZ)&quot; &quot;$*&quot; &gt;&amp;2; }
+```
+Send logs to stderr so stdout stays clean for data.
+
+## Testing a script safely
+1. `bash -n script.sh` (syntax only), `shellcheck script.sh`, `python3 scripts/shell_lint.py script.sh`.
+2. Run with a dry-run flag, then in a throwaway container: `docker run --rm -v &quot;$PWD&quot;:/w -w /w bash:5 bash script.sh`.
+3. Trace once with `bash -x script.sh` (secrets off).
+FILE:templates/shell-review.md
+# Shell script review: &lt;script name&gt;
+
+**Runs from:** &lt;cron on web-01 as root / GitHub Actions ubuntu-24.04 / Docker entrypoint (Alpine, busybox sh)&gt;
+**Shell:** &lt;bash 5.2 / sh (dash)&gt;   **Untrusted inputs:** &lt;$1 release tag, hosts.txt, file names in uploads/&gt;
+**Verdict:** &lt;BLOCK: 3 HIGH findings / OK with fixes / OK&gt;
+**Summary:** &lt;one or two sentences: the worst risk and what the fix changes&gt;
+
+## Findings
+| # | Severity | Code | Line | Problem | Fix |
+|---|---|---|---|---|---|
+| 1 | &lt;HIGH&gt; | &lt;RM_EMPTY_VAR&gt; | &lt;15&gt; | &lt;rm -rf $WEB_ROOT/* deletes /* if WEB_ROOT is empty&gt; | &lt;rm -rf -- &quot;${WEB_ROOT:?}&quot;/*&gt; |
+
+## Manual review notes
+- &lt;inputs that reach rm/ssh/sql/paths, and how they are validated&gt;
+- &lt;idempotency: what happens if it runs twice or stops halfway&gt;
+- &lt;cleanup on exit and on Ctrl+C&gt;
+
+## Fixed script
+```bash
+&lt;full corrected script&gt;
+```
+
+## Key changes
+```diff
+- rm -rf $WEB_ROOT/*
++ rm -rf -- &quot;${WEB_ROOT:?}&quot;/*
+```
+
+## Behavior changes
+- &lt;now exits on the first failed command; previously continued&gt;
+
+## How to test safely
+1. `bash -n &lt;script&gt;` and `python3 scripts/shell_lint.py &lt;script&gt;` (expect 0 HIGH)
+2. `shellcheck &lt;script&gt;` if available
+3. Dry run or a throwaway container: `&lt;command&gt;`
+4. &lt;rotate the exposed secret: where and who&gt;
+FILE:examples/deploy.sh
+#!/bin/bash
+# Deploy the web app build to /srv/www and restart the service.
+# Usage: deploy.sh &lt;release-tag&gt;
+
+RELEASE=$1
+BUILD_DIR=/srv/builds/$RELEASE
+WEB_ROOT=/srv/www
+SLACK_TOKEN=&quot;xoxb-0000-EXAMPLE-not-real&quot;
+
+curl -fsSL https://get.example-tools.dev/install.sh | sudo bash
+
+cd $BUILD_DIR
+echo &quot;Deploying $RELEASE&quot; &gt; /tmp/deploy.log
+
+rm -rf $WEB_ROOT/*
+cp -r dist/* $WEB_ROOT/
+
+for f in $(ls $BUILD_DIR/migrations); do
+  psql -f $BUILD_DIR/migrations/$f app_db
+done
+
+chmod -R 777 $WEB_ROOT/uploads
+
+while read host; do
+  ssh -o StrictHostKeyChecking=no deploy@$host &quot;sudo systemctl restart web&quot;
+done &lt; hosts.txt
+
+cleanup() {
+  local count=$(ls /srv/builds | wc -l)
+  echo &quot;Builds on disk: $count&quot;
+}
+cleanup
+
+curl -s -X POST -H &quot;Authorization: Bearer $SLACK_TOKEN&quot; \
+  -d &quot;text=Deployed `date`&quot; https://slack.com/api/chat.postMessage
+FILE:examples/deploy-fixed.sh
+#!/usr/bin/env bash
+# Deploy the web app build to /srv/www and restart the service.
+# Usage: SLACK_TOKEN=... deploy.sh &lt;release-tag&gt;
+set -euo pipefail
+
+RELEASE=&quot;${1:?usage: deploy.sh &lt;release-tag&gt;}&quot;
+BUILD_DIR=&quot;/srv/builds/${RELEASE}&quot;
+WEB_ROOT=&quot;/srv/www&quot;
+SLACK_TOKEN=&quot;${SLACK_TOKEN:?set SLACK_TOKEN in the environment}&quot;
+
+# Installer is pinned and checked instead of curl | bash.
+installer=&quot;$(mktemp)&quot;
+log=&quot;$(mktemp)&quot;
+trap &#x27;rm -f -- &quot;$installer&quot; &quot;$log&quot;&#x27; EXIT
+curl -fsSL -o &quot;$installer&quot; https://get.example-tools.dev/install-1.4.2.sh
+echo &quot;3b1f0c9e2d4a5b6c7d8e9f00112233445566778899aabbccddeeff0011223344  $installer&quot; | sha256sum -c -
+sudo bash &quot;$installer&quot;
+
+cd -- &quot;$BUILD_DIR&quot;
+echo &quot;Deploying ${RELEASE}&quot; &gt; &quot;$log&quot;
+
+rm -rf -- &quot;${WEB_ROOT:?}&quot;/*
+cp -r dist/. &quot;$WEB_ROOT/&quot;
+
+for f in &quot;$BUILD_DIR&quot;/migrations/*.sql; do
+  [ -e &quot;$f&quot; ] || continue
+  psql -v ON_ERROR_STOP=1 -f &quot;$f&quot; app_db
+done
+
+chmod -R u=rwX,g=rX,o= &quot;$WEB_ROOT/uploads&quot;
+
+while IFS= read -r host; do
+  ssh -n -o StrictHostKeyChecking=yes &quot;deploy@${host}&quot; &quot;sudo systemctl restart web&quot;
+done &lt; hosts.txt
+
+report_builds() {
+  local count
+  count=&quot;$(find /srv/builds -mindepth 1 -maxdepth 1 -type d | wc -l)&quot;
+  echo &quot;Builds on disk: ${count}&quot;
+}
+report_builds
+
+curl -fsS -X POST -H &quot;Authorization: Bearer ${SLACK_TOKEN}&quot; \
+  --data-urlencode &quot;text=Deployed ${RELEASE} at $(date -u +%FT%TZ)&quot; https://slack.com/api/chat.postMessage
+FILE:scripts/shell_lint.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Shell script safety linter (Python 3 standard library only).
+
+Reads a bash or POSIX sh script and flags the mistakes that cause data loss, security
+holes or silent failures: no strict mode, rm -rf on a variable that may be empty,
+curl | sh, eval on variables, unquoted expansions (word splitting and globbing),
+unchecked cd, parsing ls, chmod 777, hardcoded secrets, predictable /tmp files,
+mktemp without a cleanup trap, read without -r, ssh eating a while-read loop&#x27;s input,
+local/export masking a failed command substitution, TLS or host-key checks turned
+off, backticks and bashisms in /bin/sh.
+
+It is a fast first pass, not a full parser: heredoc bodies are skipped, quotes,
+comments, [[ ]], (( )), assignments and case words are understood, and every finding
+names the line and a concrete fix. Silence a finding on one line with a trailing
+comment &quot;# shell-lint: disable=CODE[,CODE]&quot;.
+
+Usage:
+  python3 shell_lint.py script.sh [more.sh ...] [--json] [--min-severity MEDIUM]
+                        [--ignore CODE,CODE]
+  python3 shell_lint.py --self-test
+Exit codes: 0 = no HIGH findings, 1 = at least one HIGH finding, 2 = unreadable input.
+&quot;&quot;&quot;
+import argparse, json, re, sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2, &quot;INFO&quot;: 3}
+SECRET_NAME = re.compile(r&quot;[A-Z0-9_]*(PASSWORD|PASSWD|TOKEN|SECRET|API_?KEY|ACCESS_KEY|PRIVATE_KEY)[A-Z0-9_]*&quot;)
+FIXES = {
+    &quot;NO_SHEBANG&quot;: &quot;Add &#x27;#!/usr/bin/env bash&#x27; (or &#x27;#!/bin/sh&#x27; for POSIX) as line 1 so the right shell runs it.&quot;,
+    &quot;NO_STRICT_MODE&quot;: &quot;Add &#x27;set -euo pipefail&#x27; after the shebang (POSIX sh: &#x27;set -eu&#x27;) so failures stop the script.&quot;,
+    &quot;NO_PIPEFAIL&quot;: &quot;Add &#x27;set -o pipefail&#x27; so &#x27;cmd | tee log&#x27; fails when cmd fails.&quot;,
+    &quot;RM_EMPTY_VAR&quot;: &quot;Guard the variable: rm -rf -- \&quot;${VAR:?VAR is empty}/\&quot;... and quote it; never build rm paths from unchecked input.&quot;,
+    &quot;RM_ROOT&quot;: &quot;Never rm the filesystem root or /*; point at a specific directory.&quot;,
+    &quot;CURL_PIPE_SHELL&quot;: &quot;Download to a file, verify a checksum or signature, read it, then run it.&quot;,
+    &quot;EVAL_VAR&quot;: &quot;Avoid eval; use arrays for commands (cmd=(ls -l \&quot;$dir\&quot;); \&quot;${cmd[@]}\&quot;) or a case statement.&quot;,
+    &quot;UNQUOTED_VAR&quot;: &quot;Quote expansions: \&quot;$var\&quot;, \&quot;${arr[@]}\&quot;, \&quot;$(cmd)\&quot; to stop word splitting and globbing.&quot;,
+    &quot;CD_UNCHECKED&quot;: &quot;Use &#x27;cd \&quot;$dir\&quot; || exit 1&#x27; (or enable set -e) so later commands do not run in the wrong directory.&quot;,
+    &quot;LS_PARSING&quot;: &quot;Use a glob (for f in ./*.log) or find -print0 | while IFS= read -r -d &#x27;&#x27; f instead of parsing ls/find output.&quot;,
+    &quot;BACKTICKS&quot;: &quot;Use $(...) instead of backticks; it nests and quotes predictably.&quot;,
+    &quot;CHMOD_777&quot;: &quot;Grant only what is needed (755 for dirs/executables, 644 for files, 600 for secrets).&quot;,
+    &quot;HARDCODED_SECRET&quot;: &quot;Read the secret from the environment or a secret manager (\&quot;${API_TOKEN:?}\&quot;), rotate the exposed value.&quot;,
+    &quot;PREDICTABLE_TMP&quot;: &quot;Use tmp=$(mktemp) or tmpdir=$(mktemp -d) instead of a fixed /tmp name (symlink and race attacks).&quot;,
+    &quot;NO_TRAP_CLEANUP&quot;: &quot;Add trap &#x27;rm -rf -- \&quot;$tmpdir\&quot;&#x27; EXIT right after mktemp.&quot;,
+    &quot;READ_WITHOUT_R&quot;: &quot;Use &#x27;read -r&#x27; (and IFS= read -r line) so backslashes and leading spaces survive.&quot;,
+    &quot;LOCAL_MASKS_STATUS&quot;: &quot;Split it: &#x27;local out; out=$(cmd)&#x27; so set -e and $? see the command&#x27;s failure.&quot;,
+    &quot;TLS_DISABLED&quot;: &quot;Remove -k/--insecure/--no-check-certificate/StrictHostKeyChecking=no; fix the CA bundle or pin the host key.&quot;,
+    &quot;SSH_STDIN_LOOP&quot;: &quot;Use &#x27;ssh -n&#x27; (or ssh ... &lt; /dev/null) inside while-read loops; otherwise ssh eats the rest of the input.&quot;,
+    &quot;BASHISM_IN_SH&quot;: &quot;Either change the shebang to bash or use the POSIX form ([ ], =, . file, no arrays).&quot;,
+}
+
+
+class Finding:
+    def __init__(self, sev, code, line, snippet, problem):
+        self.sev, self.code, self.line, self.snippet, self.problem = sev, code, line, snippet, problem
+
+    def as_dict(self):
+        return {&quot;severity&quot;: self.sev, &quot;code&quot;: self.code, &quot;line&quot;: self.line,
+                &quot;snippet&quot;: self.snippet, &quot;problem&quot;: self.problem, &quot;fix&quot;: FIXES.get(self.code, &quot;&quot;)}
+
+
+def strip_comment(line):
+    &quot;&quot;&quot;Remove an unquoted comment. &#x27;#&#x27; starts a comment only at the start of a word.&quot;&quot;&quot;
+    state, i = None, 0
+    while i &lt; len(line):
+        c = line[i]
+        if state is None:
+            if c == &quot;\\&quot;:
+                i += 2; continue
+            if c in &quot;&#x27;\&quot;`&quot;:
+                state = c
+            elif c == &quot;#&quot; and (i == 0 or line[i - 1] in &quot; \t;|&amp;(&quot;):
+                return line[:i].rstrip()
+        elif state == &quot;&#x27;&quot;:
+            if c == &quot;&#x27;&quot;:
+                state = None
+        else:
+            if c == &quot;\\&quot;:
+                i += 2; continue
+            if c == state:
+                state = None
+        i += 1
+    return line
+
+
+def logical_lines(text):
+    &quot;&quot;&quot;Yield (line_no, code_without_comment, raw_line, disabled_codes); heredoc bodies skipped.&quot;&quot;&quot;
+    lines = text.split(&quot;\n&quot;)
+    pending = []  # heredoc terminators waiting, in order
+    out = []
+    for no, raw in enumerate(lines, 1):
+        if pending:
+            delim, dash = pending[0]
+            body = raw.lstrip(&quot;\t&quot;) if dash else raw
+            if body == delim:
+                pending.pop(0)
+            continue
+        m = re.search(r&quot;#\s*shell-lint:\s*disable=([A-Z_,\s]+)&quot;, raw)
+        disabled = {c.strip() for c in m.group(1).split(&quot;,&quot;)} if m else set()
+        code = strip_comment(raw)
+        for hm in re.finditer(r&quot;&lt;&lt;(-?)\s*([&#x27;\&quot;]?)([A-Za-z_][A-Za-z0-9_]*)\2&quot;, code):
+            if code[hm.start():hm.start() + 3] == &quot;&lt;&lt;&lt;&quot;:
+                continue
+            pending.append((hm.group(3), hm.group(1) == &quot;-&quot;))
+        out.append((no, code, raw, disabled))
+    return out
+
+
+def match_paren(s, i):
+    &quot;&quot;&quot;s[i] == &#x27;(&#x27; ; return index of the matching &#x27;)&#x27; respecting quotes, or len(s).&quot;&quot;&quot;
+    depth, state, j = 0, None, i
+    while j &lt; len(s):
+        c = s[j]
+        if state is None:
+            if c == &quot;\\&quot;:
+                j += 2; continue
+            if c in &quot;&#x27;\&quot;&quot;:
+                state = c
+            elif c == &quot;(&quot;:
+                depth += 1
+            elif c == &quot;)&quot;:
+                depth -= 1
+                if depth == 0:
+                    return j
+        elif c == state:
+            state = None
+        elif c == &quot;\\&quot; and state == &#x27;&quot;&#x27;:
+            j += 1
+        j += 1
+    return len(s)
+
+
+def unquoted_expansions(code):
+    &quot;&quot;&quot;Return names of $var / ${...} / $(...) / $@ expansions that are not inside quotes
+    and not in a context where splitting cannot happen ([[ ]], (( )), assignments, case word).&quot;&quot;&quot;
+    found = []
+    stripped = code.strip()
+    if re.match(r&quot;case\s&quot;, stripped):
+        return found
+    state, i, dbl_brackets, arith = None, 0, 0, 0
+    n = len(code)
+
+    def word_start(k):
+        while k &gt; 0 and code[k - 1] not in &quot; \t;|&amp;(&quot;:
+            k -= 1
+        return k
+
+    while i &lt; n:
+        c = code[i]
+        if state == &quot;&#x27;&quot;:
+            if c == &quot;&#x27;&quot;:
+                state = None
+            i += 1; continue
+        if c == &quot;\\&quot;:
+            i += 2; continue
+        if state is None and c == &quot;&#x27;&quot;:
+            state = &quot;&#x27;&quot;; i += 1; continue
+        if c == &#x27;&quot;&#x27;:
+            state = None if state == &#x27;&quot;&#x27; else &#x27;&quot;&#x27;
+            i += 1; continue
+        if state is None and code.startswith(&quot;[[&quot;, i) and (i == 0 or code[i - 1] in &quot; \t;&amp;|!(&quot;):
+            dbl_brackets += 1; i += 2; continue
+        if state is None and code.startswith(&quot;]]&quot;, i) and dbl_brackets:
+            dbl_brackets -= 1; i += 2; continue
+        if state is None and code.startswith(&quot;((&quot;, i) and (i == 0 or code[i - 1] in &quot; \t;&amp;|!&quot;):
+            end = match_paren(code, i)
+            i = end + 1; continue
+        if c == &quot;`&quot;:
+            end = code.find(&quot;`&quot;, i + 1)
+            i = (end if end != -1 else n) + 1; continue
+        if c == &quot;$&quot; and i + 1 &lt; n:
+            nxt = code[i + 1]
+            if code.startswith(&quot;$((&quot;, i):
+                end = match_paren(code, i + 1)
+                i = end + 1; continue
+            if nxt == &quot;(&quot;:
+                end = match_paren(code, i + 1)
+                inner = code[i + 2:end]
+                found.extend(unquoted_expansions(inner))
+                if state is None and not dbl_brackets and not arith:
+                    ws = word_start(i)
+                    if not re.match(r&quot;[A-Za-z_][A-Za-z0-9_]*(\[[^\]]*\])?\+?=&quot;, code[ws:i + 1]):
+                        found.append(&quot;$(&quot; + inner.strip()[:20] + &quot;)&quot;)
+                i = end + 1; continue
+            m = re.match(r&quot;\$(\{[^}]*\}|[A-Za-z_][A-Za-z0-9_]*|[@*]|[0-9])&quot;, code[i:])
+            if m:
+                tok = m.group(0)
+                if state is None and not dbl_brackets:
+                    ws = word_start(i)
+                    is_assign = re.match(r&quot;[A-Za-z_][A-Za-z0-9_]*(\[[^\]]*\])?\+?=&quot;, code[ws:i + 1])
+                    if not is_assign and not tok.startswith(&quot;${#&quot;):
+                        found.append(tok)
+                i += len(tok); continue
+        i += 1
+    return found
+
+
+def commands(code):
+    &quot;&quot;&quot;Split a line into simple commands on ; &amp;&amp; || | (outside quotes).&quot;&quot;&quot;
+    parts, cur, state, i = [], &quot;&quot;, None, 0
+    while i &lt; len(code):
+        c = code[i]
+        if state is None and c in &quot;&#x27;\&quot;&quot;:
+            state = c
+        elif state and c == state:
+            state = None
+        if state is None and c in &quot;;|&amp;&quot;:
+            parts.append(cur); cur = &quot;&quot;
+            while i + 1 &lt; len(code) and code[i + 1] in &quot;;|&amp;&quot;:
+                i += 1
+            i += 1; continue
+        cur += c; i += 1
+    parts.append(cur)
+    return [p.strip() for p in parts if p.strip()]
+
+
+def lint(text, name=&quot;script&quot;):
+    findings = []
+    lines = logical_lines(text)
+    first = text.split(&quot;\n&quot;, 1)[0]
+    shebang = first if first.startswith(&quot;#!&quot;) else &quot;&quot;
+    is_posix_sh = bool(re.search(r&quot;(^#!\s*/bin/sh\b|/env\s+sh\b|/bin/dash\b)&quot;, shebang))
+    all_code = &quot;\n&quot;.join(c for _, c, _, _ in lines)
+    strict_e = bool(re.search(r&quot;(^|\n)\s*set\s+(-[a-zA-Z]*e[a-zA-Z]*\b|-o\s+errexit)&quot;, all_code)) or bool(re.search(r&quot;\s-[a-z]*e&quot;, shebang))
+    pipefail = &quot;pipefail&quot; in all_code
+    uses_pipes = &quot;|&quot; in all_code.replace(&quot;||&quot;, &quot;&quot;)
+    uses_mktemp = &quot;mktemp&quot; in all_code
+    has_trap = bool(re.search(r&quot;(^|\n)\s*trap\s&quot;, all_code))
+
+    def add(sev, code, no, snippet, problem, disabled=frozenset()):
+        if code not in disabled:
+            findings.append(Finding(sev, code, no, snippet.strip()[:80], problem))
+
+    if not shebang:
+        add(&quot;LOW&quot;, &quot;NO_SHEBANG&quot;, 1, first, &quot;no shebang line; the caller&#x27;s shell decides how this runs&quot;)
+    if not strict_e:
+        add(&quot;MEDIUM&quot;, &quot;NO_STRICT_MODE&quot;, 1, shebang or first, &quot;no &#x27;set -e&#x27; (errexit): a failed command does not stop the script&quot;)
+    elif uses_pipes and not pipefail and not is_posix_sh:
+        add(&quot;LOW&quot;, &quot;NO_PIPEFAIL&quot;, 1, shebang, &quot;pipes are used but pipefail is off: only the last command&#x27;s status counts&quot;)
+    if uses_mktemp and not has_trap:
+        no = next((n for n, c, _, _ in lines if &quot;mktemp&quot; in c), 1)
+        add(&quot;LOW&quot;, &quot;NO_TRAP_CLEANUP&quot;, no, next(c for n, c, _, _ in lines if n == no), &quot;mktemp is used but nothing removes the temp file on exit or error&quot;)
+
+    read_loop = 0
+    for no, code, raw, dis in lines:
+        if not code.strip():
+            continue
+        if re.search(r&quot;(^|[;&amp;|\s])while\b.*\bread\b&quot;, code):
+            read_loop += 1
+        if read_loop and re.search(r&quot;(^|[;&amp;|\s])ssh\s&quot;, code) and not re.search(r&quot;\bssh\s+(-\w+\s+)*-\w*n\b|&lt;\s*/dev/null&quot;, code):
+            add(&quot;MEDIUM&quot;, &quot;SSH_STDIN_LOOP&quot;, no, code, &quot;ssh inside a while-read loop reads the loop&#x27;s stdin, so the loop stops after the first item&quot;, dis)
+        if read_loop and re.search(r&quot;(^|[;&amp;|\s])done\b&quot;, code):
+            read_loop -= 1
+        # curl | sh
+        if re.search(r&quot;\b(curl|wget)\b[^|]*\|\s*(sudo\s+(-\S+\s+)*)?(ba|z|da|k)?sh\b&quot;, code):
+            add(&quot;HIGH&quot;, &quot;CURL_PIPE_SHELL&quot;, no, code, &quot;remote script piped straight into a shell: no review, no integrity check, partial downloads run&quot;, dis)
+        if re.search(r&quot;\b(curl\b[^|;]*\s(-k|--insecure)\b|wget\b[^|;]*--no-check-certificate|StrictHostKeyChecking=no)&quot;, code):
+            add(&quot;MEDIUM&quot;, &quot;TLS_DISABLED&quot;, no, code, &quot;certificate or host-key verification is turned off (man-in-the-middle risk)&quot;, dis)
+        if re.search(r&quot;(^|[;&amp;|(\s])eval\s+.*\$&quot;, code):
+            add(&quot;HIGH&quot;, &quot;EVAL_VAR&quot;, no, code, &quot;eval on a string built from variables runs any shell code an attacker or odd filename puts in it&quot;, dis)
+        if re.search(r&quot;\bchmod\s+(-[A-Za-z]+\s+)*0?777\b|\bchmod\s+(-[A-Za-z]+\s+)*[augo]*\+rwx\b&quot;, code) and re.search(r&quot;777|a\+rwx|o\+rwx&quot;, code):
+            add(&quot;MEDIUM&quot;, &quot;CHMOD_777&quot;, no, code, &quot;world-writable permissions let any local user change the files&quot;, dis)
+        if &quot;`&quot; in code:
+            add(&quot;LOW&quot;, &quot;BACKTICKS&quot;, no, code, &quot;legacy backtick command substitution&quot;, dis)
+        m = re.match(r&quot;\s*(export\s+|readonly\s+|local\s+|declare\s+(-\w+\s+)*)?(&quot; + SECRET_NAME.pattern + r&quot;)=([&#x27;\&quot;]?)([^$&#x27;\&quot;\s][^&#x27;\&quot;\s]{3,})&quot;, code)
+        if m:
+            val = m.group(6)
+            masked = val[:2] + &quot;*&quot; * max(3, len(val) - 4) + val[-2:]
+            add(&quot;HIGH&quot;, &quot;HARDCODED_SECRET&quot;, no, code.replace(val, masked), f&quot;{m.group(3)} has a literal value in the script (ends up in git, logs and ps output)&quot;, dis)
+        if re.match(r&quot;\s*(local|export|declare|readonly)\s+(-\w+\s+)*[A-Za-z_][A-Za-z0-9_]*=\&quot;?\$\(&quot;, code):
+            add(&quot;MEDIUM&quot;, &quot;LOCAL_MASKS_STATUS&quot;, no, code, &quot;the builtin&#x27;s exit status (0) hides a failure of the command substitution, even under set -e&quot;, dis)
+        if re.search(r&quot;(^|[^\w.-])/tmp/[A-Za-z0-9_.${}-]+&quot;, code) and &quot;mktemp&quot; not in code:
+            add(&quot;MEDIUM&quot;, &quot;PREDICTABLE_TMP&quot;, no, code, &quot;fixed /tmp path: another user can pre-create or symlink it, and parallel runs collide&quot;, dis)
+        if re.search(r&quot;\bfor\s+\w+\s+in\s+(\$\(|`)\s*(ls|find)\b&quot;, code) or re.search(r&quot;\bls\b[^|]*\|\s*(while|xargs)\b&quot;, code):
+            add(&quot;MEDIUM&quot;, &quot;LS_PARSING&quot;, no, code, &quot;parsing ls/find output breaks on spaces, newlines and glob characters in filenames&quot;, dis)
+        for cmd in commands(code):
+            words = cmd.split()
+            if not words:
+                continue
+            w0 = words[0]
+            while w0 in (&quot;sudo&quot;, &quot;command&quot;, &quot;builtin&quot;, &quot;exec&quot;, &quot;!&quot;, &quot;while&quot;, &quot;until&quot;, &quot;if&quot;, &quot;then&quot;,
+                         &quot;do&quot;, &quot;else&quot;, &quot;elif&quot;, &quot;{&quot;, &quot;(&quot;) and len(words) &gt; 1:
+                words = words[1:]; w0 = words[0]
+            if w0 == &quot;rm&quot;:
+                args = words[1:]
+                rec = any(re.match(r&quot;-[a-zA-Z]*[rR]&quot;, a) or a == &quot;--recursive&quot; for a in args)
+                if any(a.strip(&quot;&#x27;\&quot;&quot;) in (&quot;/&quot;, &quot;/*&quot;) for a in args):
+                    add(&quot;HIGH&quot;, &quot;RM_ROOT&quot;, no, cmd, &quot;rm targets / or /*&quot;, dis)
+                for a in args:
+                    if a.startswith(&quot;-&quot;) and a != &quot;--&quot;:
+                        continue
+                    if &quot;$&quot; in a and not re.search(r&quot;\$\{[A-Za-z_][A-Za-z0-9_]*:\?&quot;, a):
+                        a_clean = a.strip(&quot;&#x27;\&quot;&quot;)
+                        if re.match(r&quot;\$\{?[A-Za-z_][A-Za-z0-9_]*\}?(/|\&quot;?$)&quot;, a_clean) or rec:
+                            add(&quot;HIGH&quot; if rec else &quot;MEDIUM&quot;, &quot;RM_EMPTY_VAR&quot;, no, cmd,
+                                f&quot;rm{&#x27; -r&#x27; if rec else &#x27;&#x27;} on {a}: if the variable is empty or unset this deletes the wrong path (e.g. &#x27;/&#x27;)&quot;, dis)
+                            break
+            if w0 == &quot;cd&quot; and not strict_e:
+                if not re.search(re.escape(cmd) + r&quot;\s*(\|\||&amp;&amp;)&quot;, code) and not re.search(r&quot;(\|\||&amp;&amp;)\s*&quot; + re.escape(cmd), code):
+                    add(&quot;MEDIUM&quot;, &quot;CD_UNCHECKED&quot;, no, cmd, &quot;cd may fail and the following commands then run in the wrong directory&quot;, dis)
+            if w0 == &quot;read&quot;:
+                opts = [a for a in words[1:] if a.startswith(&quot;-&quot;)]
+                if not any(&quot;r&quot; in o for o in opts):
+                    add(&quot;LOW&quot;, &quot;READ_WITHOUT_R&quot;, no, cmd, &quot;read without -r mangles backslashes&quot;, dis)
+        exps = unquoted_expansions(code)
+        if exps:
+            uniq = list(dict.fromkeys(exps))
+            shown = &quot;, &quot;.join(uniq[:4]) + (&quot; ...&quot; if len(uniq) &gt; 4 else &quot;&quot;)
+            only_echo = re.match(r&quot;\s*(echo|printf)\s+[^|&gt;]*$&quot;, code) and not any(e in (&quot;$@&quot;, &quot;$*&quot;) for e in uniq)
+            if only_echo:
+                add(&quot;LOW&quot;, &quot;UNQUOTED_VAR&quot;, no, code, &quot;unquoted &quot; + shown + &quot; in echo/printf: spacing collapses and * expands&quot;, dis)
+            else:
+                add(&quot;MEDIUM&quot;, &quot;UNQUOTED_VAR&quot;, no, code, &quot;unquoted &quot; + shown + &quot;: word splitting and glob expansion&quot;, dis)
+        if is_posix_sh:
+            bash = []
+            if re.search(r&quot;(^|[\s;&amp;|!])\[\[\s&quot;, code): bash.append(&quot;[[ ]]&quot;)
+            if re.search(r&quot;(^|[\s;&amp;|])\[\s[^]]*\s==\s&quot;, code): bash.append(&quot;== in [ ]&quot;)
+            if re.match(r&quot;\s*function\s+\w+&quot;, code): bash.append(&quot;function keyword&quot;)
+            if re.search(r&quot;\b[A-Za-z_]\w*=\(&quot;, code): bash.append(&quot;array&quot;)
+            if re.match(r&quot;\s*source\s&quot;, code): bash.append(&quot;source&quot;)
+            if &quot;&lt;&lt;&lt;&quot; in code: bash.append(&quot;here-string&quot;)
+            if re.search(r&quot;&amp;&gt;&quot;, code): bash.append(&quot;&amp;&gt;&quot;)
+            if re.search(r&quot;\$&#x27;&quot;, code): bash.append(&quot;$&#x27;...&#x27;&quot;)
+            if bash:
+                add(&quot;MEDIUM&quot;, &quot;BASHISM_IN_SH&quot;, no, code, &quot;bash-only syntax under #!/bin/sh (&quot; + &quot;, &quot;.join(bash) + &quot;); dash and busybox sh will fail&quot;, dis)
+    findings.sort(key=lambda f: (SEV_ORDER[f.sev], f.line, f.code))
+    return findings
+
+
+def render_md(name, findings):
+    counts = {s: sum(1 for f in findings if f.sev == s) for s in SEV_ORDER}
+    out = [f&quot;# Shell lint: {name}&quot;, &quot;&quot;,
+           f&quot;Findings: {len(findings)} (HIGH {counts[&#x27;HIGH&#x27;]}, MEDIUM {counts[&#x27;MEDIUM&#x27;]}, LOW {counts[&#x27;LOW&#x27;]})&quot;, &quot;&quot;]
+    if not findings:
+        out.append(&quot;No findings.&quot;)
+        return &quot;\n&quot;.join(out)
+    out += [&quot;| Severity | Code | Line | Snippet | Problem |&quot;, &quot;|---|---|---|---|---|&quot;]
+    for f in findings:
+        snip = f.snippet.replace(&quot;|&quot;, &quot;\\|&quot;).replace(&quot;`&quot;, &quot;&#x27;&quot;)
+        out.append(f&quot;| {f.sev} | {f.code} | {f.line} | `{snip}` | {f.problem.replace(&#x27;|&#x27;, &#x27;/&#x27;)} |&quot;)
+    out += [&quot;&quot;, &quot;## Fixes&quot;, &quot;&quot;]
+    for code in dict.fromkeys(f.code for f in findings):
+        out.append(f&quot;- {code}: {FIXES[code]}&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+# ---------------------------------------------------------------- self-test
+def _codes(src):
+    return [f.code for f in lint(src)]
+
+
+def self_test():
+    S = &quot;#!/usr/bin/env bash\nset -euo pipefail\n&quot;
+    cases = [
+        (&quot;clean script has no findings&quot;, S + &#x27;dir=&quot;$1&quot;\ncp -- &quot;$dir/a&quot; &quot;$dir/b&quot;\n&#x27;, lambda c: c == []),
+        (&quot;missing shebang&quot;, &#x27;set -eu\necho &quot;hi&quot;\n&#x27;, lambda c: &quot;NO_SHEBANG&quot; in c),
+        (&quot;missing strict mode&quot;, &quot;#!/bin/bash\necho ok\n&quot;, lambda c: &quot;NO_STRICT_MODE&quot; in c),
+        (&quot;set -e without pipefail and a pipe&quot;, &quot;#!/bin/bash\nset -e\nmake | tee log\n&quot;, lambda c: &quot;NO_PIPEFAIL&quot; in c),
+        (&quot;set -o errexit counts as strict&quot;, &quot;#!/bin/bash\nset -o errexit\nset -o pipefail\necho ok\n&quot;, lambda c: c == []),
+        (&quot;rm -rf $VAR/ is HIGH&quot;, S + &#x27;rm -rf &quot;$BUILD_DIR&quot;/\n&#x27;, lambda c: &quot;RM_EMPTY_VAR&quot; in c),
+        (&quot;rm -rf ${VAR:?} is fine&quot;, S + &#x27;rm -rf -- &quot;${BUILD_DIR:?}/&quot;\n&#x27;, lambda c: &quot;RM_EMPTY_VAR&quot; not in c),
+        (&quot;rm -rf / is RM_ROOT&quot;, S + &quot;rm -rf /\n&quot;, lambda c: &quot;RM_ROOT&quot; in c),
+        (&quot;curl | bash&quot;, S + &quot;curl -fsSL https://x.example/install.sh | sudo bash\n&quot;, lambda c: &quot;CURL_PIPE_SHELL&quot; in c),
+        (&quot;curl to file is fine&quot;, S + &#x27;curl -fsSLo install.sh &quot;$URL&quot;\n&#x27;, lambda c: &quot;CURL_PIPE_SHELL&quot; not in c),
+        (&quot;eval with variable&quot;, S + &#x27;eval &quot;$cmd&quot;\n&#x27;, lambda c: &quot;EVAL_VAR&quot; in c),
+        (&quot;unquoted var in command&quot;, S + &quot;cp $src $dst\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; in c),
+        (&quot;quoted var is fine&quot;, S + &#x27;cp &quot;$src&quot; &quot;$dst&quot;\n&#x27;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;assignment rhs is fine&quot;, S + &quot;x=$y\nn=$(date +%s)\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;[[ ]] is fine&quot;, S + &quot;if [[ $a == b ]]; then :; fi\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;arith is fine&quot;, S + &quot;n=$(( $a + 1 ))\n(( count &gt; $max ))\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;${#arr} is fine&quot;, S + &#x27;printf &quot;%s\\n&quot; ${#arr[@]}\n&#x27;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;unquoted $@&quot;, S + &quot;run $@\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; in c),
+        (&quot;unquoted cmd substitution&quot;, S + &quot;rm -- $(cat list)\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; in c),
+        (&quot;var inside quoted $( ) still checked&quot;, S + &#x27;x=&quot;$(basename $path)&quot;\n&#x27;, lambda c: &quot;UNQUOTED_VAR&quot; in c),
+        (&quot;single quotes protect&quot;, S + &quot;echo &#x27;$HOME is literal&#x27;\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;comment ignored&quot;, S + &quot;# rm -rf $DIR/ and curl x | sh\n&quot;, lambda c: c == []),
+        (&quot;heredoc body skipped&quot;, S + &quot;cat &lt;&lt;&#x27;EOF&#x27;\nrm -rf $X/\ncurl a | sh\nEOF\n&quot;, lambda c: c == []),
+        (&quot;cd unchecked without set -e&quot;, &quot;#!/bin/bash\ncd /srv/app\n&quot;, lambda c: &quot;CD_UNCHECKED&quot; in c),
+        (&quot;cd || exit is fine&quot;, &quot;#!/bin/bash\ncd /srv/app || exit 1\n&quot;, lambda c: &quot;CD_UNCHECKED&quot; not in c),
+        (&quot;for in $(ls)&quot;, S + &quot;for f in $(ls *.log); do :; done\n&quot;, lambda c: &quot;LS_PARSING&quot; in c),
+        (&quot;backticks&quot;, S + &quot;d=`date`\n&quot;, lambda c: &quot;BACKTICKS&quot; in c),
+        (&quot;chmod 777&quot;, S + &quot;chmod -R 777 /srv/app\n&quot;, lambda c: &quot;CHMOD_777&quot; in c),
+        (&quot;hardcoded token, value masked&quot;, S + &#x27;export API_TOKEN=&quot;sk_live_abcdef123456&quot;\n&#x27;,
+         lambda c: &quot;HARDCODED_SECRET&quot; in c),
+        (&quot;secret from env is fine&quot;, S + &#x27;API_TOKEN=&quot;${API_TOKEN:?}&quot;\n&#x27;, lambda c: &quot;HARDCODED_SECRET&quot; not in c),
+        (&quot;predictable tmp&quot;, S + &#x27;echo &quot;x&quot; &gt; /tmp/deploy.lock\n&#x27;, lambda c: &quot;PREDICTABLE_TMP&quot; in c),
+        (&quot;mktemp without trap&quot;, S + &quot;tmp=$(mktemp)\n&quot;, lambda c: &quot;NO_TRAP_CLEANUP&quot; in c),
+        (&quot;mktemp with trap fine&quot;, S + &quot;tmp=$(mktemp)\ntrap &#x27;rm -f -- \&quot;$tmp\&quot;&#x27; EXIT\n&quot;, lambda c: &quot;NO_TRAP_CLEANUP&quot; not in c),
+        (&quot;read without -r&quot;, S + &#x27;while read line; do :; done &lt; &quot;$f&quot;\n&#x27;, lambda c: &quot;READ_WITHOUT_R&quot; in c),
+        (&quot;local masks status&quot;, S + &quot;f() {\n  local out=$(git rev-parse HEAD)\n}\n&quot;, lambda c: &quot;LOCAL_MASKS_STATUS&quot; in c),
+        (&quot;curl -k&quot;, S + &#x27;curl -k &quot;$URL&quot; -o x\n&#x27;, lambda c: &quot;TLS_DISABLED&quot; in c),
+        (&quot;bashisms under /bin/sh&quot;, &quot;#!/bin/sh\nset -eu\nif [[ -n \&quot;$x\&quot; ]]; then source ./env; fi\n&quot;,
+         lambda c: &quot;BASHISM_IN_SH&quot; in c),
+        (&quot;bash allows [[ ]]&quot;, S + &#x27;if [[ -n &quot;$x&quot; ]]; then source ./env; fi\n&#x27;, lambda c: &quot;BASHISM_IN_SH&quot; not in c),
+        (&quot;disable comment&quot;, S + &quot;cp $a $b  # shell-lint: disable=UNQUOTED_VAR\n&quot;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+        (&quot;ssh in while-read loop&quot;, S + &#x27;while IFS= read -r h; do\n  ssh &quot;$h&quot; uptime\ndone &lt; hosts\n&#x27;, lambda c: &quot;SSH_STDIN_LOOP&quot; in c),
+        (&quot;ssh -n in loop is fine&quot;, S + &#x27;while IFS= read -r h; do\n  ssh -n &quot;$h&quot; uptime\ndone &lt; hosts\n&#x27;, lambda c: &quot;SSH_STDIN_LOOP&quot; not in c),
+        (&quot;case word fine&quot;, S + &#x27;case $1 in\n  a) echo &quot;a&quot; ;;\nesac\n&#x27;, lambda c: &quot;UNQUOTED_VAR&quot; not in c),
+    ]
+    passed = 0
+    for name, src, check in cases:
+        got = _codes(src)
+        ok = check(got)
+        passed += ok
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name + (&quot;&quot; if ok else f&quot;  -&gt; {got}&quot;))
+    # masking check and exit code check
+    f = [x for x in lint(S + &#x27;export API_TOKEN=&quot;sk_live_abcdef123456&quot;\n&#x27;) if x.code == &quot;HARDCODED_SECRET&quot;][0]
+    ok = &quot;abcdef123456&quot; not in f.snippet
+    passed += ok; print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + &quot;secret value masked in output&quot;)
+    ok = render_md(&quot;t&quot;, []).endswith(&quot;No findings.&quot;)
+    passed += ok; print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + &quot;empty report&quot;)
+    total = len(cases) + 2
+    print(f&quot;{passed}/{total} passed&quot;)
+    return 0 if passed == total else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Shell script safety linter (stdlib only)&quot;)
+    ap.add_argument(&quot;files&quot;, nargs=&quot;*&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--min-severity&quot;, default=&quot;LOW&quot;, choices=list(SEV_ORDER))
+    ap.add_argument(&quot;--ignore&quot;, default=&quot;&quot;, help=&quot;comma-separated codes to skip&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.files:
+        ap.error(&quot;give at least one script or --self-test&quot;)
+    ignore = {c.strip() for c in a.ignore.split(&quot;,&quot;) if c.strip()}
+    worst, reports, js = 0, [], {}
+    for path in a.files:
+        try:
+            with open(path, encoding=&quot;utf-8&quot;) as fh:
+                text = fh.read()
+        except (OSError, UnicodeDecodeError) as e:
+            print(f&quot;error: cannot read {path}: {e}&quot;, file=sys.stderr)
+            return 2
+        fs = [f for f in lint(text, path) if f.code not in ignore and SEV_ORDER[f.sev] &lt;= SEV_ORDER[a.min_severity]]
+        if any(f.sev == &quot;HIGH&quot; for f in fs):
+            worst = 1
+        js[path] = [f.as_dict() for f in fs]
+        reports.append(render_md(path, fs))
+    print(json.dumps(js, indent=2) if a.json else &quot;\n\n&quot;.join(reports))
+    return worst
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/shell-script-safety-reviewer',TI="Shell Script Safety Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

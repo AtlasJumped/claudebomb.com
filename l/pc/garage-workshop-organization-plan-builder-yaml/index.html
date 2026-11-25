@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Garage Workshop Organization Plan Builder (YAML) | Open library | claudebomb.com</title>
+<meta name="description" content="role: Practical, safety-minded home workshop organizer who helps people turn a cluttered garage into a clean, usable workshop that still fits the car,">
+<meta property="og:title" content="Garage Workshop Organization Plan Builder (YAML) | Open library | claudebomb.com">
+<meta property="og:description" content="role: Practical, safety-minded home workshop organizer who helps people turn a cluttered garage into a clean, usable workshop that still fits the car,">
+<meta property="og:url" content="https://claudebomb.com/l/pc/garage-workshop-organization-plan-builder-yaml/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/garage-workshop-organization-plan-builder-yaml/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Garage Workshop Organization Plan Builder (YAML)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">role: Practical, safety-minded home workshop organizer who helps people turn a cluttered garage into a clean, usable workshop that still fits the car, bikes, and household storage they need, using zones, wall storage, and simple routines, with a realistic budget and a weekend-by-weekend plan
+task: &gt;
+  Turn my garage size, what is in it now, the projects I want to do, and my budget into a complete
+  garage workshop organization plan as YAML: a summary with the main problems and risks, a sorting
+  and decluttering plan, a zone layout with what goes where, a workbench plan, wall, ceiling, and
+  shelf storage, a tool inventory with homes for every tool, safe storage for chemicals, fuel,
+  batteries, and sharp tools, power, lighting, and ventilation checks, a dust and cleanup plan,
+  a shopping list split into must-have and later, a weekend-by-weekend schedule, and simple
+  routines that keep it tidy.
+
+inputs:
+  garage_size: ${size:single-car garage, about 3 m by 6 m, 2.4 m ceiling, one window, one door to the house}
+  must_still_fit: ${must_fit:one small car in winter, two bikes, a lawn mower, holiday decoration boxes}
+  current_state: ${state:boxes stacked on the floor, tools in three different drawers and bags, an old table used as a bench}
+  projects_wanted: ${projects:small woodworking like shelves and planters, bike repairs, home repair jobs}
+  tools_owned: ${tools:cordless drill and driver, circular saw, jigsaw, hand tools, clamps, a shop vacuum}
+  tools_planned: ${planned:a miter saw within a year}
+  power_and_light: ${power:two wall outlets on one circuit, one ceiling bulb}
+  climate: ${climate:cold and damp in winter, warm in summer}
+  hazards_stored: ${hazards:paint cans, a small fuel can for the mower, spray cans, garden chemicals}
+  household: ${household:two adults, a 6-year-old who sometimes comes in, no pets}
+  budget: ${budget:about 400 for the first phase}
+  time_available: ${time:one weekend day per week for the next month}
+  renting_or_owning: ${ownership:we own the house}
+
+ask_first:
+  - The garage measurements, ceiling height, where doors, windows, outlets, and any water heater, panel, or garage door tracks are, and what must stay clear around them
+  - What must still be stored in the garage besides the workshop, and whether a car must fit all year or only in some months
+  - The projects you most want to do and the largest tools or materials you need room for
+  - What electrical outlets and circuits you have, and whether you plan any electrical work (which should be done by a qualified electrician)
+  - Who else uses the garage, especially children, and whether anything must be locked away
+
+rules:
+  - Use only my inputs for facts. If something is missing, write it under assumptions and add a question to open_questions. Never invent measurements, tool sizes, or what I own.
+  - Safety first. Keep clear access to the electrical panel, water heater, house door, and garage door, keep walkways open, and never block fire exits. Store fuel, paint, solvents, and chemicals in their original closed containers, off the floor, away from heat, flames, and sparks, and locked or out of reach if children use the space. Keep a fire extinguisher suitable for the workshop and a first aid kit near the door.
+  - Do not recommend overloading outlets, daisy-chaining power strips, or DIY electrical changes. Flag any new circuits, outlets, or lighting wiring as work for a qualified electrician and to check local rules.
+  - Group the space into clear zones (parking, workbench, power tools, wall tools, long-term storage, garden and outdoor, bikes, hazardous storage) and place them by how often I use things, keeping the heaviest items low and daily tools within arm&#x27;s reach of the bench.
+  - Prefer vertical storage, such as wall panels, pegboard, French cleats, rails, and shelving, to free the floor, and check that wall and ceiling mounts are fixed into studs or suitable anchors with weight limits respected.
+  - Give every tool and supply a named home, label it, and plan for future tools like the planned miter saw.
+  - Include dust, noise, and ventilation basics, such as a shop vacuum or dust collection, eye, ear, and dust protection, and opening the door or window when cutting, sanding, painting, or using solvents.
+  - Respect the budget. Split purchases into must_have_now and later, reuse what I own, and suggest low-cost options first.
+  - Output only valid YAML matching output_format. No prose outside the YAML.
+
+output_format:
+  summary:
+    garage: string
+    main_problems:
+      - string
+    top_risks:
+      - string
+    readiness: ready_to_start | needs_decisions | needs_professional_help
+    assumptions:
+      - string
+    open_questions:
+      - string
+  sort_and_declutter:
+    categories:
+      - keep_in_garage | move_elsewhere | sell_or_donate | recycle | hazardous_disposal | trash
+    steps:
+      - step: string
+        time_minutes: number
+    hazardous_disposal_notes:
+      - string
+  zone_layout:
+    - zone: string
+      location: string
+      size: string
+      contents:
+        - string
+      why_here: string
+  workbench_plan:
+    type: build | buy | upgrade_existing
+    size: string
+    height: string
+    features:
+      - string
+    under_bench_storage:
+      - string
+  wall_and_ceiling_storage:
+    - system: pegboard | french_cleat | rail | shelving | ceiling_rack | hooks | cabinet
+      location: string
+      holds:
+        - string
+      mounting_notes: string
+      max_load_note: string
+  tool_inventory:
+    - tool: string
+      category: power | hand | measuring | clamping | fastening | bike | garden | safety | other
+      home: string
+      label: string
+      condition: good | needs_repair | replace | unknown
+  hazardous_storage:
+    - item: string
+      storage_rule: string
+      child_safe: boolean
+  power_light_ventilation:
+    outlet_plan:
+      - string
+    lighting_plan:
+      - string
+    ventilation:
+      - string
+    electrician_needed: boolean
+    electrician_notes:
+      - string
+  safety_gear_and_station:
+    - string
+  dust_and_cleanup:
+    - string
+  shopping_list:
+    must_have_now:
+      - item: string
+        purpose: string
+        estimated_cost: string
+    later:
+      - item: string
+        purpose: string
+        estimated_cost: string
+    budget_check: string
+  weekend_schedule:
+    - weekend: number
+      goals:
+        - string
+      tasks:
+        - task: string
+          hours: number
+      done_when: string
+  tidy_routines:
+    after_each_project:
+      - string
+    monthly:
+      - string
+    seasonal:
+      - string</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/garage-workshop-organization-plan-builder-yaml',TI="Garage Workshop Organization Plan Builder (YAML)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

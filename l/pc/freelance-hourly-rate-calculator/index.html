@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Freelance Hourly Rate Calculator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: freelance-hourly-rate-calculator description: Works out the hourly and day rate a freelancer must charge from the take-home income they want">
+<meta property="og:title" content="Freelance Hourly Rate Calculator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: freelance-hourly-rate-calculator description: Works out the hourly and day rate a freelancer must charge from the take-home income they want">
+<meta property="og:url" content="https://claudebomb.com/l/pc/freelance-hourly-rate-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/freelance-hourly-rate-calculator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Freelance Hourly Rate Calculator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: freelance-hourly-rate-calculator
+description: Works out the hourly and day rate a freelancer must charge from the take-home income they want. Counts taxes, business costs, savings, vacation, holidays, sick days, the real billable share and a risk buffer, shows how the rate moves with billable time, and prices a project with contingency. Flags rates below break-even or target, unrealistic billable hours and rates off the market. Includes a stdlib Python calculator with --self-test.
+---
+
+# Freelance Hourly Rate Calculator
+
+You help freelancers and people about to go freelance find a rate they can live on. Most underprice because they divide a salary by 2080 hours and forget taxes, insurance, equipment, unpaid holidays, sick days and the hours spent on sales and admin. You work backwards from the take-home income they want to the minimum hourly rate, round it to a rate they can quote, show what their current rate really pays, and price their next project.
+
+## Files in this skill
+
+- `scripts/rate_calc.py` - calculates revenue needed, billable hours, minimum, quoted, day and break-even rates, a billable-share table, the current-rate gap and a project price (Python 3 standard library only)
+- `references/rate-math.md` - the formulas step by step, typical cost lists, billable share by type of work, tax rough guides and common mistakes
+- `references/pricing-and-raising-rates.md` - day, project, retainer and value pricing, how to quote, and how to raise rates with existing clients
+- `templates/rate-card.md` - a one-page rate card with hourly, day and package prices and terms
+- `examples/ux-designer-rate-plan.json` - a Berlin UX designer who wants 48,000 EUR take-home and currently charges 65 EUR/h
+
+## Workflow
+
+### 1. Collect the numbers
+Ask for: the take-home income they want per year (after tax and business costs), savings they want to put aside (pension, emergency fund), their effective tax and social contribution rate (if unknown, use the rough guide in `references/rate-math.md` and tell them to confirm with an accountant), every business cost (insurance, software, equipment, workspace, accountant, marketing, training), hours per week, vacation weeks, public holidays, sick and training days, and the share of working time that is really billable. Also ask for the current rate, typical market rates for their field and region, and an upcoming project estimate if they have one.
+
+### 2. Run the calculator
+```
+python3 scripts/rate_calc.py examples/ux-designer-rate-plan.json
+python3 scripts/rate_calc.py plan.json --round 10 --json
+python3 scripts/rate_calc.py --self-test
+```
+Exit code 1 means HIGH findings, 2 means bad input.
+
+### 3. Explain the result
+Lead with the minimum rate and the quoted rate, then walk the chain from take-home to revenue so they see where the money goes. Use the billable-share table to show why 60% billable is the honest default. If the current rate is too low, show the shortfall and the billable hours it would take to close it, then give options from `references/pricing-and-raising-rates.md`: raise rates for new clients first, move to day or project pricing, cut costs, or lower the target.
+
+### 4. Deliver
+Fill `templates/rate-card.md` with the hourly, day and package prices, payment terms and the date of the next rate review.
+
+## Example result
+For `examples/ux-designer-rate-plan.json`: 48,000 EUR take-home + 7,800 EUR set-asides = 83,284 EUR profit before 33% tax; + 13,500 EUR costs and an 8% risk buffer = 105,200 EUR revenue. 214 working days at 60% billable = 1027 billable hours, so the minimum is 102.41 EUR/h: quote 105 EUR/h or 840 EUR/day. At the current 65 EUR/h, take-home would be 24,311 EUR (23,689 short), and hitting the target would need 94.5% billable time (HIGH BELOW_REQUIRED). The 120 h clinic app redesign with 20% contingency comes to 15,120 EUR instead of 9,360 EUR.
+
+## Rules
+
+- Tax figures are rough guides, not tax advice; tell them to confirm their rate with a local accountant.
+- Never assume more than 70% billable time without evidence from their own time tracking.
+- Show the formulas and inputs so they can change one assumption and re-run.
+- A rate below the market can be raised; a minimum above the market needs a different offer, not just a higher number.
+- Use the currency and the tax situation they give; do not mix currencies.
+FILE:references/rate-math.md
+# Rate Math
+
+## The chain, step by step
+1. **Needed after tax** = target take-home + set-asides (pension, emergency fund, savings goals)
+2. **Profit before tax** = needed after tax / (1 - effective tax and social contribution rate)
+3. **Revenue needed** = (profit before tax + business costs) / (1 - risk buffer)
+4. **Working days** = 260 weekdays - vacation weeks x 5 - public holidays - sick days - training days
+5. **Billable hours** = working days x hours per week / 5 x billable share
+6. **Minimum rate** = revenue needed / billable hours
+7. **Quoted rate** = minimum rounded up (to 5 or 10); **day rate** = quoted x hours per day
+8. **Break-even rate** = business costs / (1 - buffer) / billable hours (pays the bills, pays you nothing)
+
+Check: take-home at a rate R = (R x billable hours x (1 - buffer) - costs) x (1 - tax) - set-asides.
+
+## Why &quot;salary / 2080&quot; is wrong
+2080 = 52 weeks x 40 hours. A freelancer is paid for none of: vacation (20-30 days), public holidays (8-14), sick days (5-10), training (3-10), and the 30-50% of working time spent on sales, proposals, admin, invoicing and learning. A 60,000 salary also comes with employer pension and social contributions, paid leave and equipment. The usual rule of thumb, hourly rate = salary / 1000 to 1200, lands near the result of the full calculation.
+
+## Billable share by type of work
+| Situation | Realistic billable share |
+|---|---|
+| New freelancer, still finding clients | 35-50% |
+| Mix of projects, regular clients | 50-65% |
+| Long full-time contract with one client | 70-85% (but sales stop, and the gap after the contract is long) |
+| Agency-style with heavy account management | 45-60% |
+
+Measure it: track every working hour for 4-8 weeks, then use the real share.
+
+## Typical business costs
+- Health, disability and liability insurance (where self-paid)
+- Pension contributions if compulsory (or put them in set-asides)
+- Hardware with replacement cycle (laptop 3 years, phone 2-3 years), software subscriptions, cloud and domains
+- Workspace: coworking, home office share, internet, phone
+- Accountant, bank fees, payment provider fees, invoicing tool
+- Marketing: website, portfolio, platforms, events, travel to clients
+- Training: courses, books, conferences
+- Professional memberships, licences, legal templates
+
+## Effective tax and contribution rate (rough guide only)
+The effective rate is total income tax and compulsory social contributions divided by profit. It depends on the country, region, legal form, family situation and deductions. As a first rough guess for a single person with profit around 60,000-100,000 in Europe or North America, 25-40% is common; low-tax regimes and flat-rate schemes can be much lower. Always confirm with a local accountant and replace the guess.
+
+## Risk buffer
+Covers late or unpaid invoices, gaps between clients, scope that cannot be billed and slow months. 5% for stable retainers, 10-15% for project work with new clients.
+
+## Common mistakes
+- Using gross revenue as income (taxes and costs come out later)
+- Planning 100% billable hours
+- Forgetting VAT/sales tax is not income (rates here are net of VAT)
+- Not pricing holidays: every week off has to be paid for by the weeks worked
+- Discounting the hourly rate for long projects without a guaranteed volume
+FILE:references/pricing-and-raising-rates.md
+# Pricing Models and Raising Rates
+
+## Choosing a pricing model
+| Model | Use when | Calculation from the minimum rate |
+|---|---|---|
+| Hourly | Unclear scope, support work, small changes | Quoted rate; bill in 15 or 30 minute steps |
+| Day rate | Workshops, embedded work, contracts | Quoted rate x hours per day; half-day = 55-60% of a day (switching cost) |
+| Project (fixed price) | Clear deliverables, you estimate well | Estimated hours x (1 + contingency) x quoted rate; list what is included and the number of revisions |
+| Retainer | Ongoing work each month | Reserved hours per month x quoted rate, often 5-10% lower for guaranteed volume; unused hours expire |
+| Value-based | Your work drives measurable revenue or savings | 5-20% of the first-year value, never below the project price |
+
+Contingency for fixed prices: 10-15% for work you have done many times, 20-30% for new types of work, 30-50% with unclear requirements or many stakeholders.
+
+## Quoting
+- Quote a number, not a range; ranges get negotiated to the bottom.
+- Show the price per package or deliverable, not the hours, when you price by project.
+- Put payment terms on the quote: 30-50% upfront for new clients, net 14 or net 30, late fee, what happens when scope changes.
+- Rates are net of VAT/sales tax; say so.
+
+## When the minimum is below the market
+Quote at least the market middle for your level. Charging less signals lower quality and leaves no room for slow months.
+
+## When the minimum is above the market
+A higher number alone will not sell. Options:
+1. Specialise (industry or problem) so you compete with fewer people and can price above the general market.
+2. Package outcomes and use project or value pricing.
+3. Cut costs that do not bring work.
+4. Raise the billable share with retainers and fewer, larger clients.
+5. Lower the target for the first year and plan rate increases.
+
+## Raising rates with existing clients
+- New clients get the new rate immediately.
+- Existing clients: 30-60 days notice, a date, a short reason (more experience, scope, market), no apology.
+- Raise by 10-20% at a time, once a year or when you are fully booked for 3+ months.
+- Offer the old rate for a prepaid block of hours or a longer retainer if you want to keep a key client.
+
+Sample notice:
+&gt; From 1 January, my rate for new work will be 105 EUR per hour (840 EUR per day). Work already agreed stays at the current rate until it is finished. Thank you for the great collaboration this year; I look forward to the next projects.
+
+## Signals that the rate is too low
+- You are fully booked for months and nobody pushes back on price.
+- You win almost every proposal.
+- You cannot take time off or pay for training.
+FILE:templates/rate-card.md
+# Rate Card - &lt;name&gt;, &lt;role&gt;
+
+**Valid from:** &lt;date&gt;  **Next review:** &lt;date + 12 months&gt;  **Currency:** &lt;EUR&gt;, prices net of VAT
+
+## Rates
+| Service | Price |
+|---|---|
+| Hourly rate | &lt;105&gt; per hour |
+| Day rate (8 h) | &lt;840&gt; per day |
+| Half day (4 h) | &lt;480&gt; |
+| Monthly retainer (&lt;20&gt; h, unused hours expire) | &lt;2,000&gt; per month |
+
+## Packages
+| Package | Includes | Price |
+|---|---|---|
+| &lt;UX audit&gt; | &lt;expert review of 10 key screens, prioritised report, 1 h call&gt; | &lt;2,400&gt; |
+| &lt;App redesign&gt; | &lt;research, wireframes, UI for &lt;n&gt; screens, 2 revision rounds, design system&gt; | &lt;15,120&gt; |
+
+## Terms
+- Payment: &lt;40% upfront, rest on delivery&gt;, invoices due in &lt;14&gt; days; late fee &lt;x%&gt; per month
+- Scope changes: quoted separately before work starts
+- Revisions: &lt;2&gt; rounds included, then hourly
+- Cancellation: &lt;notice period / fee&gt;
+- Travel: &lt;outside city billed at cost + travel time at 50%&gt;
+
+## Behind the numbers (private, do not send)
+- Minimum rate: &lt;102.41&gt;/h at &lt;60&gt;% billable (&lt;1027&gt; h/year)
+- Break-even rate: &lt;14.29&gt;/h
+- Target take-home: &lt;48,000&gt;, revenue needed: &lt;105,200&gt;
+FILE:examples/ux-designer-rate-plan.json
+{
+  &quot;name&quot;: &quot;Deniz, freelance UX/UI designer (Berlin)&quot;,
+  &quot;currency&quot;: &quot;EUR&quot;,
+  &quot;target_net_income&quot;: 48000,
+  &quot;set_asides&quot;: [
+    {&quot;name&quot;: &quot;retirement&quot;, &quot;annual&quot;: 6000},
+    {&quot;name&quot;: &quot;emergency fund top-up&quot;, &quot;monthly&quot;: 150}
+  ],
+  &quot;tax&quot;: {&quot;effective_rate_pct&quot;: 33},
+  &quot;business_costs&quot;: [
+    {&quot;name&quot;: &quot;health and care insurance (self-paid)&quot;, &quot;monthly&quot;: 520},
+    {&quot;name&quot;: &quot;coworking desk&quot;, &quot;monthly&quot;: 190},
+    {&quot;name&quot;: &quot;software (Figma, Adobe, Notion)&quot;, &quot;monthly&quot;: 95},
+    {&quot;name&quot;: &quot;laptop and display (3-year write-off)&quot;, &quot;annual&quot;: 1100},
+    {&quot;name&quot;: &quot;accountant&quot;, &quot;monthly&quot;: 110},
+    {&quot;name&quot;: &quot;liability insurance&quot;, &quot;annual&quot;: 280},
+    {&quot;name&quot;: &quot;website, portfolio and domain&quot;, &quot;annual&quot;: 240},
+    {&quot;name&quot;: &quot;courses and conferences&quot;, &quot;annual&quot;: 900}
+  ],
+  &quot;time&quot;: {
+    &quot;hours_per_week&quot;: 40,
+    &quot;vacation_weeks&quot;: 5,
+    &quot;public_holidays_days&quot;: 10,
+    &quot;sick_days&quot;: 6,
+    &quot;training_days&quot;: 5,
+    &quot;billable_pct&quot;: 60,
+    &quot;hours_per_day&quot;: 8
+  },
+  &quot;risk_buffer_pct&quot;: 8,
+  &quot;current_rate&quot;: 65,
+  &quot;market_rate&quot;: {&quot;low&quot;: 70, &quot;high&quot;: 110},
+  &quot;project&quot;: {&quot;name&quot;: &quot;Clinic booking app redesign&quot;, &quot;estimated_hours&quot;: 120, &quot;contingency_pct&quot;: 20}
+}
+FILE:scripts/rate_calc.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Freelance hourly rate calculator (Python 3 standard library only).
+
+Works backwards from the take-home income you want to the hourly and day rate you must charge,
+counting taxes, business costs, unpaid time and a risk buffer. Compares the result with your
+current rate and the market, and prices a project.
+
+Input JSON (amounts per year unless &quot;monthly&quot; is given):
+  {&quot;name&quot;: &quot;...&quot;, &quot;currency&quot;: &quot;EUR&quot;,
+   &quot;target_net_income&quot;: 48000,                      # take-home after tax and costs
+   &quot;set_asides&quot;: [{&quot;name&quot;: &quot;retirement&quot;, &quot;annual&quot;: 6000}],          (optional, after tax)
+   &quot;tax&quot;: {&quot;effective_rate_pct&quot;: 32},               # income tax + social contributions on profit
+   &quot;business_costs&quot;: [{&quot;name&quot;: &quot;coworking&quot;, &quot;monthly&quot;: 180}, {&quot;name&quot;: &quot;laptop&quot;, &quot;annual&quot;: 2400}],
+   &quot;time&quot;: {&quot;hours_per_week&quot;: 40, &quot;vacation_weeks&quot;: 5, &quot;public_holidays_days&quot;: 10,
+            &quot;sick_days&quot;: 6, &quot;training_days&quot;: 5, &quot;billable_pct&quot;: 60, &quot;hours_per_day&quot;: 8},
+   &quot;risk_buffer_pct&quot;: 10,                           # unpaid invoices, gaps between clients
+   &quot;current_rate&quot;: 55, &quot;market_rate&quot;: {&quot;low&quot;: 60, &quot;high&quot;: 95},       (optional)
+   &quot;project&quot;: {&quot;name&quot;: &quot;...&quot;, &quot;estimated_hours&quot;: 120, &quot;contingency_pct&quot;: 20}}  (optional)
+Formulas:
+  needed after tax   = target net + set-asides
+  profit before tax  = needed after tax / (1 - tax rate)
+  revenue needed     = (profit before tax + business costs) / (1 - risk buffer)
+  working days       = 260 - vacation weeks x 5 - holidays - sick days - training days
+  billable hours     = working days x hours per week / 5 x billable %
+  minimum rate       = revenue needed / billable hours; quoted rate = minimum rounded up to
+                       the next --round (default 5); project price rounded up to 10; day rate = quoted x hours per day
+  break-even rate    = business costs / (1 - buffer) / billable hours (no income at all)
+  net at a rate      = (rate x billable hours x (1 - buffer) - costs) x (1 - tax) - set-asides
+Findings (severity):
+  HIGH   NO_TAX            tax rate missing or 0
+  HIGH   BELOW_BREAK_EVEN  current rate does not even cover business costs
+  HIGH   BELOW_REQUIRED    current rate below the minimum rate (yearly shortfall shown)
+  MEDIUM ABOVE_MARKET      minimum rate above the market high: niche, value pricing or lower target
+  MEDIUM BILLABLE_HIGH     billable share above 75% of working time
+  MEDIUM LONG_HOURS        more than 50 hours per week
+  MEDIUM SHORT_VACATION    under 3 weeks of vacation
+  LOW    UNDER_MARKET      quoted rate below the market low: you can likely charge more
+  LOW    NO_BUFFER         risk buffer 0
+  LOW    NO_SICK_DAYS      no sick days planned
+  LOW    NO_CONTINGENCY    project quote without contingency
+Usage:
+  python3 rate_calc.py plan.json
+  python3 rate_calc.py plan.json --round 10 --json
+  python3 rate_calc.py --self-test
+Exit code: 0 no HIGH findings, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import math
+import sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+
+
+class DataError(ValueError):
+    pass
+
+
+def annual(item):
+    if &quot;annual&quot; in item:
+        return float(item[&quot;annual&quot;])
+    if &quot;monthly&quot; in item:
+        return float(item[&quot;monthly&quot;]) * 12
+    raise DataError(f&quot;cost &#x27;{item.get(&#x27;name&#x27;, &#x27;?&#x27;)}&#x27; needs &#x27;annual&#x27; or &#x27;monthly&#x27;&quot;)
+
+
+def round_up(x, step):
+    return math.ceil(x / step - 1e-9) * step
+
+
+def calc(cfg, step=5):
+    t = cfg.get(&quot;time&quot;) or {}
+    hpw = float(t.get(&quot;hours_per_week&quot;, 40))
+    hpd = float(t.get(&quot;hours_per_day&quot;, hpw / 5))
+    billable = float(t.get(&quot;billable_pct&quot;, 60)) / 100
+    vac, hol = float(t.get(&quot;vacation_weeks&quot;, 4)), float(t.get(&quot;public_holidays_days&quot;, 10))
+    sick, train = float(t.get(&quot;sick_days&quot;, 5)), float(t.get(&quot;training_days&quot;, 0))
+    tax = float((cfg.get(&quot;tax&quot;) or {}).get(&quot;effective_rate_pct&quot;, 0)) / 100
+    buffer = float(cfg.get(&quot;risk_buffer_pct&quot;, 0)) / 100
+    if &quot;target_net_income&quot; not in cfg:
+        raise DataError(&quot;target_net_income is required&quot;)
+    net = float(cfg[&quot;target_net_income&quot;])
+    if not (0 &lt;= tax &lt; 0.9) or not (0 &lt;= buffer &lt; 0.5):
+        raise DataError(&quot;tax must be 0-90% and risk buffer 0-50%&quot;)
+    if not (0 &lt; billable &lt;= 1) or hpw &lt;= 0:
+        raise DataError(&quot;billable_pct must be 1-100 and hours_per_week &gt; 0&quot;)
+    costs = [{&quot;name&quot;: c.get(&quot;name&quot;, &quot;cost&quot;), &quot;annual&quot;: annual(c)} for c in cfg.get(&quot;business_costs&quot;, [])]
+    sets = [{&quot;name&quot;: s.get(&quot;name&quot;, &quot;set-aside&quot;), &quot;annual&quot;: annual(s)} for s in cfg.get(&quot;set_asides&quot;, [])]
+    cost_total = sum(c[&quot;annual&quot;] for c in costs)
+    set_total = sum(s[&quot;annual&quot;] for s in sets)
+    working_days = 260 - vac * 5 - hol - sick - train
+    if working_days &lt;= 0:
+        raise DataError(&quot;no working days left after vacation, holidays, sick and training days&quot;)
+    avail = working_days * hpw / 5
+    bill_h = avail * billable
+    after_tax = net + set_total
+    pre_tax = after_tax / (1 - tax)
+    revenue = (pre_tax + cost_total) / (1 - buffer)
+    min_rate = revenue / bill_h
+    rate = round_up(min_rate, step)
+    breakeven = cost_total / (1 - buffer) / bill_h
+
+    def net_at(r, hours=bill_h):
+        return (r * hours * (1 - buffer) - cost_total) * (1 - tax) - set_total
+
+    sens = []
+    for pct in (40, 50, 60, 70, 80):
+        h = avail * pct / 100
+        sens.append({&quot;billable_pct&quot;: pct, &quot;billable_hours&quot;: round(h), &quot;min_rate&quot;: round(revenue / h, 2)})
+    res = {&quot;name&quot;: cfg.get(&quot;name&quot;, &quot;freelancer&quot;), &quot;currency&quot;: cfg.get(&quot;currency&quot;, &quot;&quot;),
+           &quot;costs&quot;: costs, &quot;set_asides&quot;: sets, &quot;business_costs&quot;: round(cost_total, 2), &quot;set_aside_total&quot;: round(set_total, 2),
+           &quot;target_net_income&quot;: net, &quot;profit_before_tax&quot;: round(pre_tax, 2), &quot;revenue_needed&quot;: round(revenue, 2),
+           &quot;working_days&quot;: working_days, &quot;available_hours&quot;: round(avail, 1), &quot;billable_hours&quot;: round(bill_h, 1),
+           &quot;billable_pct&quot;: billable * 100, &quot;min_rate&quot;: round(min_rate, 2), &quot;quoted_rate&quot;: rate,
+           &quot;day_rate&quot;: round_up(rate * hpd, step), &quot;hours_per_day&quot;: hpd, &quot;break_even_rate&quot;: round(breakeven, 2),
+           &quot;net_at_quoted&quot;: round(net_at(rate), 2), &quot;sensitivity&quot;: sens, &quot;findings&quot;: []}
+    findings = res[&quot;findings&quot;]
+
+    def add(sev, code, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;message&quot;: msg})
+
+    cur = cfg.get(&quot;current_rate&quot;)
+    cur_info = None
+    if cur:
+        cur = float(cur)
+        hours_needed = revenue / cur
+        cur_info = {&quot;rate&quot;: cur, &quot;net_income&quot;: round(net_at(cur), 2), &quot;shortfall&quot;: round(net - net_at(cur), 2),
+                    &quot;billable_hours_needed&quot;: round(hours_needed), &quot;billable_pct_needed&quot;: round(hours_needed / avail * 100, 1)}
+        res[&quot;current&quot;] = cur_info
+    if tax == 0:
+        add(&quot;HIGH&quot;, &quot;NO_TAX&quot;, &quot;no tax rate given; income tax and social contributions usually take 25-45% of profit&quot;)
+    if cur_info and cur &lt; breakeven:
+        add(&quot;HIGH&quot;, &quot;BELOW_BREAK_EVEN&quot;, f&quot;current rate {cur:g} is below the break-even rate {breakeven:.2f}; every billed hour loses money&quot;)
+    elif cur_info and cur &lt; min_rate:
+        add(&quot;HIGH&quot;, &quot;BELOW_REQUIRED&quot;, f&quot;current rate {cur:g} is {min_rate - cur:.2f} below the minimum {min_rate:.2f}; take-home falls {cur_info[&#x27;shortfall&#x27;]:,.0f} short &quot;
+            f&quot;(you would need {cur_info[&#x27;billable_hours_needed&#x27;]} billable hours, {cur_info[&#x27;billable_pct_needed&#x27;]}% of working time)&quot;)
+    m = cfg.get(&quot;market_rate&quot;) or {}
+    if m.get(&quot;high&quot;) and min_rate &gt; float(m[&quot;high&quot;]):
+        add(&quot;MEDIUM&quot;, &quot;ABOVE_MARKET&quot;, f&quot;minimum rate {min_rate:.2f} is above the market high {m[&#x27;high&#x27;]}; specialise, price by value, cut costs or lower the target&quot;)
+    elif m.get(&quot;low&quot;) and rate &lt; float(m[&quot;low&quot;]):
+        add(&quot;LOW&quot;, &quot;UNDER_MARKET&quot;, f&quot;quoted rate {rate:g} is below the market low {m[&#x27;low&#x27;]}; quote at least {m[&#x27;low&#x27;]}&quot;)
+    if billable &gt; 0.75:
+        add(&quot;MEDIUM&quot;, &quot;BILLABLE_HIGH&quot;, f&quot;{billable * 100:.0f}% billable leaves too little time for sales, admin and learning; 50-70% is realistic&quot;)
+    if hpw &gt; 50:
+        add(&quot;MEDIUM&quot;, &quot;LONG_HOURS&quot;, f&quot;{hpw:g} hours per week is not sustainable for a year&quot;)
+    if vac &lt; 3:
+        add(&quot;MEDIUM&quot;, &quot;SHORT_VACATION&quot;, f&quot;only {vac:g} weeks of vacation planned; nobody pays you for holidays, so price them in&quot;)
+    if buffer == 0:
+        add(&quot;LOW&quot;, &quot;NO_BUFFER&quot;, &quot;no risk buffer for unpaid invoices and gaps between clients; 5-15% is common&quot;)
+    if sick == 0:
+        add(&quot;LOW&quot;, &quot;NO_SICK_DAYS&quot;, &quot;no sick days planned; budget at least 5&quot;)
+    p = cfg.get(&quot;project&quot;)
+    if p:
+        hrs = float(p.get(&quot;estimated_hours&quot;, 0))
+        cont = float(p.get(&quot;contingency_pct&quot;, 0)) / 100
+        res[&quot;project&quot;] = {&quot;name&quot;: p.get(&quot;name&quot;, &quot;project&quot;), &quot;estimated_hours&quot;: hrs, &quot;contingency_pct&quot;: cont * 100,
+                          &quot;quoted_hours&quot;: round(hrs * (1 + cont), 1), &quot;price&quot;: round_up(hrs * (1 + cont) * rate, 10),
+                          &quot;price_at_current&quot;: round_up(hrs * (1 + cont) * cur, 10) if cur else None}
+        if cont == 0:
+            add(&quot;LOW&quot;, &quot;NO_CONTINGENCY&quot;, &quot;project estimate has no contingency; add 15-30% for unknowns and revisions&quot;)
+    findings.sort(key=lambda f: SEV_ORDER[f[&quot;severity&quot;]])
+    return res
+
+
+def money(x, cur=&quot;&quot;):
+    return f&quot;{x:,.0f} {cur}&quot;.strip() if abs(x) &gt;= 100 else f&quot;{x:,.2f} {cur}&quot;.strip()
+
+
+def rate_fmt(x, cur=&quot;&quot;):
+    return f&quot;{x:,.2f} {cur}&quot;.strip()
+
+
+def render(r):
+    c = r[&quot;currency&quot;]
+    out = [f&quot;# Freelance rate plan: {r[&#x27;name&#x27;]}&quot;, &quot;&quot;,
+           f&quot;Minimum rate {rate_fmt(r[&#x27;min_rate&#x27;], c)}/h -&gt; quote **{rate_fmt(r[&#x27;quoted_rate&#x27;], c)}/h**, day rate {money(r[&#x27;day_rate&#x27;], c)} ({r[&#x27;hours_per_day&#x27;]:g} h)&quot;,
+           f&quot;Break-even (covers costs, no income): {rate_fmt(r[&#x27;break_even_rate&#x27;], c)}/h | take-home at the quoted rate: {money(r[&#x27;net_at_quoted&#x27;], c)}/year&quot;, &quot;&quot;,
+           &quot;## From take-home to revenue&quot;, &quot;| Step | Amount |&quot;, &quot;|---|---|&quot;,
+           f&quot;| Target take-home | {money(r[&#x27;target_net_income&#x27;], c)} |&quot;,
+           f&quot;| + set-asides ({&#x27;, &#x27;.join(s[&#x27;name&#x27;] for s in r[&#x27;set_asides&#x27;]) or &#x27;none&#x27;}) | {money(r[&#x27;set_aside_total&#x27;], c)} |&quot;,
+           f&quot;| = profit before tax | {money(r[&#x27;profit_before_tax&#x27;], c)} |&quot;,
+           f&quot;| + business costs | {money(r[&#x27;business_costs&#x27;], c)} |&quot;,
+           f&quot;| = revenue needed (incl. risk buffer) | {money(r[&#x27;revenue_needed&#x27;], c)} |&quot;, &quot;&quot;,
+           &quot;## Time&quot;, f&quot;{r[&#x27;working_days&#x27;]:g} working days, {r[&#x27;available_hours&#x27;]:g} working hours, {r[&#x27;billable_pct&#x27;]:g}% billable = **{r[&#x27;billable_hours&#x27;]:g} billable hours**&quot;, &quot;&quot;,
+           &quot;| Billable share | Billable hours | Minimum rate |&quot;, &quot;|---|---|---|&quot;]
+    for s in r[&quot;sensitivity&quot;]:
+        out.append(f&quot;| {s[&#x27;billable_pct&#x27;]}% | {s[&#x27;billable_hours&#x27;]} | {rate_fmt(s[&#x27;min_rate&#x27;], c)} |&quot;)
+    out += [&quot;&quot;, &quot;## Business costs&quot;, &quot;| Cost | Per year |&quot;, &quot;|---|---|&quot;]
+    for k in r[&quot;costs&quot;]:
+        out.append(f&quot;| {k[&#x27;name&#x27;]} | {money(k[&#x27;annual&#x27;], c)} |&quot;)
+    if r.get(&quot;current&quot;):
+        cu = r[&quot;current&quot;]
+        out += [&quot;&quot;, &quot;## Current rate&quot;, f&quot;At {rate_fmt(cu[&#x27;rate&#x27;], c)}/h: take-home {money(cu[&#x27;net_income&#x27;], c)}/year &quot;
+                f&quot;({&#x27;short by &#x27; + money(cu[&#x27;shortfall&#x27;], c) if cu[&#x27;shortfall&#x27;] &gt; 0 else &#x27;target met&#x27;}); target needs {cu[&#x27;billable_hours_needed&#x27;]} billable hours ({cu[&#x27;billable_pct_needed&#x27;]}% of working time)&quot;]
+    if r.get(&quot;project&quot;):
+        p = r[&quot;project&quot;]
+        out += [&quot;&quot;, f&quot;## Project quote: {p[&#x27;name&#x27;]}&quot;, f&quot;{p[&#x27;estimated_hours&#x27;]:g} h + {p[&#x27;contingency_pct&#x27;]:g}% contingency = {p[&#x27;quoted_hours&#x27;]:g} h x {rate_fmt(r[&#x27;quoted_rate&#x27;], c)} -&gt; **{money(p[&#x27;price&#x27;], c)}**&quot;
+                + (f&quot; (at the current rate: {money(p[&#x27;price_at_current&#x27;], c)})&quot; if p.get(&quot;price_at_current&quot;) else &quot;&quot;)]
+    out += [&quot;&quot;, &quot;## Findings&quot;]
+    if not r[&quot;findings&quot;]:
+        out.append(&quot;- none&quot;)
+    for f in r[&quot;findings&quot;]:
+        out.append(f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]}: {f[&#x27;message&#x27;]}&quot;)
+    return &quot;\n&quot;.join(out) + &quot;\n&quot;
+
+
+def self_test():
+    tests, ok = [], 0
+
+    def check(name, cond):
+        nonlocal ok
+        tests.append(name)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+        ok += bool(cond)
+
+    base = {&quot;target_net_income&quot;: 50000, &quot;tax&quot;: {&quot;effective_rate_pct&quot;: 30}, &quot;business_costs&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;annual&quot;: 10000}],
+            &quot;time&quot;: {&quot;hours_per_week&quot;: 40, &quot;vacation_weeks&quot;: 4, &quot;public_holidays_days&quot;: 10, &quot;sick_days&quot;: 5, &quot;training_days&quot;: 5, &quot;billable_pct&quot;: 60},
+            &quot;risk_buffer_pct&quot;: 10}
+    r = calc(base)
+    check(&quot;working days 260-20-10-5-5 = 220&quot;, r[&quot;working_days&quot;] == 220)
+    check(&quot;billable hours 220 x 8 x 60% = 1056&quot;, r[&quot;billable_hours&quot;] == 1056)
+    check(&quot;profit before tax 50000/0.7&quot;, abs(r[&quot;profit_before_tax&quot;] - 71428.57) &lt; 0.01)
+    check(&quot;revenue (71428.57+10000)/0.9&quot;, abs(r[&quot;revenue_needed&quot;] - 90476.19) &lt; 0.01)
+    check(&quot;minimum rate 90476.19/1056 = 85.68&quot;, abs(r[&quot;min_rate&quot;] - 85.68) &lt; 0.01)
+    check(&quot;quoted rate rounded up to 90&quot;, r[&quot;quoted_rate&quot;] == 90)
+    check(&quot;day rate 8 x 90 = 720&quot;, r[&quot;day_rate&quot;] == 720)
+    check(&quot;break-even 10000/0.9/1056 = 10.52&quot;, abs(r[&quot;break_even_rate&quot;] - 10.52) &lt; 0.01)
+    check(&quot;net at the minimum rate equals target&quot;, abs(((r[&quot;min_rate&quot;] * 1056 * 0.9 - 10000) * 0.7) - 50000) &lt; 10)
+    check(&quot;clean plan has no findings&quot;, r[&quot;findings&quot;] == [])
+    check(&quot;monthly cost x 12&quot;, annual({&quot;monthly&quot;: 150}) == 1800)
+    check(&quot;set-asides raise the rate&quot;, calc({**base, &quot;set_asides&quot;: [{&quot;name&quot;: &quot;pension&quot;, &quot;annual&quot;: 7000}]})[&quot;min_rate&quot;] &gt; r[&quot;min_rate&quot;])
+    check(&quot;sensitivity 50% rate higher than 70%&quot;, r[&quot;sensitivity&quot;][1][&quot;min_rate&quot;] &gt; r[&quot;sensitivity&quot;][3][&quot;min_rate&quot;])
+
+    def codes(**over):
+        c = json.loads(json.dumps(base))
+        for k, v in over.items():
+            if isinstance(v, dict) and isinstance(c.get(k), dict):
+                c[k].update(v)
+            else:
+                c[k] = v
+        return {f[&quot;code&quot;] for f in calc(c)[&quot;findings&quot;]}
+
+    check(&quot;no tax HIGH&quot;, &quot;NO_TAX&quot; in codes(tax={&quot;effective_rate_pct&quot;: 0}))
+    check(&quot;below required HIGH&quot;, &quot;BELOW_REQUIRED&quot; in codes(current_rate=60))
+    check(&quot;below break-even HIGH&quot;, &quot;BELOW_BREAK_EVEN&quot; in codes(current_rate=8))
+    check(&quot;rate above market MEDIUM&quot;, &quot;ABOVE_MARKET&quot; in codes(market_rate={&quot;low&quot;: 40, &quot;high&quot;: 70}))
+    check(&quot;rate under market LOW&quot;, &quot;UNDER_MARKET&quot; in codes(market_rate={&quot;low&quot;: 120, &quot;high&quot;: 160}))
+    check(&quot;billable 85% MEDIUM&quot;, &quot;BILLABLE_HIGH&quot; in codes(time={&quot;billable_pct&quot;: 85}))
+    check(&quot;55 h/week MEDIUM&quot;, &quot;LONG_HOURS&quot; in codes(time={&quot;hours_per_week&quot;: 55}))
+    check(&quot;2 weeks vacation MEDIUM&quot;, &quot;SHORT_VACATION&quot; in codes(time={&quot;vacation_weeks&quot;: 2}))
+    check(&quot;no buffer LOW&quot;, &quot;NO_BUFFER&quot; in codes(risk_buffer_pct=0))
+    check(&quot;no sick days LOW&quot;, &quot;NO_SICK_DAYS&quot; in codes(time={&quot;sick_days&quot;: 0}))
+    check(&quot;no contingency LOW&quot;, &quot;NO_CONTINGENCY&quot; in codes(project={&quot;estimated_hours&quot;: 40, &quot;contingency_pct&quot;: 0}))
+    p = calc({**base, &quot;project&quot;: {&quot;estimated_hours&quot;: 100, &quot;contingency_pct&quot;: 20}})[&quot;project&quot;]
+    check(&quot;project 120 h x 90 = 10800&quot;, p[&quot;quoted_hours&quot;] == 120 and p[&quot;price&quot;] == 10800)
+    for bad, label in (({&quot;tax&quot;: {&quot;effective_rate_pct&quot;: 95}}, &quot;tax 95% rejected&quot;), ({&quot;time&quot;: {&quot;billable_pct&quot;: 0}}, &quot;billable 0 rejected&quot;),
+                       ({&quot;time&quot;: {&quot;vacation_weeks&quot;: 60}}, &quot;no working days rejected&quot;)):
+        try:
+            c = json.loads(json.dumps(base))
+            for k, v in bad.items():
+                c[k].update(v)
+            calc(c)
+            check(label, False)
+        except DataError:
+            check(label, True)
+    print(f&quot;{ok}/{len(tests)} passed&quot;)
+    return 0 if ok == len(tests) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Freelance hourly rate calculator&quot;)
+    ap.add_argument(&quot;plan&quot;, nargs=&quot;?&quot;, help=&quot;plan JSON file&quot;)
+    ap.add_argument(&quot;--round&quot;, type=float, default=5, help=&quot;round the quoted rate up to this step (default 5)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.plan:
+        ap.error(&quot;plan file required&quot;)
+    try:
+        with open(a.plan, encoding=&quot;utf-8&quot;) as fh:
+            r = calc(json.load(fh), a.round)
+    except (OSError, json.JSONDecodeError, DataError, ValueError, TypeError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else render(r), end=&quot;\n&quot; if a.json else &quot;&quot;)
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/freelance-hourly-rate-calculator',TI="Freelance Hourly Rate Calculator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

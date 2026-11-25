@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Commute Cost Comparison Calculator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: commute-cost-comparison-calculator description: Compares commute options - car (fuel or EV), transit, bike, e-bike, walking, day-share mixes">
+<meta property="og:title" content="Commute Cost Comparison Calculator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: commute-cost-comparison-calculator description: Compares commute options - car (fuel or EV), transit, bike, e-bike, walking, day-share mixes">
+<meta property="og:url" content="https://claudebomb.com/l/pc/commute-cost-comparison-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/commute-cost-comparison-calculator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Commute Cost Comparison Calculator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: commute-cost-comparison-calculator
+description: Compares commute options - car (fuel or EV), transit, bike, e-bike, walking, day-share mixes and park-and-ride legs - per month and year with cash cost, door-to-door time, time cost at your own hourly value, cost per trip and CO2. Picks pass vs pay-per-ride for the days you ride, separates car running costs from fixed costs, and shows the break-even value of an hour. Includes a stdlib Python calculator with --self-test.
+---
+
+# Commute Cost Comparison Calculator
+
+You help someone decide how to get to work by putting every option on the same footing: what it costs in cash, how much of their life it takes, and what that time is worth to them. You count what really changes with the choice (fuel, parking, fares, the bike), keep costs they pay anyway out unless they would actually sell the car, and show the trade-off as a clear number: &quot;driving saves 32 lost hours a year and costs $3,697 more, so it pays only if your hour is worth more than $115&quot;.
+
+## Files in this skill
+
+- `scripts/commute_cost.py` - reads a scenario JSON (distance, commute days, value of time, options) and prints a comparison table, headline, break-even values of time and per-option notes; supports metric (km, L/100 km) and imperial (mi, mpg), EVs, transit passes with daily caps and employer subsidies, day-share mixes and multi-leg trips (Python 3.8+ standard library only)
+- `references/cost-components.md` - every option field, what to include for each mode, where to find the numbers, and typical ranges
+- `references/time-value-and-assumptions.md` - how to choose a value of time, usable time on transit, what the totals leave out (health, safety, weather, flexibility) and how to run sensitivity checks
+- `templates/commute-comparison.md` - the decision summary to hand back
+- `examples/commute.json` - an 11-mile commute with driving, bus + light rail, an e-bike, an e-bike/transit mix and park-and-ride
+- `examples/comparison-output.md` - the real output of the calculator for that scenario
+
+## Workflow
+
+### 1. Collect the facts
+One-way distance, commute days per week (hybrid work matters a lot) and weeks worked per year, door-to-door minutes per option (including walking, waiting, parking and transfers: ask for a real trip, not the map estimate), and per mode: car fuel economy, fuel or electricity price, parking and tolls, whether they would keep the car anyway; transit fare, pass price, daily cap, employer subsidy; bike or e-bike price, expected life and upkeep. Ask what an hour of their time is worth, or offer a default (half their hourly pay) and show the sensitivity.
+
+### 2. Run the calculator
+```
+python3 scripts/commute_cost.py examples/commute.json
+python3 scripts/commute_cost.py scenario.json --days-per-week 3
+python3 scripts/commute_cost.py scenario.json --value-of-time 0 --json
+python3 scripts/commute_cost.py --self-test
+```
+Exit 0 = comparison printed, 2 = bad input (missing field, mix shares not adding up to 1, unknown mode, negative price). Without code, follow the formulas in `references/cost-components.md`.
+
+### 3. Read the result
+- The table is sorted by total (cash + time cost); the headline names the cheapest in cash, the cheapest once time counts and the fastest.
+- **Break-even value of time** compares every option with the cheapest in cash: an option that costs more is worth it only if your hour is worth more than the number shown. &quot;Never&quot; means it costs more and does not save usable time.
+- Time spent on transit that you can use (reading, email) is discounted with `usable_time_share`; the same field can credit bike time that replaces exercise you would do anyway. Say which you used.
+- Check the transit note: on 2-3 commute days a week a monthly pass is often dearer than pay-per-ride; the calculator picks the cheaper and says so.
+
+### 4. Deliver
+Fill `templates/commute-comparison.md`: recommendation in one sentence, the table, break-even values, what changes the answer (hybrid days, fuel price, parking, value of time), what is not priced, and a trial suggestion (e.g. two weeks of the mix before buying anything).
+
+## Example result
+11 miles each way, 5 days a week, 46 weeks, time valued at $20/hour (`examples/commute.json`). Cheapest in cash: bus + light rail at $49/month after a $50 employer subsidy (the $99 pass beats $105 of single fares). Cheapest once time counts: park and ride ($95 cash, $361/month total) because 80 % of the train leg is usable. Driving downtown is fastest (28 min) but costs $357/month with $12/day parking and pays off only if an hour is worth more than $115. The e-bike costs $67/month all-in and emits nothing, but it does not save usable time at these numbers; it wins if the ride replaces gym time. See `examples/comparison-output.md`.
+
+## Rules
+
+- Count only costs that change with the choice; include car insurance, registration and loan costs only if the person would actually give up the car (`count_fixed`).
+- Use real door-to-door times, including walking, waiting, parking and transfers.
+- Never present the value of time as a fact: it is the person&#x27;s own choice; show at least one sensitivity run (e.g. `--value-of-time 0` and their wage).
+- Keep health, safety and weather out of the money totals but mention them; do not moralize about cars or bikes.
+- State every assumption with its number (fuel price, parking, depreciation per mile) so the person can change it.
+- Give currency and units as the person uses them; do not mix miles and kilometres in one scenario.
+FILE:references/cost-components.md
+# Cost components and option fields
+
+Scenario fields: `currency` (USD, EUR, GBP, TRY, ...), `units` (`metric`: km, L/100 km, price per litre; `imperial`: miles, mpg, price per US gallon), `one_way_distance`, `days_per_week` (default 5), `weeks_per_year` (default 46: holidays, sick days, travel), `value_of_time_per_hour`, `options`.
+
+Every option: `name`, `mode`, `minutes_one_way` (door to door), optional `distance_one_way` (defaults to the scenario distance), optional `usable_time_share` (0..1).
+
+## Car (`mode: car`)
+| Field | Meaning | Typical |
+|---|---|---|
+| `fuel_economy_mpg` / `fuel_l_per_100km` | real-world consumption on this route (city driving is worse than the label) | 25-35 mpg / 6-9 L/100 km |
+| `fuel_price` | per gallon / per litre | local pump price |
+| `fuel: &quot;diesel&quot;` | uses the diesel CO2 factor | petrol default |
+| `kwh_per_100` + `electricity_price` | electric car instead of fuel (kWh per 100 mi or km) | 25-35 kWh/100 mi, 16-22 kWh/100 km |
+| `grid_kg_co2_per_kwh` | grid intensity for EV CO2 | 0.4 default; 0.05 hydro/nuclear, 0.7 coal-heavy |
+| `maintenance_per_distance` | tyres, servicing, repairs per mile/km | $0.08-0.12/mi, 0.05-0.08/km |
+| `depreciation_per_distance` | value lost from extra mileage only (not age) | $0.05-0.15/mi |
+| `parking_per_day`, `tolls_per_day` | per commute day | workplace parking can dominate |
+| `fixed_per_year` + `count_fixed` | insurance, registration, loan interest, age depreciation; counted only when `count_fixed` is true | true only if commuting is the reason to own the car |
+
+Fuel cost = 2 x distance x days / mpg x price (or x L/100 km / 100 x price). CO2: petrol 2.35 kg/L (8.89 kg per US gallon), diesel 2.68 kg/L (10.18 kg/gal), EV kWh x grid factor.
+
+All-in per-mile rates (tax mileage rates, AAA &quot;Your Driving Costs&quot;) include fixed costs; they overstate the marginal cost of a commute when the car is kept anyway.
+
+## Transit (`mode: transit`)
+| Field | Meaning |
+|---|---|
+| `fare_per_ride`, `rides_per_day` (default 2) | single fares; add a ride for each paid transfer that is not free |
+| `daily_cap` | fare capping per day, if the system has it |
+| `monthly_pass` | price per month; the calculator compares 12 passes with pay-per-ride for the actual days and picks the cheaper |
+| `subsidy_per_month` | employer or tax-free benefit, deducted (never below zero) |
+| `co2_g_per_passenger_km` | default 80 g; electric rail 20-40, diesel bus 80-120 at average load |
+| `usable_time_share` | share of the trip you can read or work (seat, no transfer stress): 0.2-0.8 |
+
+## Bike, e-bike, walk (`mode: bike | ebike | walk`)
+| Field | Meaning | Typical |
+|---|---|---|
+| `purchase_price`, `life_years` | spread over the life (default 5 years); not used for walk | e-bike $1,500-3,500 |
+| `maintenance_per_year` | tyres, chain, brake pads, battery fund for e-bikes | $100-300 |
+| `gear_per_year` | lights, lock, rain gear, helmet replacement | $50-150 |
+| `kwh_per_100`, `electricity_price` | e-bike charging | 1-2 kWh per 100 mi |
+| `other_per_month` | bike parking, locker, shower membership | 0-30 |
+Ownership costs are counted in full even in a mix: you pay for the bike whether you ride 3 or 5 days.
+
+## Mix (`mode: mix`)
+`&quot;shares&quot;: {&quot;E-bike&quot;: 0.6, &quot;Bus + light rail&quot;: 0.4}` splits commute days between other options (shares add up to 1). Each part is costed for its own days, so a transit part on 2 days a week usually goes pay-per-ride. Use it for weather-dependent cycling, hybrid driving, or carpool days.
+
+## Multi-leg (`mode: multi`)
+`&quot;legs&quot;: [ {car leg}, {transit leg} ]` with `transfer_minutes`. Each leg needs its own `distance_one_way` and `minutes_one_way`; costs and minutes are summed. Use it for park and ride, bike + train, or walk + bus.
+
+## Where to get the numbers
+- Fuel economy: the car&#x27;s trip computer over a week of commuting.
+- Parking and fares: the operator&#x27;s price page; check employer benefits (pre-tax transit, parking cash-out).
+- Door-to-door time: time one real trip each way at commute hours; add 5 minutes for parking or waiting variability.
+FILE:references/time-value-and-assumptions.md
+# Value of time and what the totals leave out
+
+## Choosing a value of time
+- There is no correct number: it is what an hour of this person&#x27;s commute is worth to them.
+- Common anchor: about half of hourly take-home pay for personal travel (the US Department of Transportation&#x27;s travel-time guidance uses 50 % of hourly income for personal local trips; business travel is valued at 100 %).
+- Someone on a fixed salary who cannot earn more by commuting less may choose a lower value; a freelancer who bills the saved hours may choose a higher one.
+- Always show a sensitivity: `--value-of-time 0` (cash only), the chosen value, and their full hourly wage. If the ranking does not change, the decision is robust.
+
+## Usable time
+`usable_time_share` discounts time you can use. Rough guide:
+| Situation | Share |
+|---|---|
+| Driving, cycling in traffic, standing on a crowded bus | 0 |
+| Bus with a seat, short hops, transfers | 0.2-0.4 |
+| Train with a seat and table, 20+ minutes without changes | 0.6-0.8 |
+| Bike or walk that replaces exercise you would otherwise do | 0.3-0.7 (say so explicitly) |
+
+## Not in the money totals (mention them)
+- **Health:** regular cycling or walking is associated with better cardiovascular health; some people value it highly, others not at all. Use `usable_time_share` if they want it priced.
+- **Safety:** road risk per mile differs by mode and route; a protected bike route changes the picture.
+- **Weather and season:** use a mix (e.g. 60 % bike days) rather than assuming every day is a bike day.
+- **Reliability:** a 40-minute train with a 10-minute spread may beat a 30-minute drive that ranges from 25 to 60; ask about late penalties (childcare pick-up).
+- **Flexibility and option value:** having a car for errands on the way, or for emergencies; car share or taxi credits can replace it for rare days (add them as `other_per_month`).
+- **Stress and comfort:** do not price it, but ask.
+
+## Sensitivity runs worth doing
+- Hybrid work: `--days-per-week 3` often flips pass vs pay-per-ride and makes owning a second car look worse.
+- Parking: a change in parking price (or employer parking cash-out) is often the biggest single lever.
+- Fuel or electricity price +-25 %.
+- Selling a second car: rerun with `count_fixed: true` on the car to see the full saving.
+
+## Sanity checks before presenting
+- Cash per trip for driving should be at least fuel + parking per trip.
+- Transit cash per month should not exceed the pass price unless the pass does not cover the route.
+- Hours per month = minutes one way x 2 x days per month / 60.
+- If the &quot;winner&quot; depends on a value of time far from what the person said, say so plainly.
+FILE:templates/commute-comparison.md
+# Commute options: &lt;home&gt; to &lt;work&gt;
+
+**Trip:** &lt;11 mi each way, 5 days/week, 46 weeks/year&gt;   **Value of time used:** &lt;$20/hour (about half of hourly pay)&gt;
+**Recommendation:** &lt;one sentence, e.g. &quot;Park and ride: $95/month cash, 40 min door to door, most of the train ride usable for email&quot;&gt;
+
+## Comparison (per month)
+| Option | Cash | Door to door | Hours | Time cost | Total | CO2 kg/year |
+|---|---|---|---|---|---|---|
+| &lt;Park and ride&gt; | &lt;$95&gt; | &lt;40 min&gt; | &lt;25.6&gt; | &lt;$266&gt; | &lt;$361&gt; | &lt;999&gt; |
+| &lt;Bus + light rail&gt; | &lt;$49&gt; | &lt;46 min&gt; | &lt;29.4&gt; | &lt;$411&gt; | &lt;$460&gt; | &lt;651&gt; |
+
+## When a dearer option pays off
+| Option | Extra per year | Lost hours saved | Worth it above |
+|---|---|---|---|
+| &lt;Drive downtown&gt; | &lt;$3,697&gt; | &lt;32&gt; | &lt;$115/hour&gt; |
+
+## What would change the answer
+- &lt;Hybrid work (3 days): transit pass no longer pays; pay per ride ...&gt;
+- &lt;Parking cash-out from the employer would make driving $230/month dearer still&gt;
+- &lt;If the e-bike ride replaces the gym, the e-bike moves to ...&gt;
+
+## Not priced
+- &lt;health, safety on the route, weather days, reliability, needing the car for school pick-up&gt;
+
+## Assumptions
+- &lt;fuel $3.40/gal at 28 mpg; maintenance $0.10/mi; mileage depreciation $0.08/mi; parking $12/day&gt;
+- &lt;transit pass $99, employer subsidy $50/month, 30 % of the bus/rail time usable&gt;
+- &lt;car kept for weekends, so insurance and registration are not counted&gt;
+
+## Next step
+&lt;Try the mix for two weeks before buying the e-bike; time each trip door to door.&gt;
+FILE:examples/commute.json
+{
+  &quot;currency&quot;: &quot;USD&quot;,
+  &quot;units&quot;: &quot;imperial&quot;,
+  &quot;one_way_distance&quot;: 11,
+  &quot;days_per_week&quot;: 5,
+  &quot;weeks_per_year&quot;: 46,
+  &quot;value_of_time_per_hour&quot;: 20,
+  &quot;options&quot;: [
+    {
+      &quot;name&quot;: &quot;Drive downtown&quot;,
+      &quot;mode&quot;: &quot;car&quot;,
+      &quot;minutes_one_way&quot;: 28,
+      &quot;fuel_economy_mpg&quot;: 28,
+      &quot;fuel_price&quot;: 3.4,
+      &quot;maintenance_per_distance&quot;: 0.1,
+      &quot;depreciation_per_distance&quot;: 0.08,
+      &quot;parking_per_day&quot;: 12,
+      &quot;tolls_per_day&quot;: 0,
+      &quot;fixed_per_year&quot;: 1900,
+      &quot;count_fixed&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;Bus + light rail&quot;,
+      &quot;mode&quot;: &quot;transit&quot;,
+      &quot;minutes_one_way&quot;: 46,
+      &quot;fare_per_ride&quot;: 2.75,
+      &quot;monthly_pass&quot;: 99,
+      &quot;subsidy_per_month&quot;: 50,
+      &quot;usable_time_share&quot;: 0.3
+    },
+    {
+      &quot;name&quot;: &quot;E-bike&quot;,
+      &quot;mode&quot;: &quot;ebike&quot;,
+      &quot;minutes_one_way&quot;: 42,
+      &quot;purchase_price&quot;: 2200,
+      &quot;life_years&quot;: 5,
+      &quot;maintenance_per_year&quot;: 250,
+      &quot;gear_per_year&quot;: 100,
+      &quot;kwh_per_100&quot;: 1.5,
+      &quot;electricity_price&quot;: 0.17
+    },
+    {
+      &quot;name&quot;: &quot;E-bike 3 days, transit 2 days&quot;,
+      &quot;mode&quot;: &quot;mix&quot;,
+      &quot;shares&quot;: {&quot;E-bike&quot;: 0.6, &quot;Bus + light rail&quot;: 0.4}
+    },
+    {
+      &quot;name&quot;: &quot;Park and ride&quot;,
+      &quot;mode&quot;: &quot;multi&quot;,
+      &quot;transfer_minutes&quot;: 6,
+      &quot;legs&quot;: [
+        {&quot;mode&quot;: &quot;car&quot;, &quot;distance_one_way&quot;: 4, &quot;minutes_one_way&quot;: 10, &quot;fuel_economy_mpg&quot;: 28, &quot;fuel_price&quot;: 3.4,
+         &quot;maintenance_per_distance&quot;: 0.1, &quot;depreciation_per_distance&quot;: 0.08, &quot;parking_per_day&quot;: 0},
+        {&quot;mode&quot;: &quot;transit&quot;, &quot;distance_one_way&quot;: 7, &quot;minutes_one_way&quot;: 24, &quot;fare_per_ride&quot;: 2.75, &quot;monthly_pass&quot;: 99,
+         &quot;subsidy_per_month&quot;: 50, &quot;usable_time_share&quot;: 0.8}
+      ]
+    }
+  ]
+}
+FILE:examples/comparison-output.md
+# Commute cost comparison
+
+One way: 11 mi   Commute days: 19.2/month (230/year)   Value of time: $20.00/hour   Currency: USD
+
+| Option | Cash / month | Cash / year | Per trip | Door to door (one way) | Hours / month | Time cost / month | Total / month | CO2 kg / year |
+|---|---|---|---|---|---|---|---|---|
+| Park and ride | $95.22 | $1,143 | $2.48 | 40 min | 25.6 | $266 | **$361** | 999 |
+| Bus + light rail | $49.00 | $588 | $1.28 | 46 min | 29.4 | $411 | **$460** | 651 |
+| E-bike 3 days, transit 2 days | $66.48 | $798 | $1.73 | 44 min | 27.9 | $487 | **$553** | 261 |
+| E-bike | $66.91 | $803 | $1.75 | 42 min | 26.8 | $537 | **$604** | 0 |
+| Drive downtown | $357 | $4,285 | $9.32 | 28 min | 17.9 | $358 | **$715** | 1,607 |
+
+Sorted by total (cash + time cost).
+
+## Headline
+
+- Cheapest in cash: **Bus + light rail** ($49.00/month).
+- Cheapest once time counts: **Park and ride** ($361/month at $20.00/hour).
+- Fastest: **Drive downtown** (28 min one way, 17.9 h/month).
+
+## Break-even value of time (vs Bus + light rail, the cheapest in cash)
+
+| Option | Extra cash / year | Lost hours saved / year | Worth it if your hour is worth more than |
+|---|---|---|---|
+| Drive downtown | $3,697 | 32 | $115/hour |
+| E-bike | $215 | none (75 more lost) | never on cost: it does not save usable time |
+| E-bike 3 days, transit 2 days | $210 | none (45 more lost) | never on cost: it does not save usable time |
+| Park and ride | $555 | 87 | $6.35/hour |
+
+## Notes per option
+
+- **Drive downtown** (car): per month: fuel/energy $51.20, maintenance + depreciation $75.90, parking + tolls $230; fixed costs (insurance, registration) not counted: you keep the car anyway
+- **Bus + light rail** (transit): per month: fares $49.00; monthly pass (cheaper than $105/month pay per ride at 19.2 days/month); employer subsidy $50.00/month deducted
+- **E-bike** (ebike): per month: bike + upkeep $65.83, fuel/energy $1.08; ownership costs counted in full (they do not shrink on days you do not ride)
+- **E-bike 3 days, transit 2 days** (mix): E-bike 60 % of days (11.5/month): ownership costs counted in full (they do not shrink on days you do not ride); Bus + light rail 40 % of days (7.7/month): pay per ride (pass would cost $99.00/month at 7.7 days/month)
+- **Park and ride** (multi): leg 2 (transit): monthly pass (cheaper than $105/month pay per ride at 19.2 days/month); leg 2 (transit): employer subsidy $50.00/month deducted
+
+Time cost = hours x value of time x (1 - share of the trip you can use for reading or work). Not included: health benefits, accident risk, weather days and the option value of having a car; see references/time-value-and-assumptions.md.
+FILE:scripts/commute_cost.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Commute cost comparison calculator (Python 3.8+ standard library only).
+
+Compares commute options - car (fuel or electric), transit, bike, e-bike, walking,
+day-share mixes (&quot;bike 3 days, train 2 days&quot;) and same-day multi-leg trips (&quot;drive to
+the station, then train&quot;) - per month and per year: cash cost, time spent, time cost at
+your own hourly value, total, cost per trip and CO2. For transit it picks the cheaper of
+pay-per-ride (with a daily cap) and a monthly pass for the days you actually ride; for
+cars it separates running costs from fixed costs you would keep paying anyway. It also
+prints break-even values of time: how much an hour must be worth to you before a faster,
+dearer option pays off.
+
+Usage:
+  python3 commute_cost.py scenario.json [--value-of-time 25] [--days-per-week 3] [--json]
+  python3 commute_cost.py --self-test
+scenario.json: {&quot;currency&quot;: &quot;USD&quot;, &quot;units&quot;: &quot;imperial&quot;|&quot;metric&quot;, &quot;one_way_distance&quot;: 11,
+  &quot;days_per_week&quot;: 5, &quot;weeks_per_year&quot;: 46, &quot;value_of_time_per_hour&quot;: 20,
+  &quot;options&quot;: [{&quot;name&quot;: &quot;...&quot;, &quot;mode&quot;: &quot;car|transit|bike|ebike|walk|mix|multi&quot;, ...}]}
+See references/cost-components.md for every option field.
+Exit codes: 0 = comparison printed, 2 = bad input.
+&quot;&quot;&quot;
+import argparse, json, sys
+
+PETROL_CO2 = {&quot;metric&quot;: 2.35, &quot;imperial&quot;: 8.89}   # kg CO2 per litre / per US gallon burned (diesel: 2.68 / 10.18)
+DIESEL_CO2 = {&quot;metric&quot;: 2.68, &quot;imperial&quot;: 10.18}
+KM_PER_UNIT = {&quot;metric&quot;: 1.0, &quot;imperial&quot;: 1.609344}
+LABELS = {&quot;energy&quot;: &quot;fuel/energy&quot;, &quot;running&quot;: &quot;maintenance + depreciation&quot;, &quot;parking_tolls&quot;: &quot;parking + tolls&quot;,
+          &quot;fixed&quot;: &quot;fixed costs&quot;, &quot;fares&quot;: &quot;fares&quot;, &quot;ownership&quot;: &quot;bike + upkeep&quot;, &quot;other&quot;: &quot;other&quot;}
+MODES = {&quot;car&quot;, &quot;transit&quot;, &quot;bike&quot;, &quot;ebike&quot;, &quot;walk&quot;, &quot;mix&quot;, &quot;multi&quot;}
+SYMBOLS = {&quot;USD&quot;: &quot;$&quot;, &quot;EUR&quot;: &quot;€&quot;, &quot;GBP&quot;: &quot;£&quot;, &quot;TRY&quot;: &quot;₺&quot;, &quot;CAD&quot;: &quot;C$&quot;, &quot;AUD&quot;: &quot;A$&quot;, &quot;JPY&quot;: &quot;¥&quot;, &quot;INR&quot;: &quot;₹&quot;}
+
+
+class InputError(Exception):
+    pass
+
+
+def num(o, key, default=None, lo=0.0, hi=None, who=&quot;&quot;):
+    v = o.get(key, default)
+    if v is None:
+        raise InputError(f&quot;{who}: &#x27;{key}&#x27; is required&quot;)
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        raise InputError(f&quot;{who}: &#x27;{key}&#x27; must be a number&quot;)
+    if v &lt; lo or (hi is not None and v &gt; hi):
+        raise InputError(f&quot;{who}: &#x27;{key}&#x27; = {v} is out of range&quot; + (f&quot; ({lo}..{hi})&quot; if hi is not None else f&quot; (&gt;= {lo})&quot;))
+    return float(v)
+
+
+def car_cost(o, sc, days, who):
+    &quot;&quot;&quot;Annual cost dict for a car over `days` commute days.&quot;&quot;&quot;
+    units = sc[&quot;units&quot;]
+    d = num(o, &quot;distance_one_way&quot;, sc[&quot;distance&quot;], who=who) * 2 * days      # user units per year
+    if &quot;kwh_per_100&quot; in o:
+        kwh = d / 100 * num(o, &quot;kwh_per_100&quot;, who=who)
+        energy = kwh * num(o, &quot;electricity_price&quot;, who=who)
+        co2 = kwh * num(o, &quot;grid_kg_co2_per_kwh&quot;, 0.4, who=who)
+    else:
+        if units == &quot;imperial&quot;:
+            vol = d / num(o, &quot;fuel_economy_mpg&quot;, lo=1, who=who)
+        else:
+            vol = d / 100 * num(o, &quot;fuel_l_per_100km&quot;, lo=0.5, who=who)
+        energy = vol * num(o, &quot;fuel_price&quot;, who=who)
+        co2 = vol * (DIESEL_CO2 if o.get(&quot;fuel&quot;) == &quot;diesel&quot; else PETROL_CO2)[units]
+    running = d * (num(o, &quot;maintenance_per_distance&quot;, 0, who=who) + num(o, &quot;depreciation_per_distance&quot;, 0, who=who))
+    daily = days * (num(o, &quot;parking_per_day&quot;, 0, who=who) + num(o, &quot;tolls_per_day&quot;, 0, who=who))
+    fixed = num(o, &quot;fixed_per_year&quot;, 0, who=who) if o.get(&quot;count_fixed&quot;, False) else 0.0
+    return {&quot;energy&quot;: energy, &quot;running&quot;: running, &quot;parking_tolls&quot;: daily, &quot;fixed&quot;: fixed,
+            &quot;co2&quot;: co2, &quot;notes&quot;: ([] if o.get(&quot;count_fixed&quot;, False) or not o.get(&quot;fixed_per_year&quot;) else
+                                  [&quot;fixed costs (insurance, registration) not counted: you keep the car anyway&quot;])}
+
+
+def transit_cost(o, sc, days, who):
+    rides = num(o, &quot;rides_per_day&quot;, 2, lo=1, who=who)
+    fare = num(o, &quot;fare_per_ride&quot;, who=who)
+    cap = o.get(&quot;daily_cap&quot;)
+    per_day = fare * rides if cap is None else min(fare * rides, num(o, &quot;daily_cap&quot;, who=who))
+    payg_year = per_day * days
+    best, note = payg_year, &quot;pay per ride&quot;
+    if o.get(&quot;monthly_pass&quot;) is not None:
+        pass_year = num(o, &quot;monthly_pass&quot;, who=who) * 12
+        months_days = days / 12
+        if pass_year &lt; payg_year:
+            best, note = pass_year, f&quot;monthly pass (cheaper than {fmt_plain(payg_year / 12, sc[&#x27;sym&#x27;])}/month pay per ride at {months_days:.1f} days/month)&quot;
+        else:
+            note = f&quot;pay per ride (pass would cost {fmt_plain(pass_year / 12, sc[&#x27;sym&#x27;])}/month at {months_days:.1f} days/month)&quot;
+    subsidy = num(o, &quot;subsidy_per_month&quot;, 0, who=who) * 12
+    best = max(0.0, best - subsidy)
+    km = num(o, &quot;distance_one_way&quot;, sc[&quot;distance&quot;], who=who) * 2 * days * KM_PER_UNIT[sc[&quot;units&quot;]]
+    co2 = km * num(o, &quot;co2_g_per_passenger_km&quot;, 80, who=who) / 1000
+    return {&quot;fares&quot;: best, &quot;co2&quot;: co2, &quot;notes&quot;: [note] + ([f&quot;employer subsidy {fmt_plain(subsidy / 12, sc[&#x27;sym&#x27;])}/month deducted&quot;] if subsidy else [])}
+
+
+def bike_cost(o, sc, days, who, mode):
+    d = num(o, &quot;distance_one_way&quot;, sc[&quot;distance&quot;], who=who) * 2 * days
+    own = 0.0
+    if mode != &quot;walk&quot;:
+        life = num(o, &quot;life_years&quot;, 5, lo=0.5, who=who)
+        own = num(o, &quot;purchase_price&quot;, 0, who=who) / life
+    own += num(o, &quot;maintenance_per_year&quot;, 0, who=who) + num(o, &quot;gear_per_year&quot;, 0, who=who)
+    energy = 0.0
+    if mode == &quot;ebike&quot;:
+        kwh = d / 100 * num(o, &quot;kwh_per_100&quot;, 1.2, who=who)
+        energy = kwh * num(o, &quot;electricity_price&quot;, 0, who=who)
+    extra = num(o, &quot;other_per_month&quot;, 0, who=who) * 12
+    return {&quot;ownership&quot;: own, &quot;energy&quot;: energy, &quot;other&quot;: extra, &quot;co2&quot;: 0.0,
+            &quot;notes&quot;: [&quot;ownership costs counted in full (they do not shrink on days you do not ride)&quot;] if own else []}
+
+
+def option_cost(o, sc, days, who):
+    mode = o.get(&quot;mode&quot;)
+    if mode == &quot;car&quot;:
+        c = car_cost(o, sc, days, who)
+    elif mode == &quot;transit&quot;:
+        c = transit_cost(o, sc, days, who)
+    elif mode in (&quot;bike&quot;, &quot;ebike&quot;, &quot;walk&quot;):
+        c = bike_cost(o, sc, days, who, mode)
+    else:
+        raise InputError(f&quot;{who}: mode &#x27;{mode}&#x27; is not allowed here (use car, transit, bike, ebike, walk)&quot;)
+    minutes = num(o, &quot;minutes_one_way&quot;, who=who, lo=1)
+    cash = sum(v for k, v in c.items() if k not in (&quot;co2&quot;, &quot;notes&quot;))
+    return {&quot;cash&quot;: cash, &quot;minutes&quot;: minutes, &quot;co2&quot;: c[&quot;co2&quot;], &quot;notes&quot;: c[&quot;notes&quot;],
+            &quot;usable&quot;: num(o, &quot;usable_time_share&quot;, 0, hi=1, who=who),
+            &quot;breakdown&quot;: {k: v for k, v in c.items() if k not in (&quot;co2&quot;, &quot;notes&quot;)}}
+
+
+def evaluate(sc_raw, value_override=None, dpw_override=None):
+    if not isinstance(sc_raw, dict) or not isinstance(sc_raw.get(&quot;options&quot;), list) or not sc_raw[&quot;options&quot;]:
+        raise InputError(&quot;scenario needs an &#x27;options&#x27; list&quot;)
+    units = sc_raw.get(&quot;units&quot;, &quot;metric&quot;)
+    if units not in KM_PER_UNIT:
+        raise InputError(&quot;units must be &#x27;metric&#x27; or &#x27;imperial&#x27;&quot;)
+    cur = sc_raw.get(&quot;currency&quot;, &quot;USD&quot;)
+    sc = {&quot;units&quot;: units, &quot;distance&quot;: num(sc_raw, &quot;one_way_distance&quot;, who=&quot;scenario&quot;, lo=0.1),
+          &quot;sym&quot;: SYMBOLS.get(cur, f&quot;{cur} &quot;)}
+    dpw = dpw_override if dpw_override is not None else num(sc_raw, &quot;days_per_week&quot;, 5, lo=0.5, hi=7, who=&quot;scenario&quot;)
+    wpy = num(sc_raw, &quot;weeks_per_year&quot;, 46, lo=1, hi=52, who=&quot;scenario&quot;)
+    days = dpw * wpy
+    vot = value_override if value_override is not None else num(sc_raw, &quot;value_of_time_per_hour&quot;, 0, who=&quot;scenario&quot;)
+    by_name = {}
+    for i, o in enumerate(sc_raw[&quot;options&quot;]):
+        if not isinstance(o, dict) or not o.get(&quot;name&quot;) or o.get(&quot;mode&quot;) not in MODES:
+            raise InputError(f&quot;option {i + 1}: needs a &#x27;name&#x27; and a &#x27;mode&#x27; ({&#x27;, &#x27;.join(sorted(MODES))})&quot;)
+        if o[&quot;name&quot;] in by_name:
+            raise InputError(f&quot;option name &#x27;{o[&#x27;name&#x27;]}&#x27; is used twice&quot;)
+        by_name[o[&quot;name&quot;]] = o
+    results = []
+    for o in sc_raw[&quot;options&quot;]:
+        who = o[&quot;name&quot;]
+        if o[&quot;mode&quot;] == &quot;mix&quot;:
+            shares = o.get(&quot;shares&quot;)
+            if not isinstance(shares, dict) or not shares:
+                raise InputError(f&quot;{who}: mix needs &#x27;shares&#x27;, e.g. {{\&quot;Bike\&quot;: 0.6, \&quot;Transit\&quot;: 0.4}}&quot;)
+            tot = sum(shares.values())
+            if abs(tot - 1) &gt; 0.001:
+                raise InputError(f&quot;{who}: shares add up to {tot:g}, not 1&quot;)
+            cash = co2 = hours = eff = 0.0
+            notes, parts = [], []
+            for nm, sh in shares.items():
+                if nm not in by_name or by_name[nm][&quot;mode&quot;] in (&quot;mix&quot;,):
+                    raise InputError(f&quot;{who}: share &#x27;{nm}&#x27; must name another non-mix option&quot;)
+                sub = by_name[nm]
+                part = multi_cost(sub, sc, days * sh, nm) if sub[&quot;mode&quot;] == &quot;multi&quot; else option_cost(sub, sc, days * sh, nm)
+                cash += part[&quot;cash&quot;]; co2 += part[&quot;co2&quot;]
+                h = part[&quot;minutes&quot;] * 2 * days * sh / 60
+                hours += h; eff += h * (1 - part[&quot;usable&quot;])
+                parts.append(f&quot;{nm} {sh * 100:.0f} % of days ({days * sh / 12:.1f}/month): {part[&#x27;notes&#x27;][0] if part[&#x27;notes&#x27;] else &#x27;as above&#x27;}&quot;)
+            minutes = hours * 60 / (2 * days)
+            results.append(row(who, &quot;mix&quot;, cash, minutes, hours, eff, vot, co2, days, parts))
+            continue
+        part = multi_cost(o, sc, days, who) if o[&quot;mode&quot;] == &quot;multi&quot; else option_cost(o, sc, days, who)
+        hours = part[&quot;minutes&quot;] * 2 * days / 60
+        results.append(row(who, o[&quot;mode&quot;], part[&quot;cash&quot;], part[&quot;minutes&quot;], hours, hours * (1 - part[&quot;usable&quot;]), vot,
+                           part[&quot;co2&quot;], days, part[&quot;notes&quot;], part.get(&quot;breakdown&quot;)))
+    return {&quot;currency&quot;: sc_raw.get(&quot;currency&quot;, &quot;USD&quot;), &quot;units&quot;: units, &quot;one_way_distance&quot;: sc[&quot;distance&quot;],
+            &quot;days_per_year&quot;: days, &quot;days_per_month&quot;: days / 12, &quot;value_of_time_per_hour&quot;: vot,
+            &quot;options&quot;: results, &quot;break_even&quot;: break_even(results)}
+
+
+def multi_cost(o, sc, days, who):
+    legs = o.get(&quot;legs&quot;)
+    if not isinstance(legs, list) or len(legs) &lt; 2:
+        raise InputError(f&quot;{who}: multi needs at least two &#x27;legs&#x27;&quot;)
+    cash = co2 = minutes = 0.0
+    notes, usable_min = [], 0.0
+    for j, leg in enumerate(legs, 1):
+        if leg.get(&quot;mode&quot;) in (&quot;mix&quot;, &quot;multi&quot;):
+            raise InputError(f&quot;{who} leg {j}: legs cannot be mix or multi&quot;)
+        if &quot;distance_one_way&quot; not in leg:
+            raise InputError(f&quot;{who} leg {j}: each leg needs its own &#x27;distance_one_way&#x27;&quot;)
+        p = option_cost(leg, sc, days, f&quot;{who} leg {j}&quot;)
+        cash += p[&quot;cash&quot;]; co2 += p[&quot;co2&quot;]; minutes += p[&quot;minutes&quot;]
+        usable_min += p[&quot;minutes&quot;] * p[&quot;usable&quot;]
+        notes += [f&quot;leg {j} ({leg[&#x27;mode&#x27;]}): {n}&quot; for n in p[&quot;notes&quot;]]
+    minutes += num(o, &quot;transfer_minutes&quot;, 0, who=who)
+    return {&quot;cash&quot;: cash, &quot;co2&quot;: co2, &quot;minutes&quot;: minutes, &quot;notes&quot;: notes or [&quot;legs summed&quot;],
+            &quot;usable&quot;: usable_min / minutes if minutes else 0.0}
+
+
+def row(name, mode, cash, minutes, hours, eff_hours, vot, co2, days, notes, breakdown=None):
+    tcost = eff_hours * vot
+    return {&quot;name&quot;: name, &quot;mode&quot;: mode, &quot;cash_year&quot;: cash, &quot;cash_month&quot;: cash / 12, &quot;minutes_one_way&quot;: minutes,
+            &quot;hours_month&quot;: hours / 12, &quot;lost_hours_month&quot;: eff_hours / 12, &quot;time_cost_month&quot;: tcost / 12, &quot;total_month&quot;: (cash + tcost) / 12,
+            &quot;total_year&quot;: cash + tcost, &quot;cost_per_trip&quot;: cash / (2 * days), &quot;co2_kg_year&quot;: co2,
+            &quot;notes&quot;: notes, &quot;breakdown&quot;: breakdown or {}}
+
+
+def break_even(results):
+    &quot;&quot;&quot;For each option, the hourly value of time at which it ties with the cheapest-cash option.
+    Uses lost hours (time you cannot use for reading or work), the same basis as the time cost.&quot;&quot;&quot;
+    base = min(results, key=lambda r: r[&quot;cash_year&quot;])
+    out = []
+    for r in results:
+        if r is base:
+            continue
+        extra = r[&quot;cash_year&quot;] - base[&quot;cash_year&quot;]
+        hours_saved = (base[&quot;lost_hours_month&quot;] - r[&quot;lost_hours_month&quot;]) * 12
+        if hours_saved &gt; 0.01:
+            out.append({&quot;option&quot;: r[&quot;name&quot;], &quot;vs&quot;: base[&quot;name&quot;], &quot;extra_cash_year&quot;: extra,
+                        &quot;hours_saved_year&quot;: hours_saved, &quot;break_even_per_hour&quot;: extra / hours_saved})
+        else:
+            out.append({&quot;option&quot;: r[&quot;name&quot;], &quot;vs&quot;: base[&quot;name&quot;], &quot;extra_cash_year&quot;: extra,
+                        &quot;hours_saved_year&quot;: hours_saved, &quot;break_even_per_hour&quot;: None})
+    return out
+
+
+def fmt_plain(v, sym=&quot;$&quot;):
+    return f&quot;{sym}{v:,.0f}&quot; if abs(v) &gt;= 100 else f&quot;{sym}{v:,.2f}&quot;
+
+
+def render(res):
+    sym = SYMBOLS.get(res[&quot;currency&quot;], res[&quot;currency&quot;] + &quot; &quot;)
+    f = lambda v: fmt_plain(v, sym)
+    du = &quot;mi&quot; if res[&quot;units&quot;] == &quot;imperial&quot; else &quot;km&quot;
+    out = [f&quot;# Commute cost comparison&quot;, &quot;&quot;,
+           f&quot;One way: {res[&#x27;one_way_distance&#x27;]:g} {du}   Commute days: {res[&#x27;days_per_month&#x27;]:.1f}/month ({res[&#x27;days_per_year&#x27;]:.0f}/year)   &quot;
+           f&quot;Value of time: {f(res[&#x27;value_of_time_per_hour&#x27;])}/hour   Currency: {res[&#x27;currency&#x27;]}&quot;, &quot;&quot;,
+           &quot;| Option | Cash / month | Cash / year | Per trip | Door to door (one way) | Hours / month | Time cost / month | Total / month | CO2 kg / year |&quot;,
+           &quot;|---|---|---|---|---|---|---|---|---|&quot;]
+    rs = res[&quot;options&quot;]
+    for r in sorted(rs, key=lambda r: r[&quot;total_month&quot;]):
+        out.append(f&quot;| {r[&#x27;name&#x27;]} | {f(r[&#x27;cash_month&#x27;])} | {f(r[&#x27;cash_year&#x27;])} | {f(r[&#x27;cost_per_trip&#x27;])} | {r[&#x27;minutes_one_way&#x27;]:.0f} min | &quot;
+                   f&quot;{r[&#x27;hours_month&#x27;]:.1f} | {f(r[&#x27;time_cost_month&#x27;])} | **{f(r[&#x27;total_month&#x27;])}** | {r[&#x27;co2_kg_year&#x27;]:,.0f} |&quot;)
+    cheapest = min(rs, key=lambda r: r[&quot;cash_year&quot;])
+    best_total = min(rs, key=lambda r: r[&quot;total_year&quot;])
+    fastest = min(rs, key=lambda r: r[&quot;minutes_one_way&quot;])
+    out += [&quot;&quot;, &quot;Sorted by total (cash + time cost).&quot;, &quot;&quot;,
+            &quot;## Headline&quot;, &quot;&quot;,
+            f&quot;- Cheapest in cash: **{cheapest[&#x27;name&#x27;]}** ({f(cheapest[&#x27;cash_month&#x27;])}/month).&quot;,
+            f&quot;- Cheapest once time counts: **{best_total[&#x27;name&#x27;]}** ({f(best_total[&#x27;total_month&#x27;])}/month at {f(res[&#x27;value_of_time_per_hour&#x27;])}/hour).&quot;,
+            f&quot;- Fastest: **{fastest[&#x27;name&#x27;]}** ({fastest[&#x27;minutes_one_way&#x27;]:.0f} min one way, {fastest[&#x27;hours_month&#x27;]:.1f} h/month).&quot;]
+    out += [&quot;&quot;, f&quot;## Break-even value of time (vs {cheapest[&#x27;name&#x27;]}, the cheapest in cash)&quot;, &quot;&quot;,
+            &quot;| Option | Extra cash / year | Lost hours saved / year | Worth it if your hour is worth more than |&quot;, &quot;|---|---|---|---|&quot;]
+    for b in res[&quot;break_even&quot;]:
+        if b[&quot;break_even_per_hour&quot;] is None:
+            verdict = &quot;never on cost: it does not save usable time&quot; if b[&quot;extra_cash_year&quot;] &gt; 0 else &quot;always: same cash, no more lost time&quot;
+            hs = f&quot;{b[&#x27;hours_saved_year&#x27;]:.0f}&quot; if b[&quot;hours_saved_year&quot;] &gt;= 0 else f&quot;none ({-b[&#x27;hours_saved_year&#x27;]:.0f} more lost)&quot;
+            out.append(f&quot;| {b[&#x27;option&#x27;]} | {f(b[&#x27;extra_cash_year&#x27;])} | {hs} | {verdict} |&quot;)
+        else:
+            out.append(f&quot;| {b[&#x27;option&#x27;]} | {f(b[&#x27;extra_cash_year&#x27;])} | {b[&#x27;hours_saved_year&#x27;]:.0f} | {f(b[&#x27;break_even_per_hour&#x27;])}/hour |&quot;)
+    out += [&quot;&quot;, &quot;## Notes per option&quot;, &quot;&quot;]
+    for r in rs:
+        bd = &quot;, &quot;.join(f&quot;{LABELS.get(k, k)} {f(v / 12)}&quot; for k, v in r[&quot;breakdown&quot;].items() if v) if r[&quot;breakdown&quot;] else &quot;&quot;
+        out.append(f&quot;- **{r[&#x27;name&#x27;]}** ({r[&#x27;mode&#x27;]}): &quot; + &quot;; &quot;.join(([f&quot;per month: {bd}&quot;] if bd else []) + r[&quot;notes&quot;]))
+    out += [&quot;&quot;, &quot;Time cost = hours x value of time x (1 - share of the trip you can use for reading or work). &quot;
+            &quot;Not included: health benefits, accident risk, weather days and the option value of having a car; &quot;
+            &quot;see references/time-value-and-assumptions.md.&quot;]
+    return &quot;\n&quot;.join(out) + &quot;\n&quot;
+
+
+def self_test():
+    base = {&quot;currency&quot;: &quot;USD&quot;, &quot;units&quot;: &quot;metric&quot;, &quot;one_way_distance&quot;: 10, &quot;days_per_week&quot;: 5, &quot;weeks_per_year&quot;: 48,
+            &quot;value_of_time_per_hour&quot;: 20}
+    car = {&quot;name&quot;: &quot;Car&quot;, &quot;mode&quot;: &quot;car&quot;, &quot;minutes_one_way&quot;: 20, &quot;fuel_l_per_100km&quot;: 8, &quot;fuel_price&quot;: 1.5,
+           &quot;maintenance_per_distance&quot;: 0.05, &quot;parking_per_day&quot;: 5}
+    tr = {&quot;name&quot;: &quot;Transit&quot;, &quot;mode&quot;: &quot;transit&quot;, &quot;minutes_one_way&quot;: 40, &quot;fare_per_ride&quot;: 2.5, &quot;monthly_pass&quot;: 80}
+    bike = {&quot;name&quot;: &quot;Bike&quot;, &quot;mode&quot;: &quot;bike&quot;, &quot;minutes_one_way&quot;: 35, &quot;purchase_price&quot;: 1000, &quot;life_years&quot;: 5, &quot;maintenance_per_year&quot;: 100}
+    def ev(*opts, **kw):
+        sc = dict(base, options=list(opts)); sc.update(kw.pop(&quot;sc&quot;, {}))
+        return evaluate(sc, **kw)
+    def get(res, n):
+        return next(r for r in res[&quot;options&quot;] if r[&quot;name&quot;] == n)
+    cases = []
+    def case(name, fn):
+        try:
+            ok, err = bool(fn()), &quot;&quot;
+        except Exception as e:  # noqa
+            ok, err = False, repr(e)
+        cases.append((name, ok, err))
+    # car: 240 days * 20 km = 4800 km; fuel 384 L * 1.5 = 576; maint 240; parking 1200 -&gt; 2016/year
+    case(&quot;car annual cash (fuel + maintenance + parking)&quot;, lambda: abs(get(ev(car), &quot;Car&quot;)[&quot;cash_year&quot;] - 2016) &lt; 0.01)
+    case(&quot;car CO2 petrol 2.35 kg/L&quot;, lambda: abs(get(ev(car), &quot;Car&quot;)[&quot;co2_kg_year&quot;] - 384 * 2.35) &lt; 0.01)
+    case(&quot;diesel CO2 factor&quot;, lambda: abs(get(ev(dict(car, fuel=&quot;diesel&quot;)), &quot;Car&quot;)[&quot;co2_kg_year&quot;] - 384 * 2.68) &lt; 0.01)
+    case(&quot;fixed costs excluded unless count_fixed&quot;, lambda: get(ev(dict(car, fixed_per_year=1500)), &quot;Car&quot;)[&quot;cash_year&quot;] == get(ev(car), &quot;Car&quot;)[&quot;cash_year&quot;])
+    case(&quot;fixed costs included with count_fixed&quot;, lambda: abs(get(ev(dict(car, fixed_per_year=1500, count_fixed=True)), &quot;Car&quot;)[&quot;cash_year&quot;] - 3516) &lt; 0.01)
+    case(&quot;EV uses kWh and electricity price&quot;, lambda: abs(get(ev(dict(car, kwh_per_100=18, electricity_price=0.3, fuel_l_per_100km=None)), &quot;Car&quot;)[&quot;breakdown&quot;][&quot;energy&quot;] - 4800 / 100 * 18 * 0.3) &lt; 0.01)
+    case(&quot;imperial mpg and $/gal&quot;, lambda: abs(get(ev({&quot;name&quot;: &quot;Car&quot;, &quot;mode&quot;: &quot;car&quot;, &quot;minutes_one_way&quot;: 20, &quot;fuel_economy_mpg&quot;: 30, &quot;fuel_price&quot;: 3.6}, sc={&quot;units&quot;: &quot;imperial&quot;}), &quot;Car&quot;)[&quot;cash_year&quot;] - 4800 / 30 * 3.6) &lt; 0.01)
+    case(&quot;imperial CO2 8.89 kg/gal&quot;, lambda: abs(get(ev({&quot;name&quot;: &quot;Car&quot;, &quot;mode&quot;: &quot;car&quot;, &quot;minutes_one_way&quot;: 20, &quot;fuel_economy_mpg&quot;: 30, &quot;fuel_price&quot;: 3.6}, sc={&quot;units&quot;: &quot;imperial&quot;}), &quot;Car&quot;)[&quot;co2_kg_year&quot;] - 160 * 8.89) &lt; 0.01)
+    # transit: per ride 5/day*240 = 1200 vs pass 960 -&gt; pass
+    case(&quot;transit picks monthly pass when cheaper&quot;, lambda: abs(get(ev(tr), &quot;Transit&quot;)[&quot;cash_year&quot;] - 960) &lt; 0.01)
+    case(&quot;transit picks pay-per-ride at 2 days/week&quot;, lambda: abs(get(ev(tr, dpw_override=2), &quot;Transit&quot;)[&quot;cash_year&quot;] - 5 * 96) &lt; 0.01)
+    case(&quot;daily cap applied&quot;, lambda: abs(get(ev(dict(tr, monthly_pass=None, daily_cap=4)), &quot;Transit&quot;)[&quot;cash_year&quot;] - 4 * 240) &lt; 0.01)
+    case(&quot;employer subsidy deducted, never below 0&quot;, lambda: get(ev(dict(tr, subsidy_per_month=100)), &quot;Transit&quot;)[&quot;cash_year&quot;] == 0)
+    case(&quot;bike ownership spread over life&quot;, lambda: abs(get(ev(bike), &quot;Bike&quot;)[&quot;cash_year&quot;] - 300) &lt; 0.01)
+    case(&quot;ebike electricity&quot;, lambda: abs(get(ev(dict(bike, name=&quot;E&quot;, mode=&quot;ebike&quot;, kwh_per_100=1.5, electricity_price=0.3)), &quot;E&quot;)[&quot;breakdown&quot;][&quot;energy&quot;] - 4800 / 100 * 1.5 * 0.3) &lt; 0.01)
+    case(&quot;walk has no purchase cost&quot;, lambda: get(ev({&quot;name&quot;: &quot;Walk&quot;, &quot;mode&quot;: &quot;walk&quot;, &quot;minutes_one_way&quot;: 120, &quot;purchase_price&quot;: 999}), &quot;Walk&quot;)[&quot;cash_year&quot;] == 0)
+    case(&quot;time cost = hours x value&quot;, lambda: abs(get(ev(car), &quot;Car&quot;)[&quot;time_cost_month&quot;] - 20 * 2 * 240 / 60 * 20 / 12) &lt; 0.01)
+    case(&quot;usable time share discounts transit time&quot;, lambda: abs(get(ev(dict(tr, usable_time_share=0.5)), &quot;Transit&quot;)[&quot;time_cost_month&quot;] - 40 * 2 * 240 / 60 * 20 * 0.5 / 12) &lt; 0.01)
+    case(&quot;value-of-time override&quot;, lambda: get(ev(car, value_override=0), &quot;Car&quot;)[&quot;time_cost_month&quot;] == 0)
+    case(&quot;per trip = annual cash / trips&quot;, lambda: abs(get(ev(car), &quot;Car&quot;)[&quot;cost_per_trip&quot;] - 2016 / 480) &lt; 0.001)
+    # mix: bike 60 % of days, transit 40 % -&gt; transit 96 days: per ride 480 vs pass 960 -&gt; per ride
+    mixo = {&quot;name&quot;: &quot;Mix&quot;, &quot;mode&quot;: &quot;mix&quot;, &quot;shares&quot;: {&quot;Bike&quot;: 0.6, &quot;Transit&quot;: 0.4}}
+    case(&quot;mix: bike ownership full + transit pay-per-ride on its days&quot;, lambda: abs(get(ev(bike, tr, mixo), &quot;Mix&quot;)[&quot;cash_year&quot;] - (300 + 480)) &lt; 0.01)
+    case(&quot;mix: time weighted by days&quot;, lambda: abs(get(ev(bike, tr, mixo), &quot;Mix&quot;)[&quot;minutes_one_way&quot;] - (0.6 * 35 + 0.4 * 40)) &lt; 0.01)
+    multi = {&quot;name&quot;: &quot;P+R&quot;, &quot;mode&quot;: &quot;multi&quot;, &quot;transfer_minutes&quot;: 5, &quot;legs&quot;: [
+        {&quot;mode&quot;: &quot;car&quot;, &quot;distance_one_way&quot;: 3, &quot;minutes_one_way&quot;: 8, &quot;fuel_l_per_100km&quot;: 8, &quot;fuel_price&quot;: 1.5, &quot;parking_per_day&quot;: 2},
+        {&quot;mode&quot;: &quot;transit&quot;, &quot;distance_one_way&quot;: 7, &quot;minutes_one_way&quot;: 20, &quot;fare_per_ride&quot;: 2.5, &quot;monthly_pass&quot;: 80}]}
+    case(&quot;multi: legs summed + transfer&quot;, lambda: (lambda r: abs(r[&quot;minutes_one_way&quot;] - 33) &lt; 0.01 and abs(r[&quot;cash_year&quot;] - (1440 * 0.08 * 1.5 + 480 + 960)) &lt; 0.01)(get(ev(multi), &quot;P+R&quot;)))
+    case(&quot;break-even: car vs cheapest&quot;, lambda: (lambda res: (lambda b: abs(b[&quot;break_even_per_hour&quot;] - (2016 - 300) / ((35 - 20) * 2 * 240 / 60)) &lt; 0.01)(next(b for b in res[&quot;break_even&quot;] if b[&quot;option&quot;] == &quot;Car&quot;)))(ev(car, bike)))
+    case(&quot;break-even uses lost hours (usable transit time)&quot;, lambda: next(b for b in ev(dict(tr, usable_time_share=0.75, subsidy_per_month=60), bike)[&quot;break_even&quot;] if b[&quot;option&quot;] == &quot;Bike&quot;)[&quot;break_even_per_hour&quot;] is None)
+    case(&quot;break-even: slower and dearer -&gt; None&quot;, lambda: next(b for b in ev(car, tr, bike)[&quot;break_even&quot;] if b[&quot;option&quot;] == &quot;Transit&quot;)[&quot;break_even_per_hour&quot;] is None)
+    case(&quot;render has headline and table&quot;, lambda: &quot;Cheapest in cash: **Bike**&quot; in render(ev(car, tr, bike)) and &quot;| Car |&quot; in render(ev(car, tr, bike)))
+    case(&quot;render uses currency symbol&quot;, lambda: &quot;€&quot; in render(ev(car, sc={&quot;currency&quot;: &quot;EUR&quot;})))
+    def bad(*opts, **sc):
+        try:
+            ev(*opts, sc=sc); return False
+        except InputError:
+            return True
+    case(&quot;mix shares must sum to 1&quot;, lambda: bad(bike, tr, dict(mixo, shares={&quot;Bike&quot;: 0.6, &quot;Transit&quot;: 0.6})))
+    case(&quot;mix share must name an option&quot;, lambda: bad(bike, dict(mixo, shares={&quot;Bike&quot;: 0.5, &quot;Train&quot;: 0.5})))
+    case(&quot;unknown mode rejected&quot;, lambda: bad({&quot;name&quot;: &quot;Boat&quot;, &quot;mode&quot;: &quot;boat&quot;, &quot;minutes_one_way&quot;: 5}))
+    case(&quot;duplicate names rejected&quot;, lambda: bad(car, car))
+    case(&quot;missing fuel economy rejected&quot;, lambda: bad({&quot;name&quot;: &quot;Car&quot;, &quot;mode&quot;: &quot;car&quot;, &quot;minutes_one_way&quot;: 20, &quot;fuel_price&quot;: 1.5}))
+    case(&quot;negative price rejected&quot;, lambda: bad(dict(car, fuel_price=-1)))
+    case(&quot;bad units rejected&quot;, lambda: bad(car, units=&quot;furlongs&quot;))
+    case(&quot;usable share above 1 rejected&quot;, lambda: bad(dict(tr, usable_time_share=1.5)))
+    passed = 0
+    for name, ok, err in cases:
+        passed += ok
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name + (&quot;&quot; if ok else f&quot;  {err}&quot;))
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Compare commute options per month and year, including time value&quot;)
+    ap.add_argument(&quot;scenario&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--value-of-time&quot;, type=float, help=&quot;override value_of_time_per_hour&quot;)
+    ap.add_argument(&quot;--days-per-week&quot;, type=float, help=&quot;override days_per_week (e.g. 3 for hybrid work)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.scenario:
+        ap.error(&quot;give a scenario JSON file, or --self-test&quot;)
+    try:
+        with open(a.scenario, encoding=&quot;utf-8&quot;) as fh:
+            sc = json.load(fh)
+        if a.days_per_week is not None and not 0.5 &lt;= a.days_per_week &lt;= 7:
+            raise InputError(&quot;--days-per-week must be 0.5..7&quot;)
+        res = evaluate(sc, a.value_of_time, a.days_per_week)
+    except json.JSONDecodeError as e:
+        print(f&quot;error: scenario is not valid JSON: {e}&quot;, file=sys.stderr)
+        return 2
+    except (OSError, InputError, UnicodeDecodeError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(res, indent=2) if a.json else render(res), end=&quot;&quot; if not a.json else &quot;\n&quot;)
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/commute-cost-comparison-calculator',TI="Commute Cost Comparison Calculator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

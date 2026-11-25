@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accessibility Testing Superpower | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: accessibility-testing-superpower description: | Performs WCAG compliance audits and accessibility remediation for web applications. Use when">
+<meta property="og:title" content="Accessibility Testing Superpower | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: accessibility-testing-superpower description: | Performs WCAG compliance audits and accessibility remediation for web applications. Use when">
+<meta property="og:url" content="https://claudebomb.com/l/pc/accessibility-testing-superpower/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/accessibility-testing-superpower/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Accessibility Testing Superpower</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by izzetemre. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: accessibility-testing-superpower
+description: |
+  Performs WCAG compliance audits and accessibility remediation for web applications.
+  Use when: 1) Auditing UI for WCAG 2.1/2.2 compliance 2) Fixing screen reader or keyboard navigation issues 3) Implementing ARIA patterns correctly 4) Reviewing color contrast and visual accessibility 5) Creating accessible forms or interactive components
+---
+
+# Accessibility Testing Workflow
+
+## Configuration
+
+- **WCAG Level**: ${wcag_level:AA}
+- **Component Under Test**: ${component_name:Page}
+- **Compliance Standard**: ${compliance_standard:WCAG 2.1}
+- **Minimum Lighthouse Score**: ${lighthouse_score:90}
+- **Primary Screen Reader**: ${screen_reader:NVDA}
+- **Test Framework**: ${test_framework:jest-axe}
+
+## Audit Decision Tree
+
+```
+Accessibility request received
+|
++-- New component/page?
+|   +-- Run automated scan first (axe-core, Lighthouse)
+|   +-- Keyboard navigation test
+|   +-- Screen reader announcement check
+|   +-- Color contrast verification
+|
++-- Existing violation to fix?
+|   +-- Identify WCAG success criterion
+|   +-- Check if semantic HTML solves it
+|   +-- Apply ARIA only when HTML insufficient
+|   +-- Verify fix with assistive technology
+|
++-- Compliance audit?
+    +-- Automated scan (catches ~30% of issues)
+    +-- Manual testing checklist
+    +-- Document violations by severity
+    +-- Create remediation roadmap
+```
+
+## WCAG Quick Reference
+
+### Severity Classification
+
+| Severity | Impact | Examples | Fix Timeline |
+|----------|--------|----------|--------------|
+| Critical | Blocks access entirely | No keyboard focus, empty buttons, missing alt on functional images | Immediate |
+| Serious | Major barriers | Poor contrast, missing form labels, no skip links | Within sprint |
+| Moderate | Difficult but usable | Inconsistent navigation, unclear error messages | Next release |
+| Minor | Inconvenience | Redundant alt text, minor heading order issues | Backlog |
+
+### Common Violations and Fixes
+
+**Missing accessible name**
+```html
+&lt;!-- Violation --&gt;
+&lt;button&gt;&lt;svg&gt;...&lt;/svg&gt;&lt;/button&gt;
+
+&lt;!-- Fix: aria-label --&gt;
+&lt;button aria-label=&quot;Close dialog&quot;&gt;&lt;svg&gt;...&lt;/svg&gt;&lt;/button&gt;
+
+&lt;!-- Fix: visually hidden text --&gt;
+&lt;button&gt;&lt;span class=&quot;sr-only&quot;&gt;Close dialog&lt;/span&gt;&lt;svg&gt;...&lt;/svg&gt;&lt;/button&gt;
+```
+
+**Form label association**
+```html
+&lt;!-- Violation --&gt;
+&lt;label&gt;Email&lt;/label&gt;
+&lt;input type=&quot;email&quot;&gt;
+
+&lt;!-- Fix: explicit association --&gt;
+&lt;label for=&quot;email&quot;&gt;Email&lt;/label&gt;
+&lt;input type=&quot;email&quot; id=&quot;email&quot;&gt;
+
+&lt;!-- Fix: implicit association --&gt;
+&lt;label&gt;Email &lt;input type=&quot;email&quot;&gt;&lt;/label&gt;
+```
+
+**Color contrast failure**
+```
+Minimum ratios (WCAG ${wcag_level:AA}):
+- Normal text (&lt;${large_text_size:18}px or &lt;${bold_text_size:14}px bold): ${contrast_ratio_normal:4.5}:1
+- Large text (&gt;=${large_text_size:18}px or &gt;=${bold_text_size:14}px bold): ${contrast_ratio_large:3}:1
+- UI components and graphics: 3:1
+
+Tools: WebAIM Contrast Checker, browser DevTools
+```
+
+**Focus visibility**
+```css
+/* Never do this without alternative */
+:focus { outline: none; }
+
+/* Proper custom focus */
+:focus-visible {
+  outline: ${focus_outline_width:2}px solid ${focus_outline_color:#005fcc};
+  outline-offset: ${focus_outline_offset:2}px;
+}
+```
+
+## ARIA Decision Framework
+
+```
+Need to convey information to assistive technology?
+|
++-- Can semantic HTML do it?
+|   +-- YES: Use HTML (&lt;button&gt;, &lt;nav&gt;, &lt;main&gt;, &lt;article&gt;)
+|   +-- NO: Continue to ARIA
+|
++-- What type of ARIA needed?
+    +-- Role: What IS this element? (role=&quot;dialog&quot;, role=&quot;tab&quot;)
+    +-- State: What condition? (aria-expanded, aria-checked)
+    +-- Property: What relationship? (aria-labelledby, aria-describedby)
+    +-- Live region: Dynamic content? (aria-live=&quot;${aria_live_mode:polite}&quot;)
+```
+
+### ARIA Patterns for Common Widgets
+
+**Disclosure (show/hide)**
+```html
+&lt;button aria-expanded=&quot;false&quot; aria-controls=&quot;content-1&quot;&gt;
+  Show details
+&lt;/button&gt;
+&lt;div id=&quot;content-1&quot; hidden&gt;
+  Content here
+&lt;/div&gt;
+```
+
+**Tab interface**
+```html
+&lt;div role=&quot;tablist&quot; aria-label=&quot;${component_name:Settings}&quot;&gt;
+  &lt;button role=&quot;tab&quot; aria-selected=&quot;true&quot; aria-controls=&quot;panel-1&quot; id=&quot;tab-1&quot;&gt;
+    General
+  &lt;/button&gt;
+  &lt;button role=&quot;tab&quot; aria-selected=&quot;false&quot; aria-controls=&quot;panel-2&quot; id=&quot;tab-2&quot; tabindex=&quot;-1&quot;&gt;
+    Privacy
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;div role=&quot;tabpanel&quot; id=&quot;panel-1&quot; aria-labelledby=&quot;tab-1&quot;&gt;...&lt;/div&gt;
+&lt;div role=&quot;tabpanel&quot; id=&quot;panel-2&quot; aria-labelledby=&quot;tab-2&quot; hidden&gt;...&lt;/div&gt;
+```
+
+**Modal dialog**
+```html
+&lt;div role=&quot;dialog&quot; aria-modal=&quot;true&quot; aria-labelledby=&quot;dialog-title&quot;&gt;
+  &lt;h2 id=&quot;dialog-title&quot;&gt;Confirm action&lt;/h2&gt;
+  &lt;p&gt;Are you sure you want to proceed?&lt;/p&gt;
+  &lt;button&gt;Cancel&lt;/button&gt;
+  &lt;button&gt;Confirm&lt;/button&gt;
+&lt;/div&gt;
+```
+
+## Keyboard Navigation Checklist
+
+```
+[ ] All interactive elements focusable with Tab
+[ ] Focus order matches visual/logical order
+[ ] Focus visible on all elements
+[ ] No keyboard traps (can always Tab out)
+[ ] Skip link as first focusable element
+[ ] Escape closes modals/dropdowns
+[ ] Arrow keys navigate within widgets (tabs, menus, grids)
+[ ] Enter/Space activates buttons and links
+[ ] Custom shortcuts documented and configurable
+```
+
+### Focus Management Patterns
+
+**Modal focus trap**
+```javascript
+// On modal open:
+// 1. Save previously focused element
+// 2. Move focus to first focusable in modal
+// 3. Trap Tab within modal boundaries
+
+// On modal close:
+// 1. Return focus to saved element
+```
+
+**Dynamic content**
+```javascript
+// After adding content:
+// - Announce via aria-live region, OR
+// - Move focus to new content heading
+
+// After removing content:
+// - Move focus to logical next element
+// - Never leave focus on removed element
+```
+
+## Screen Reader Testing
+
+### Announcement Verification
+
+| Element | Should Announce |
+|---------|-----------------|
+| Button | Role + name + state (&quot;Submit button&quot;) |
+| Link | Name + &quot;link&quot; (&quot;Home page link&quot;) |
+| Image | Alt text OR &quot;decorative&quot; (skip) |
+| Heading | Level + text (&quot;Heading level 2, About us&quot;) |
+| Form field | Label + type + state + instructions |
+| Error | Error message + field association |
+
+### Testing Commands (Quick Reference)
+
+**VoiceOver (macOS)**
+- VO = Ctrl + Option
+- VO + A: Read all
+- VO + Right/Left: Navigate elements
+- VO + Cmd + H: Next heading
+- VO + Cmd + J: Next form control
+
+**${screen_reader:NVDA} (Windows)**
+- NVDA + Down: Read all
+- Tab: Next focusable
+- H: Next heading
+- F: Next form field
+- B: Next button
+
+## Automated Testing Integration
+
+### axe-core in tests
+```javascript
+// ${test_framework:jest-axe}
+import { axe, toHaveNoViolations } from &#x27;jest-axe&#x27;;
+expect.extend(toHaveNoViolations);
+
+test(&#x27;${component_name:component} is accessible&#x27;, async () =&gt; {
+  const { container } = render(&lt;${component_name:MyComponent} /&gt;);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+```
+
+### Lighthouse CI threshold
+```javascript
+// lighthouserc.js
+module.exports = {
+  assertions: {
+    &#x27;categories:accessibility&#x27;: [&#x27;error&#x27;, { minScore: ${lighthouse_score:90} / 100 }],
+  },
+};
+```
+
+## Remediation Priority Matrix
+
+```
+Impact vs Effort:
+                    Low Effort    High Effort
+High Impact     |   DO FIRST   |   PLAN NEXT   |
+                |   alt text   |   redesign    |
+                |   labels     |   nav rebuild |
+----------------|--------------|---------------|
+Low Impact      |   QUICK WIN  |   BACKLOG     |
+                |   contrast   |   nice-to-have|
+                |   tweaks     |   enhancements|
+```
+
+## Verification Checklist
+
+Before marking accessibility work complete:
+
+```
+Automated Testing:
+[ ] axe-core reports zero violations
+[ ] Lighthouse accessibility &gt;= ${lighthouse_score:90}
+[ ] HTML validator passes (affects AT parsing)
+
+Keyboard Testing:
+[ ] Full task completion without mouse
+[ ] Visible focus at all times
+[ ] Logical tab order
+[ ] No traps
+
+Screen Reader Testing:
+[ ] Tested with at least one screen reader (${screen_reader:NVDA})
+[ ] All content announced correctly
+[ ] Interactive elements have roles/states
+[ ] Dynamic updates announced
+
+Visual Testing:
+[ ] Contrast ratios verified (${contrast_ratio_normal:4.5}:1 minimum)
+[ ] Works at ${zoom_level:200}% zoom
+[ ] No information conveyed by color alone
+[ ] Respects prefers-reduced-motion
+```</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/accessibility-testing-superpower',TI="Accessibility Testing Superpower";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

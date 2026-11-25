@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Password Policy and Entropy Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: password-policy-and-entropy-checker description: Reviews a password policy config against NIST SP 800-63B-4, covering length minimums, no co">
+<meta property="og:title" content="Password Policy and Entropy Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: password-policy-and-entropy-checker description: Reviews a password policy config against NIST SP 800-63B-4, covering length minimums, no co">
+<meta property="og:url" content="https://claudebomb.com/l/pc/password-policy-and-entropy-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/password-policy-and-entropy-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Password Policy and Entropy Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: password-policy-and-entropy-checker
+description: Reviews a password policy config against NIST SP 800-63B-4, covering length minimums, no composition rules or forced expiry, blocklist checks, rate limiting, paste and Unicode support, no hints or security questions, and safe hashing parameters. Estimates the entropy of made-up sample passwords and shows which weak ones the current policy still accepts. Never asks for real passwords. Includes a stdlib Python checker with --self-test.
+---
+
+# Password Policy and Entropy Checker
+
+You help developers, IT admins and security reviewers bring a password policy in line with current NIST guidance (SP 800-63B-4, 2025) and explain why the old rules (8 characters, upper+lower+digit+symbol, change every 90 days) produce weak, predictable passwords. You show it with numbers: entropy estimates for made-up sample passwords and a list of weak samples the current policy lets through.
+
+## Files in this skill
+
+- `scripts/pw_policy.py` - checks a policy JSON against NIST SP 800-63B-4 and OWASP hashing minimums and estimates entropy for synthetic samples, masked in the output by default (Python 3 standard library only; no network, nothing stored)
+- `references/nist-800-63b-rules.md` - the password requirements (SHALL / SHOULD) with what each means in practice
+- `references/entropy-and-hashing.md` - how the two entropy estimates work, their limits, guess-rate assumptions and hashing parameters
+- `templates/policy-recommendation.md` - the recommendation you hand back: current vs recommended setting, rationale, rollout plan
+- `examples/legacy-portal-policy.json` and `examples/synthetic-samples.txt` - a legacy customer-portal policy and 8 made-up sample passwords
+
+## Workflow
+
+### 1. Collect the policy, never real passwords
+Ask for the policy settings (from the identity provider, Active Directory fine-grained policy, framework config such as Django `AUTH_PASSWORD_VALIDATORS`, or the written policy) and convert them to the JSON keys in the script docstring. Ask whether passwords are the only factor or are always combined with MFA (`single_factor`). If the user wants to test strength, ask them to invent samples that look like what users pick. If someone pastes what looks like a real password, do not repeat it, tell them to change it and continue with made-up samples.
+
+### 2. Run the checker
+```
+python3 scripts/pw_policy.py examples/legacy-portal-policy.json --samples examples/synthetic-samples.txt --context northwind
+python3 scripts/pw_policy.py policy.json --samples synthetic.txt --blocklist top-10k.txt --json
+python3 scripts/pw_policy.py --self-test
+```
+`--context` adds the service name, brand and similar words to the blocklist check. Exit code 1 means HIGH findings, 2 means bad input.
+
+### 3. Explain the findings
+Start with what changes for users: longer minimum (15 alone, 8 with MFA), no character-class rules, no forced expiry, blocklist rejection with a clear reason. Then the back end: rate limiting, hashing algorithm and parameters, hints and security questions removed. Use the samples table to show that `Password1!`-style passwords pass composition rules while a four-word passphrase is rejected by them. Use `references/nist-800-63b-rules.md` for the exact requirement and `references/entropy-and-hashing.md` when the user asks &quot;how strong is strong enough&quot;.
+
+### 4. Deliver
+Fill `templates/policy-recommendation.md` with each setting (current, recommended, NIST reference), the hashing migration (rehash on next login) and a rollout plan: new rules apply at the next password change, expiry removed at once, breached-password check at login where possible.
+
+## Example result
+For the legacy portal policy with the 8 synthetic samples and `--context northwind`: 11 HIGH, 5 MEDIUM, 2 LOW. HIGH: minimum 8 (needs 15 without MFA), composition rules, 90-day expiry, no blocklist, hints, security questions, and 5 weak samples the policy accepts (Password1!, Summer2025!, Northwind#1, Qwerty123$, P@ssw0rd2026, each ~15-20 bits). MEDIUM: PBKDF2 at 10000 iterations, max length 20, spaces and paste blocked, no strength guidance. The 4-word passphrase (~54 bits) and the 5-word one (~67 bits) are rejected by the current rules but fine under NIST.
+
+## Rules
+
+- Never ask for, store or repeat real passwords, hashes or password files. Work only with made-up samples.
+- Entropy numbers are estimates for comparison, not guarantees; say so.
+- Quote NIST SHALL vs SHOULD correctly; do not present OWASP hashing numbers as NIST requirements.
+- Phishing-resistant MFA or passkeys beat any password rule; recommend them where the risk justifies it.
+- Do not recommend weakening a control (e.g. rate limiting) to improve usability without a replacement.
+FILE:references/nist-800-63b-rules.md
+# NIST SP 800-63B-4 Password Rules (final, 2025)
+
+Section 3.1.1.2 &quot;Password Verifiers&quot; applies to centrally verified passwords (a login form checked by the server). Local unlock PINs are &quot;activation secrets&quot; with different rules (Sec. 3.2.10). SHALL = required, SHOULD = recommended.
+
+| # | Requirement | Level | Script code | In practice |
+|---|---|---|---|---|
+| 1 | Minimum 15 characters when the password is the only factor; minimum 8 if only used with MFA | SHALL | MIN_LENGTH | Set 15 for password-only logins; 8 is acceptable only if MFA is always enforced |
+| 2 | Allow a maximum of at least 64 characters | SHOULD | MAX_LENGTH | Passphrases and password-manager output need room; storage size is fixed by the hash anyway |
+| 3 | Accept all printing ASCII characters and space | SHOULD | NO_SPACES | Do not reject `&quot;`, `&#x27;`, `&lt;`, spaces; escape correctly instead |
+| 4 | Accept Unicode; count each code point as one character | SHOULD | NO_UNICODE | Apply NFC normalization before hashing (NO_NORMALIZATION) |
+| 5 | No other composition rules (character-class mixes) | SHALL NOT | COMPOSITION_RULES | Remove &quot;1 upper, 1 digit, 1 symbol&quot; |
+| 6 | No periodic forced changes; force a change on evidence of compromise | SHALL NOT | PERIODIC_EXPIRY | Remove 90-day expiry; reset on breach evidence |
+| 7 | No hints accessible to unauthenticated users | SHALL NOT | HINTS | Delete stored hints |
+| 8 | No knowledge-based authentication / security questions | SHALL NOT | SECURITY_QUESTIONS | Use recovery codes or a verified channel |
+| 9 | Verify the entire password, no truncation, no &quot;enter characters 3, 5 and 8&quot; | SHALL | TRUNCATION | Watch out for bcrypt&#x27;s 72-byte limit (BCRYPT_72_BYTES) |
+| - | Compare the full password with a blocklist of common, expected and compromised values; give the reason when rejecting | SHALL | NO_BLOCKLIST, BLOCKLIST_THIN | Breached corpora (e.g. a k-anonymity range API or a downloaded list), dictionary words, service name, username |
+| - | Offer guidance to help users choose a strong password, especially after a rejection | SHALL | NO_GUIDANCE | Strength meter and plain-language rejection reasons |
+| - | Rate-limit failed attempts: no more than 100 consecutive failures per account (Sec. 3.2.2) | SHALL | NO_RATE_LIMIT | Growing delays, CAPTCHA, risk checks; hard lockouts after 3 tries invite denial of service (LOCKOUT_STRICT) |
+| - | Allow password managers and autofill; permit paste | see Sec. 3.1.1.2 | PASTE_BLOCKED | Never block paste on password fields |
+| - | Store passwords salted and hashed with a suitable password hashing scheme (Sec. 3.1.1.2, last part) | SHALL | WEAK_STORAGE | Argon2id, scrypt, bcrypt or PBKDF2 with a unique salt; parameters as high as practical |
+
+## Blocklist sizing
+NIST notes the blocklist mainly stops online guessing, which is already throttled, so it should cover the passwords an attacker would try before the limit (thousands to a few hundred thousand entries); very large lists mostly frustrate users. Check the whole password, not substrings, but include obvious derivatives of the service name and username.
+
+## Why composition rules and expiry go
+Users meet &quot;upper + digit + symbol&quot; with `Password1!`; forced changes produce `Password2!`, `Password3!`. Attack tools model these patterns, so the rules add friction without adding real entropy. Length plus a blocklist does more.
+
+## Sources
+- NIST SP 800-63B-4, Digital Identity Guidelines: Authentication and Authenticator Management (July 2025), https://pages.nist.gov/800-63-4/sp800-63b.html
+- Appendix A &quot;Strength of Passwords&quot; in the same document
+FILE:references/entropy-and-hashing.md
+# Entropy Estimates and Password Hashing
+
+## Two estimates
+**Charset entropy** = length x log2(pool), pool = 26 lower + 26 upper + 10 digits + 33 symbols (+100 if non-ASCII), counting only the classes used. It is correct for passwords generated at random from that pool and badly overstates human choices: `Password1!` scores 65.7 bits.
+
+**Pattern entropy** (script) approximates how a cracking tool guesses: it walks the password left to right and charges
+| Piece | Cost |
+|---|---|
+| common word from the built-in list (incl. leet like `P@ssw0rd`, context words) | log2(list size) ~ 7.6 bits, +1 if capitalized, +2 if leet |
+| year 1950-2039 | log2(90) ~ 6.5 bits |
+| keyboard or alphabet run (`qwerty`, `1234`, `zyx`) | log2(26) + log2(length) |
+| repeated character (`aaaa`) | one character + log2(count) |
+| digits/symbol appended at the end after a word | -1.5 bits (the most common pattern) |
+| any other character | log2(pool) |
+| passphrase of 3+ words | 12.9 bits per uncommon word (Diceware list of 7776), 1 bit per common word |
+
+The passphrase figure is an upper bound: it holds only if words were picked at random (dice or a generator). &quot;my dog loves pizza&quot; is far weaker. The built-in word list is small; a real cracker uses billions of breached passwords, so treat every estimate as optimistic for human-chosen input.
+
+## Rating scale (pattern bits)
+| Bits | Rating | Meaning |
+|---|---|---|
+| &lt; 28 | very weak | Falls to online guessing or instantly offline |
+| 28-35 | weak | Online throttling helps; offline it is minutes |
+| 36-59 | fair | OK against online attacks with rate limiting; weak if a fast hash leaks |
+| 60-79 | strong | Resists offline attacks on slow hashes |
+| &gt;= 80 | very strong | Resists offline attacks on fast hashes |
+
+## Guess rates used for times
+- Offline, fast hash (MD5/SHA-x on GPUs): 1e10 guesses per second.
+- Offline, slow hash (Argon2id/bcrypt at recommended cost): about 1e4 guesses per second per attacker rig.
+- Online with NIST throttling (&lt;= 100 failures per account, then delays): only the first few hundred to thousands of guesses matter, which is why the blocklist is the key online control.
+Time shown = median case, 2^(bits-1) / rate.
+
+## Hashing parameters (OWASP Password Storage Cheat Sheet minimums)
+| Algorithm | Minimum | Notes |
+|---|---|---|
+| Argon2id | m = 19456 KiB (19 MiB), t = 2, p = 1 | First choice |
+| scrypt | N = 2^17, r = 8, p = 1 | |
+| bcrypt | cost 10 | Input limited to 72 bytes; pre-hash with HMAC-SHA256 + base64 or cap the length |
+| PBKDF2-HMAC-SHA256 | 600000 iterations | Use where FIPS-140 validated crypto is required |
+Every hash needs a unique random salt (&gt;= 16 bytes). An optional pepper (secret key kept outside the database) adds defense in depth. NIST requires salting and a suitable one-way password hashing function; OWASP numbers are a widely used baseline, not a NIST rule.
+
+## Migrating weak hashes
+1. Add the new algorithm next to the old one.
+2. On successful login, verify with the old hash, then rehash with the new one.
+3. For accounts that never log in, wrap the old hash (Argon2id(old_hash)) and mark them, or force a reset after a deadline.
+4. Re-check breached-password status at login if your provider supports it.
+FILE:templates/policy-recommendation.md
+# Password policy recommendation: &lt;system name&gt;
+
+**Scope:** &lt;customer portal / workforce SSO / admin console&gt;   **Factor:** &lt;password only / password + MFA&gt;
+**Basis:** NIST SP 800-63B-4 (2025); hashing parameters from the OWASP Password Storage Cheat Sheet
+**Summary:** &lt;one sentence: e.g. &quot;Replace complexity and expiry rules with a 15-character minimum and a breached-password blocklist; move hashes to Argon2id.&quot;&gt;
+
+## Settings
+| Setting | Current | Recommended | NIST | Why |
+|---|---|---|---|---|
+| Minimum length | &lt;8&gt; | &lt;15 (8 if MFA always on)&gt; | SHALL | &lt;...&gt; |
+| Maximum length | &lt;20&gt; | &lt;64 or more&gt; | SHOULD | &lt;...&gt; |
+| Composition rules | &lt;upper, lower, digit, symbol&gt; | none | SHALL NOT | &lt;...&gt; |
+| Expiry | &lt;90 days&gt; | none; reset on compromise | SHALL NOT | &lt;...&gt; |
+| Blocklist | &lt;none&gt; | breached + dictionary + context words, full-password match | SHALL | &lt;...&gt; |
+| Spaces / Unicode | &lt;rejected&gt; | accepted, NFC normalized | SHOULD | &lt;...&gt; |
+| Paste / password managers | &lt;blocked&gt; | allowed | | &lt;...&gt; |
+| Hints / security questions | &lt;yes&gt; | removed | SHALL NOT | &lt;...&gt; |
+| Failed attempts | &lt;lock after 3 for 60 min&gt; | throttle, &lt;= 100 consecutive failures | SHALL | &lt;...&gt; |
+| Strength guidance | &lt;none&gt; | meter + rejection reason | SHALL | &lt;...&gt; |
+| Storage | &lt;PBKDF2-SHA256, 10000&gt; | &lt;Argon2id m=19 MiB t=2 p=1&gt; | SHALL (salted hash) | &lt;...&gt; |
+
+## What the samples show (made-up passwords only)
+&lt;Short table or sentence: e.g. &quot;4 of 5 typical patterns (Password1!, Summer2025!) pass today&#x27;s rules at ~20 bits; a random 4-word passphrase (~54 bits) is rejected today and accepted under the new policy.&quot;&gt;
+
+## Rollout
+1. &lt;Day 0: remove expiry, allow paste and spaces, enable strength meter&gt;
+2. &lt;Week 1: blocklist on new passwords and changes; show the rejection reason&gt;
+3. &lt;Week 2: raise minimum length for new passwords; existing users at next change&gt;
+4. &lt;Rehash to Argon2id at next login; force reset for dormant accounts after 6 months&gt;
+5. &lt;Remove hints and security questions; switch recovery to verified email + recovery codes&gt;
+
+## Communication to users
+&lt;2-3 sentences: longer is stronger, passphrases welcome, password managers welcome, no more forced changes&gt;
+
+## Open questions
+&lt;MFA coverage, identity provider limits, compliance frameworks that still mention expiry (check current versions; many now follow NIST)&gt;
+FILE:examples/legacy-portal-policy.json
+{
+  &quot;name&quot;: &quot;Northwind customer portal (legacy policy)&quot;,
+  &quot;single_factor&quot;: true,
+  &quot;min_length&quot;: 8,
+  &quot;max_length&quot;: 20,
+  &quot;composition&quot;: {&quot;upper&quot;: true, &quot;lower&quot;: true, &quot;digit&quot;: true, &quot;symbol&quot;: true},
+  &quot;expiry_days&quot;: 90,
+  &quot;blocklist&quot;: {&quot;enabled&quot;: false},
+  &quot;allow_spaces&quot;: false,
+  &quot;allow_unicode&quot;: false,
+  &quot;allow_paste&quot;: false,
+  &quot;truncate_at&quot;: null,
+  &quot;hints&quot;: true,
+  &quot;security_questions&quot;: true,
+  &quot;strength_guidance&quot;: false,
+  &quot;rate_limit&quot;: {&quot;max_failed_attempts&quot;: 3, &quot;lockout_minutes&quot;: 60},
+  &quot;storage&quot;: {&quot;algorithm&quot;: &quot;PBKDF2-SHA256&quot;, &quot;iterations&quot;: 10000, &quot;salted&quot;: true}
+}
+FILE:examples/synthetic-samples.txt
+# Made-up sample passwords for the review. NEVER put real passwords in this file.
+Password1!
+Summer2025!
+Northwind#1
+Qwerty123$
+P@ssw0rd2026
+tundra velvet orbit cactus
+vT9#qLm2!xR4wZp7
+glacier-mango-quietly-violin-ember
+FILE:scripts/pw_policy.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Password policy and entropy checker (Python 3 standard library only).
+
+Checks a password policy config against NIST SP 800-63B-4 (2025) password guidance and estimates
+the strength of SYNTHETIC sample passwords. Never use real passwords: samples are masked in the
+output unless --show-samples is given, and nothing is stored or sent anywhere.
+
+Policy JSON (all keys optional except min_length):
+  {&quot;name&quot;: &quot;Customer portal&quot;, &quot;single_factor&quot;: true,        # password alone, no MFA
+   &quot;min_length&quot;: 8, &quot;max_length&quot;: 20,
+   &quot;composition&quot;: {&quot;upper&quot;: true, &quot;lower&quot;: true, &quot;digit&quot;: true, &quot;symbol&quot;: true},
+   &quot;expiry_days&quot;: 90,
+   &quot;blocklist&quot;: {&quot;enabled&quot;: true, &quot;breached&quot;: true, &quot;context_words&quot;: [&quot;acme&quot;, &quot;portal&quot;]},
+   &quot;allow_spaces&quot;: true, &quot;allow_unicode&quot;: true, &quot;unicode_normalization&quot;: &quot;NFC&quot;,
+   &quot;allow_paste&quot;: true, &quot;truncate_at&quot;: null, &quot;hints&quot;: false, &quot;security_questions&quot;: false,
+   &quot;strength_guidance&quot;: true,
+   &quot;rate_limit&quot;: {&quot;max_failed_attempts&quot;: 10, &quot;lockout_minutes&quot;: 15},
+   &quot;storage&quot;: {&quot;algorithm&quot;: &quot;argon2id&quot;, &quot;memory_kib&quot;: 19456, &quot;iterations&quot;: 2, &quot;salted&quot;: true}}
+Policy findings (severity):
+  HIGH   MIN_LENGTH          &lt; 15 for single-factor passwords, &lt; 8 with MFA (SHALL)
+  HIGH   COMPOSITION_RULES   required character classes (SHALL NOT)
+  HIGH   PERIODIC_EXPIRY     forced change every N days (SHALL NOT; change only on compromise)
+  HIGH   NO_BLOCKLIST        no blocklist check of the full password (SHALL)
+  HIGH   HINTS / SECURITY_QUESTIONS   password hints or KBA prompts (SHALL NOT)
+  HIGH   TRUNCATION          only part of the password is verified (SHALL verify the whole)
+  HIGH   NO_RATE_LIMIT       no throttling of failed attempts (SHALL; at most 100 in a row)
+  HIGH   WEAK_STORAGE        plaintext, reversible encryption, MD5/SHA-x or unsalted hashes
+  MEDIUM WEAK_KDF_PARAMS     below OWASP minimums (PBKDF2-SHA256 600000, bcrypt cost 10,
+                             Argon2id 19 MiB / t=2, scrypt N=2^17)
+  MEDIUM BCRYPT_72_BYTES     bcrypt ignores bytes after 72 but max length allows more
+  MEDIUM MAX_LENGTH          maximum below 64 (SHOULD allow at least 64)
+  MEDIUM NO_SPACES           spaces not accepted (SHOULD accept printing ASCII and space)
+  MEDIUM PASTE_BLOCKED       paste / password managers blocked (SHOULD allow)
+  MEDIUM NO_GUIDANCE         no strength guidance shown to users (SHALL offer guidance)
+  MEDIUM BLOCKLIST_THIN      blocklist without breached passwords or context words
+  LOW    NO_UNICODE          Unicode not accepted (SHOULD)
+  LOW    NO_NORMALIZATION    Unicode accepted without NFC normalization (SHOULD)
+  LOW    LOCKOUT_STRICT      lockout after &lt; 5 attempts: easy denial of service, use throttling
+Sample findings:
+  HIGH   SAMPLE_WEAK_ACCEPTED  a blocklisted or &lt; 36-bit sample passes the current policy
+Entropy (bits): charset = length x log2(pool of character classes used); pattern = a simple
+guess-model estimate that charges little for common words, leet, years, keyboard runs, repeats
+and passphrase words, and log2(pool) for every other character (per word log2(7776) = 12.9 bits at most). Rating uses the pattern estimate:
+&lt; 28 very weak, &lt; 36 weak, &lt; 60 fair, &lt; 80 strong, else very strong.
+Usage:
+  python3 pw_policy.py policy.json
+  python3 pw_policy.py policy.json --samples synthetic.txt [--context northwind,portal] [--blocklist list.txt] [--json]
+  python3 pw_policy.py --self-test
+Exit code: 0 no HIGH findings, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import math
+import re
+import sys
+import unicodedata
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+COMMON = &quot;&quot;&quot;password passw0rd welcome letmein qwerty qwertz azerty admin administrator login master
+dragon monkey sunshine princess football baseball soccer hockey shadow superman batman iloveyou
+trustno1 secret summer winter spring autumn fall monday friday january october december love
+hello freedom whatever charlie michael jessica jordan pepper ginger cookie chocolate flower
+computer internet google apple samsung starwars pokemon matrix killer hunter ranger thunder
+tiger lion eagle dolphin falcon soccer liverpool chelsea arsenal barcelona madrid london paris
+berlin newyork america canada company office service portal change changeme default guest user
+test testing temp temporary access security system server database root toor manager support
+student school teacher family mother father daddy mommy baby angel blessed jesus god heaven
+money dollar euro bitcoin crypto summer2024 welcome1 password1 password123 abc123 iloveyou1
+&quot;&quot;&quot;.split()
+COMMON_SET = set(COMMON)
+TOP_BLOCK = set(COMMON) | {&quot;123456&quot;, &quot;12345678&quot;, &quot;123456789&quot;, &quot;1234567890&quot;, &quot;111111&quot;, &quot;000000&quot;,
+                           &quot;123123&quot;, &quot;654321&quot;, &quot;qwerty123&quot;, &quot;1q2w3e4r&quot;, &quot;zaq12wsx&quot;, &quot;p@ssw0rd&quot;,
+                           &quot;password1!&quot;, &quot;welcome123&quot;, &quot;admin123&quot;, &quot;letmein1&quot;, &quot;qwertyuiop&quot;}
+LEET = str.maketrans({&quot;@&quot;: &quot;a&quot;, &quot;4&quot;: &quot;a&quot;, &quot;0&quot;: &quot;o&quot;, &quot;1&quot;: &quot;i&quot;, &quot;!&quot;: &quot;i&quot;, &quot;3&quot;: &quot;e&quot;, &quot;$&quot;: &quot;s&quot;,
+                      &quot;5&quot;: &quot;s&quot;, &quot;7&quot;: &quot;t&quot;, &quot;+&quot;: &quot;t&quot;, &quot;8&quot;: &quot;b&quot;, &quot;9&quot;: &quot;g&quot;})
+ROWS = [&quot;qwertyuiop&quot;, &quot;asdfghjkl&quot;, &quot;zxcvbnm&quot;, &quot;1234567890&quot;, &quot;abcdefghijklmnopqrstuvwxyz&quot;, &quot;qwertzuiop&quot;, &quot;azertyuiop&quot;]
+WORD_BITS = math.log2(7776)
+
+
+class DataError(ValueError):
+    pass
+
+
+def char_pool(pw):
+    pool = 0
+    if re.search(r&quot;[a-z]&quot;, pw):
+        pool += 26
+    if re.search(r&quot;[A-Z]&quot;, pw):
+        pool += 26
+    if re.search(r&quot;[0-9]&quot;, pw):
+        pool += 10
+    if re.search(r&quot;[ -/:-@\[-`{-~]&quot;, pw):
+        pool += 33
+    if any(ord(c) &gt; 126 for c in pw):
+        pool += 100
+    return pool or 1
+
+
+def class_bits(c):
+    if c.islower() and c.isascii():
+        return math.log2(26)
+    if c.isupper() and c.isascii():
+        return math.log2(26)
+    if c.isdigit():
+        return math.log2(10)
+    if ord(c) &gt; 126:
+        return math.log2(100)
+    return math.log2(33)
+
+
+def charset_bits(pw):
+    return len(pw) * math.log2(char_pool(pw))
+
+
+def seq_len(s, i):
+    &quot;&quot;&quot;Length of a keyboard/alphabet run (forward or backward) starting at i.&quot;&quot;&quot;
+    best = 1
+    low = s.lower()
+    for row in ROWS:
+        for r in (row, row[::-1]):
+            j = r.find(low[i]) if low[i] in r else -1
+            if j &lt; 0:
+                continue
+            n = 1
+            while i + n &lt; len(low) and j + n &lt; len(r) and low[i + n] == r[j + n]:
+                n += 1
+            best = max(best, n)
+    return best
+
+
+def pattern_bits(pw, context=()):
+    &quot;&quot;&quot;Greedy left-to-right guess model. Returns (bits, notes).&quot;&quot;&quot;
+    notes = []
+    vocab = COMMON_SET | {w.lower() for w in context if len(w) &gt;= 3}
+    words = [w for w in re.split(r&quot;[\s\-_.]+&quot;, pw) if w]
+    if len(words) &gt;= 3 and all(re.fullmatch(r&quot;[A-Za-z]{3,}&quot;, w) for w in words):
+        bits = sum(1.0 if w.lower() in vocab else WORD_BITS for w in words) + math.log2(4)
+        notes.append(f&quot;passphrase of {len(words)} words (upper bound if words were picked at random)&quot;)
+        return min(bits, charset_bits(pw)), notes
+    i, bits, low = 0, 0.0, pw.lower()
+    brute = math.log2(char_pool(pw))
+    while i &lt; len(pw):
+        # dictionary word (with leet), longest first
+        hit = None
+        for L in range(min(len(pw) - i, 14), 3, -1):
+            chunk = low[i:i + L]
+            plain = chunk.translate(LEET)
+            if plain in vocab:
+                hit = (L, plain, chunk != plain)
+                break
+        run = seq_len(pw, i)
+        if hit and run &lt; hit[0]:
+            L, word, leet = hit
+            b = math.log2(len(COMMON)) + (1 if pw[i].isupper() else 0) + (2 if leet else 0)
+            notes.append(f&quot;common word &#x27;{word}&#x27;&quot; + (&quot; (leet)&quot; if leet else &quot;&quot;))
+            bits += b
+            i += L
+            continue
+        m = re.match(r&quot;(19[5-9]\d|20[0-3]\d)&quot;, pw[i:])
+        if m:
+            notes.append(f&quot;year {m.group(1)}&quot;)
+            bits += math.log2(90)
+            i += 4
+            continue
+        n = run
+        if n &gt;= 3:
+            notes.append(f&quot;keyboard/alphabet run &#x27;{pw[i:i + n]}&#x27;&quot;)
+            bits += math.log2(26) + math.log2(n)
+            i += n
+            continue
+        r = 1
+        while i + r &lt; len(pw) and pw[i + r] == pw[i]:
+            r += 1
+        if r &gt;= 3:
+            notes.append(f&quot;repeated &#x27;{pw[i]}&#x27; x{r}&quot;)
+            bits += class_bits(pw[i]) + math.log2(r)
+            i += r
+            continue
+        bits += brute
+        i += 1
+    if notes and re.search(r&quot;[0-9!?.]{1,3}$&quot;, pw) and len(pw) &gt; 4:
+        bits -= 1.5
+        notes.append(&quot;digits/symbol appended at the end (most common pattern)&quot;)
+    return max(bits, 0.0), notes
+
+
+def rating(bits):
+    return (&quot;very weak&quot; if bits &lt; 28 else &quot;weak&quot; if bits &lt; 36 else &quot;fair&quot; if bits &lt; 60
+            else &quot;strong&quot; if bits &lt; 80 else &quot;very strong&quot;)
+
+
+def crack_time(bits, rate):
+    sec = 2 ** (bits - 1) / rate
+    for unit, n in ((&quot;years&quot;, 31557600), (&quot;days&quot;, 86400), (&quot;hours&quot;, 3600), (&quot;minutes&quot;, 60)):
+        if sec &gt;= n:
+            v = sec / n
+            return f&quot;{v:.3g} {unit}&quot; if v &lt; 100 else f&quot;{v:,.0f} {unit}&quot; if v &lt; 1e6 else f&quot;{v:.1e} {unit}&quot;
+    return &quot;instant&quot; if sec &lt; 1 else f&quot;{sec:.0f} seconds&quot;
+
+
+def mask_pw(pw):
+    if len(pw) &lt;= 4:
+        return &quot;*&quot; * len(pw)
+    return pw[:2] + &quot;*&quot; * (len(pw) - 3) + pw[-1:]
+
+
+def policy_accepts(policy, pw):
+    reasons = []
+    if len(pw) &lt; int(policy.get(&quot;min_length&quot;, 0)):
+        reasons.append(&quot;too short&quot;)
+    mx = policy.get(&quot;max_length&quot;)
+    if mx and len(pw) &gt; int(mx):
+        reasons.append(&quot;too long&quot;)
+    comp = policy.get(&quot;composition&quot;) or {}
+    for key, rx in ((&quot;upper&quot;, r&quot;[A-Z]&quot;), (&quot;lower&quot;, r&quot;[a-z]&quot;), (&quot;digit&quot;, r&quot;[0-9]&quot;), (&quot;symbol&quot;, r&quot;[^A-Za-z0-9\s]&quot;)):
+        if comp.get(key) and not re.search(rx, pw):
+            reasons.append(f&quot;needs {key}&quot;)
+    if &quot; &quot; in pw and policy.get(&quot;allow_spaces&quot;) is False:
+        reasons.append(&quot;space not allowed&quot;)
+    if any(ord(c) &gt; 126 for c in pw) and policy.get(&quot;allow_unicode&quot;) is False:
+        reasons.append(&quot;unicode not allowed&quot;)
+    if (policy.get(&quot;blocklist&quot;) or {}).get(&quot;enabled&quot;) and pw.lower() in TOP_BLOCK:
+        reasons.append(&quot;blocklisted&quot;)
+    return not reasons, reasons
+
+
+def core_word(low):
+    &quot;&quot;&quot;Strip leading/trailing digits and symbols, undo leet, keep letters: &#x27;P@ssw0rd2026!&#x27; -&gt; &#x27;password&#x27;.&quot;&quot;&quot;
+    core = re.sub(r&quot;^[\d\W_]+|[\d\W_]+$&quot;, &quot;&quot;, low)
+    return re.sub(r&quot;[^a-z]&quot;, &quot;&quot;, core.translate(LEET))
+
+
+def blocklisted(pw, extra=(), context=()):
+    low = unicodedata.normalize(&quot;NFC&quot;, pw).lower()
+    if low in TOP_BLOCK or low in extra:
+        return &quot;common/breached password&quot;
+    core = core_word(low)
+    for w in context:
+        if w and len(w) &gt;= 3 and w.lower() in core and len(low) - len(w) &lt;= 6:
+            return f&quot;based on context word &#x27;{w}&#x27;&quot;
+    if core in COMMON_SET and len(low) - len(core) &lt;= 6:
+        return &quot;common word with a few digits/symbols&quot;
+    return None
+
+
+def check_policy(p):
+    f = []
+
+    def add(sev, code, msg):
+        f.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;message&quot;: msg})
+    if &quot;min_length&quot; not in p:
+        raise DataError(&quot;policy needs min_length&quot;)
+    single = p.get(&quot;single_factor&quot;, True)
+    mn = int(p[&quot;min_length&quot;])
+    need = 15 if single else 8
+    if mn &lt; need:
+        add(&quot;HIGH&quot;, &quot;MIN_LENGTH&quot;, f&quot;minimum {mn} characters; NIST requires &gt;= {need} for passwords used {&#x27;alone&#x27; if single else &#x27;with MFA&#x27;}&quot;)
+    comp = [k for k, v in (p.get(&quot;composition&quot;) or {}).items() if v]
+    if comp:
+        add(&quot;HIGH&quot;, &quot;COMPOSITION_RULES&quot;, f&quot;requires {&#x27;, &#x27;.join(comp)}; composition rules SHALL NOT be imposed (they produce &#x27;Password1!&#x27; patterns); rely on length + blocklist&quot;)
+    if int(p.get(&quot;expiry_days&quot;) or 0) &gt; 0:
+        add(&quot;HIGH&quot;, &quot;PERIODIC_EXPIRY&quot;, f&quot;forced change every {p[&#x27;expiry_days&#x27;]} days; SHALL NOT expire periodically, force a change only on evidence of compromise&quot;)
+    bl = p.get(&quot;blocklist&quot;) or {}
+    if not bl.get(&quot;enabled&quot;):
+        add(&quot;HIGH&quot;, &quot;NO_BLOCKLIST&quot;, &quot;no blocklist; new passwords SHALL be checked in full against common, expected and breached passwords&quot;)
+    elif not bl.get(&quot;breached&quot;) or not bl.get(&quot;context_words&quot;):
+        miss = [x for x, ok in ((&quot;breached passwords&quot;, bl.get(&quot;breached&quot;)), (&quot;context words (service name, username)&quot;, bl.get(&quot;context_words&quot;))) if not ok]
+        add(&quot;MEDIUM&quot;, &quot;BLOCKLIST_THIN&quot;, f&quot;blocklist lacks {&#x27; and &#x27;.join(miss)}&quot;)
+    if p.get(&quot;hints&quot;):
+        add(&quot;HIGH&quot;, &quot;HINTS&quot;, &quot;password hints are stored; SHALL NOT be accessible to unauthenticated users - remove them&quot;)
+    if p.get(&quot;security_questions&quot;):
+        add(&quot;HIGH&quot;, &quot;SECURITY_QUESTIONS&quot;, &quot;security questions (KBA) SHALL NOT be used; offer recovery via a verified email/phone or recovery codes&quot;)
+    if p.get(&quot;truncate_at&quot;):
+        add(&quot;HIGH&quot;, &quot;TRUNCATION&quot;, f&quot;only the first {p[&#x27;truncate_at&#x27;]} characters are checked; the whole password SHALL be verified&quot;)
+    rl = p.get(&quot;rate_limit&quot;) or p.get(&quot;lockout&quot;)
+    if not rl:
+        add(&quot;HIGH&quot;, &quot;NO_RATE_LIMIT&quot;, &quot;no throttling of failed attempts; SHALL limit to at most 100 consecutive failures per account&quot;)
+    else:
+        n = int(rl.get(&quot;max_failed_attempts&quot;) or 0)
+        if n &gt; 100:
+            add(&quot;HIGH&quot;, &quot;NO_RATE_LIMIT&quot;, f&quot;{n} failed attempts allowed; at most 100 consecutive failures&quot;)
+        elif 0 &lt; n &lt; 5:
+            add(&quot;LOW&quot;, &quot;LOCKOUT_STRICT&quot;, f&quot;lockout after {n} attempts lets anyone lock users out; prefer growing delays, CAPTCHA or risk checks before a hard lock&quot;)
+    st = p.get(&quot;storage&quot;) or {}
+    alg = str(st.get(&quot;algorithm&quot;, &quot;&quot;)).lower().replace(&quot;-&quot;, &quot;&quot;).replace(&quot;_&quot;, &quot;&quot;)
+    if not alg:
+        add(&quot;MEDIUM&quot;, &quot;WEAK_STORAGE&quot;, &quot;storage algorithm not stated; confirm a salted password hashing function (Argon2id, scrypt, bcrypt, PBKDF2)&quot;)
+    elif alg in (&quot;plaintext&quot;, &quot;plain&quot;, &quot;none&quot;, &quot;aes&quot;, &quot;encrypted&quot;, &quot;base64&quot;, &quot;md5&quot;, &quot;sha1&quot;, &quot;sha256&quot;, &quot;sha512&quot;, &quot;ntlm&quot;):
+        add(&quot;HIGH&quot;, &quot;WEAK_STORAGE&quot;, f&quot;{st.get(&#x27;algorithm&#x27;)} is not a password hashing function; use Argon2id (or scrypt, bcrypt, PBKDF2) with a unique salt and rehash on next login&quot;)
+    else:
+        if st.get(&quot;salted&quot;) is False:
+            add(&quot;HIGH&quot;, &quot;WEAK_STORAGE&quot;, &quot;hashes are not salted; every password needs a unique random salt&quot;)
+        it = int(st.get(&quot;iterations&quot;) or 0)
+        if alg.startswith(&quot;pbkdf2&quot;) and it &lt; 600000:
+            add(&quot;MEDIUM&quot;, &quot;WEAK_KDF_PARAMS&quot;, f&quot;PBKDF2 with {it} iterations; OWASP suggests &gt;= 600000 for PBKDF2-HMAC-SHA256&quot;)
+        if alg == &quot;bcrypt&quot;:
+            if int(st.get(&quot;cost&quot;) or 0) &lt; 10:
+                add(&quot;MEDIUM&quot;, &quot;WEAK_KDF_PARAMS&quot;, f&quot;bcrypt cost {st.get(&#x27;cost&#x27;)}; use &gt;= 10 (tune to ~250 ms)&quot;)
+            if int(p.get(&quot;max_length&quot;) or 999) &gt; 72:
+                add(&quot;MEDIUM&quot;, &quot;BCRYPT_72_BYTES&quot;, &quot;bcrypt ignores input after 72 bytes; pre-hash (HMAC-SHA256, base64) or switch to Argon2id&quot;)
+        if alg.startswith(&quot;argon2&quot;) and (int(st.get(&quot;memory_kib&quot;) or 0) &lt; 19456 or it &lt; 2):
+            add(&quot;MEDIUM&quot;, &quot;WEAK_KDF_PARAMS&quot;, &quot;Argon2id below m=19456 KiB, t=2, p=1 (OWASP minimum)&quot;)
+        if alg == &quot;scrypt&quot; and int(st.get(&quot;n&quot;) or 0) &lt; 2 ** 17:
+            add(&quot;MEDIUM&quot;, &quot;WEAK_KDF_PARAMS&quot;, &quot;scrypt N below 2^17 (r=8, p=1)&quot;)
+    mx = p.get(&quot;max_length&quot;)
+    if mx and int(mx) &lt; 64:
+        add(&quot;MEDIUM&quot;, &quot;MAX_LENGTH&quot;, f&quot;maximum {mx} characters blocks passphrases and generated passwords; allow at least 64&quot;)
+    if p.get(&quot;allow_spaces&quot;) is False:
+        add(&quot;MEDIUM&quot;, &quot;NO_SPACES&quot;, &quot;spaces rejected; accept all printing ASCII characters and space so passphrases work&quot;)
+    if p.get(&quot;allow_paste&quot;) is False:
+        add(&quot;MEDIUM&quot;, &quot;PASTE_BLOCKED&quot;, &quot;paste blocked; allow paste and autofill so password managers work&quot;)
+    if p.get(&quot;strength_guidance&quot;) is False:
+        add(&quot;MEDIUM&quot;, &quot;NO_GUIDANCE&quot;, &quot;no guidance when a password is rejected; SHALL help users choose (strength meter, reason for rejection)&quot;)
+    if p.get(&quot;allow_unicode&quot;) is False:
+        add(&quot;LOW&quot;, &quot;NO_UNICODE&quot;, &quot;Unicode rejected; SHOULD accept it (count each code point as one character)&quot;)
+    elif p.get(&quot;allow_unicode&quot;) and str(p.get(&quot;unicode_normalization&quot;, &quot;&quot;)).upper() != &quot;NFC&quot;:
+        add(&quot;LOW&quot;, &quot;NO_NORMALIZATION&quot;, &quot;Unicode accepted without NFC normalization before hashing; the same password typed on two devices may not match&quot;)
+    return f
+
+
+def check_samples(policy, samples, extra=(), context=()):
+    rows, f = [], []
+    ctx = (policy.get(&quot;blocklist&quot;) or {}).get(&quot;context_words&quot;) or []
+    if isinstance(ctx, bool):
+        ctx = []
+    ctx = list(ctx) + list(context)
+    for pw in samples:
+        cb = charset_bits(pw)
+        pb, notes = pattern_bits(pw, ctx)
+        bl = blocklisted(pw, extra, ctx)
+        ok, why = policy_accepts(policy, pw)
+        single = policy.get(&quot;single_factor&quot;, True)
+        nist_ok = bl is None and len(pw) &gt;= (15 if single else 8)
+        row = {&quot;sample&quot;: pw, &quot;length&quot;: len(pw), &quot;charset_bits&quot;: round(cb, 1), &quot;pattern_bits&quot;: round(pb, 1),
+               &quot;rating&quot;: &quot;very weak&quot; if bl else rating(pb), &quot;blocklist&quot;: bl, &quot;policy_accepts&quot;: ok,
+               &quot;policy_reasons&quot;: why, &quot;nist_ok&quot;: nist_ok, &quot;notes&quot;: notes,
+               &quot;offline_fast&quot;: crack_time(0 if bl else pb, 1e10), &quot;offline_slow&quot;: crack_time(0 if bl else pb, 1e4)}
+        rows.append(row)
+        if ok and (bl or pb &lt; 36):
+            f.append({&quot;severity&quot;: &quot;HIGH&quot;, &quot;code&quot;: &quot;SAMPLE_WEAK_ACCEPTED&quot;, &quot;sample&quot;: pw,
+                      &quot;message&quot;: f&quot;sample {{s}} passes the current policy but is {&#x27;blocklisted (&#x27; + bl + &#x27;)&#x27; if bl else rating(pb) + f&#x27; (~{pb:.0f} bits)&#x27;}&quot;})
+    return rows, f
+
+
+def render(policy, findings, rows, show):
+    def s(pw):
+        return pw if show else mask_pw(pw)
+    out = [f&quot;# Password policy review: {policy.get(&#x27;name&#x27;, &#x27;policy&#x27;)}&quot;, &quot;&quot;,
+           f&quot;Basis: NIST SP 800-63B-4 (2025), passwords used {&#x27;as the only factor&#x27; if policy.get(&#x27;single_factor&#x27;, True) else &#x27;with MFA&#x27;}&quot;,
+           f&quot;Findings: {sum(x[&#x27;severity&#x27;] == &#x27;HIGH&#x27; for x in findings)} HIGH, {sum(x[&#x27;severity&#x27;] == &#x27;MEDIUM&#x27; for x in findings)} MEDIUM, {sum(x[&#x27;severity&#x27;] == &#x27;LOW&#x27; for x in findings)} LOW&quot;, &quot;&quot;]
+    for x in findings:
+        msg = x[&quot;message&quot;].replace(&quot;{s}&quot;, s(x[&quot;sample&quot;])) if &quot;sample&quot; in x else x[&quot;message&quot;]
+        out.append(f&quot;- {x[&#x27;severity&#x27;]} {x[&#x27;code&#x27;]}: {msg}&quot;)
+    if rows:
+        out += [&quot;&quot;, &quot;## Synthetic samples&quot; + (&quot;&quot; if show else &quot; (masked; --show-samples to print)&quot;),
+                &quot;| Sample | Len | Charset bits | Pattern bits | Rating | Current policy | NIST verdict | Offline fast hash / slow hash |&quot;,
+                &quot;|---|---|---|---|---|---|---|---|&quot;]
+        for r in rows:
+            cur = &quot;accepts&quot; if r[&quot;policy_accepts&quot;] else &quot;rejects (&quot; + &quot;, &quot;.join(r[&quot;policy_reasons&quot;]) + &quot;)&quot;
+            nist = &quot;ok&quot; if r[&quot;nist_ok&quot;] else (&quot;reject: &quot; + r[&quot;blocklist&quot;] if r[&quot;blocklist&quot;] else &quot;reject: too short&quot;)
+            out.append(f&quot;| {s(r[&#x27;sample&#x27;])} | {r[&#x27;length&#x27;]} | {r[&#x27;charset_bits&#x27;]} | {r[&#x27;pattern_bits&#x27;]} | {r[&#x27;rating&#x27;]} | {cur} | {nist} | {r[&#x27;offline_fast&#x27;]} / {r[&#x27;offline_slow&#x27;]} |&quot;)
+        out += [&quot;&quot;, &quot;Charset bits overstate human-chosen passwords; pattern bits are the better guide. Offline times assume 1e10 guesses/s (fast hash) and 1e4 guesses/s (Argon2id/bcrypt), median case.&quot;]
+    out += [&quot;&quot;, &quot;Samples must be made up for the review. Never paste or store real passwords.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    results = []
+
+    def check(name, cond):
+        results.append(cond)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    def codes(**over):
+        p = {&quot;min_length&quot;: 15, &quot;max_length&quot;: 64, &quot;blocklist&quot;: {&quot;enabled&quot;: True, &quot;breached&quot;: True, &quot;context_words&quot;: [&quot;acme&quot;]},
+             &quot;allow_spaces&quot;: True, &quot;allow_unicode&quot;: True, &quot;unicode_normalization&quot;: &quot;NFC&quot;, &quot;allow_paste&quot;: True,
+             &quot;strength_guidance&quot;: True, &quot;rate_limit&quot;: {&quot;max_failed_attempts&quot;: 10},
+             &quot;storage&quot;: {&quot;algorithm&quot;: &quot;argon2id&quot;, &quot;memory_kib&quot;: 19456, &quot;iterations&quot;: 2, &quot;salted&quot;: True}}
+        p.update(over)
+        return [x[&quot;code&quot;] for x in check_policy(p)]
+    check(&quot;compliant policy has no findings&quot;, codes() == [])
+    check(&quot;min 8 single factor HIGH&quot;, &quot;MIN_LENGTH&quot; in codes(min_length=8))
+    check(&quot;min 8 with MFA ok&quot;, &quot;MIN_LENGTH&quot; not in codes(min_length=8, single_factor=False))
+    check(&quot;min 6 with MFA HIGH&quot;, &quot;MIN_LENGTH&quot; in codes(min_length=6, single_factor=False))
+    check(&quot;composition HIGH&quot;, &quot;COMPOSITION_RULES&quot; in codes(composition={&quot;upper&quot;: True, &quot;symbol&quot;: True}))
+    check(&quot;expiry HIGH&quot;, &quot;PERIODIC_EXPIRY&quot; in codes(expiry_days=90))
+    check(&quot;no blocklist HIGH&quot;, &quot;NO_BLOCKLIST&quot; in codes(blocklist={&quot;enabled&quot;: False}))
+    check(&quot;thin blocklist MEDIUM&quot;, &quot;BLOCKLIST_THIN&quot; in codes(blocklist={&quot;enabled&quot;: True}))
+    check(&quot;hints + KBA HIGH&quot;, {&quot;HINTS&quot;, &quot;SECURITY_QUESTIONS&quot;} &lt;= set(codes(hints=True, security_questions=True)))
+    check(&quot;truncation HIGH&quot;, &quot;TRUNCATION&quot; in codes(truncate_at=16))
+    check(&quot;no rate limit HIGH&quot;, &quot;NO_RATE_LIMIT&quot; in codes(rate_limit=None))
+    check(&quot;lockout 3 LOW&quot;, &quot;LOCKOUT_STRICT&quot; in codes(rate_limit={&quot;max_failed_attempts&quot;: 3}))
+    check(&quot;sha256 HIGH&quot;, &quot;WEAK_STORAGE&quot; in codes(storage={&quot;algorithm&quot;: &quot;SHA-256&quot;, &quot;salted&quot;: True}))
+    check(&quot;unsalted HIGH&quot;, &quot;WEAK_STORAGE&quot; in codes(storage={&quot;algorithm&quot;: &quot;pbkdf2-sha256&quot;, &quot;iterations&quot;: 600000, &quot;salted&quot;: False}))
+    check(&quot;pbkdf2 low iterations MEDIUM&quot;, &quot;WEAK_KDF_PARAMS&quot; in codes(storage={&quot;algorithm&quot;: &quot;PBKDF2-SHA256&quot;, &quot;iterations&quot;: 10000}))
+    check(&quot;bcrypt cost 8 + 72 bytes&quot;, {&quot;WEAK_KDF_PARAMS&quot;, &quot;BCRYPT_72_BYTES&quot;} &lt;= set(codes(storage={&quot;algorithm&quot;: &quot;bcrypt&quot;, &quot;cost&quot;: 8}, max_length=128)))
+    check(&quot;max 20 MEDIUM&quot;, &quot;MAX_LENGTH&quot; in codes(max_length=20))
+    check(&quot;spaces/paste/guidance MEDIUM&quot;, {&quot;NO_SPACES&quot;, &quot;PASTE_BLOCKED&quot;, &quot;NO_GUIDANCE&quot;} &lt;= set(codes(allow_spaces=False, allow_paste=False, strength_guidance=False)))
+    check(&quot;no unicode LOW&quot;, &quot;NO_UNICODE&quot; in codes(allow_unicode=False))
+    check(&quot;no NFC LOW&quot;, &quot;NO_NORMALIZATION&quot; in codes(unicode_normalization=None))
+    check(&quot;charset bits 8 lowercase&quot;, abs(charset_bits(&quot;abcdefgh&quot;) - 8 * math.log2(26)) &lt; 1e-9)
+    check(&quot;charset pool all classes&quot;, char_pool(&quot;aA1!&quot;) == 95)
+    check(&quot;leet word cheap&quot;, pattern_bits(&quot;P@ssw0rd&quot;)[0] &lt; 15)
+    check(&quot;year + word weak&quot;, pattern_bits(&quot;Summer2025!&quot;)[0] &lt; 28)
+    check(&quot;keyboard run cheap&quot;, pattern_bits(&quot;qwertyuiop&quot;)[0] &lt; 10)
+    check(&quot;repeat cheap&quot;, pattern_bits(&quot;aaaaaaaaaa&quot;)[0] &lt; 10)
+    check(&quot;random 16 strong&quot;, pattern_bits(&quot;vT9#qLm2!xR4wZp7&quot;)[0] &gt; 80)
+    check(&quot;4 random words ~ 53 bits&quot;, 50 &lt; pattern_bits(&quot;tundra-velvet-orbit-cactus&quot;)[0] &lt; 56)
+    check(&quot;common words passphrase weak&quot;, pattern_bits(&quot;love summer football&quot;)[0] &lt; 10)
+    check(&quot;blocklisted exact&quot;, blocklisted(&quot;Password1!&quot;) is not None)
+    check(&quot;context word blocked&quot;, blocklisted(&quot;Acme2026!&quot;, context=[&quot;acme&quot;]) is not None)
+    check(&quot;leet + year blocked&quot;, blocklisted(&quot;P@ssw0rd2026&quot;) is not None)
+    check(&quot;context word cheap in pattern&quot;, pattern_bits(&quot;Northwind#1&quot;, [&quot;northwind&quot;])[0] &lt; 28)
+    check(&quot;long random not blocked&quot;, blocklisted(&quot;vT9#qLm2!xR4wZp7&quot;) is None)
+    pol = {&quot;min_length&quot;: 8, &quot;composition&quot;: {&quot;upper&quot;: True, &quot;lower&quot;: True, &quot;digit&quot;: True, &quot;symbol&quot;: True}}
+    rows, f = check_samples(pol, [&quot;Password1!&quot;, &quot;tundra velvet orbit cactus&quot;])
+    check(&quot;composition policy accepts Password1!&quot;, rows[0][&quot;policy_accepts&quot;] and f and f[0][&quot;code&quot;] == &quot;SAMPLE_WEAK_ACCEPTED&quot;)
+    check(&quot;composition policy rejects passphrase&quot;, not rows[1][&quot;policy_accepts&quot;] and rows[1][&quot;nist_ok&quot;])
+    check(&quot;mask hides middle&quot;, mask_pw(&quot;Password1!&quot;) == &quot;Pa*******!&quot;)
+    check(&quot;crack time units&quot;, crack_time(0, 1e10) == &quot;instant&quot; and &quot;years&quot; in crack_time(80, 1e10))
+    try:
+        check_policy({})
+        check(&quot;missing min_length rejected&quot;, False)
+    except DataError:
+        check(&quot;missing min_length rejected&quot;, True)
+    print(f&quot;{sum(results)}/{len(results)} passed&quot;)
+    return 0 if all(results) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Password policy and entropy checker (NIST SP 800-63B-4)&quot;)
+    ap.add_argument(&quot;policy&quot;, nargs=&quot;?&quot;, help=&quot;policy JSON&quot;)
+    ap.add_argument(&quot;--samples&quot;, help=&quot;file with SYNTHETIC sample passwords, one per line (# = comment)&quot;)
+    ap.add_argument(&quot;--blocklist&quot;, help=&quot;extra blocklist file, one password per line&quot;)
+    ap.add_argument(&quot;--context&quot;, default=&quot;&quot;, help=&quot;comma-separated context words (service name, brand, usernames)&quot;)
+    ap.add_argument(&quot;--show-samples&quot;, action=&quot;store_true&quot;, help=&quot;print samples unmasked&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.policy:
+        ap.error(&quot;give a policy JSON or --self-test&quot;)
+    try:
+        with open(a.policy, encoding=&quot;utf-8&quot;) as fh:
+            policy = json.load(fh)
+        findings = check_policy(policy)
+        rows = []
+        if a.samples:
+            with open(a.samples, encoding=&quot;utf-8&quot;) as fh:
+                samples = [l.rstrip(&quot;\n&quot;) for l in fh if l.strip() and not l.startswith(&quot;#&quot;)]
+            extra = set()
+            if a.blocklist:
+                with open(a.blocklist, encoding=&quot;utf-8&quot;) as fh:
+                    extra = {l.strip().lower() for l in fh if l.strip()}
+            rows, sf = check_samples(policy, samples, extra, [w.strip() for w in a.context.split(&quot;,&quot;) if w.strip()])
+            findings += sf
+    except (OSError, ValueError, DataError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    findings.sort(key=lambda x: SEV_ORDER[x[&quot;severity&quot;]])
+    if a.json:
+        if not a.show_samples:
+            for r in rows:
+                r[&quot;sample&quot;] = mask_pw(r[&quot;sample&quot;])
+            for x in findings:
+                if &quot;sample&quot; in x:
+                    x[&quot;sample&quot;] = mask_pw(x[&quot;sample&quot;])
+                    x[&quot;message&quot;] = x[&quot;message&quot;].replace(&quot;{s}&quot;, x[&quot;sample&quot;])
+        print(json.dumps({&quot;findings&quot;: findings, &quot;samples&quot;: rows}, indent=2))
+    else:
+        print(render(policy, findings, rows, a.show_samples))
+    return 1 if any(x[&quot;severity&quot;] == &quot;HIGH&quot; for x in findings) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/password-policy-and-entropy-checker',TI="Password Policy and Entropy Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

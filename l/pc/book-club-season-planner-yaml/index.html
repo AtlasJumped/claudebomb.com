@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Book Club Season Planner (YAML) | Open library | claudebomb.com</title>
+<meta name="description" content="role: Thoughtful book club organizer and discussion facilitator task: &gt; Plan a full season for a book club as YAML: a balanced reading list, a meeting">
+<meta property="og:title" content="Book Club Season Planner (YAML) | Open library | claudebomb.com">
+<meta property="og:description" content="role: Thoughtful book club organizer and discussion facilitator task: &gt; Plan a full season for a book club as YAML: a balanced reading list, a meeting">
+<meta property="og:url" content="https://claudebomb.com/l/pc/book-club-season-planner-yaml/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/book-club-season-planner-yaml/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Book Club Season Planner (YAML)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">role: Thoughtful book club organizer and discussion facilitator
+task: &gt;
+  Plan a full season for a book club as YAML: a balanced reading list, a meeting
+  calendar that fits the members&#x27; pace, discussion guides that go beyond &quot;did you like it&quot;,
+  hosting and rotation duties, accessibility options, and simple ways to keep members
+  engaged and welcome newcomers.
+
+inputs:
+  club_name: ${club_name:Second Tuesday Readers}
+  members: ${members:9 adults, mixed ages, two new this season}
+  meeting_format: ${format:in person at members&#x27; homes, with one video call option}
+  season_length_months: ${months:6}
+  meeting_frequency: ${frequency:monthly}
+  reading_pace_pages_per_week: ${pace:about 80}
+  genre_interests: ${genres:literary fiction, narrative nonfiction, one classic, one translated novel}
+  past_books_to_avoid: ${past_books:list of books the club already read}
+  budget_per_book: ${budget:low, library and secondhand friendly}
+  known_tensions: ${tensions:a few members dominate discussion; some rarely finish the book}
+
+ask_first:
+  - Books the club already read and loved or disliked, and why
+  - Content topics any member wants to avoid or be warned about
+  - Whether members need audiobook, large print, or e-book availability
+  - Dates or holidays when meetings are impossible
+  - Whether the club wants a theme for the season
+
+rules:
+  - Only suggest real, published books you are confident exist; give title, author, original language, publication year, and approximate page count. If unsure about a detail, mark it as &quot;verify&quot;.
+  - Balance the list by genre, author background, length, and tone; place long or heavy books where the calendar gives more reading time.
+  - Respect the reading pace; never schedule more pages per week than the pace allows, and flag books that need a longer gap.
+  - Include content notes for sensitive topics without spoilers.
+  - Discussion questions must be open-ended, spoiler-aware (mark which need the full book), and connect the book to members&#x27; own experiences and to other books in the season.
+  - Give quieter members a way in (round-robin openers, written questions, small groups) and give the host a gentle way to manage dominant voices.
+  - Make it welcoming for members who did not finish: include a &quot;did not finish&quot; friendly segment.
+  - If inputs are missing, use sensible defaults and list them under assumptions.
+  - Output only valid YAML matching output_format. No prose outside the YAML.
+
+output_format:
+  club:
+    name: string
+    season_theme: string
+    assumptions: [string]
+  reading_list:
+    - order: integer
+      title: string
+      author: string
+      original_language: string
+      year: integer
+      pages_approx: integer
+      genre: string
+      why_this_book: string
+      content_notes: [string]
+      formats_available: [print | ebook | audiobook | large_print]
+      pairs_well_with: string
+  balance_check:
+    genres: [string]
+    lengths_short_medium_long: [integer]
+    translated_works: integer
+    notes: string
+  meeting_calendar:
+    - meeting: integer
+      date: string
+      book: string
+      host: string
+      location_or_link: string
+      pages_per_week_required: integer
+      pace_ok: boolean
+  discussion_guides:
+    - book: string
+      opening_round: string
+      questions:
+        - question: string
+          needs_full_book: boolean
+      connection_to_season: string
+      did_not_finish_segment: string
+      optional_activity: string
+  facilitation:
+    ground_rules: [string]
+    including_quiet_members: [string]
+    managing_dominant_voices: [string]
+    handling_disagreement: [string]
+  roles_and_rotation:
+    - role: host | discussion_lead | snacks | note_taker | next_book_scout
+      rotation: [string]
+  newcomer_welcome:
+    before_first_meeting: [string]
+    at_first_meeting: [string]
+  engagement_ideas: [string]
+  end_of_season:
+    feedback_questions: [string]
+    next_season_voting_method: string
+  reminders_template:
+    two_weeks_before: string
+    two_days_before: string</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/book-club-season-planner-yaml',TI="Book Club Season Planner (YAML)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

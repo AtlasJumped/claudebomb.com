@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jet Lag Sleep Shift Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: jet-lag-sleep-shift-planner description: Builds a day-by-day jet lag plan from flight times and your usual sleep hours. Computes the DST-awa">
+<meta property="og:title" content="Jet Lag Sleep Shift Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: jet-lag-sleep-shift-planner description: Builds a day-by-day jet lag plan from flight times and your usual sleep hours. Computes the DST-awa">
+<meta property="og:url" content="https://claudebomb.com/l/pc/jet-lag-sleep-shift-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/jet-lag-sleep-shift-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Jet Lag Sleep Shift Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: jet-lag-sleep-shift-planner
+description: Builds a day-by-day jet lag plan from flight times and your usual sleep hours. Computes the DST-aware time difference, chooses advance or delay (including the long way round for big eastward trips), estimates days to adjust, and lists pre-trip bedtime shifts, in-flight sleep, and daily sleep windows, light to seek and avoid, caffeine cut-off and nap limits. Flags short trips. Includes a stdlib Python planner with --self-test.
+---
+
+# Jet Lag Sleep Shift Planner
+
+You help travelers arrive rested. From real flight times and their normal sleep schedule, you build a practical day-by-day plan: when to sleep, when to get bright light and when to avoid it, when to stop coffee, whether to sleep on the plane, and whether shifting before the trip is worth it. You explain the why in plain words and keep the plan realistic for the person&#x27;s calendar.
+
+## Files in this skill
+
+- `scripts/jetlag_plan.py` - computes the shift, strategy, pre-trip days, in-flight sleep and a daily table of sleep, light, caffeine and nap times (Python 3 standard library only; IANA zones via zoneinfo or fixed offsets like UTC+3)
+- `references/body-clock-basics.md` - body clock, adjustment rates, the light rule around CBTmin, meals, caffeine, naps, melatonin caution, when to see a doctor
+- `references/trip-strategies.md` - strategy by trip length, pre-trip shifting, on the plane, arrival day, the return trip, a checklist
+- `templates/jet-lag-plan.md` - a one-page plan to fill in or print
+- `examples/istanbul-to-los-angeles.json` - an 11-hour westward conference trip in November, with a return trip
+
+## Workflow
+
+### 1. Gather the trip
+Ask for origin and destination cities (or time zones), departure local time and date, arrival local time and date, the usual bedtime and wake time, how many days they can shift before the trip (0-3), how long they stay, and any important events (talks, meetings, a wedding). Also ask if they have health conditions or time-critical medication; if yes, add a reminder to plan it with a doctor or pharmacist.
+
+### 2. Run the planner
+```
+python3 scripts/jetlag_plan.py examples/istanbul-to-los-angeles.json
+python3 scripts/jetlag_plan.py --from Europe/Istanbul --to Asia/Tokyo --depart 2026-11-10T01:30 --arrive 2026-11-10T19:05 --bedtime 23:00 --wake 07:00 --pre-days 3 --stay 10
+python3 scripts/jetlag_plan.py trip.json --json
+python3 scripts/jetlag_plan.py --self-test
+```
+If the tz database is missing (some Windows Pythons), use offsets like `UTC+3` and `-8`, or `pip install tzdata`. Exit code 2 means bad input.
+
+### 3. Shape the plan
+Use `references/trip-strategies.md`: for SHORT_TRIP, recommend staying on home time; for SMALL_SHIFT, no special plan. Move important events into the body&#x27;s good hours or suggest arriving earlier. Explain the light windows with `references/body-clock-basics.md` and give practical ways to follow them (morning walk, window seat at breakfast, sunglasses on the commute, dim lights in the hotel).
+
+### 4. Deliver
+Fill `templates/jet-lag-plan.md` with the table and the 3-5 most important actions. Offer to add the sleep and light windows as calendar reminders.
+
+## Example result
+For `examples/istanbul-to-los-angeles.json` (Istanbul -&gt; Los Angeles on 2026-11-03, after US DST ends): -11 h, delay at about 1.5 h/day; 2 pre-trip days with bedtime 00:30 then 01:30; sleep on the plane during LA night 02:40-07:00; about 6 days to adjust after arrival, starting with sleep 21:30-05:30 and bright light 16:30-19:30 on day 0, back to 23:30-07:30 on day 6; the return trip (+11 h) is planned the long way round as a 13 h delay, about 9 days.
+
+## Rules
+
+- This is general wellness guidance, not medical advice; do not give melatonin or sleep medication doses.
+- Respect the person&#x27;s constraints (kids, work hours); a partial plan they follow beats a perfect one they skip.
+- Never suggest unsafe sleep deprivation or driving while very sleepy; recommend a nap or a taxi instead.
+- Use local times in every table and say which clock (home or destination) each section uses.
+FILE:references/body-clock-basics.md
+# Body Clock Basics for Travelers
+
+## Why jet lag happens
+Your body clock (circadian rhythm) runs on home time and shifts only gradually. After crossing time zones, sleepiness, hunger, alertness and digestion stay on home time for days. Typical symptoms: trouble falling asleep or waking at 3 a.m., daytime sleepiness, poor focus, upset stomach.
+
+## How fast the clock moves
+| Direction | Clock change | Typical rate | Feels like |
+|---|---|---|---|
+| East (Istanbul -&gt; Tokyo) | advance (earlier) | about 1 h per day | harder; trouble falling asleep at night |
+| West (Istanbul -&gt; Los Angeles) | delay (later) | about 1.5 h per day | easier; sleepy early evening, awake at 4 a.m. |
+These are averages; age, sleep debt, alcohol and light exposure change them.
+
+For shifts of about 10-12 hours east, the clock often adjusts &quot;the long way round&quot; by delaying instead (for example +11 h east becomes -13 h of delay at 1.5 h/day = 9 days instead of 11). The planner picks whichever takes fewer days.
+
+## The light rule
+The strongest signal for the body clock is bright light. Its effect depends on timing relative to the **core body temperature minimum (CBTmin)**, which falls about 2-3 hours before your usual wake time (for a 07:30 riser, around 04:30 body time).
+- Light in the ~3 hours **after** CBTmin moves the clock **earlier** (advance; needed when flying east).
+- Light in the ~3 hours **before** CBTmin moves the clock **later** (delay; needed when flying west).
+- Light at the wrong time pushes the clock the wrong way, which is why the plan also lists times to avoid bright light (sunglasses outdoors, dim indoor lights, screen night mode).
+Because CBTmin moves each day, the windows move too. When a window falls during sleep, the planner moves it to the nearest waking time.
+
+## Other signals
+- **Sleep timing:** keep the plan&#x27;s sleep window, even if you cannot sleep at first; rest in the dark.
+- **Meals:** eat on local time from the first day; a big breakfast in daylight helps when advancing.
+- **Exercise:** morning exercise helps advance, early-evening exercise helps delay; avoid hard workouts within 2 hours of bed.
+- **Caffeine:** helps alertness but stays in the body for 5-6 hours (half-life); stop about 8 hours before bed.
+- **Naps:** up to 20 minutes, before the plan&#x27;s &quot;naps end by&quot; time. Long naps anchor you to home time.
+- **Alcohol:** makes sleep worse and dehydration worse; skip it on the flight.
+- **Melatonin:** often used for eastward trips, but timing and dose matter and it is a medicine in many countries. Ask a doctor or pharmacist; the planner gives no dosing.
+
+## When to see a doctor first
+Pregnancy, epilepsy, bipolar disorder (light and sleep changes can trigger episodes), diabetes with insulin (meal and dose timing across zones), heart conditions, sleep apnea, or regular medication taken at fixed times (contraceptive pills, anticoagulants, epilepsy drugs). Plan the medication schedule with a professional.
+FILE:references/trip-strategies.md
+# Trip Strategies
+
+## Pick the strategy by trip length and shift
+| Trip | Shift | Strategy |
+|---|---|---|
+| 1-2 days | any | Stay on home time. Book meetings inside your home daytime, keep home sleep hours, use caffeine and short naps. |
+| 3-5 days | up to 3 h | Switch to local time on arrival; no pre-trip shift needed. |
+| 3-5 days | 4+ h | Partial shift: 1-2 pre-trip days and the light plan for the first days; accept some lag. |
+| 6+ days | 4+ h | Full plan: 2-3 pre-trip days, light plan until adjusted. |
+| Important event on day 1-2 | 6+ h | Arrive earlier if possible (one day per 1-1.5 h of shift is ideal), or schedule the event in the body&#x27;s best hours. |
+
+## Pre-trip shifting
+Move bedtime and wake time 1 hour per day toward the destination for 1-3 days (earlier for east, later for west), with light at the planner&#x27;s &quot;seek&quot; times. Even 2 hours of pre-shift removes 1-2 days of jet lag. Stop if it hurts work or family routines; partial is fine.
+
+## On the plane
+- Set your watch and phone to destination time when you board.
+- If the flight crosses destination night, sleep then: eye mask, ear plugs or noise-cancelling headphones, neck pillow, no alcohol. Otherwise stay awake with light and short naps only.
+- Drink water regularly; walk and stretch every 1-2 hours.
+- Eat at destination meal times when practical.
+
+## Arrival day
+- Westward evening arrival: go outside in daylight if any is left, stay up until the planned bedtime (a 20-minute nap before the cut-off is fine).
+- Eastward morning arrival: follow the seek/avoid light windows; if you must work, put bright tasks in the seek window.
+
+## Coming home
+The return trip is a new shift in the opposite direction. Use the planner again with the return flight; plan 1-2 easy days after landing if you can.
+
+## Business traveler checklist
+- [ ] Planner run with real flight times
+- [ ] Calendar: no critical meetings in the body&#x27;s night
+- [ ] Hotel: blackout curtains or eye mask; ask for a quiet room
+- [ ] Light: sunglasses for avoid windows, a walk or a light box for seek windows
+- [ ] Medication timing checked with a pharmacist
+FILE:templates/jet-lag-plan.md
+# Jet Lag Plan - &lt;traveler&gt; - &lt;origin&gt; to &lt;destination&gt;
+
+**Flight:** &lt;depart local&gt; -&gt; &lt;arrive local&gt; (&lt;hours&gt; h)  **Time difference:** &lt;+/- h&gt;  **Strategy:** &lt;advance / delay / stay on home time&gt;
+**Usual sleep:** &lt;bedtime&gt;-&lt;wake&gt;  **Pre-trip shift:** &lt;h&gt;  **Expected days to adjust:** &lt;n&gt;
+
+## Before the trip
+| Date | Sleep | Bright light | Avoid light | Notes |
+|---|---|---|---|---|
+| | | | | |
+
+## Flight
+- Sleep on board: &lt;times or &quot;stay awake&quot;&gt;
+- Meals: &lt;destination times&gt;
+- Watch set to destination time: [ ]
+
+## At the destination
+| Date | Sleep | Bright light | Avoid light | Caffeine until | Naps end by | Key events |
+|---|---|---|---|---|---|---|
+| | | | | | | |
+
+## Packing
+- [ ] Eye mask and ear plugs  - [ ] Sunglasses  - [ ] Water bottle  - [ ] Medication schedule (checked with a professional)
+
+## Return
+- Shift: &lt;h&gt;, about &lt;n&gt; days to readjust; easy days planned: &lt;dates&gt;
+FILE:examples/istanbul-to-los-angeles.json
+{
+  &quot;traveler&quot;: &quot;conference trip, usual sleep 23:30-07:30&quot;,
+  &quot;from_tz&quot;: &quot;Europe/Istanbul&quot;,
+  &quot;to_tz&quot;: &quot;America/Los_Angeles&quot;,
+  &quot;depart&quot;: &quot;2026-11-03T13:40&quot;,
+  &quot;arrive&quot;: &quot;2026-11-03T17:25&quot;,
+  &quot;bedtime&quot;: &quot;23:30&quot;,
+  &quot;wake&quot;: &quot;07:30&quot;,
+  &quot;pre_trip_days&quot;: 2,
+  &quot;stay_days&quot;: 8,
+  &quot;return_trip&quot;: true
+}
+FILE:scripts/jetlag_plan.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Jet lag sleep shift planner (Python 3 standard library only).
+
+Input: a trip JSON file (or the same fields as command-line flags):
+  {&quot;from_tz&quot;: &quot;Europe/Istanbul&quot;, &quot;to_tz&quot;: &quot;America/Los_Angeles&quot;,
+   &quot;depart&quot;: &quot;2026-11-03T13:40&quot;, &quot;arrive&quot;: &quot;2026-11-03T17:25&quot;,
+   &quot;bedtime&quot;: &quot;23:30&quot;, &quot;wake&quot;: &quot;07:30&quot;, &quot;pre_trip_days&quot;: 2, &quot;stay_days&quot;: 8}
+Time zones: IANA names (zoneinfo, DST-aware; needs the system tz database or the tzdata
+package) or fixed offsets like &quot;UTC+3&quot;, &quot;+05:30&quot;, &quot;-8&quot;.  depart is local time at the origin,
+arrive is local time at the destination.
+
+Model (rules of thumb used by sleep clinics, not a medical device):
+  - shift = destination offset - origin offset, normalized to -12..+12 h (+ = east).
+  - the body clock moves about 1 h/day when advancing (eastward) and 1.5 h/day when
+    delaying (westward); for big eastward shifts the planner picks the direction that
+    takes fewer days (often delaying &quot;the long way round&quot;).
+  - optional pre-trip shift: 1 h/day for pre_trip_days, toward the destination.
+  - core body temperature minimum (CBTmin) ~3 h before usual wake time. Light in the 3 h
+    after CBTmin advances the clock, light in the 3 h before it delays the clock.
+  - planned sleep is a compromise: target local bedtime moved toward body time by
+    min(2 h, half the remaining gap). Caffeine stops 8 h and naps (max 20 min) end 7 h
+    before planned bedtime.
+Usage:
+  python3 jetlag_plan.py trip.json
+  python3 jetlag_plan.py --from Europe/Istanbul --to Asia/Tokyo --depart 2026-11-10T01:30 \
+      --arrive 2026-11-10T19:05 --bedtime 23:00 --wake 07:00 --pre-days 3 --stay 10
+  python3 jetlag_plan.py trip.json --json
+  python3 jetlag_plan.py --self-test
+Exit code: 0 OK, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import datetime as dt
+import json
+import math
+import re
+import sys
+
+ADVANCE_RATE = 1.0
+DELAY_RATE = 1.5
+
+
+class TripError(ValueError):
+    pass
+
+
+def parse_tz(name):
+    s = str(name).strip()
+    m = re.fullmatch(r&quot;(?:UTC|GMT)?\s*([+-])(\d{1,2})(?::?(\d{2}))?&quot;, s, re.I)
+    if m:
+        sign = 1 if m.group(1) == &quot;+&quot; else -1
+        mins = int(m.group(2)) * 60 + int(m.group(3) or 0)
+        if mins &gt; 14 * 60:
+            raise TripError(f&quot;offset out of range: {s!r}&quot;)
+        return dt.timezone(dt.timedelta(minutes=sign * mins), s)
+    if s.upper() in (&quot;UTC&quot;, &quot;GMT&quot;, &quot;Z&quot;):
+        return dt.timezone.utc
+    try:
+        from zoneinfo import ZoneInfo
+        return ZoneInfo(s)
+    except Exception:
+        raise TripError(f&quot;unknown time zone {s!r}; use an IANA name like Europe/Istanbul or an offset like UTC+3&quot;)
+
+
+def parse_hm(s, field):
+    m = re.fullmatch(r&quot;(\d{1,2}):(\d{2})&quot;, str(s).strip())
+    if not m or int(m.group(1)) &gt; 23 or int(m.group(2)) &gt; 59:
+        raise TripError(f&quot;{field} must be HH:MM, got {s!r}&quot;)
+    return int(m.group(1)) * 60 + int(m.group(2))
+
+
+def parse_local(s, tz, field):
+    try:
+        t = dt.datetime.fromisoformat(str(s).strip())
+    except ValueError:
+        raise TripError(f&quot;{field} must be YYYY-MM-DDTHH:MM, got {s!r}&quot;)
+    if t.tzinfo is not None:
+        t = t.replace(tzinfo=None)
+    return t.replace(tzinfo=tz)
+
+
+def hm(mins):
+    mins = round(mins) % 1440
+    return f&quot;{mins // 60:02d}:{mins % 60:02d}&quot;
+
+
+def offset_h(t):
+    return t.utcoffset().total_seconds() / 3600
+
+
+def choose_direction(shift):
+    &quot;&quot;&quot;shift in -12..12 (east positive). Return (signed hours to move the body, rate, label).&quot;&quot;&quot;
+    if shift == 0:
+        return 0.0, ADVANCE_RATE, &quot;none&quot;
+    if shift &gt; 0:
+        adv_days = math.ceil(shift / ADVANCE_RATE)
+        alt = shift - 24
+        del_days = math.ceil(-alt / DELAY_RATE)
+        if del_days &lt; adv_days:
+            return alt, DELAY_RATE, &quot;delay (long way round)&quot;
+        return shift, ADVANCE_RATE, &quot;advance&quot;
+    del_days = math.ceil(-shift / DELAY_RATE)
+    alt = shift + 24
+    adv_days = math.ceil(alt / ADVANCE_RATE)
+    if adv_days &lt; del_days:
+        return alt, ADVANCE_RATE, &quot;advance (long way round)&quot;
+    return shift, DELAY_RATE, &quot;delay&quot;
+
+
+def night_overlap(start_utc, end_utc, tz, night_start=22 * 60, night_end=7 * 60):
+    &quot;&quot;&quot;Return list of (start_local, end_local) pieces of the flight inside destination nights.&quot;&quot;&quot;
+    pieces = []
+    t = start_utc
+    step = dt.timedelta(minutes=5)
+    cur = None
+    while t &lt; end_utc:
+        loc = t.astimezone(tz)
+        m = loc.hour * 60 + loc.minute
+        is_night = m &gt;= night_start or m &lt; night_end
+        if is_night and cur is None:
+            cur = loc
+        if not is_night and cur is not None:
+            pieces.append((cur, loc))
+            cur = None
+        t += step
+    if cur is not None:
+        pieces.append((cur, end_utc.astimezone(tz)))
+    return pieces
+
+
+def overlap(a0, a1, b0, b1):
+    &quot;&quot;&quot;Minutes of overlap between [a0, a1) and [b0, b1) on a 24 h circle.&quot;&quot;&quot;
+    best = 0
+    for k in (-1440, 0, 1440):
+        best += max(0, min(a1, b1 + k) - max(a0, b0 + k))
+    return best
+
+
+def light_windows(cbt, sign, sleep_start, sleep_len):
+    &quot;&quot;&quot;Seek/avoid windows around CBTmin, moved or clipped to waking hours.
+    sign &gt; 0 (advance): seek 3 h after CBTmin, avoid 3 h before; sign &lt; 0 (delay): the reverse.
+    A seek window that falls into planned sleep moves to the nearest waking edge (after wake
+    when advancing, before bedtime when delaying). Avoid windows are clipped to waking time.&quot;&quot;&quot;
+    sleep_end = sleep_start + sleep_len
+    if sign &gt; 0:
+        seek, avoid = (cbt, cbt + 180), (cbt - 180, cbt)
+        if overlap(seek[0], seek[1], sleep_start, sleep_end):
+            seek = (sleep_end, sleep_end + 180)
+    else:
+        seek, avoid = (cbt - 180, cbt), (cbt, cbt + 180)
+        if overlap(seek[0], seek[1], sleep_start, sleep_end):
+            seek = (sleep_start - 180, sleep_start)
+    ov = overlap(avoid[0], avoid[1], sleep_start, sleep_end)
+    if ov &gt;= 180:
+        avoid_s = &quot;asleep&quot;
+    elif ov:
+        # keep the waking part of the avoid window
+        a0, a1 = avoid
+        if overlap(a0, a0 + 1, sleep_start, sleep_end):
+            a0 = a1 - (180 - ov)
+        else:
+            a1 = a0 + (180 - ov)
+        avoid_s = f&quot;{hm(a0)}-{hm(a1)}&quot;
+    else:
+        avoid_s = f&quot;{hm(avoid[0])}-{hm(avoid[1])}&quot;
+    return f&quot;{hm(seek[0])}-{hm(seek[1])}&quot;, avoid_s
+
+
+def plan(trip):
+    for k in (&quot;from_tz&quot;, &quot;to_tz&quot;, &quot;depart&quot;, &quot;arrive&quot;):
+        if not trip.get(k):
+            raise TripError(f&quot;missing {k}&quot;)
+    ftz, ttz = parse_tz(trip[&quot;from_tz&quot;]), parse_tz(trip[&quot;to_tz&quot;])
+    dep = parse_local(trip[&quot;depart&quot;], ftz, &quot;depart&quot;)
+    arr = parse_local(trip[&quot;arrive&quot;], ttz, &quot;arrive&quot;)
+    if arr.astimezone(dt.timezone.utc) &lt;= dep.astimezone(dt.timezone.utc):
+        raise TripError(&quot;arrive must be after depart (check the dates and time zones)&quot;)
+    bed = parse_hm(trip.get(&quot;bedtime&quot;, &quot;23:00&quot;), &quot;bedtime&quot;)
+    wake = parse_hm(trip.get(&quot;wake&quot;, &quot;07:00&quot;), &quot;wake&quot;)
+    sleep_len = (wake - bed) % 1440
+    if not 4 * 60 &lt;= sleep_len &lt;= 12 * 60:
+        raise TripError(&quot;bedtime to wake must be 4-12 hours&quot;)
+    pre = int(trip.get(&quot;pre_trip_days&quot;, 0))
+    stay = int(trip.get(&quot;stay_days&quot;, 7))
+    if pre &lt; 0 or pre &gt; 4 or stay &lt; 1:
+        raise TripError(&quot;pre_trip_days must be 0-4 and stay_days at least 1&quot;)
+    shift = offset_h(arr) - offset_h(dep.astimezone(ftz))
+    shift = ((shift + 12) % 24) - 12 if abs(shift) &gt; 12 else shift
+    if shift == -12:
+        shift = 12.0
+    move, rate, direction = choose_direction(shift)
+    sign = 1 if move &gt; 0 else -1
+    flags = []
+    if abs(shift) &lt;= 2:
+        flags.append(&quot;SMALL_SHIFT: 2 h or less; most people adapt within a day, keep usual habits on local time&quot;)
+    if stay &lt;= 2 and abs(shift) &gt;= 3:
+        flags.append(&quot;SHORT_TRIP: 2 days or fewer; consider staying on home time and scheduling meetings inside your home daytime&quot;)
+    if &quot;long way round&quot; in direction:
+        flags.append(f&quot;LONG_WAY_ROUND: a {shift:+g} h shift is planned as {move:+g} h, which usually takes fewer days&quot;)
+    pre_used = min(pre, int(abs(move))) if move else 0
+    pre_days = []
+    for i in range(1, pre_used + 1):
+        b = bed - sign * 60 * i
+        cbt = wake - 180 - sign * 60 * i
+        seek_s, avoid_s = light_windows(cbt, sign, b, sleep_len)
+        pre_days.append({&quot;day&quot;: f&quot;pre {i - pre_used - 1}&quot;, &quot;date&quot;: str((dep.date() - dt.timedelta(days=pre_used - i + 1))),
+                         &quot;sleep&quot;: f&quot;{hm(b)}-{hm(b + sleep_len)}&quot;, &quot;seek_light&quot;: seek_s,
+                         &quot;avoid_light&quot;: avoid_s, &quot;clock&quot;: &quot;home time&quot;})
+    body = sign * pre_used  # hours already moved toward destination
+    total = abs(move)
+    days_needed = math.ceil(max(0.0, total - pre_used) / rate) if move else 0
+    days = []
+    d = 0
+    while True:
+        remaining = move - body  # signed hours the body is still away from local time
+        gap = abs(remaining)
+        comp = min(120, gap * 60 / 2)
+        # remaining &gt; 0: body clock is behind local time, so it wants to sleep later (and vice versa)
+        b = bed + (comp if remaining &gt; 0 else -comp) if gap else bed
+        cbt_local = (wake - 180) + remaining * 60
+        if gap &lt; 0.5:
+            seek_s, avoid_s = &quot;daylight as usual&quot;, &quot;-&quot;
+        else:
+            seek_s, avoid_s = light_windows(cbt_local, sign, b, sleep_len)
+        if remaining &gt; 0:
+            status = f&quot;{gap:g} h behind local time&quot;
+        elif remaining &lt; 0:
+            status = f&quot;{gap:g} h ahead of local time&quot;
+        else:
+            status = &quot;adjusted&quot;
+        days.append({&quot;day&quot;: d, &quot;date&quot;: str(arr.date() + dt.timedelta(days=d)), &quot;body_clock&quot;: status,
+                     &quot;sleep&quot;: f&quot;{hm(b)}-{hm(b + sleep_len)}&quot;, &quot;seek_light&quot;: seek_s, &quot;avoid_light&quot;: avoid_s,
+                     &quot;caffeine_until&quot;: hm(b - 480), &quot;naps_end_by&quot;: hm(b - 420)})
+        if gap == 0 or d + 1 &gt;= stay:
+            break
+        body = body + sign * min(rate, gap)
+        d += 1
+    flight_h = (arr.astimezone(dt.timezone.utc) - dep.astimezone(dt.timezone.utc)).total_seconds() / 3600
+    nights = night_overlap(dep.astimezone(dt.timezone.utc), arr.astimezone(dt.timezone.utc), ttz)
+    nights = [(a, b) for a, b in nights if (b - a).total_seconds() &gt;= 3600]
+    if nights:
+        inflight = &quot;sleep during destination night: &quot; + &quot;; &quot;.join(f&quot;{a:%a %H:%M}-{b:%H:%M}&quot; for a, b in nights)
+    else:
+        inflight = &quot;flight is during destination daytime: stay awake, get daylight/screen light, at most a 20-minute nap&quot;
+    res = {&quot;from_tz&quot;: str(trip[&quot;from_tz&quot;]), &quot;to_tz&quot;: str(trip[&quot;to_tz&quot;]), &quot;shift_h&quot;: shift, &quot;plan_move_h&quot;: move,
+           &quot;direction&quot;: direction, &quot;rate_h_per_day&quot;: rate, &quot;pre_trip_shift_h&quot;: pre_used,
+           &quot;days_to_adjust_after_arrival&quot;: days_needed, &quot;flight_h&quot;: round(flight_h, 2),
+           &quot;arrive_local&quot;: arr.strftime(&quot;%Y-%m-%d %H:%M&quot;), &quot;in_flight&quot;: inflight, &quot;flags&quot;: flags,
+           &quot;pre_trip&quot;: pre_days, &quot;days&quot;: days}
+    if trip.get(&quot;return_trip&quot;):
+        back, brate, bdir = choose_direction(-shift)
+        res[&quot;return&quot;] = {&quot;shift_h&quot;: -shift, &quot;direction&quot;: bdir,
+                         &quot;days_to_adjust&quot;: math.ceil(abs(back) / brate) if back else 0}
+    return res
+
+
+def to_markdown(r):
+    out = [f&quot;# Jet lag plan: {r[&#x27;from_tz&#x27;]} -&gt; {r[&#x27;to_tz&#x27;]}&quot;, &quot;&quot;,
+           f&quot;- Time difference: {r[&#x27;shift_h&#x27;]:+g} h ({&#x27;east&#x27; if r[&#x27;shift_h&#x27;] &gt; 0 else &#x27;west&#x27; if r[&#x27;shift_h&#x27;] &lt; 0 else &#x27;none&#x27;}); &quot;
+           f&quot;plan: {r[&#x27;direction&#x27;]} {abs(r[&#x27;plan_move_h&#x27;]):g} h at about {r[&#x27;rate_h_per_day&#x27;]:g} h/day&quot;,
+           f&quot;- Pre-trip shift: {r[&#x27;pre_trip_shift_h&#x27;]} h; about {r[&#x27;days_to_adjust_after_arrival&#x27;]} day(s) to adjust after arrival&quot;,
+           f&quot;- Flight: {r[&#x27;flight_h&#x27;]:g} h, arriving {r[&#x27;arrive_local&#x27;]} local; {r[&#x27;in_flight&#x27;]}&quot;]
+    if &quot;return&quot; in r:
+        out.append(f&quot;- Return trip: {r[&#x27;return&#x27;][&#x27;shift_h&#x27;]:+g} h, {r[&#x27;return&#x27;][&#x27;direction&#x27;]}, about {r[&#x27;return&#x27;][&#x27;days_to_adjust&#x27;]} day(s) to readjust&quot;)
+    for f in r[&quot;flags&quot;]:
+        out.append(f&quot;- **{f.split(&#x27;:&#x27;)[0]}**:{f.split(&#x27;:&#x27;, 1)[1]}&quot;)
+    if r[&quot;pre_trip&quot;]:
+        out += [&quot;&quot;, &quot;## Before you fly (home time)&quot;, &quot;| Day | Date | Sleep | Seek bright light | Avoid bright light |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for p in r[&quot;pre_trip&quot;]:
+            out.append(f&quot;| {p[&#x27;day&#x27;]} | {p[&#x27;date&#x27;]} | {p[&#x27;sleep&#x27;]} | {p[&#x27;seek_light&#x27;]} | {p[&#x27;avoid_light&#x27;]} |&quot;)
+    out += [&quot;&quot;, &quot;## At the destination (local time)&quot;,
+            &quot;| Day | Date | Body clock | Sleep | Seek bright light | Avoid bright light | Caffeine until | Naps end by |&quot;,
+            &quot;|---|---|---|---|---|---|---|---|&quot;]
+    for d in r[&quot;days&quot;]:
+        out.append(f&quot;| {d[&#x27;day&#x27;]} | {d[&#x27;date&#x27;]} | {d[&#x27;body_clock&#x27;]} | {d[&#x27;sleep&#x27;]} | {d[&#x27;seek_light&#x27;]} | {d[&#x27;avoid_light&#x27;]} | {d[&#x27;caffeine_until&#x27;]} | {d[&#x27;naps_end_by&#x27;]} |&quot;)
+    out += [&quot;&quot;, &quot;Light windows that fall inside your sleep time can be skipped; use sunglasses outdoors during &#x27;avoid&#x27; windows.&quot;,
+            &quot;Rules of thumb only. Ask a doctor or pharmacist before using melatonin or sleep medication.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append((name, bool(cond)))
+
+    base = {&quot;from_tz&quot;: &quot;Europe/Istanbul&quot;, &quot;to_tz&quot;: &quot;America/Los_Angeles&quot;, &quot;depart&quot;: &quot;2026-11-03T13:40&quot;,
+            &quot;arrive&quot;: &quot;2026-11-03T17:25&quot;, &quot;bedtime&quot;: &quot;23:30&quot;, &quot;wake&quot;: &quot;07:30&quot;, &quot;pre_trip_days&quot;: 2, &quot;stay_days&quot;: 10}
+    ok(&quot;fixed offset parse&quot;, parse_tz(&quot;UTC+3&quot;).utcoffset(None) == dt.timedelta(hours=3) and parse_tz(&quot;+05:30&quot;).utcoffset(None) == dt.timedelta(hours=5, minutes=30))
+    ok(&quot;negative offset parse&quot;, parse_tz(&quot;-8&quot;).utcoffset(None) == dt.timedelta(hours=-8))
+    r = plan(base)
+    ok(&quot;IST-&gt;LA after US DST ends is -11 h&quot;, r[&quot;shift_h&quot;] == -11)
+    ok(&quot;westward plan delays&quot;, r[&quot;direction&quot;] == &quot;delay&quot; and r[&quot;plan_move_h&quot;] == -11)
+    ok(&quot;pre-trip 2 h used&quot;, r[&quot;pre_trip_shift_h&quot;] == 2 and len(r[&quot;pre_trip&quot;]) == 2)
+    ok(&quot;days to adjust ceil(9/1.5)=6&quot;, r[&quot;days_to_adjust_after_arrival&quot;] == 6)
+    ok(&quot;pre-trip bedtime later for westward&quot;, r[&quot;pre_trip&quot;][0][&quot;sleep&quot;].startswith(&quot;00:30&quot;) and r[&quot;pre_trip&quot;][1][&quot;sleep&quot;].startswith(&quot;01:30&quot;))
+    ok(&quot;day 0 body 9 h ahead&quot;, r[&quot;days&quot;][0][&quot;body_clock&quot;] == &quot;9 h ahead of local time&quot;)
+    ok(&quot;day 0 compromise bedtime 21:30&quot;, r[&quot;days&quot;][0][&quot;sleep&quot;] == &quot;21:30-05:30&quot;)
+    ok(&quot;delay: seek light before CBTmin&quot;, r[&quot;days&quot;][0][&quot;seek_light&quot;] == &quot;16:30-19:30&quot;)
+    ok(&quot;delay: avoid window clipped at bedtime&quot;, r[&quot;days&quot;][0][&quot;avoid_light&quot;] == &quot;19:30-21:30&quot;)
+    ok(&quot;delay: seek window moved before bedtime&quot;, r[&quot;days&quot;][3][&quot;seek_light&quot;] == &quot;18:30-21:30&quot; and r[&quot;days&quot;][3][&quot;avoid_light&quot;] == &quot;asleep&quot;)
+    ok(&quot;pre-trip delay light in the evening&quot;, r[&quot;pre_trip&quot;][0][&quot;seek_light&quot;] == &quot;21:30-00:30&quot;)
+    ok(&quot;overlap on circle&quot;, overlap(1380, 1500, 0, 60) == 60 and overlap(600, 700, 0, 60) == 0)
+    ok(&quot;plan ends adjusted&quot;, r[&quot;days&quot;][-1][&quot;body_clock&quot;] == &quot;adjusted&quot; and r[&quot;days&quot;][-1][&quot;sleep&quot;] == &quot;23:30-07:30&quot;)
+    ok(&quot;plan length 7 days (0..6)&quot;, len(r[&quot;days&quot;]) == 7)
+    ok(&quot;flight of 14.75 h&quot;, r[&quot;flight_h&quot;] == 14.75)
+    r2 = plan(dict(base, to_tz=&quot;America/Los_Angeles&quot;, depart=&quot;2026-10-20T13:40&quot;, arrive=&quot;2026-10-20T16:25&quot;))
+    ok(&quot;IST-&gt;LA during US DST is -10 h&quot;, r2[&quot;shift_h&quot;] == -10)
+    r3 = plan(dict(base, to_tz=&quot;Asia/Tokyo&quot;, depart=&quot;2026-11-10T01:30&quot;, arrive=&quot;2026-11-10T19:05&quot;, pre_trip_days=3))
+    ok(&quot;IST-&gt;Tokyo +6 advance&quot;, r3[&quot;shift_h&quot;] == 6 and r3[&quot;direction&quot;] == &quot;advance&quot; and r3[&quot;days_to_adjust_after_arrival&quot;] == 3)
+    ok(&quot;advance: seek light moved to after wake&quot;, r3[&quot;days&quot;][0][&quot;seek_light&quot;] == &quot;09:00-12:00&quot; and r3[&quot;days&quot;][0][&quot;avoid_light&quot;] == &quot;asleep&quot;)
+    ok(&quot;pre-trip bedtime earlier for eastward&quot;, r3[&quot;pre_trip&quot;][0][&quot;sleep&quot;].startswith(&quot;22:30&quot;))
+    ok(&quot;+11 east goes long way round&quot;, choose_direction(11) == (-13, DELAY_RATE, &quot;delay (long way round)&quot;))
+    ok(&quot;+9 east stays advance&quot;, choose_direction(9)[2] == &quot;advance&quot;)
+    ok(&quot;-12 normalized to +12 then delay -12&quot;, choose_direction(12)[0] == -12)
+    r4 = plan(dict(base, to_tz=&quot;Europe/Berlin&quot;, depart=&quot;2026-11-03T08:00&quot;, arrive=&quot;2026-11-03T09:00&quot;, stay_days=2))
+    ok(&quot;small shift flag&quot;, any(f.startswith(&quot;SMALL_SHIFT&quot;) for f in r4[&quot;flags&quot;]))
+    r5 = plan(dict(base, stay_days=2))
+    ok(&quot;short trip flag&quot;, any(f.startswith(&quot;SHORT_TRIP&quot;) for f in r5[&quot;flags&quot;]) and len(r5[&quot;days&quot;]) == 2)
+    ok(&quot;in-flight sleep in LA night 02:40-07:00&quot;, r[&quot;in_flight&quot;].endswith(&quot;Tue 02:40-07:00&quot;))
+    ok(&quot;Tokyo daytime flight: stay awake&quot;, &quot;destination daytime&quot; in r3[&quot;in_flight&quot;])
+    ok(&quot;caffeine 8 h before bed&quot;, r[&quot;days&quot;][-1][&quot;caffeine_until&quot;] == &quot;15:30&quot; and r[&quot;days&quot;][-1][&quot;naps_end_by&quot;] == &quot;16:30&quot;)
+    for bad, label in ((dict(base, to_tz=&quot;Mars/Olympus&quot;), &quot;unknown tz rejected&quot;), (dict(base, bedtime=&quot;25:00&quot;), &quot;bad bedtime rejected&quot;),
+                       (dict(base, arrive=&quot;2026-11-02T10:00&quot;), &quot;arrival before departure rejected&quot;), (dict(base, pre_trip_days=9), &quot;pre-trip &gt;4 rejected&quot;)):
+        try:
+            plan(bad)
+            ok(label, False)
+        except TripError:
+            ok(label, True)
+    ok(&quot;hm wraps midnight&quot;, hm(-30) == &quot;23:30&quot; and hm(1500) == &quot;01:00&quot;)
+    passed = sum(c for _, c in cases)
+    for name, c in cases:
+        print((&quot;PASS &quot; if c else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Plan sleep and light timing to beat jet lag.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;trip JSON&quot;)
+    ap.add_argument(&quot;--from&quot;, dest=&quot;from_tz&quot;)
+    ap.add_argument(&quot;--to&quot;, dest=&quot;to_tz&quot;)
+    ap.add_argument(&quot;--depart&quot;)
+    ap.add_argument(&quot;--arrive&quot;)
+    ap.add_argument(&quot;--bedtime&quot;)
+    ap.add_argument(&quot;--wake&quot;)
+    ap.add_argument(&quot;--pre-days&quot;, type=int, dest=&quot;pre_trip_days&quot;)
+    ap.add_argument(&quot;--stay&quot;, type=int, dest=&quot;stay_days&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    try:
+        trip = json.load(open(a.file, encoding=&quot;utf-8&quot;)) if a.file else {}
+        for k in (&quot;from_tz&quot;, &quot;to_tz&quot;, &quot;depart&quot;, &quot;arrive&quot;, &quot;bedtime&quot;, &quot;wake&quot;, &quot;pre_trip_days&quot;, &quot;stay_days&quot;):
+            if getattr(a, k) is not None:
+                trip[k] = getattr(a, k)
+        r = plan(trip)
+    except (OSError, TripError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else to_markdown(r))
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/jet-lag-sleep-shift-planner',TI="Jet Lag Sleep Shift Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

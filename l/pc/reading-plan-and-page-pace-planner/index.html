@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading Plan and Page Pace Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: reading-plan-and-page-pace-planner description: Plans your reading day by day so you finish every book before its book club, course or exam ">
+<meta property="og:title" content="Reading Plan and Page Pace Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: reading-plan-and-page-pace-planner description: Plans your reading day by day so you finish every book before its book club, course or exam ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/reading-plan-and-page-pace-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/reading-plan-and-page-pace-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Reading Plan and Page Pace Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: reading-plan-and-page-pace-planner
+description: Plans your reading day by day so you finish every book before its book club, course or exam date - from page or word counts (or audiobook length), your reading speed, the minutes you have each weekday, trips and busy days. Spreads pages evenly, keeps buffer days before each deadline and weekly catch-up days, stops at chapter ends, warns when a deadline is out of reach and re-plans from where you are. Includes a stdlib Python planner.
+---
+
+# Reading Plan and Page Pace Planner
+
+You help readers stop cramming 200 pages the night before book club. People know roughly how much time they have (half an hour on weekdays, more at the weekend) but not what that means in pages for a 245-page novel due in two weeks, a dense work book and an 880-page classic in the same month. You turn books, reading speed and free minutes into a concrete daily plan (&quot;Tue: p. 1-27&quot;), keep slack for real life, and say early and plainly when a deadline cannot be met and what would fix it.
+
+## Files in this skill
+
+- `scripts/reading_plan.py` - reads a plan JSON (books with pages, words or audiobook minutes, start page, difficulty, deadline, chapter starts; reading speed in words per minute or pages per hour; minutes per weekday; trips and exceptions; catch-up weekdays; buffer days); schedules earliest deadline first, spreads the load evenly (or as soon as possible), snaps daily stops to chapter ends, and prints a book summary, findings RP01-RP06, a day-by-day table with page ranges, weekly checkpoints and catch-up advice; `--from` + `--at &quot;Title=page&quot;` re-plans mid-way (Python 3.8+ standard library only)
+- `references/reading-speed-and-estimates.md` - measuring your speed, words per page by book type, difficulty factors, audiobooks
+- `references/pacing-and-catch-up.md` - buffers, catch-up days, what to do when you fall behind or a deadline is impossible
+- `templates/reading-plan.md` - the plan to hand back (calendar-friendly)
+- `examples/book-club.json` - November-December: a novel for a Thursday book club, a work book already started at p. 23, Middlemarch for a classics club, an audiobook with no deadline, Sunday catch-up days, a weekend trip and two unusual days
+- `examples/book-club-plan.md` - the real planner output on that file
+
+## Workflow
+
+### 1. Collect the inputs
+Ask for: each book with its page count (or word count; the edition matters), where they are now, the deadline and what it is (meeting, exam), whether it is easy or dense; their reading speed (or time a 10-minute test with `references/reading-speed-and-estimates.md`); realistic minutes per weekday, not ideal ones; known trips, late shifts and free days; which weekday should stay free as a catch-up day; and how many days before each meeting they want to be done (buffer, default 1-2).
+
+### 2. Run the planner
+```
+python3 scripts/reading_plan.py examples/book-club.json
+python3 scripts/reading_plan.py examples/book-club.json --mode asap
+python3 scripts/reading_plan.py examples/book-club.json --from 2026-11-20 --at &quot;Thinking in Systems=110&quot;
+python3 scripts/reading_plan.py plan.json --json
+python3 scripts/reading_plan.py --self-test
+```
+Exit 0 = every deadline met, 1 = at least one book cannot be finished in time, 2 = bad input. Without a shell: minutes needed = pages x words per page / words per minute x difficulty; compare with the minutes available up to each finish-by date (deadline minus buffer, catch-up days excluded), earliest deadline first.
+
+### 3. Read the result
+- RP01 (high): a book does not fit before its deadline. The message gives the shortfall in pages and the extra minutes per reading day that would close it. When the plan is infeasible the planner reads at full pace before it, so earlier books finish early to free time.
+- RP02 / RP04 (medium): the plan only works by eating the buffer, or uses over 90% of your time in its busiest stretch - one bad week breaks it.
+- RP03 (low): days longer than the max session - split them. RP05/RP06 (info): finished books, close deadlines, audiobooks.
+- Check the day table for heavy weekend days and the weekly checkpoints for &quot;where should I be by Sunday&quot;.
+
+### 4. Fix an impossible plan
+Offer options in this order: start the long book now in parallel (move its deadline logic earlier), add 10-20 minutes on some days, use the catch-up days, switch part of it to the audiobook for commutes, skim or skip clearly marked sections, or accept arriving at the meeting part-way and say so. Re-run after each change. See `references/pacing-and-catch-up.md`.
+
+### 5. Deliver
+Fill `templates/reading-plan.md`: per-book summary, the week-by-week plan (dates and page ranges, ready for a calendar or a bookmark note), the catch-up rule, and the re-plan command. Offer a quick re-plan whenever they report their current page.
+
+## Example result
+On `examples/book-club.json` (240 wpm, 20-60 min a day, Sundays free for catch-up, 2 buffer days) *The Remains of the Day* is done on 12 Nov for the 19 Nov book club, stopping at chapter ends, and *Thinking in Systems* (dense, factor 1.3, from p. 23) on 27 Nov for the 1 Dec group. *Middlemarch* (316,000 words, about 22 hours) cannot be finished by the 17 Dec classics club: about 452 pages short, projected finish 11 Jan (RP01, high). Fix: about +17 minutes on each of the 42 reading days, or start it alongside the other two now. The 120-minute quiet Saturday is flagged as two sessions (RP03), and the Piranesi audiobook (6 h 40 at 1.25x) follows after Middlemarch.
+
+## Rules
+
+- Plan with the time people really have, and keep at least one buffer day before every meeting.
+- Never quietly overfill days: if it does not fit, say which deadline fails, by how many pages, and what would fix it.
+- Use the edition&#x27;s page count; when only word counts are known, say that pages are estimates.
+- Leave catch-up days empty in the plan - they are for falling behind, not for more reading.
+- Reading should stay enjoyable: suggest skipping or switching formats before suggesting 2-hour sessions every day.
+- Re-plan from the current page whenever the reader is behind or ahead; do not make them &quot;catch up&quot; to an old schedule.
+FILE:references/reading-speed-and-estimates.md
+# Reading speed and estimates
+
+## Measure your speed (10 minutes)
+1. Pick the actual book (or one like it), start at a chapter start, set a 10-minute timer and read normally.
+2. Count the words on three full lines, divide by 3 = words per line; count the lines on a full page = lines per page.
+3. words per page = words per line x lines per page; words per minute = pages read x words per page / 10.
+Or simply time a few pages and use `&quot;pages_per_hour&quot;` instead of words per minute.
+
+## Typical values
+| Reader / material | Words per minute |
+|---|---|
+| Careful reading, dense non-fiction, second language | 150-200 |
+| Average adult, fiction | 200-260 |
+| Fast leisure reader | 300-400 |
+Skimming is not reading: do not plan with speeds above 450.
+
+| Book type | Words per page |
+|---|---|
+| Mass-market paperback | 300-350 |
+| Trade paperback fiction | 250-300 |
+| Hardcover non-fiction with notes | 350-450 |
+| Large print, children&#x27;s chapter books | 150-200 |
+| E-book | use the word count (store page or tools that show it) and the default 275 words per page |
+
+## Difficulty factor
+`&quot;difficulty&quot;` multiplies reading time: 1.0 easy fiction, 1.2-1.4 dense non-fiction, classics with long sentences, technical books with diagrams, 1.5+ textbooks you take notes on, poetry, second-language reading.
+
+## Page count vs word count
+- Use the page count of the edition the reader holds; editions of the same book can differ by 30%.
+- With both `&quot;pages&quot;` and `&quot;words&quot;`, the planner derives the words per page of that edition (Middlemarch 316,000 / 880 = 359).
+- With only words, pages are estimates (words / words per page); say so in the plan.
+
+## Audiobooks
+- `&quot;audio_minutes&quot;` is the runtime, `&quot;speed&quot;` the playback speed: time needed = runtime / speed (400 min at 1.25x = 320 min).
+- Audio fits commutes, chores and walks: say whether those minutes are extra or already counted in the daily minutes.
+- Positions are shown as h:mm of the audio.
+FILE:references/pacing-and-catch-up.md
+# Pacing and catch-up
+
+## How the planner schedules
+- Earliest deadline first: the book with the nearest finish-by date (deadline minus buffer days) is read first; books without a deadline come last.
+- Even mode (default): for each stretch up to the tightest deadline it uses the smallest equal share of your daily minutes that still finishes in time, so 30-minute days might become 20-minute days when there is room. After that deadline the next stretch is computed again.
+- ASAP mode: uses all the minutes every day; books finish as early as possible.
+- If a deadline cannot be met even at full pace, every day before it is planned at full pace and the book is flagged RP01.
+- Daily stops move to a chapter end when one is within `chapter_snap_pages` (default 8) and a quarter of the day&#x27;s pages.
+
+## Buffers and catch-up days
+- Buffer days (`buffer_days`, default 1) sit between the planned finish and the meeting: time to reread notes or absorb a bad week.
+- Catch-up weekdays (`catch_up_days`, e.g. Sunday) get no planned reading. Use them only when behind; if you are on track they are free time.
+- Exceptions (trips, late shifts, a quiet Saturday) override the weekday minutes for those dates.
+
+## When you fall behind
+1. Missed one day: read that day&#x27;s pages on the next catch-up day, or add a third of them to each of the next three days.
+2. Behind by more than two days: re-plan from today with `--from &lt;today&gt; --at &quot;&lt;Title&gt;=&lt;current page&gt;&quot;` instead of chasing the old plan.
+3. Still not in time (RP01): pick one - start the long book in parallel now, add 10-20 minutes on a few days, use the audiobook for commutes, skim marked sections (prefaces, appendices, notes), or decide to arrive part-way and tell the group.
+
+## Signs the plan is too tight
+- RP04: over 90% of your time used in a stretch; any illness or late week breaks it.
+- RP02: the book only fits by using the buffer days.
+- Many days marked &quot;2 sessions&quot; (RP03): consider spreading reading across morning and evening on purpose.
+
+## Book club tips
+- Note the page or chapter the group will discuss if it is not the whole book, and use that as the book&#x27;s `pages`.
+- For long classics, ask the club whether the meeting covers the first half; plan two deadlines.
+- Keep a sticky note in the book with the weekly checkpoints from the plan.
+FILE:templates/reading-plan.md
+# Reading plan: &lt;name&gt; (&lt;start&gt; to &lt;last deadline&gt;)
+
+**Pace:** &lt;wpm&gt; words/min, about &lt;pages&gt; pages in a 30-minute session
+**Time:** &lt;minutes per weekday&gt;; catch-up day(s): &lt;day&gt;; buffer: &lt;n&gt; day(s) before each meeting
+**Verdict:** &lt;every deadline is met | BOOK cannot be finished by DATE - see options&gt;
+
+## Books
+| Book | Pages left | Time needed | Meeting / deadline | Finish by | Planned finish |
+|---|---|---|---|---|---|
+| &lt;title&gt; | &lt;pp&gt; | &lt;h:mm&gt; | &lt;date - event&gt; | &lt;date&gt; | &lt;date&gt; |
+
+## Week by week
+### Week of &lt;Mon date&gt;
+- Mon: &lt;Book p. a-b&gt;
+- Tue: &lt;...&gt;
+- Sun: catch-up / free
+**Checkpoint Sunday night:** &lt;Book p. X&gt;
+
+## If a deadline does not fit
+- Shortfall: &lt;pages&gt; pages of &lt;book&gt; by &lt;date&gt;
+- Options: &lt;+N min on reading days | start now in parallel | audiobook for commutes | skim chapters x-y | arrive part-way&gt;
+- Chosen: &lt;...&gt;
+
+## Falling behind
+- Missed a day? Use &lt;catch-up day&gt; or add &lt;n&gt; pages to the next three days.
+- More than two days behind: re-plan from today (`--from &lt;date&gt; --at &quot;&lt;title&gt;=&lt;page&gt;&quot;`).
+FILE:examples/book-club.json
+{
+  &quot;name&quot;: &quot;Reading plan: Nov-Dec 2026 (two book clubs and a work book)&quot;,
+  &quot;start&quot;: &quot;2026-11-03&quot;,
+  &quot;reader&quot;: {&quot;words_per_minute&quot;: 240, &quot;words_per_page&quot;: 280},
+  &quot;minutes&quot;: {&quot;mon&quot;: 30, &quot;tue&quot;: 30, &quot;wed&quot;: 20, &quot;thu&quot;: 30, &quot;fri&quot;: 25, &quot;sat&quot;: 60, &quot;sun&quot;: 45},
+  &quot;catch_up_days&quot;: [&quot;sun&quot;],
+  &quot;buffer_days&quot;: 2,
+  &quot;max_session_minutes&quot;: 60,
+  &quot;chapter_snap_pages&quot;: 8,
+  &quot;exceptions&quot;: [
+    {&quot;dates&quot;: &quot;2026-11-13..2026-11-15&quot;, &quot;minutes&quot;: 0, &quot;note&quot;: &quot;weekend trip&quot;},
+    {&quot;dates&quot;: &quot;2026-11-26&quot;, &quot;minutes&quot;: 15, &quot;note&quot;: &quot;late shift&quot;},
+    {&quot;dates&quot;: &quot;2026-12-05&quot;, &quot;minutes&quot;: 120, &quot;note&quot;: &quot;quiet Saturday&quot;}
+  ],
+  &quot;books&quot;: [
+    {&quot;title&quot;: &quot;The Remains of the Day&quot;, &quot;pages&quot;: 245, &quot;words_per_page&quot;: 265, &quot;deadline&quot;: &quot;2026-11-19&quot;, &quot;event&quot;: &quot;Thursday book club&quot;,
+     &quot;chapters&quot;: [1, 9, 45, 101, 125, 165, 212, 239]},
+    {&quot;title&quot;: &quot;Thinking in Systems&quot;, &quot;pages&quot;: 218, &quot;start_page&quot;: 23, &quot;difficulty&quot;: 1.3, &quot;deadline&quot;: &quot;2026-12-01&quot;, &quot;event&quot;: &quot;team reading group&quot;},
+    {&quot;title&quot;: &quot;Middlemarch&quot;, &quot;words&quot;: 316000, &quot;pages&quot;: 880, &quot;deadline&quot;: &quot;2026-12-17&quot;, &quot;event&quot;: &quot;classics club&quot;},
+    {&quot;title&quot;: &quot;Piranesi (audiobook)&quot;, &quot;audio_minutes&quot;: 400, &quot;speed&quot;: 1.25}
+  ]
+}
+FILE:examples/book-club-plan.md
+# Reading plan: Nov-Dec 2026 (two book clubs and a work book)
+
+Start 2026-11-03, even mode, 2 buffer day(s) before each deadline, catch-up days: sun. Planned reading: 36 h 44 min over 81 days.
+
+**Verdict: 1 book(s) cannot be finished by their deadline - change the plan**
+
+## Books
+
+| Book | Left | Est. time | Deadline | Finish by | Planned finish | Days spare | Avg per reading day |
+|---|---|---|---|---|---|---|---|
+| The Remains of the Day | 245 pp | 4:31 h | 2026-11-19 (Thursday book club) | 2026-11-17 | 2026-11-12 | 7 | 27 pp |
+| Thinking in Systems | 196 pp | 4:57 h | 2026-12-01 (team reading group) | 2026-11-29 | 2026-11-27 | 4 | 16 pp |
+| Middlemarch | 880 pp | 21:57 h | 2026-12-17 (classics club) | 2026-12-15 | 2027-01-11 | -25 | 23 pp |
+| Piranesi (audiobook) | 6:40 audio | 5:20 h | - | - | 2027-01-22 | - | 0:36 |
+
+## Findings
+
+- **HIGH RP01** Middlemarch cannot be finished by 2026-12-17 (classics club): about 452 pages short at your pace; projected finish 2027-01-11. Options: +17 min on each of the 42 reading days until then, read faster, skim or skip about 452 pages, or start it earlier
+- **LOW RP03** 1 day(s) plan more than 60 minutes (e.g. 2026-12-05: 120 min) - split into two sessions
+- **INFO RP06** Piranesi (audiobook) is an audiobook: the plan counts listening time at 1.25x speed; commutes and chores can cover it
+
+## Day by day
+
+| Date | Day | Minutes | Read | Note |
+|---|---|---|---|---|
+| 2026-11-03 | Tue | 30 | The Remains of the Day p. 1-27 (27 pp) |  |
+| 2026-11-04 | Wed | 19 | The Remains of the Day p. 28-44 (17 pp) |  |
+| 2026-11-05 | Thu | 30 | The Remains of the Day p. 45-71 (27 pp) |  |
+| 2026-11-06 | Fri | 25 | The Remains of the Day p. 72-94 (23 pp) |  |
+| 2026-11-07 | Sat | 60 | The Remains of the Day p. 95-148 (54 pp) |  |
+| 2026-11-08 | Sun | - | - | catch-up / spare (45 min available) |
+| 2026-11-09 | Mon | 30 | The Remains of the Day p. 149-175 (27 pp) |  |
+| 2026-11-10 | Tue | 30 | The Remains of the Day p. 176-202 (27 pp) |  |
+| 2026-11-11 | Wed | 20 | The Remains of the Day p. 203-221 (19 pp) |  |
+| 2026-11-12 | Thu | 30 | The Remains of the Day p. 222-245 (24 pp); Thinking in Systems p. 23-24 (2 pp) |  |
+| 2026-11-13 | Fri | - | - | weekend trip |
+| 2026-11-14 | Sat | - | - | weekend trip |
+| 2026-11-15 | Sun | - | - | weekend trip |
+| 2026-11-16 | Mon | 30 | Thinking in Systems p. 25-44 (20 pp) |  |
+| 2026-11-17 | Tue | 30 | Thinking in Systems p. 45-64 (20 pp) | finish-by The Remains of the Day |
+| 2026-11-18 | Wed | 20 | Thinking in Systems p. 65-77 (13 pp) |  |
+| 2026-11-19 | Thu | 30 | Thinking in Systems p. 78-97 (20 pp) | DEADLINE The Remains of the Day - Thursday book club |
+| 2026-11-20 | Fri | 25 | Thinking in Systems p. 98-113 (16 pp) |  |
+| 2026-11-21 | Sat | 60 | Thinking in Systems p. 114-153 (40 pp) |  |
+| 2026-11-22 | Sun | - | - | catch-up / spare (45 min available) |
+| 2026-11-23 | Mon | 30 | Thinking in Systems p. 154-172 (19 pp) |  |
+| 2026-11-24 | Tue | 30 | Thinking in Systems p. 173-192 (20 pp) |  |
+| 2026-11-25 | Wed | 20 | Thinking in Systems p. 193-205 (13 pp) |  |
+| 2026-11-26 | Thu | 15 | Thinking in Systems p. 206-215 (10 pp) | late shift |
+| 2026-11-27 | Fri | 25 | Thinking in Systems p. 216-218 (3 pp); Middlemarch p. 1-14 (14 pp) |  |
+| 2026-11-28 | Sat | 60 | Middlemarch p. 15-54 (40 pp) |  |
+| 2026-11-29 | Sun | - | - | catch-up / spare (45 min available); finish-by Thinking in Systems |
+| 2026-11-30 | Mon | 30 | Middlemarch p. 55-74 (20 pp) |  |
+| 2026-12-01 | Tue | 30 | Middlemarch p. 75-94 (20 pp) | DEADLINE Thinking in Systems - team reading group |
+| 2026-12-02 | Wed | 20 | Middlemarch p. 95-107 (13 pp) |  |
+| 2026-12-03 | Thu | 30 | Middlemarch p. 108-128 (21 pp) |  |
+| 2026-12-04 | Fri | 25 | Middlemarch p. 129-144 (16 pp) |  |
+| 2026-12-05 | Sat | 120 | Middlemarch p. 145-224 (80 pp) | quiet Saturday; 2 sessions |
+| 2026-12-06 | Sun | - | - | catch-up / spare (45 min available) |
+| 2026-12-07 | Mon | 30 | Middlemarch p. 225-244 (20 pp) |  |
+| 2026-12-08 | Tue | 30 | Middlemarch p. 245-265 (21 pp) |  |
+| 2026-12-09 | Wed | 20 | Middlemarch p. 266-278 (13 pp) |  |
+| 2026-12-10 | Thu | 30 | Middlemarch p. 279-298 (20 pp) |  |
+| 2026-12-11 | Fri | 25 | Middlemarch p. 299-315 (17 pp) |  |
+| 2026-12-12 | Sat | 60 | Middlemarch p. 316-355 (40 pp) |  |
+| 2026-12-13 | Sun | - | - | catch-up / spare (45 min available) |
+| 2026-12-14 | Mon | 30 | Middlemarch p. 356-375 (20 pp) |  |
+| 2026-12-15 | Tue | 30 | Middlemarch p. 376-395 (20 pp) | finish-by Middlemarch |
+| 2026-12-16 | Wed | 20 | Middlemarch p. 396-408 (13 pp) |  |
+| 2026-12-17 | Thu | 30 | Middlemarch p. 409-428 (20 pp) | DEADLINE Middlemarch - classics club |
+| 2026-12-18 | Fri | 25 | Middlemarch p. 429-445 (17 pp) |  |
+| 2026-12-19 | Sat | 60 | Middlemarch p. 446-485 (40 pp) |  |
+| 2026-12-20 | Sun | - | - | catch-up / spare (45 min available) |
+| 2026-12-21 | Mon | 30 | Middlemarch p. 486-505 (20 pp) |  |
+| 2026-12-22 | Tue | 30 | Middlemarch p. 506-525 (20 pp) |  |
+| 2026-12-23 | Wed | 20 | Middlemarch p. 526-539 (14 pp) |  |
+| 2026-12-24 | Thu | 30 | Middlemarch p. 540-559 (20 pp) |  |
+| 2026-12-25 | Fri | 25 | Middlemarch p. 560-575 (16 pp) |  |
+| 2026-12-26 | Sat | 60 | Middlemarch p. 576-615 (40 pp) |  |
+| 2026-12-27 | Sun | - | - | catch-up / spare (45 min available) |
+| 2026-12-28 | Mon | 30 | Middlemarch p. 616-635 (20 pp) |  |
+| 2026-12-29 | Tue | 30 | Middlemarch p. 636-656 (21 pp) |  |
+| 2026-12-30 | Wed | 20 | Middlemarch p. 657-669 (13 pp) |  |
+| 2026-12-31 | Thu | 30 | Middlemarch p. 670-689 (20 pp) |  |
+| 2027-01-01 | Fri | 25 | Middlemarch p. 690-706 (17 pp) |  |
+| 2027-01-02 | Sat | 60 | Middlemarch p. 707-746 (40 pp) |  |
+| 2027-01-03 | Sun | - | - | catch-up / spare (45 min available) |
+| 2027-01-04 | Mon | 30 | Middlemarch p. 747-766 (20 pp) |  |
+| 2027-01-05 | Tue | 30 | Middlemarch p. 767-786 (20 pp) |  |
+| 2027-01-06 | Wed | 20 | Middlemarch p. 787-799 (13 pp) |  |
+| 2027-01-07 | Thu | 30 | Middlemarch p. 800-819 (20 pp) |  |
+| 2027-01-08 | Fri | 25 | Middlemarch p. 820-836 (17 pp) |  |
+| 2027-01-09 | Sat | 60 | Middlemarch p. 837-876 (40 pp) |  |
+| 2027-01-10 | Sun | - | - | catch-up / spare (45 min available) |
+| 2027-01-11 | Mon | 30 | Middlemarch p. 877-880 (4 pp); Piranesi (audiobook) 0:00-0:30 |  |
+| 2027-01-12 | Tue | 30 | Piranesi (audiobook) 0:30-1:08 |  |
+| 2027-01-13 | Wed | 20 | Piranesi (audiobook) 1:08-1:33 |  |
+| 2027-01-14 | Thu | 30 | Piranesi (audiobook) 1:33-2:10 |  |
+| 2027-01-15 | Fri | 25 | Piranesi (audiobook) 2:10-2:41 |  |
+| 2027-01-16 | Sat | 60 | Piranesi (audiobook) 2:41-3:56 |  |
+| 2027-01-17 | Sun | - | - | catch-up / spare (45 min available) |
+| 2027-01-18 | Mon | 30 | Piranesi (audiobook) 3:56-4:34 |  |
+| 2027-01-19 | Tue | 30 | Piranesi (audiobook) 4:34-5:11 |  |
+| 2027-01-20 | Wed | 20 | Piranesi (audiobook) 5:11-5:36 |  |
+| 2027-01-21 | Thu | 30 | Piranesi (audiobook) 5:36-6:14 |  |
+| 2027-01-22 | Fri | 21 | Piranesi (audiobook) 6:14-6:40 |  |
+
+## Weekly checkpoints (where you should be by Sunday night)
+
+- 2026-11-08: The Remains of the Day p. 148
+- 2026-11-15: Thinking in Systems p. 24
+- 2026-11-22: Thinking in Systems p. 153
+- 2026-11-29: Middlemarch p. 54
+- 2026-12-06: Middlemarch p. 224
+- 2026-12-13: Middlemarch p. 355
+- 2026-12-20: Middlemarch p. 485
+- 2026-12-27: Middlemarch p. 615
+- 2027-01-03: Middlemarch p. 746
+- 2027-01-10: Middlemarch p. 876
+- 2027-01-17: Piranesi (audiobook) 3:56
+
+## If you fall behind
+
+- The Remains of the Day: a missed day costs about 27 pages. Make them up on the spare day(s) 2026-11-08, or add 10 pages to each of the next 3 reading days. Re-plan any time with `--from &lt;date&gt; --at &quot;The Remains of the Day=&lt;page&gt;&quot;`.
+- Thinking in Systems: a missed day costs about 16 pages. Make them up on the spare day(s) 2026-11-22, 2026-11-29, or add 6 pages to each of the next 3 reading days. Re-plan any time with `--from &lt;date&gt; --at &quot;Thinking in Systems=&lt;page&gt;&quot;`.
+- Middlemarch: a missed day costs about 23 pages. Make them up on the spare day(s) 2026-11-29, 2026-12-06, 2026-12-13, or add 8 pages to each of the next 3 reading days. Re-plan any time with `--from &lt;date&gt; --at &quot;Middlemarch=&lt;page&gt;&quot;`.
+
+FILE:scripts/reading_plan.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Reading plan and page pace planner (stdlib only, Python 3.8+).
+
+Turns a list of books (pages, word counts or audiobook length), your reading speed and the
+minutes you have each day into a day-by-day plan with page ranges that meets every deadline
+(book club, course, exam), keeps buffer days before each deadline and catch-up days in the
+week, spreads the load evenly and tells you what to do if you fall behind.
+
+Usage:
+  reading_plan.py PLAN.json [--mode even|asap] [--from YYYY-MM-DD] [--at &quot;Title=page&quot;]... [--json]
+  reading_plan.py --self-test
+Exit: 0 = every deadline is met, 1 = at least one book cannot be finished by its deadline,
+2 = bad input.
+&quot;&quot;&quot;
+import argparse, datetime, json, math, re, sys
+
+DAYS = [&quot;mon&quot;, &quot;tue&quot;, &quot;wed&quot;, &quot;thu&quot;, &quot;fri&quot;, &quot;sat&quot;, &quot;sun&quot;]
+SEV = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2, &quot;info&quot;: 3}
+
+
+class InputError(Exception):
+    pass
+
+
+def pdate(s, what):
+    try:
+        return datetime.date.fromisoformat(str(s))
+    except ValueError:
+        raise InputError(&quot;%s must be YYYY-MM-DD, got %r&quot; % (what, s))
+
+
+def expand_dates(spec):
+    spec = str(spec)
+    if &quot;..&quot; in spec:
+        a, b = spec.split(&quot;..&quot;, 1)
+        a, b = pdate(a.strip(), &quot;date range&quot;), pdate(b.strip(), &quot;date range&quot;)
+        if b &lt; a:
+            raise InputError(&quot;date range %s ends before it starts&quot; % spec)
+        return [a + datetime.timedelta(days=i) for i in range((b - a).days + 1)]
+    return [pdate(spec.strip(), &quot;date&quot;)]
+
+
+# ---------------------------------------------------------------- model
+def load(cfg, start_override=None, at=None):
+    if not isinstance(cfg, dict) or not isinstance(cfg.get(&quot;books&quot;), list) or not cfg[&quot;books&quot;]:
+        raise InputError(&quot;plan needs a non-empty &#x27;books&#x27; list&quot;)
+    reader = cfg.get(&quot;reader&quot;) or {}
+    wpm = float(reader.get(&quot;words_per_minute&quot;, 230))
+    wpp_default = float(reader.get(&quot;words_per_page&quot;, 275))
+    pph = reader.get(&quot;pages_per_hour&quot;)
+    if wpm &lt;= 0 or wpp_default &lt;= 0:
+        raise InputError(&quot;words_per_minute and words_per_page must be positive&quot;)
+    start = pdate(start_override or cfg.get(&quot;start&quot;) or datetime.date.today().isoformat(), &quot;start&quot;)
+    mins = cfg.get(&quot;minutes&quot;)
+    if isinstance(mins, (int, float)):
+        mins = {d: mins for d in DAYS}
+    if not isinstance(mins, dict):
+        raise InputError(&quot;&#x27;minutes&#x27; must be a number or {mon: .., tue: ..}&quot;)
+    mins = {k.lower()[:3]: float(v) for k, v in mins.items()}
+    bad = set(mins) - set(DAYS)
+    if bad:
+        raise InputError(&quot;unknown weekday key(s) in minutes: %s&quot; % &quot;, &quot;.join(sorted(bad)))
+    catch = {d.lower()[:3] for d in cfg.get(&quot;catch_up_days&quot;, [])}
+    exc = {}
+    for e in cfg.get(&quot;exceptions&quot;, []):
+        for d in expand_dates(e.get(&quot;dates&quot;) or e.get(&quot;date&quot;)):
+            exc[d] = (float(e.get(&quot;minutes&quot;, 0)), e.get(&quot;note&quot;, &quot;&quot;))
+    books = []
+    at = at or {}
+    for i, b in enumerate(cfg[&quot;books&quot;], 1):
+        t = b.get(&quot;title&quot;) or &quot;Book %d&quot; % i
+        if &quot;audio_minutes&quot; in b:
+            speed = float(b.get(&quot;speed&quot;, 1.0))
+            total = float(b[&quot;audio_minutes&quot;])
+            unit_min = 1.0 / speed            # minutes of your time per minute of audio
+            units, kind = total, &quot;audio&quot;
+            done = float(at.get(t, b.get(&quot;start_minute&quot;, 0)))
+        else:
+            wpp = float(b.get(&quot;words_per_page&quot;) or (float(b[&quot;words&quot;]) / float(b[&quot;pages&quot;]) if b.get(&quot;words&quot;) and b.get(&quot;pages&quot;) else wpp_default))
+            pages = float(b[&quot;pages&quot;]) if b.get(&quot;pages&quot;) else (float(b[&quot;words&quot;]) / wpp if b.get(&quot;words&quot;) else None)
+            if not pages or pages &lt;= 0:
+                raise InputError(&quot;book %r needs pages, words or audio_minutes&quot; % t)
+            diff = float(b.get(&quot;difficulty&quot;, 1.0))
+            if pph and not b.get(&quot;words&quot;):
+                unit_min = 60.0 / float(pph) * diff
+            else:
+                unit_min = wpp / wpm * diff
+            units, kind = round(pages), &quot;pages&quot;
+            sp = at.get(t, b.get(&quot;start_page&quot;, 1))
+            done = max(0.0, float(sp) - 1)
+        dl = pdate(b[&quot;deadline&quot;], &quot;deadline of %r&quot; % t) if b.get(&quot;deadline&quot;) else None
+        chapters = sorted(int(c) for c in b.get(&quot;chapters&quot;, []))
+        books.append({&quot;title&quot;: t, &quot;units&quot;: float(units), &quot;kind&quot;: kind, &quot;unit_min&quot;: unit_min, &quot;done&quot;: min(done, float(units)),
+                      &quot;deadline&quot;: dl, &quot;event&quot;: b.get(&quot;event&quot;, &quot;&quot;), &quot;chapters&quot;: chapters, &quot;order&quot;: i})
+    buf = int(cfg.get(&quot;buffer_days&quot;, 1))
+    return {&quot;start&quot;: start, &quot;mins&quot;: mins, &quot;catch&quot;: catch, &quot;exc&quot;: exc, &quot;books&quot;: books, &quot;buffer&quot;: buf,
+            &quot;max_session&quot;: float(cfg.get(&quot;max_session_minutes&quot;, 0) or 0), &quot;snap&quot;: int(cfg.get(&quot;chapter_snap_pages&quot;, 8)),
+            &quot;name&quot;: cfg.get(&quot;name&quot;, &quot;Reading plan&quot;), &quot;wpm&quot;: wpm}
+
+
+def capacity(m, d):
+    &quot;&quot;&quot;(planned minutes, available minutes incl. catch-up, note).&quot;&quot;&quot;
+    if d in m[&quot;exc&quot;]:
+        v, note = m[&quot;exc&quot;][d]
+        return v, v, note or (&quot;no reading&quot; if v == 0 else &quot;&quot;)
+    wd = DAYS[d.weekday()]
+    v = m[&quot;mins&quot;].get(wd, 0.0)
+    if wd in m[&quot;catch&quot;]:
+        return 0.0, v, &quot;catch-up day&quot;
+    return v, v, &quot;&quot;
+
+
+def plan(m, mode=&quot;even&quot;):
+    F = []
+    books = [b for b in m[&quot;books&quot;]]
+    for b in books:
+        b[&quot;need&quot;] = (b[&quot;units&quot;] - b[&quot;done&quot;]) * b[&quot;unit_min&quot;]
+        if b[&quot;need&quot;] &lt;= 0:
+            F.append((&quot;info&quot;, &quot;RP05&quot;, &quot;%s is already finished - left out&quot; % b[&quot;title&quot;]))
+        b[&quot;target&quot;] = None
+        if b[&quot;deadline&quot;] and b[&quot;deadline&quot;] &lt; m[&quot;start&quot;]:
+            if b[&quot;need&quot;] &gt; 0:
+                F.append((&quot;medium&quot;, &quot;RP05&quot;, &quot;%s: deadline %s has already passed - planned without a deadline&quot; % (b[&quot;title&quot;], b[&quot;deadline&quot;])))
+            b[&quot;deadline&quot;] = None
+        if b[&quot;deadline&quot;]:
+            b[&quot;target&quot;] = b[&quot;deadline&quot;] - datetime.timedelta(days=m[&quot;buffer&quot;])
+            if b[&quot;target&quot;] &lt; m[&quot;start&quot;]:
+                b[&quot;target&quot;] = m[&quot;start&quot;]
+                F.append((&quot;medium&quot;, &quot;RP05&quot;, &quot;%s: deadline %s is too close for %d buffer day(s) - planning to the deadline&quot; % (b[&quot;title&quot;], b[&quot;deadline&quot;], m[&quot;buffer&quot;])))
+    todo = [b for b in books if b[&quot;need&quot;] &gt; 0]
+    dated = sorted([b for b in todo if b[&quot;target&quot;]], key=lambda b: (b[&quot;target&quot;], b[&quot;order&quot;]))
+    undated = [b for b in todo if not b[&quot;target&quot;]]
+    seq = dated + undated
+    last = max([b[&quot;deadline&quot;] for b in dated] or [m[&quot;start&quot;]])
+    # horizon: enough days for everything at full capacity, plus slack
+    weekly = sum(m[&quot;mins&quot;].get(d, 0) for d in DAYS if d not in m[&quot;catch&quot;]) or 1
+    total_need = sum(b[&quot;need&quot;] for b in seq)
+    horizon_end = max(last, m[&quot;start&quot;]) + datetime.timedelta(days=int(total_need / weekly * 7) + 60)
+    days, d = [], m[&quot;start&quot;]
+    while d &lt;= horizon_end:
+        p, a, note = capacity(m, d)
+        days.append({&quot;date&quot;: d, &quot;cap&quot;: p, &quot;avail&quot;: a, &quot;note&quot;: note, &quot;planned&quot;: 0.0, &quot;items&quot;: []})
+        d += datetime.timedelta(days=1)
+    idx = {x[&quot;date&quot;]: i for i, x in enumerate(days)}
+    # load factor per segment (even mode): smallest uniform share of capacity that meets every target
+    load = [1.0] * len(days)
+    if mode == &quot;even&quot; and dated:
+        seg_start, k0 = 0, 0
+        while k0 &lt; len(dated):
+            best, bk = 0.0, k0
+            cum = 0.0
+            for k in range(k0, len(dated)):
+                cum += dated[k][&quot;need&quot;]
+                ti = idx[dated[k][&quot;target&quot;]]
+                cap = sum(x[&quot;cap&quot;] for x in days[seg_start:ti + 1])
+                r = cum / cap if cap &gt; 0 else float(&quot;inf&quot;)
+                if r &gt;= best:
+                    best, bk = r, k
+            L = min(best * 1.03, 1.0)  # 3% headroom for chapter-end stops and rounding
+            end = idx[dated[bk][&quot;target&quot;]]
+            for i in range(seg_start, end + 1):
+                load[i] = L
+            seg_start, k0 = end + 1, bk + 1
+        # after the last deadline: undated books at the average load of the plan so far (at least 0.5)
+        tail = max(0.5, max(load[:seg_start] or [1.0]))
+        for i in range(seg_start, len(days)):
+            load[i] = tail if undated else 1.0
+    # allocate (earliest deadline first), tracking each book&#x27;s position
+    qi = 0
+    pos = {b[&quot;title&quot;]: b[&quot;done&quot;] for b in seq}
+    for i, day in enumerate(days):
+        budget = day[&quot;cap&quot;] * load[i]
+        while budget &gt; 1e-9 and qi &lt; len(seq):
+            b = seq[qi]
+            remaining = (b[&quot;units&quot;] - pos[b[&quot;title&quot;]]) * b[&quot;unit_min&quot;]
+            use = min(budget, remaining)
+            before = pos[b[&quot;title&quot;]]
+            after = before + use / b[&quot;unit_min&quot;]
+            if after &gt; b[&quot;units&quot;] - 1e-6:
+                after = b[&quot;units&quot;]
+            elif b[&quot;kind&quot;] == &quot;pages&quot;:
+                snapped = snap(after, b, m[&quot;snap&quot;], use / b[&quot;unit_min&quot;])
+                if snapped != after:
+                    after = snapped
+                    use = (after - before) * b[&quot;unit_min&quot;]
+                    budget = use  # stop at the chapter end: the day ends here
+            pos[b[&quot;title&quot;]] = after
+            day[&quot;items&quot;].append({&quot;title&quot;: b[&quot;title&quot;], &quot;from&quot;: before, &quot;to&quot;: after, &quot;kind&quot;: b[&quot;kind&quot;], &quot;minutes&quot;: use})
+            day[&quot;planned&quot;] += use
+            budget -= use
+            if after &gt;= b[&quot;units&quot;] - 1e-6:
+                b[&quot;finish&quot;] = day[&quot;date&quot;]; qi += 1
+            elif budget &lt;= 1e-9 or use &lt;= 1e-9:
+                break
+        if qi &gt;= len(seq):
+            break
+    days = [x for x in days if x[&quot;date&quot;] &lt;= max([b.get(&quot;finish&quot;, m[&quot;start&quot;]) for b in seq] + [last])]
+    for b in seq:
+        b.setdefault(&quot;finish&quot;, None)
+    # findings
+    for b in dated:
+        f = b[&quot;finish&quot;]
+        if f is None or f &gt; b[&quot;deadline&quot;]:
+            avail = [x for x in days if x[&quot;date&quot;] &lt;= b[&quot;deadline&quot;]]
+            share = sum(it[&quot;minutes&quot;] for x in avail for it in x[&quot;items&quot;] if it[&quot;title&quot;] == b[&quot;title&quot;])
+            short_min = b[&quot;need&quot;] - share
+            # also count catch-up/buffer time that would be available up to the deadline
+            reading_days = sum(1 for x in avail if x[&quot;avail&quot;] &gt; 0) or 1
+            short_units = short_min / b[&quot;unit_min&quot;]
+            msg = &quot;%s cannot be finished by %s%s: about %d %s short at your pace; projected finish %s. Options: +%d min on each of the %d reading days until then, read faster, skim or skip about %d %s, or start it earlier&quot; % (
+                b[&quot;title&quot;], b[&quot;deadline&quot;], &quot; (%s)&quot; % b[&quot;event&quot;] if b[&quot;event&quot;] else &quot;&quot;, math.ceil(short_units), &quot;pages&quot; if b[&quot;kind&quot;] == &quot;pages&quot; else &quot;audio minutes&quot;,
+                f or &quot;beyond the plan&quot;, math.ceil(short_min / reading_days), reading_days, math.ceil(short_units), &quot;pages&quot; if b[&quot;kind&quot;] == &quot;pages&quot; else &quot;audio minutes&quot;)
+            F.append((&quot;high&quot;, &quot;RP01&quot;, msg))
+        elif f &gt; b[&quot;target&quot;]:
+            F.append((&quot;medium&quot;, &quot;RP02&quot;, &quot;%s finishes %s, inside the %d buffer day(s) before %s - no room for a missed day&quot; % (b[&quot;title&quot;], f, m[&quot;buffer&quot;], b[&quot;deadline&quot;])))
+    if mode == &quot;even&quot;:
+        peak = max(load) if load else 0
+        if 0.9 &lt;= peak &lt;= 1.0 and not any(f[1] == &quot;RP01&quot; for f in F):
+            F.append((&quot;medium&quot;, &quot;RP04&quot;, &quot;the plan uses %d%% of your planned reading time in its busiest stretch - one bad week will push you into the buffer&quot; % round(peak * 100)))
+    if m[&quot;max_session&quot;]:
+        long = [x for x in days if x[&quot;planned&quot;] &gt; m[&quot;max_session&quot;] + 0.5]
+        if long:
+            F.append((&quot;low&quot;, &quot;RP03&quot;, &quot;%d day(s) plan more than %d minutes (e.g. %s: %d min) - split into two sessions&quot; % (
+                len(long), m[&quot;max_session&quot;], long[0][&quot;date&quot;], round(long[0][&quot;planned&quot;]))))
+    for b in seq:
+        if b[&quot;kind&quot;] == &quot;audio&quot;:
+            F.append((&quot;info&quot;, &quot;RP06&quot;, &quot;%s is an audiobook: the plan counts listening time at %sx speed; commutes and chores can cover it&quot; % (b[&quot;title&quot;], (&quot;%.2f&quot; % (1 / b[&quot;unit_min&quot;])).rstrip(&quot;0&quot;).rstrip(&quot;.&quot;))))
+    F.sort(key=lambda f: (SEV[f[0]], f[1]))
+    return {&quot;days&quot;: days, &quot;books&quot;: seq, &quot;all_books&quot;: books, &quot;findings&quot;: F, &quot;load&quot;: load}
+
+
+def snap(after, b, snap_pages, day_units):
+    &quot;&quot;&quot;Move a day&#x27;s stopping point to a chapter end if one is close (within snap_pages and 25% of the day).&quot;&quot;&quot;
+    if not b[&quot;chapters&quot;] or snap_pages &lt;= 0:
+        return after
+    lim = min(snap_pages, max(1.0, day_units * 0.25))
+    ends = [c - 1 for c in b[&quot;chapters&quot;] if c - 1 &gt; 0]
+    best = None
+    for e in ends:
+        if abs(e - after) &lt;= lim and e &gt; after - day_units + 0.5 and (best is None or abs(e - after) &lt; abs(best - after)):
+            best = e
+    return float(best) if best is not None else after
+
+
+# ---------------------------------------------------------------- rendering
+def fmt_item(it):
+    if it[&quot;kind&quot;] == &quot;audio&quot;:
+        return &quot;%s %s-%s&quot; % (it[&quot;title&quot;], hm(it[&quot;from&quot;]), hm(it[&quot;to&quot;]))
+    a = int(round(it[&quot;from&quot;])) + 1
+    z = int(round(it[&quot;to&quot;]))
+    if z &lt; a:
+        z = a
+    return &quot;%s p. %d-%d (%d pp)&quot; % (it[&quot;title&quot;], a, z, z - a + 1)
+
+
+def hm(x):
+    x = int(round(x))
+    return &quot;%d:%02d&quot; % (x // 60, x % 60)
+
+
+def checkpoints(r):
+    out = []
+    pos = {}
+    for x in r[&quot;days&quot;]:
+        for it in x[&quot;items&quot;]:
+            pos[it[&quot;title&quot;]] = it
+        if x[&quot;date&quot;].weekday() == 6 and pos:  # Sundays
+            out.append((x[&quot;date&quot;], &quot;; &quot;.join(&quot;%s %s&quot; % (t, (&quot;p. %d&quot; % round(it[&quot;to&quot;]) if it[&quot;kind&quot;] == &quot;pages&quot; else hm(it[&quot;to&quot;]))) for t, it in pos.items() if it[&quot;to&quot;] &lt; next(b[&quot;units&quot;] for b in r[&quot;books&quot;] if b[&quot;title&quot;] == t) - 1e-6) or &quot;all current books done&quot;))
+    return out
+
+
+def report(r, m, mode):
+    hi = [f for f in r[&quot;findings&quot;] if f[0] == &quot;high&quot;]
+    out = [&quot;# %s&quot; % m[&quot;name&quot;], &quot;&quot;]
+    tot_min = sum(x[&quot;planned&quot;] for x in r[&quot;days&quot;])
+    out.append(&quot;Start %s, %s mode, %d buffer day(s) before each deadline, catch-up days: %s. Planned reading: %d h %02d min over %d days.&quot; % (
+        m[&quot;start&quot;], mode, m[&quot;buffer&quot;], &quot;, &quot;.join(sorted(m[&quot;catch&quot;], key=DAYS.index)) or &quot;none&quot;, tot_min // 60, tot_min % 60, len(r[&quot;days&quot;])))
+    out += [&quot;&quot;, &quot;**Verdict: %s**&quot; % (&quot;%d book(s) cannot be finished by their deadline - change the plan&quot; % len(hi) if hi else &quot;every deadline is met&quot;), &quot;&quot;]
+    out += [&quot;## Books&quot;, &quot;&quot;, &quot;| Book | Left | Est. time | Deadline | Finish by | Planned finish | Days spare | Avg per reading day |&quot;, &quot;|---|---|---|---|---|---|---|---|&quot;]
+    for b in r[&quot;all_books&quot;]:
+        left = b[&quot;units&quot;] - b[&quot;done&quot;]
+        rd = [x for x in r[&quot;days&quot;] if any(it[&quot;title&quot;] == b[&quot;title&quot;] for it in x[&quot;items&quot;])]
+        avg = left / len(rd) if rd else 0
+        spare = (b[&quot;deadline&quot;] - b[&quot;finish&quot;]).days if b.get(&quot;finish&quot;) and b[&quot;deadline&quot;] else None
+        out.append(&quot;| %s | %s | %s | %s | %s | %s | %s | %s |&quot; % (
+            b[&quot;title&quot;], (&quot;%d pp&quot; % round(left)) if b[&quot;kind&quot;] == &quot;pages&quot; else hm(left) + &quot; audio&quot;, hm(b[&quot;need&quot;]) + &quot; h&quot;,
+            &quot;%s %s&quot; % (b[&quot;deadline&quot;], &quot;(%s)&quot; % b[&quot;event&quot;] if b[&quot;event&quot;] else &quot;&quot;) if b[&quot;deadline&quot;] else &quot;-&quot;,
+            b[&quot;target&quot;] or &quot;-&quot;, b.get(&quot;finish&quot;) or (&quot;done&quot; if b[&quot;need&quot;] &lt;= 0 else &quot;NOT IN TIME&quot;),
+            &quot;-&quot; if spare is None else spare, (&quot;%.0f pp&quot; % avg) if b[&quot;kind&quot;] == &quot;pages&quot; else hm(avg)))
+    out += [&quot;&quot;, &quot;## Findings&quot;, &quot;&quot;]
+    out += [&quot;- **%s %s** %s&quot; % (s.upper(), c, msg) for s, c, msg in r[&quot;findings&quot;]] or [&quot;- none&quot;]
+    out += [&quot;&quot;, &quot;## Day by day&quot;, &quot;&quot;, &quot;| Date | Day | Minutes | Read | Note |&quot;, &quot;|---|---|---|---|---|&quot;]
+    events = {}
+    for b in r[&quot;all_books&quot;]:
+        if b[&quot;deadline&quot;]:
+            events.setdefault(b[&quot;deadline&quot;], []).append(&quot;DEADLINE %s%s&quot; % (b[&quot;title&quot;], &quot; - &quot; + b[&quot;event&quot;] if b[&quot;event&quot;] else &quot;&quot;))
+            if b[&quot;target&quot;] and b[&quot;target&quot;] != b[&quot;deadline&quot;]:
+                events.setdefault(b[&quot;target&quot;], []).append(&quot;finish-by %s&quot; % b[&quot;title&quot;])
+    for x in r[&quot;days&quot;]:
+        note = [x[&quot;note&quot;]] if x[&quot;note&quot;] else []
+        if x[&quot;note&quot;] == &quot;catch-up day&quot; or (x[&quot;planned&quot;] &lt; 0.5 and x[&quot;avail&quot;] &gt; 0):
+            note = [&quot;catch-up / spare (%d min available)&quot; % x[&quot;avail&quot;]] if x[&quot;avail&quot;] &gt; 0 else note
+        note += events.get(x[&quot;date&quot;], [])
+        if m[&quot;max_session&quot;] and x[&quot;planned&quot;] &gt; m[&quot;max_session&quot;] + 0.5:
+            note.append(&quot;2 sessions&quot;)
+        out.append(&quot;| %s | %s | %s | %s | %s |&quot; % (x[&quot;date&quot;], x[&quot;date&quot;].strftime(&quot;%a&quot;), round(x[&quot;planned&quot;]) if x[&quot;planned&quot;] &gt;= 0.5 else &quot;-&quot;,
+                                               &quot;; &quot;.join(fmt_item(it) for it in x[&quot;items&quot;]) or &quot;-&quot;, &quot;; &quot;.join(note)))
+    cps = checkpoints(r)
+    if cps:
+        out += [&quot;&quot;, &quot;## Weekly checkpoints (where you should be by Sunday night)&quot;, &quot;&quot;]
+        out += [&quot;- %s: %s&quot; % (d, s) for d, s in cps]
+    out += [&quot;&quot;, &quot;## If you fall behind&quot;, &quot;&quot;]
+    for b in r[&quot;books&quot;]:
+        if b[&quot;kind&quot;] != &quot;pages&quot; or not b[&quot;deadline&quot;]:
+            continue
+        rd = [x for x in r[&quot;days&quot;] if any(it[&quot;title&quot;] == b[&quot;title&quot;] for it in x[&quot;items&quot;])]
+        if not rd:
+            continue
+        day_pp = sum(it[&quot;to&quot;] - it[&quot;from&quot;] for x in rd for it in x[&quot;items&quot;] if it[&quot;title&quot;] == b[&quot;title&quot;]) / len(rd)
+        spare = [x for x in r[&quot;days&quot;] if x[&quot;date&quot;] &lt;= b[&quot;deadline&quot;] and x[&quot;date&quot;] &gt;= rd[0][&quot;date&quot;] and x[&quot;avail&quot;] &gt; 0 and x[&quot;planned&quot;] &lt; 0.5]
+        out.append(&quot;- %s: a missed day costs about %d pages. Make them up on %s, or add %d pages to each of the next 3 reading days. Re-plan any time with `--from &lt;date&gt; --at \&quot;%s=&lt;page&gt;\&quot;`.&quot; % (
+            b[&quot;title&quot;], round(day_pp), (&quot;the spare day(s) &quot; + &quot;, &quot;.join(str(x[&quot;date&quot;]) for x in spare[:3])) if spare else &quot;no spare day before the deadline&quot;, math.ceil(day_pp / 3), b[&quot;title&quot;]))
+    out.append(&quot;&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+# ---------------------------------------------------------------- self-test
+def self_test():
+    tests = []
+    def t(name, cond):
+        tests.append((name, bool(cond)))
+    def run(cfg, mode=&quot;even&quot;, **kw):
+        m = load(cfg, **kw)
+        return plan(m, mode), m
+    base = {&quot;start&quot;: &quot;2026-11-02&quot;, &quot;reader&quot;: {&quot;words_per_minute&quot;: 250, &quot;words_per_page&quot;: 250}, &quot;minutes&quot;: 30, &quot;buffer_days&quot;: 0}
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 60, &quot;deadline&quot;: &quot;2026-11-08&quot;}]), &quot;asap&quot;)
+    t(&quot;asap: 30 pages/day at 1 page/min finishes day 2&quot;, r[&quot;books&quot;][0][&quot;finish&quot;] == datetime.date(2026, 11, 3))
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 70, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;even: spread over the week (~10 min/day + 3% headroom)&quot;, r[&quot;books&quot;][0][&quot;finish&quot;] &gt;= datetime.date(2026, 11, 7) and 10 &lt;= r[&quot;days&quot;][0][&quot;planned&quot;] &lt;= 10.31)
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 300, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;infeasible -&gt; RP01 high&quot;, any(f[1] == &quot;RP01&quot; and f[0] == &quot;high&quot; for f in r[&quot;findings&quot;]))
+    t(&quot;RP01 suggests extra minutes&quot;, any(&quot;+13 min&quot; in f[2] for f in r[&quot;findings&quot;] if f[1] == &quot;RP01&quot;))
+    r, m = run(dict(base, buffer_days=2, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 70, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;buffer days: finish 2 days early&quot;, r[&quot;books&quot;][0][&quot;finish&quot;] == datetime.date(2026, 11, 6))
+    r, m = run(dict(base, catch_up_days=[&quot;sun&quot;], books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 60, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;catch-up Sunday gets no planned reading&quot;, r[&quot;days&quot;][-1][&quot;planned&quot;] == 0 and r[&quot;books&quot;][0][&quot;finish&quot;] == datetime.date(2026, 11, 7))
+    r, m = run(dict(base, exceptions=[{&quot;dates&quot;: &quot;2026-11-03..2026-11-04&quot;, &quot;minutes&quot;: 0, &quot;note&quot;: &quot;trip&quot;}], books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 50, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;exception range has no reading&quot;, all(x[&quot;planned&quot;] == 0 for x in r[&quot;days&quot;][1:3]))
+    two = [{&quot;title&quot;: &quot;Late&quot;, &quot;pages&quot;: 30, &quot;deadline&quot;: &quot;2026-11-20&quot;}, {&quot;title&quot;: &quot;Soon&quot;, &quot;pages&quot;: 60, &quot;deadline&quot;: &quot;2026-11-04&quot;}]
+    r, m = run(dict(base, books=two))
+    t(&quot;earliest deadline first&quot;, r[&quot;days&quot;][0][&quot;items&quot;][0][&quot;title&quot;] == &quot;Soon&quot;)
+    t(&quot;tight segment then lighter load&quot;, r[&quot;load&quot;][0] &gt; 0.6 and r[&quot;load&quot;][5] &lt; 0.2)
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 70, &quot;deadline&quot;: &quot;2026-11-08&quot;}]), at={&quot;A&quot;: 36})
+    t(&quot;--at resumes from page&quot;, abs(sum(x[&quot;planned&quot;] for x in r[&quot;days&quot;]) - 35) &lt; 0.01)
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;W&quot;, &quot;words&quot;: 25000, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;word count -&gt; pages via words_per_page&quot;, r[&quot;all_books&quot;][0][&quot;units&quot;] == 100)
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;H&quot;, &quot;pages&quot;: 70, &quot;difficulty&quot;: 1.5, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;difficulty scales time&quot;, abs(r[&quot;books&quot;][0][&quot;need&quot;] - 105) &lt; 0.01)
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;Au&quot;, &quot;audio_minutes&quot;: 300, &quot;speed&quot;: 1.5, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;audiobook at 1.5x = 200 min&quot;, abs(r[&quot;books&quot;][0][&quot;need&quot;] - 200) &lt; 0.01 and any(f[1] == &quot;RP06&quot; for f in r[&quot;findings&quot;]))
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;C&quot;, &quot;pages&quot;: 70, &quot;deadline&quot;: &quot;2026-11-08&quot;, &quot;chapters&quot;: [1, 12, 23, 31, 42, 55]}]))
+    ends = [round(it[&quot;to&quot;]) for x in r[&quot;days&quot;] for it in x[&quot;items&quot;]]
+    t(&quot;chapter snapping stops at chapter ends&quot;, 11 in ends and 22 in ends and ends[-1] == 70)
+    t(&quot;one item per book per day&quot;, all(len({it[&quot;title&quot;] for it in x[&quot;items&quot;]}) == len(x[&quot;items&quot;]) for x in r[&quot;days&quot;]))
+    t(&quot;page ranges do not overlap&quot;, all(fmt_item(it) for x in r[&quot;days&quot;] for it in x[&quot;items&quot;]) and
+      [int(round(it[&quot;from&quot;])) for x in r[&quot;days&quot;] for it in x[&quot;items&quot;]][1:] == [int(round(it[&quot;to&quot;])) for x in r[&quot;days&quot;] for it in x[&quot;items&quot;]][:-1])
+    r, m = run(dict(base, max_session_minutes=20, minutes=60, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 300, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;long sessions -&gt; RP03&quot;, any(f[1] == &quot;RP03&quot; for f in r[&quot;findings&quot;]))
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 200, &quot;deadline&quot;: &quot;2026-11-08&quot;}]))
+    t(&quot;tight plan -&gt; RP04 or RP01&quot;, any(f[1] in (&quot;RP04&quot;, &quot;RP01&quot;) for f in r[&quot;findings&quot;]))
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 30}, {&quot;title&quot;: &quot;B&quot;, &quot;pages&quot;: 60, &quot;deadline&quot;: &quot;2026-11-05&quot;}]))
+    t(&quot;undated book after dated ones&quot;, r[&quot;books&quot;][-1][&quot;title&quot;] == &quot;A&quot; and r[&quot;books&quot;][-1][&quot;finish&quot;])
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;A&quot;, &quot;pages&quot;: 20, &quot;start_page&quot;: 21}]))
+    t(&quot;finished book -&gt; RP05&quot;, any(f[1] == &quot;RP05&quot; for f in r[&quot;findings&quot;]))
+    t(&quot;pages_per_hour&quot;, abs(load(dict(base, reader={&quot;pages_per_hour&quot;: 30}, books=[{&quot;title&quot;: &quot;P&quot;, &quot;pages&quot;: 30}]))[&quot;books&quot;][0][&quot;unit_min&quot;] - 2) &lt; 1e-9)
+    for bad in [dict(base, books=[]), dict(base, books=[{&quot;title&quot;: &quot;x&quot;}]), dict(base, minutes={&quot;funday&quot;: 3}, books=[{&quot;title&quot;: &quot;a&quot;, &quot;pages&quot;: 3}]),
+                dict(base, books=[{&quot;title&quot;: &quot;a&quot;, &quot;pages&quot;: 3, &quot;deadline&quot;: &quot;2026-13-01&quot;}])]:
+        try:
+            run(bad); okk = False
+        except InputError:
+            okk = True
+        t(&quot;bad input rejected: %s&quot; % (list(bad.get(&quot;minutes&quot;, {})) if isinstance(bad.get(&quot;minutes&quot;), dict) else (bad[&quot;books&quot;][0] if bad[&quot;books&quot;] else &quot;no books&quot;)), okk)
+    r, m = run(dict(base, books=[{&quot;title&quot;: &quot;Old&quot;, &quot;pages&quot;: 30, &quot;deadline&quot;: &quot;2026-10-01&quot;}]))
+    t(&quot;passed deadline -&gt; RP05, planned without deadline&quot;, any(f[1] == &quot;RP05&quot; for f in r[&quot;findings&quot;]) and r[&quot;books&quot;][0][&quot;finish&quot;])
+    rep = report(*run(dict(base, books=two)), &quot;even&quot;)
+    t(&quot;report has verdict, day table and catch-up advice&quot;, &quot;Verdict&quot; in rep and &quot;| Date |&quot; in rep and &quot;If you fall behind&quot; in rep)
+    for name, okk in tests:
+        print((&quot;PASS  &quot; if okk else &quot;FAIL  &quot;) + name)
+    n = sum(1 for _, okk in tests if okk)
+    print(&quot;%d/%d passed&quot; % (n, len(tests)))
+    return 0 if n == len(tests) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split(&quot;\n&quot;)[0])
+    ap.add_argument(&quot;plan&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--mode&quot;, choices=[&quot;even&quot;, &quot;asap&quot;], default=&quot;even&quot;)
+    ap.add_argument(&quot;--from&quot;, dest=&quot;start&quot;, help=&quot;re-plan from this date (YYYY-MM-DD)&quot;)
+    ap.add_argument(&quot;--at&quot;, action=&quot;append&quot;, default=[], help=&#x27;&quot;Title=page&quot; (or &quot;Title=minute&quot; for audiobooks): where you are now&#x27;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.plan:
+        ap.error(&quot;plan JSON required (or --self-test)&quot;)
+    try:
+        try:
+            cfg = json.load(open(a.plan, encoding=&quot;utf-8&quot;))
+        except (OSError, ValueError) as e:
+            raise InputError(str(e))
+        at = {}
+        for s in a.at:
+            if &quot;=&quot; not in s:
+                raise InputError(&quot;--at needs Title=page, got %r&quot; % s)
+            k, v = s.rsplit(&quot;=&quot;, 1)
+            try:
+                at[k.strip()] = float(v)
+            except ValueError:
+                raise InputError(&quot;--at page must be a number, got %r&quot; % v)
+        titles = {b.get(&quot;title&quot;) for b in cfg.get(&quot;books&quot;, [])} if isinstance(cfg, dict) else set()
+        for k in at:
+            if k not in titles:
+                raise InputError(&quot;--at: no book titled %r&quot; % k)
+        m = load(cfg, a.start, at)
+        r = plan(m, a.mode)
+    except (InputError, KeyError, TypeError, ValueError) as e:
+        print(&quot;error: %s&quot; % e, file=sys.stderr)
+        return 2
+    if a.json:
+        out = {&quot;books&quot;: [{&quot;title&quot;: b[&quot;title&quot;], &quot;deadline&quot;: str(b[&quot;deadline&quot;]) if b[&quot;deadline&quot;] else None, &quot;finish&quot;: str(b.get(&quot;finish&quot;)) if b.get(&quot;finish&quot;) else None,
+                          &quot;minutes_needed&quot;: round(b[&quot;need&quot;])} for b in r[&quot;all_books&quot;]],
+               &quot;days&quot;: [{&quot;date&quot;: str(x[&quot;date&quot;]), &quot;minutes&quot;: round(x[&quot;planned&quot;]), &quot;read&quot;: [fmt_item(it) for it in x[&quot;items&quot;]]} for x in r[&quot;days&quot;]],
+               &quot;findings&quot;: [{&quot;severity&quot;: s, &quot;code&quot;: c, &quot;message&quot;: msg} for s, c, msg in r[&quot;findings&quot;]]}
+        print(json.dumps(out, indent=2))
+    else:
+        print(report(r, m, a.mode))
+    return 1 if any(f[0] == &quot;high&quot; for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/reading-plan-and-page-pace-planner',TI="Reading Plan and Page Pace Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

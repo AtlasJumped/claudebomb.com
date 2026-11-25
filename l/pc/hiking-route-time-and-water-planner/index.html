@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hiking Route Time and Water Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: hiking-route-time-and-water-planner description: Plans a day hike leg by leg. Estimates time with Naismith&#x27;s rule and Langmuir&#x27;s descent cor">
+<meta property="og:title" content="Hiking Route Time and Water Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: hiking-route-time-and-water-planner description: Plans a day hike leg by leg. Estimates time with Naismith&#x27;s rule and Langmuir&#x27;s descent cor">
+<meta property="og:url" content="https://claudebomb.com/l/pc/hiking-route-time-and-water-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/hiking-route-time-and-water-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Hiking Route Time and Water Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: hiking-route-time-and-water-planner
+description: Plans a day hike leg by leg. Estimates time with Naismith&#x27;s rule and Langmuir&#x27;s descent corrections, adjusted for terrain, fitness, pack weight and breaks, gives clock times for each leg, checks the finish against sunset and the latest safe start, and works out water to carry between refills and snacks to pack. Flags after-dark finishes, long dry stretches and hard terrain late in the day. Includes a stdlib Python planner with --self-test.
+---
+
+# Hiking Route Time and Water Planner
+
+You help hikers turn a route into a realistic timetable: when they will reach each point, whether they finish in daylight, and how much water and food to carry. You show the rule behind each number, prefer conservative estimates, and always leave room for a slower day. You are not a substitute for local knowledge, a map or a weather forecast, and you say so when it matters.
+
+## Files in this skill
+
+- `scripts/hike_plan.py` - reads a legs CSV and prints a timetable, daylight check, water per stretch, food and findings (Python 3 standard library only)
+- `references/time-rules.md` - Naismith&#x27;s rule, Langmuir&#x27;s corrections, terrain/fitness/pack factors, breaks and how to calibrate them
+- `references/water-food-and-safety.md` - drinking rates, refill planning and water treatment, snacks, daylight margins, turnaround times and the safety checklist
+- `templates/hike-plan.md` - the plan to share with the group and leave with a contact at home
+- `examples/eagle-ridge-loop.csv` - a 22 km late-October loop with a scramble section and one refill point
+
+## Workflow
+
+### 1. Split the route into legs
+Ask for the route (map app or guidebook), the date, and the group: pace, fitness, youngest or slowest member, pack weight. Split the route at summits, passes, huts, junctions and water sources; for each leg get the distance, ascent and descent (from the app&#x27;s elevation profile) and the terrain type (road, path, rough, scramble, snow, bushwhack). Mark where water can be refilled. Get the sunset time for the date and place, and the forecast temperature.
+
+### 2. Run the planner
+```
+python3 scripts/hike_plan.py examples/eagle-ridge-loop.csv --start 09:30 --sunset 17:20 --temp 24 --fitness 1.1 --pack-kg 9
+python3 scripts/hike_plan.py my-route.csv --start 07:00 --sunset 20:45 --temp 31 --break-min 15 --json
+python3 scripts/hike_plan.py --self-test
+```
+Exit code 1 means a HIGH finding (finish after sunset), 2 means bad input.
+
+### 3. Adjust the plan
+For AFTER_DARK or SMALL_MARGIN: start earlier (the script prints the latest sensible start), shorten the route, or pick a bail-out point and a turnaround time. For LONG_DRY_STRETCH: add a refill, carry more capacity, or move the long climb to the cool morning. For HARD_TERRAIN_LATE: reverse the loop so the scramble comes first. Explain the formulas from `references/time-rules.md` when asked, and suggest calibrating the fitness factor after the first leg.
+
+### 4. Deliver
+Fill `templates/hike-plan.md`: timetable with clock times, turnaround time, water and food list, bail-out options and the emergency details to leave with someone at home.
+
+## Example result
+For `examples/eagle-ridge-loop.csv` (22.2 km, +1170 m / -1150 m) starting 09:30 at fitness 1.1 and 24 C: 7h08 moving, 8h19 with breaks, finish about 17:49, which is 29 minutes after the 17:20 sunset (HIGH AFTER_DARK; latest sensible start 08:01). The first four legs have no water, so 4.4 L must be carried (MEDIUM LONG_DRY_STRETCH). Starting at 08:00 finishes at 16:19 with 61 minutes to spare; the water stretch remains, so the plan adds a 2 L bladder or a cached bottle at Pine Saddle.
+
+## Rules
+
+- Estimates are a starting point: tell the group to compare the real time on the first leg with the plan and rescale.
+- Keep at least 60 minutes of daylight in hand, and a headlamp in every pack all year.
+- Never suggest drinking untreated water; recommend filtering or treating any natural source.
+- Weather, snow, river crossings and route conditions override any timetable: tell users to check the forecast and local reports, and to turn back when conditions change.
+- Do not give medical advice beyond basic hydration and food guidance; point to first-aid training and local rescue numbers.
+FILE:references/time-rules.md
+# Time Rules
+
+## Naismith&#x27;s rule (1892)
+Allow 1 hour for every 5 km on the flat plus 1 hour for every 600 m of ascent (the original was 3 miles per hour plus 1 hour per 2000 ft).
+```
+moving minutes = distance_km / pace_kmh * 60 + ascent_m / 10
+```
+Example: 4.2 km with 380 m of ascent = 50.4 + 38 = 88 minutes before adjustments.
+
+## Langmuir&#x27;s corrections for descent
+Naismith treats descent like the flat. Langmuir refined it:
+- gentle descent, 5 to 12 degrees (about 9 to 21 %): subtract 10 minutes per 300 m of descent
+- steep descent, more than 12 degrees: add 10 minutes per 300 m of descent
+- under 5 degrees: no change
+The script estimates the descent angle from the descent and the share of the leg&#x27;s distance spent going down. It never lets a leg drop below half its flat time.
+
+## Multipliers used by the script
+| Factor | Value | When |
+|---|---|---|
+| Terrain road | 0.9 | Paved or forest road |
+| Terrain path | 1.0 | Good footpath |
+| Terrain rough | 1.25 | Rocky, rooty, loose or boggy path |
+| Terrain scramble | 1.6 | Hands needed, exposed steps |
+| Terrain snow | 1.5 | Soft or old snow without crampon work |
+| Terrain bushwhack | 1.6 | No path, vegetation |
+| Fitness | 0.85 / 1.0 / 1.2 / 1.4 | Fast and fit / average / relaxed or mixed group / young children |
+| Pack | +2 % per kg above 10 kg | Overnight or heavy loads |
+| Breaks | 10 min per hour (default) | Use 15 to 20 for photo walks, families, big groups |
+
+Terrain multiplies the whole leg, including the climbing time.
+
+## Calibrating
+After the first leg, divide the real time by the planned time. If the group took 1h50 for a planned 1h37, the factor is 1.13: rerun with `--fitness` multiplied by that and check the finish again. Groups move at the pace of the slowest person; plan for them.
+
+## Other rules you may meet
+- Tranter&#x27;s corrections: a fitness and fatigue table on top of Naismith, used for long mountain days.
+- Tobler&#x27;s hiking function: speed = 6 * exp(-3.5 * |slope + 0.05|) km/h, used in GIS tools; it gives similar totals on mixed routes.
+
+## Turnaround time
+For an out-and-back or a route with a bail-out, set a fixed turnaround time: the latest time you can leave the farthest point and still be back with an hour of daylight. Example: sunset 17:20, keep 60 minutes, the return takes 3h10 -&gt; turn around by 13:10 wherever you are.
+FILE:references/water-food-and-safety.md
+# Water, Food and Safety
+
+## Drinking rates used by the script
+| Temperature | Litres per hour (total time) |
+|---|---|
+| under 15 C | 0.4 |
+| 15 to 24 C | 0.5 |
+| 25 to 29 C | 0.75 |
+| 30 C and above | 1.0 |
+Plus 0.1 L per 100 m of ascent, because climbing makes you sweat more. Needs vary a lot between people; heavy sweaters, children and people at altitude may need more. Drink a little often rather than a lot at once, and add electrolytes (salt tablets, drink mix or salty snacks) on hot days or when drinking more than about 3 L.
+
+## Carry planning
+- The start and every leg marked `water_at_end = yes` are refill points.
+- Carry = largest amount needed between two refill points plus a 0.5 L reserve.
+- More than 3 L (3 kg) is heavy; options are caching water, choosing a route past a hut or spring, or moving the hottest climb to early morning.
+- Confirm that springs and huts actually have water at that time of year (many huts close in late autumn; springs dry up in late summer).
+
+## Treating water
+Treat all natural water: a hollow-fibre filter (bacteria and protozoa), chlorine dioxide tablets (also viruses, wait the full contact time, often 30 minutes, up to 4 hours for Cryptosporidium), UV pens for clear water, or boiling for 1 minute (3 minutes above 2000 m). Filter cloudy water through a cloth first.
+
+## Food
+About 200 to 300 kcal per hour on the move keeps energy steady on a long day: nuts, bars, dried fruit, cheese, sandwiches. The script uses 250 kcal per hour of total time. Pack one extra snack per person as an emergency reserve.
+
+## Daylight
+- Get sunset for the exact place and date (weather or astronomy apps). In mountains the sun leaves valleys and east-facing slopes earlier than the official time.
+- Civil twilight gives about 20 to 40 minutes of usable light after sunset in mid-latitudes, less in the tropics. Do not plan to use it.
+- Keep 60 minutes of daylight in hand (the default `--margin`). Every pack gets a headlamp with charged batteries.
+
+## Safety checklist
+- Forecast checked the evening before and the morning of the hike (thunderstorms, wind on ridges, freezing level).
+- Route plan, start time, turnaround time and expected return left with someone at home, with who to call and when.
+- Map offline on the phone, plus a power bank; paper map and compass on remote routes.
+- Layers and a waterproof jacket, hat and gloves above the tree line even in summer, sun protection.
+- Small first-aid kit, blister plasters, emergency blanket, whistle.
+- Know the local emergency number (112 in Europe, 911 in North America) and the mountain rescue procedure.
+- Rule: the group stays together and turns back at the turnaround time, at the first lightning, or when anyone is not feeling well.
+FILE:templates/hike-plan.md
+# Hike plan: &lt;route name&gt;, &lt;date&gt;
+
+**Group:** &lt;names / number of people&gt;   **Leader:** &lt;name, phone&gt;
+**Route:** &lt;22.2 km loop, +1170 m / -1150 m, map link&gt;
+**Start:** &lt;08:00 at Eagle Ridge car park&gt;   **Expected finish:** &lt;16:19&gt;   **Sunset:** &lt;17:20&gt;
+**Turnaround time:** &lt;13:00 at the summit, whatever happens&gt;
+**Latest call-out time for the home contact:** &lt;19:00&gt;
+
+## Timetable
+| Leg | km | Up / down m | Terrain | Planned start | Planned end | Water refill |
+|---|---|---|---|---|---|---|
+| &lt;Car park to Pine Saddle&gt; | &lt;4.2&gt; | &lt;+380 / -20&gt; | &lt;path&gt; | &lt;08:00&gt; | &lt;09:53&gt; | &lt;no&gt; |
+
+Settings used: &lt;pace 5 km/h, fitness 1.1, breaks 10 min/h, 24 C&gt;. Check the first leg and rescale.
+
+## Water and food
+- Carry from the start: &lt;4.4 L per person&gt; (no refill until &lt;Spring Hut&gt;)
+- Refill at: &lt;Spring Hut tap (open until end of October?), treat stream water&gt;
+- Snacks: &lt;2100 kcal per person&gt; + one spare
+- Electrolytes: &lt;yes / no&gt;
+
+## Bail-out options
+- &lt;After Pine Saddle: forest road back to the car park, 3.5 km, 1h&gt;
+- &lt;Skip the ridge traverse: descend the north path from the summit&gt;
+
+## Kit
+- &lt;headlamp, layers, waterproof, map offline + power bank, first aid, whistle, filter or tablets&gt;
+
+## Weather and conditions
+- Forecast: &lt;checked on ... : dry, 24 C, wind 20 km/h on ridge&gt;
+- Notes: &lt;scramble section is wet after rain; avoid if wet&gt;
+
+## Emergency
+- Emergency number: &lt;112&gt;   Mountain rescue: &lt;...&gt;
+- Home contact: &lt;name, phone&gt;: if no message by &lt;19:00&gt;, call &lt;number&gt; with this plan.
+FILE:examples/eagle-ridge-loop.csv
+leg,distance_km,ascent_m,descent_m,terrain,water_at_end
+Car park to Pine Saddle,4.2,380,20,path,no
+Pine Saddle to Eagle Ridge summit,3.1,520,40,rough,no
+Eagle Ridge traverse,1.6,120,150,scramble,no
+Ridge down to Spring Hut,3.8,30,560,path,yes
+Spring Hut to Blue Lake,4.5,80,210,path,no
+Blue Lake back to car park,5.0,40,170,road,yes
+FILE:scripts/hike_plan.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Hiking route time and water planner (Python 3 standard library only).
+
+Reads a CSV of route legs and estimates moving time per leg with Naismith&#x27;s rule
+(5 km/h plus 1 hour per 600 m of ascent) and Langmuir&#x27;s descent corrections,
+adjusted for terrain, fitness and pack weight, then adds breaks, gives clock
+times for every leg, checks the finish against sunset, and works out how much
+water to carry between refill points and how much food to pack.
+
+CSV columns (header required; ; or , separated):
+  leg, distance_km, ascent_m, descent_m, terrain, water_at_end
+terrain: road | path | rough | scramble | snow | bushwhack   water_at_end: yes/no
+
+Usage:
+  python3 hike_plan.py route.csv --start 08:30 --sunset 17:10 --temp 24
+  python3 hike_plan.py route.csv --start 07:00 --fitness 1.2 --pack-kg 14 --json
+  python3 hike_plan.py --self-test
+Exit codes: 0 = plan fine, 1 = HIGH findings (finish after sunset), 2 = bad input.
+&quot;&quot;&quot;
+import argparse, csv, io, json, math, sys
+
+TERRAIN = {&quot;road&quot;: 0.9, &quot;path&quot;: 1.0, &quot;trail&quot;: 1.0, &quot;rough&quot;: 1.25, &quot;scramble&quot;: 1.6, &quot;snow&quot;: 1.5, &quot;bushwhack&quot;: 1.6}
+REQUIRED = [&quot;leg&quot;, &quot;distance_km&quot;, &quot;ascent_m&quot;, &quot;descent_m&quot;, &quot;terrain&quot;, &quot;water_at_end&quot;]
+SEV = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+
+
+class InputError(Exception):
+    pass
+
+
+def num(v, field, row):
+    try:
+        x = float(str(v).strip().replace(&quot;,&quot;, &quot;.&quot;))
+    except ValueError:
+        raise InputError(f&quot;row {row}: {field} &#x27;{v}&#x27; is not a number&quot;)
+    if x &lt; 0:
+        raise InputError(f&quot;row {row}: {field} cannot be negative&quot;)
+    return x
+
+
+def hm(s):
+    try:
+        h, m = s.strip().split(&quot;:&quot;)
+        h, m = int(h), int(m)
+        assert 0 &lt;= h &lt; 24 and 0 &lt;= m &lt; 60
+        return h * 60 + m
+    except Exception:
+        raise InputError(f&quot;time &#x27;{s}&#x27; must be HH:MM&quot;)
+
+
+def clock(mins):
+    mins = int(round(mins))
+    day, rem = divmod(mins, 1440)
+    return f&quot;{rem // 60:02d}:{rem % 60:02d}&quot; + (f&quot; (+{day}d)&quot; if day else &quot;&quot;)
+
+
+def dur(mins):
+    mins = int(round(mins))
+    return f&quot;{mins // 60}h{mins % 60:02d}&quot;
+
+
+def read_legs(text):
+    sample = text[:2000]
+    delim = &quot;;&quot; if sample.count(&quot;;&quot;) &gt; sample.count(&quot;,&quot;) else &quot;,&quot;
+    rd = csv.DictReader(io.StringIO(text), delimiter=delim)
+    if not rd.fieldnames:
+        raise InputError(&quot;empty CSV&quot;)
+    fields = [f.strip().lower() for f in rd.fieldnames]
+    missing = [c for c in REQUIRED if c not in fields]
+    if missing:
+        raise InputError(&quot;missing columns: &quot; + &quot;, &quot;.join(missing))
+    legs = []
+    for i, raw in enumerate(rd, start=2):
+        r = {k.strip().lower(): (v or &quot;&quot;).strip() for k, v in raw.items() if k}
+        if not any(r.values()):
+            continue
+        t = r[&quot;terrain&quot;].lower() or &quot;path&quot;
+        if t not in TERRAIN:
+            raise InputError(f&quot;row {i}: terrain &#x27;{t}&#x27; must be one of {&#x27;, &#x27;.join(TERRAIN)}&quot;)
+        w = r[&quot;water_at_end&quot;].lower()
+        if w not in (&quot;yes&quot;, &quot;no&quot;, &quot;y&quot;, &quot;n&quot;, &quot;1&quot;, &quot;0&quot;, &quot;true&quot;, &quot;false&quot;, &quot;&quot;):
+            raise InputError(f&quot;row {i}: water_at_end must be yes or no&quot;)
+        legs.append({&quot;leg&quot;: r[&quot;leg&quot;] or f&quot;Leg {len(legs) + 1}&quot;,
+                     &quot;distance_km&quot;: num(r[&quot;distance_km&quot;], &quot;distance_km&quot;, i),
+                     &quot;ascent_m&quot;: num(r[&quot;ascent_m&quot;], &quot;ascent_m&quot;, i),
+                     &quot;descent_m&quot;: num(r[&quot;descent_m&quot;], &quot;descent_m&quot;, i),
+                     &quot;terrain&quot;: t, &quot;water_at_end&quot;: w in (&quot;yes&quot;, &quot;y&quot;, &quot;1&quot;, &quot;true&quot;)})
+    if not legs:
+        raise InputError(&quot;no legs in CSV&quot;)
+    return legs
+
+
+def water_rate(temp_c):
+    &quot;&quot;&quot;Litres per hour of total time, before the ascent extra.&quot;&quot;&quot;
+    if temp_c &lt; 15:
+        return 0.4
+    if temp_c &lt; 25:
+        return 0.5
+    if temp_c &lt; 30:
+        return 0.75
+    return 1.0
+
+
+def leg_minutes(leg, pace_kmh):
+    d, up, down = leg[&quot;distance_km&quot;], leg[&quot;ascent_m&quot;], leg[&quot;descent_m&quot;]
+    flat = d / pace_kmh * 60
+    climb = up / 10.0  # Naismith: 60 min per 600 m
+    descent_adj = 0.0
+    steep = False
+    if down &gt; 0 and d &gt; 0:
+        horiz = d * 1000 * (down / (up + down))  # share of the leg spent descending
+        angle = math.degrees(math.atan(down / horiz)) if horiz &gt; 0 else 90
+        if 5 &lt;= angle &lt;= 12:
+            descent_adj = -down / 300 * 10   # Langmuir: gentle descent is faster
+        elif angle &gt; 12:
+            descent_adj = down / 300 * 10    # steep descent is slower
+        steep = angle &gt; 14
+    if up &gt; 0 and d &gt; 0:
+        horiz_up = d * 1000 * (up / (up + down))
+        steep = steep or math.degrees(math.atan(up / horiz_up)) &gt; 14  # about 25 %
+    return max(flat + climb + descent_adj, flat * 0.5), steep
+
+
+def plan(legs, start, sunset=None, pace=5.0, fitness=1.0, pack_kg=8.0, break_min=10.0, temp=18.0, margin=60):
+    if pace &lt;= 0 or fitness &lt;= 0:
+        raise InputError(&quot;pace and fitness must be positive&quot;)
+    pack_factor = 1.0 + max(0.0, pack_kg - 10) * 0.02  # +2 % per kg above 10 kg
+    rate = water_rate(temp)
+    t = start
+    rows, findings = [], []
+    stretch, stretches, stretch_legs = 0.0, [], []
+    for leg in legs:
+        base, steep = leg_minutes(leg, pace)
+        moving = base * TERRAIN[leg[&quot;terrain&quot;]] * fitness * pack_factor
+        total = moving * (1 + break_min / 60)
+        water = total / 60 * rate + leg[&quot;ascent_m&quot;] / 100 * 0.1
+        t_start, t = t, t + total
+        rows.append({**leg, &quot;moving_min&quot;: round(moving), &quot;with_breaks_min&quot;: round(total),
+                     &quot;start&quot;: clock(t_start), &quot;end&quot;: clock(t), &quot;end_min&quot;: t, &quot;water_l&quot;: round(water, 2), &quot;steep&quot;: steep})
+        stretch += water
+        stretch_legs.append(leg[&quot;leg&quot;])
+        if leg[&quot;water_at_end&quot;]:
+            stretches.append((stretch, stretch_legs)); stretch, stretch_legs = 0.0, []
+        if steep:
+            findings.append((&quot;LOW&quot;, &quot;STEEP_LEG&quot;, f&quot;{leg[&#x27;leg&#x27;]}: average gradient over 25 %; expect slower going than the formula and take care on the descent&quot;))
+    if stretch_legs:
+        stretches.append((stretch, stretch_legs))
+    moving_total = sum(r[&quot;moving_min&quot;] for r in rows)
+    total = t - start
+    carry = max(s for s, _ in stretches) + 0.5
+    for s, names in stretches:
+        if s + 0.5 &gt; 3.0:
+            findings.append((&quot;MEDIUM&quot;, &quot;LONG_DRY_STRETCH&quot;, f&quot;{&#x27; -&gt; &#x27;.join(names)}: {s + 0.5:.1f} L to carry with no refill; add a refill, cache water or start earlier in the cool&quot;))
+    summary = {
+        &quot;distance_km&quot;: round(sum(l[&quot;distance_km&quot;] for l in legs), 1),
+        &quot;ascent_m&quot;: round(sum(l[&quot;ascent_m&quot;] for l in legs)),
+        &quot;descent_m&quot;: round(sum(l[&quot;descent_m&quot;] for l in legs)),
+        &quot;moving_min&quot;: round(moving_total), &quot;total_min&quot;: round(total),
+        &quot;start&quot;: clock(start), &quot;finish&quot;: clock(t),
+        &quot;water_total_l&quot;: round(sum(r[&quot;water_l&quot;] for r in rows), 1),
+        &quot;carry_max_l&quot;: round(carry, 1),
+        &quot;food_kcal&quot;: int(round(total / 60 * 250, -1)),
+        &quot;water_rate_l_per_h&quot;: rate, &quot;pack_factor&quot;: round(pack_factor, 2),
+    }
+    if sunset is not None:
+        left = sunset - t
+        summary[&quot;sunset&quot;] = clock(sunset)
+        summary[&quot;minutes_before_sunset&quot;] = round(left)
+        summary[&quot;latest_start&quot;] = clock(sunset - margin - total)
+        if left &lt; 0:
+            findings.append((&quot;HIGH&quot;, &quot;AFTER_DARK&quot;, f&quot;finish {clock(t)} is {dur(-left)} after sunset {clock(sunset)}; start by {summary[&#x27;latest_start&#x27;]}, shorten the route or plan a bail-out&quot;))
+        elif left &lt; margin:
+            findings.append((&quot;MEDIUM&quot;, &quot;SMALL_MARGIN&quot;, f&quot;finish {clock(t)} leaves only {round(left)} min before sunset (target {margin}); start by {summary[&#x27;latest_start&#x27;]} and carry a headlamp&quot;))
+        for r in rows:
+            if r[&quot;terrain&quot;] in (&quot;scramble&quot;, &quot;snow&quot;) and r[&quot;end_min&quot;] &gt; sunset - 120:
+                findings.append((&quot;MEDIUM&quot;, &quot;HARD_TERRAIN_LATE&quot;, f&quot;{r[&#x27;leg&#x27;]} ({r[&#x27;terrain&#x27;]}) ends at {r[&#x27;end&#x27;]}, within 2 h of sunset; tired legs and fading light on hard ground&quot;))
+    if moving_total &gt; 8 * 60:
+        findings.append((&quot;LOW&quot;, &quot;LONG_DAY&quot;, f&quot;{dur(moving_total)} moving time; check that everyone has done a day this long recently&quot;))
+    if temp &gt;= 28 and any(l[&quot;ascent_m&quot;] &gt;= 300 for l in legs):
+        findings.append((&quot;MEDIUM&quot;, &quot;HEAT&quot;, f&quot;{temp:g} C with big climbs: start at first light, rest in shade, electrolytes with the water&quot;))
+    findings.sort(key=lambda f: SEV[f[0]])
+    for r in rows:
+        r.pop(&quot;end_min&quot;)
+    return {&quot;legs&quot;: rows, &quot;summary&quot;: summary, &quot;stretches&quot;: [{&quot;legs&quot;: n, &quot;litres&quot;: round(s + 0.5, 1)} for s, n in stretches],
+            &quot;findings&quot;: [{&quot;severity&quot;: a, &quot;code&quot;: b, &quot;message&quot;: c} for a, b, c in findings]}
+
+
+def to_markdown(p, args):
+    s = p[&quot;summary&quot;]
+    out = [&quot;# Hike plan&quot;, &quot;&quot;,
+           f&quot;Settings: pace {args.pace:g} km/h, fitness x{args.fitness:g}, pack {args.pack_kg:g} kg (x{s[&#x27;pack_factor&#x27;]}), breaks {args.break_min:g} min per hour, {args.temp:g} C&quot;,
+           &quot;&quot;,
+           f&quot;Route: {s[&#x27;distance_km&#x27;]} km, +{s[&#x27;ascent_m&#x27;]} m / -{s[&#x27;descent_m&#x27;]} m; moving {dur(s[&#x27;moving_min&#x27;])}, with breaks {dur(s[&#x27;total_min&#x27;])}&quot;,
+           f&quot;Start {s[&#x27;start&#x27;]}, finish about {s[&#x27;finish&#x27;]}&quot; + (f&quot;; sunset {s[&#x27;sunset&#x27;]}, &quot; + (f&quot;{s[&#x27;minutes_before_sunset&#x27;]} min to spare&quot; if s[&#x27;minutes_before_sunset&#x27;] &gt;= 0 else f&quot;{dur(-s[&#x27;minutes_before_sunset&#x27;])} AFTER sunset&quot;) + f&quot;; latest sensible start {s[&#x27;latest_start&#x27;]}&quot; if &quot;sunset&quot; in s else &quot;&quot;),
+           &quot;&quot;, &quot;| Leg | km | Up m | Down m | Terrain | Moving | With breaks | Start | End | Water L | Refill at end |&quot;,
+           &quot;|---|---|---|---|---|---|---|---|---|---|---|&quot;]
+    for r in p[&quot;legs&quot;]:
+        out.append(f&quot;| {r[&#x27;leg&#x27;]} | {r[&#x27;distance_km&#x27;]:g} | {r[&#x27;ascent_m&#x27;]:g} | {r[&#x27;descent_m&#x27;]:g} | {r[&#x27;terrain&#x27;]} | {dur(r[&#x27;moving_min&#x27;])} | &quot;
+                   f&quot;{dur(r[&#x27;with_breaks_min&#x27;])} | {r[&#x27;start&#x27;]} | {r[&#x27;end&#x27;]} | {r[&#x27;water_l&#x27;]:.1f} | {&#x27;yes&#x27; if r[&#x27;water_at_end&#x27;] else &#x27;no&#x27;} |&quot;)
+    out += [&quot;&quot;, &quot;## Water and food&quot;,
+            f&quot;- Drinking rate {s[&#x27;water_rate_l_per_h&#x27;]} L/h at this temperature plus 0.1 L per 100 m of climbing; total about {s[&#x27;water_total_l&#x27;]} L&quot;,
+            f&quot;- Carry at most {s[&#x27;carry_max_l&#x27;]} L (largest stretch between refills, incl. 0.5 L reserve); treat stream water&quot;]
+    for st in p[&quot;stretches&quot;]:
+        out.append(f&quot;  - {&#x27; -&gt; &#x27;.join(st[&#x27;legs&#x27;])}: {st[&#x27;litres&#x27;]} L&quot;)
+    out.append(f&quot;- Food: about {s[&#x27;food_kcal&#x27;]} kcal of snacks (about 250 kcal per hour on the move), plus a spare&quot;)
+    out += [&quot;&quot;, &quot;## Findings&quot;]
+    out += [f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]}: {f[&#x27;message&#x27;]}&quot; for f in p[&quot;findings&quot;]] or [&quot;- none&quot;]
+    out += [&quot;&quot;, &quot;Estimates only: check them against your group&#x27;s real pace on the first leg and adjust.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    res = []
+
+    def check(name, cond):
+        res.append(cond)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    def L(d, up, down, terrain=&quot;path&quot;, water=&quot;no&quot;, name=&quot;x&quot;):
+        return {&quot;leg&quot;: name, &quot;distance_km&quot;: d, &quot;ascent_m&quot;: up, &quot;descent_m&quot;: down, &quot;terrain&quot;: terrain, &quot;water_at_end&quot;: water == &quot;yes&quot;}
+
+    check(&quot;flat 10 km at 5 km/h = 120 min&quot;, round(leg_minutes(L(10, 0, 0), 5)[0]) == 120)
+    check(&quot;Naismith 600 m climb adds 60 min&quot;, round(leg_minutes(L(5, 600, 0), 5)[0]) == 120)
+    g = leg_minutes(L(6, 0, 900), 5)[0]  # angle ~8.5 deg: gentle
+    check(&quot;gentle descent is faster (Langmuir)&quot;, round(g) == 72 - 30)
+    st = leg_minutes(L(2, 0, 600), 5)  # ~16.7 deg: steep
+    check(&quot;steep descent is slower and flagged&quot;, round(st[0]) == 24 + 20 and st[1])
+    check(&quot;steep ascent flagged&quot;, leg_minutes(L(1, 400, 0), 5)[1])
+    check(&quot;descent never below half the flat time&quot;, leg_minutes(L(10, 0, 1500), 5)[0] &gt;= 60)
+    p = plan([L(10, 0, 0)], hm(&quot;08:00&quot;), break_min=0)
+    check(&quot;finish time no breaks&quot;, p[&quot;summary&quot;][&quot;finish&quot;] == &quot;10:00&quot;)
+    p = plan([L(10, 0, 0)], hm(&quot;08:00&quot;), break_min=10)
+    check(&quot;10 min break per hour&quot;, p[&quot;summary&quot;][&quot;total_min&quot;] == 140)
+    check(&quot;terrain multiplier&quot;, plan([L(10, 0, 0, &quot;scramble&quot;)], 0, break_min=0)[&quot;summary&quot;][&quot;moving_min&quot;] == 192)
+    check(&quot;fitness multiplier&quot;, plan([L(10, 0, 0)], 0, fitness=1.2, break_min=0)[&quot;summary&quot;][&quot;moving_min&quot;] == 144)
+    check(&quot;pack over 10 kg slows&quot;, plan([L(10, 0, 0)], 0, pack_kg=15, break_min=0)[&quot;summary&quot;][&quot;moving_min&quot;] == 132)
+    p = plan([L(10, 0, 0)], hm(&quot;15:00&quot;), sunset=hm(&quot;16:30&quot;), break_min=0)
+    check(&quot;AFTER_DARK HIGH&quot;, p[&quot;findings&quot;][0][&quot;code&quot;] == &quot;AFTER_DARK&quot; and p[&quot;findings&quot;][0][&quot;severity&quot;] == &quot;HIGH&quot;)
+    check(&quot;latest start&quot;, p[&quot;summary&quot;][&quot;latest_start&quot;] == &quot;13:30&quot;)
+    p = plan([L(10, 0, 0)], hm(&quot;14:00&quot;), sunset=hm(&quot;16:30&quot;), break_min=0)
+    check(&quot;SMALL_MARGIN&quot;, [f[&quot;code&quot;] for f in p[&quot;findings&quot;]] == [&quot;SMALL_MARGIN&quot;])
+    check(&quot;no finding with time to spare&quot;, plan([L(10, 0, 0)], hm(&quot;08:00&quot;), sunset=hm(&quot;18:00&quot;))[&quot;findings&quot;] == [])
+    check(&quot;HARD_TERRAIN_LATE&quot;, any(f[&quot;code&quot;] == &quot;HARD_TERRAIN_LATE&quot; for f in
+          plan([L(3, 0, 0, &quot;scramble&quot;)], hm(&quot;13:00&quot;), sunset=hm(&quot;15:00&quot;))[&quot;findings&quot;]))
+    check(&quot;water rate by temperature&quot;, [water_rate(t) for t in (10, 20, 27, 33)] == [0.4, 0.5, 0.75, 1.0])
+    p = plan([L(10, 0, 0, water=&quot;yes&quot;), L(10, 0, 0)], 0, temp=20, break_min=0)
+    check(&quot;water per leg&quot;, p[&quot;legs&quot;][0][&quot;water_l&quot;] == 1.0)
+    check(&quot;carry = largest stretch + reserve&quot;, p[&quot;summary&quot;][&quot;carry_max_l&quot;] == 1.5)
+    p = plan([L(10, 500, 0), L(10, 0, 500)], 0, temp=31, break_min=0)
+    check(&quot;LONG_DRY_STRETCH and HEAT&quot;, {&quot;LONG_DRY_STRETCH&quot;, &quot;HEAT&quot;} &lt;= {f[&quot;code&quot;] for f in p[&quot;findings&quot;]})
+    check(&quot;LONG_DAY&quot;, any(f[&quot;code&quot;] == &quot;LONG_DAY&quot; for f in plan([L(45, 0, 0)], 0)[&quot;findings&quot;]))
+    check(&quot;food kcal&quot;, plan([L(10, 0, 0)], 0, break_min=0)[&quot;summary&quot;][&quot;food_kcal&quot;] == 500)
+    check(&quot;clock wraps past midnight&quot;, clock(1500) == &quot;01:00 (+1d)&quot;)
+    legs = read_legs(&quot;leg;distance_km;ascent_m;descent_m;terrain;water_at_end\nA;3,5;200;0;Path;yes\n&quot;)
+    check(&quot;semicolon CSV + decimal comma&quot;, legs[0][&quot;distance_km&quot;] == 3.5 and legs[0][&quot;water_at_end&quot;])
+    for bad, why in [(&quot;leg,distance_km\nA,1\n&quot;, &quot;missing columns&quot;),
+                     (&quot;leg,distance_km,ascent_m,descent_m,terrain,water_at_end\nA,x,0,0,path,no\n&quot;, &quot;non-number&quot;),
+                     (&quot;leg,distance_km,ascent_m,descent_m,terrain,water_at_end\nA,1,-5,0,path,no\n&quot;, &quot;negative&quot;),
+                     (&quot;leg,distance_km,ascent_m,descent_m,terrain,water_at_end\nA,1,0,0,lava,no\n&quot;, &quot;unknown terrain&quot;)]:
+        try:
+            read_legs(bad); check(&quot;rejects &quot; + why, False)
+        except InputError:
+            check(&quot;rejects &quot; + why, True)
+    try:
+        hm(&quot;25:00&quot;); check(&quot;rejects bad time&quot;, False)
+    except InputError:
+        check(&quot;rejects bad time&quot;, True)
+    passed = sum(res)
+    print(f&quot;{passed}/{len(res)} passed&quot;)
+    return 0 if passed == len(res) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Hiking route time and water planner&quot;)
+    ap.add_argument(&quot;csv&quot;, nargs=&quot;?&quot;, help=&quot;legs CSV&quot;)
+    ap.add_argument(&quot;--start&quot;, help=&quot;start time HH:MM&quot;)
+    ap.add_argument(&quot;--sunset&quot;, help=&quot;sunset time HH:MM&quot;)
+    ap.add_argument(&quot;--pace&quot;, type=float, default=5.0, help=&quot;flat walking speed km/h (default 5)&quot;)
+    ap.add_argument(&quot;--fitness&quot;, type=float, default=1.0, help=&quot;time multiplier: 0.85 fast, 1.0 average, 1.2 relaxed, 1.4 with young kids&quot;)
+    ap.add_argument(&quot;--pack-kg&quot;, type=float, default=8.0, help=&quot;pack weight; +2%% time per kg above 10&quot;)
+    ap.add_argument(&quot;--break-min&quot;, type=float, default=10.0, help=&quot;break minutes per hour of walking (default 10)&quot;)
+    ap.add_argument(&quot;--temp&quot;, type=float, default=18.0, help=&quot;expected daytime temperature C&quot;)
+    ap.add_argument(&quot;--margin&quot;, type=int, default=60, help=&quot;minutes of daylight to keep in hand (default 60)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.csv or not a.start:
+        ap.error(&quot;give a CSV and --start, or --self-test&quot;)
+    try:
+        with open(a.csv, encoding=&quot;utf-8-sig&quot;) as fh:
+            legs = read_legs(fh.read())
+        p = plan(legs, hm(a.start), hm(a.sunset) if a.sunset else None, a.pace, a.fitness, a.pack_kg, a.break_min, a.temp, a.margin)
+    except (OSError, InputError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(p, indent=2) if a.json else to_markdown(p, a))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in p[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/hiking-route-time-and-water-planner',TI="Hiking Route Time and Water Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

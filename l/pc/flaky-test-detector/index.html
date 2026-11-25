@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flaky Test Detector | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: flaky-test-detector description: Finds flaky tests from repeated CI runs: parses JUnit XML or a CSV run history, flags tests that both pass ">
+<meta property="og:title" content="Flaky Test Detector | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: flaky-test-detector description: Finds flaky tests from repeated CI runs: parses JUnit XML or a CSV run history, flags tests that both pass ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/flaky-test-detector/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/flaky-test-detector/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Flaky Test Detector</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: flaky-test-detector
+description: Finds flaky tests from repeated CI runs: parses JUnit XML or a CSV run history, flags tests that both pass and fail (confirmed when on the same commit), ranks them by flip and failure rate, and suggests likely causes and fixes. Use when CI is &quot;randomly red&quot;, before adding retries, or triaging a quarantine list. Includes a stdlib Python detector with --self-test.
+---
+
+# Flaky Test Detector
+
+You help engineering teams separate genuinely broken tests from flaky ones. You read results from several CI runs, find tests whose outcome changes without a code change, rank them by how much pain they cause, and propose a concrete fix or quarantine plan for each. You never &quot;fix&quot; flakiness by just adding retries, and you never call a test flaky without evidence from at least two runs that disagree.
+
+## Files in this skill
+
+- `scripts/flaky_tests.py` - parses JUnit XML files (one per run) or a CSV history and prints a ranked flakiness table or JSON (Python 3 standard library only)
+- `references/flakiness-causes.md` - common root causes with symptoms and fixes
+- `references/junit-and-history-formats.md` - how to export JUnit XML and CSV history from popular runners and CI systems
+- `templates/flaky-report.md` - report for a PR comment, issue, or weekly CI health review
+- `examples/test-history.csv` - sample run history with a same-commit flake
+
+## Workflow
+
+### 1. Collect evidence
+Ask for, or help produce:
+- JUnit XML from at least 3 runs of the same suite (CI artifacts, or a local loop such as running the suite 10 times)
+- Or a CSV with `run_id,test,status` and, ideally, `commit` and `duration_s`
+- Context: runner (pytest, Jest, JUnit, Go test, RSpec), parallelism, retries already enabled, shared services (DB, browser, network)
+
+If only one run is available, explain that flakiness cannot be proven and suggest a rerun loop on an unchanged commit.
+
+### 2. Run the detector
+```
+python3 scripts/flaky_tests.py run1.xml run2.xml run3.xml
+python3 scripts/flaky_tests.py --csv examples/test-history.csv --only-flaky
+python3 scripts/flaky_tests.py --csv history.csv --json
+python3 scripts/flaky_tests.py --self-test
+```
+Exit code 1 means at least one flaky test was found (handy as a CI health gate); 2 means bad input.
+
+### 3. Classify
+- **flaky_confirmed**: passed and failed on the same commit. Strongest evidence; fix first.
+- **flaky**: mixed results across runs, commit unknown or different. Check whether the code changed between runs.
+- **always_failing**: a real failure, not flakiness. Route to the owner as a bug.
+- **stable** / **insufficient_data**: no action, or collect more runs.
+
+Use `flip_rate` (how often the result changes between consecutive runs) and `fail_rate` together. A high `duration_spread` hints at timeouts, network calls, or resource contention.
+
+### 4. Diagnose
+For each flaky test, read the test code and failure messages, then match symptoms against `references/flakiness-causes.md`: timing and sleeps, test order dependence, shared state, time zones and clocks, randomness without seeds, network, concurrency, resource limits.
+
+### 5. Recommend
+For each test give: likely cause, evidence, a specific fix (for example &quot;replace sleep(2) with waiting for the order status event&quot;), an owner, and whether to quarantine temporarily. Fill `templates/flaky-report.md`.
+
+## Rules
+
+- Retries are a temporary bandage with an expiry date, never the fix.
+- Quarantined tests need an owner and a ticket; list them in the report.
+- Do not delete a flaky test without the owner&#x27;s agreement.
+- Keep statistics honest: say how many runs the conclusion is based on.
+- Never paste secrets or full logs with tokens into reports; trim to the relevant assertion.
+FILE:references/flakiness-causes.md
+# Common causes of flaky tests
+
+| Cause | Typical symptoms | Fix |
+|---|---|---|
+| Fixed sleeps and timing | Fails more on busy CI agents; duration spread is high | Wait for a condition or event with a timeout instead of `sleep` |
+| Test order dependence | Passes alone, fails in the full suite or with random order | Reset shared state in setup/teardown; run with random order to reproduce |
+| Shared mutable state | Globals, singletons, caches, env vars leak between tests | Isolate fixtures; restore env; avoid module-level state |
+| Shared external resources | Same DB rows, ports, temp files, or queues used by parallel workers | Unique names per worker; transactions rolled back per test; random free ports |
+| Clock and time zone | Fails near midnight, month end, DST changes, or on agents in other zones | Freeze or inject the clock; use UTC; avoid &quot;now&quot; in assertions |
+| Unseeded randomness | Rare failures with odd data | Seed generators and print the seed on failure |
+| Network and third-party calls | Timeouts, 429s, DNS errors | Mock or record responses; keep real calls in a separate, non-blocking suite |
+| Concurrency and async | Race conditions, unawaited promises, threads not joined | Await everything; use proper synchronization; add deterministic hooks |
+| Resource limits | OOM, file handle exhaustion, slow containers | Lower parallelism; clean up resources; raise limits deliberately |
+| UI and browser tests | Element not found, animation timing, viewport differences | Use stable selectors and auto-waiting locators; disable animations in test mode |
+| Floating point and ordering | Assertion on unordered collections or exact floats | Compare sorted values; use tolerance |
+
+## Triage questions
+1. Does it fail on the same commit when rerun? (flaky_confirmed)
+2. Does it fail alone, or only with other tests?
+3. Does failure correlate with a specific agent, time of day, or parallel worker?
+4. Is the failure message always the same?
+5. Did retries hide it before? Check retry logs.
+FILE:references/junit-and-history-formats.md
+# Getting JUnit XML and run history
+
+## JUnit XML per run
+- pytest: `pytest --junitxml=reports/run-$N.xml`
+- Jest: `jest-junit` reporter (`JEST_JUNIT_OUTPUT_FILE=reports/run-$N.xml`)
+- Go: `go test -v ./... 2&gt;&amp;1 | go-junit-report &gt; reports/run-$N.xml`
+- JUnit / Maven Surefire: `target/surefire-reports/*.xml` (merge per run)
+- RSpec: `rspec_junit_formatter`
+- Playwright: `--reporter=junit`
+
+Rerun loop on an unchanged commit:
+```
+for N in $(seq 1 10); do pytest --junitxml=reports/run-$N.xml || true; done
+python3 scripts/flaky_tests.py reports/run-*.xml
+```
+Pass files in run order (glob order is fine if names sort correctly, e.g. run-01..run-10).
+
+## How the script reads JUnit
+- Test id = `classname::name`
+- `&lt;failure&gt;` or `&lt;error&gt;` child = fail; `&lt;skipped&gt;` = skip; otherwise pass
+- `time` attribute = duration in seconds
+
+## CSV history
+Columns: `run_id,test,status` plus optional `commit,duration_s`. Accepted statuses: pass/passed/ok/success, fail/failed/failure/error/broken, skip/skipped/ignored/pending. Rows must be in run order.
+
+Export ideas: CI test analytics APIs, a small job that appends one row per test per run to a CSV artifact, or a query against your test results database.
+FILE:templates/flaky-report.md
+# Flaky Test Report
+
+**Suite:** &lt;name&gt;  **Runs analyzed:** &lt;n&gt; (&lt;date range or commits&gt;)  **Runner:** &lt;pytest / Jest / ...&gt;
+
+## Summary
+- flaky_confirmed: &lt;n&gt;  flaky: &lt;n&gt;  always_failing: &lt;n&gt;  stable: &lt;n&gt;  insufficient_data: &lt;n&gt;
+- Retries currently enabled: &lt;yes/no, count&gt;
+
+## Fix first
+| Test | Class | Fail rate | Flip rate | Likely cause | Evidence | Proposed fix | Owner | Quarantine? |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | | |
+
+## Real failures (not flaky)
+| Test | Failing since | Message (trimmed) | Owner |
+|---|---|---|---|
+
+## Quarantine list
+| Test | Ticket | Owner | Expiry date |
+|---|---|---|---|
+
+## Next steps
+1. 
+2. 
+FILE:examples/test-history.csv
+run_id,test,status,commit,duration_s
+1,checkout::test_apply_coupon,pass,a1b2c3,0.42
+1,checkout::test_payment_timeout,pass,a1b2c3,1.10
+1,search::test_autocomplete,pass,a1b2c3,0.31
+1,profile::test_avatar_upload,failed,a1b2c3,2.05
+2,checkout::test_apply_coupon,pass,a1b2c3,0.40
+2,checkout::test_payment_timeout,failed,a1b2c3,5.02
+2,search::test_autocomplete,pass,a1b2c3,0.29
+2,profile::test_avatar_upload,failed,a1b2c3,2.10
+3,checkout::test_apply_coupon,pass,d4e5f6,0.44
+3,checkout::test_payment_timeout,pass,d4e5f6,1.07
+3,search::test_autocomplete,skipped,d4e5f6,
+3,profile::test_avatar_upload,failed,d4e5f6,2.01
+4,checkout::test_apply_coupon,pass,d4e5f6,0.41
+4,checkout::test_payment_timeout,failed,d4e5f6,5.01
+4,search::test_autocomplete,pass,d4e5f6,0.30
+4,profile::test_avatar_upload,failed,d4e5f6,2.07
+FILE:scripts/flaky_tests.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Detect flaky tests from repeated CI runs (Python 3 standard library only).
+
+Inputs (any mix):
+  * JUnit XML files, one per run, in run order:  flaky_tests.py run1.xml run2.xml run3.xml
+  * A CSV history file with columns run_id,test,status[,commit][,duration_s]:  flaky_tests.py --csv history.csv
+
+Statuses: pass, fail (failure or error), skip. Skips are ignored for flakiness math.
+Classifications per test:
+  flaky_confirmed   - passed AND failed on the same commit
+  flaky             - passed AND failed across runs (commit unknown or different)
+  always_failing    - failed in every non-skipped run (&gt;= --min-runs)
+  stable            - passed in every non-skipped run (&gt;= --min-runs)
+  insufficient_data - fewer than --min-runs non-skipped results
+
+Exit code: 1 if any flaky/flaky_confirmed test is found, else 0 (2 on input errors).
+&quot;&quot;&quot;
+import argparse
+import csv
+import json
+import sys
+import xml.etree.ElementTree as ET
+from collections import OrderedDict
+
+STATUS_ALIASES = {
+    &quot;pass&quot;: &quot;pass&quot;, &quot;passed&quot;: &quot;pass&quot;, &quot;ok&quot;: &quot;pass&quot;, &quot;success&quot;: &quot;pass&quot;,
+    &quot;fail&quot;: &quot;fail&quot;, &quot;failed&quot;: &quot;fail&quot;, &quot;failure&quot;: &quot;fail&quot;, &quot;error&quot;: &quot;fail&quot;, &quot;broken&quot;: &quot;fail&quot;,
+    &quot;skip&quot;: &quot;skip&quot;, &quot;skipped&quot;: &quot;skip&quot;, &quot;ignored&quot;: &quot;skip&quot;, &quot;pending&quot;: &quot;skip&quot;,
+}
+
+
+def norm_status(raw):
+    s = STATUS_ALIASES.get(str(raw).strip().lower())
+    if s is None:
+        raise ValueError(f&quot;unknown status: {raw!r}&quot;)
+    return s
+
+
+def parse_junit_text(text, run_id):
+    &quot;&quot;&quot;Return list of (run_id, test_id, status, commit, duration) from JUnit XML text.&quot;&quot;&quot;
+    root = ET.fromstring(text)
+    rows = []
+    for case in root.iter(&quot;testcase&quot;):
+        cls = case.get(&quot;classname&quot;) or &quot;&quot;
+        name = case.get(&quot;name&quot;) or &quot;?&quot;
+        test_id = f&quot;{cls}::{name}&quot; if cls else name
+        if case.find(&quot;failure&quot;) is not None or case.find(&quot;error&quot;) is not None:
+            status = &quot;fail&quot;
+        elif case.find(&quot;skipped&quot;) is not None:
+            status = &quot;skip&quot;
+        else:
+            status = &quot;pass&quot;
+        try:
+            dur = float(case.get(&quot;time&quot;, &quot;&quot;) or 0.0)
+        except ValueError:
+            dur = 0.0
+        rows.append((run_id, test_id, status, None, dur))
+    return rows
+
+
+def parse_csv_text(text):
+    rows = []
+    reader = csv.DictReader(text.splitlines())
+    need = {&quot;run_id&quot;, &quot;test&quot;, &quot;status&quot;}
+    if not reader.fieldnames or not need.issubset({f.strip() for f in reader.fieldnames}):
+        raise ValueError(&quot;CSV needs columns run_id,test,status (optional commit,duration_s)&quot;)
+    for r in reader:
+        r = {k.strip(): (v or &quot;&quot;).strip() for k, v in r.items() if k}
+        dur = float(r[&quot;duration_s&quot;]) if r.get(&quot;duration_s&quot;) else 0.0
+        rows.append((r[&quot;run_id&quot;], r[&quot;test&quot;], norm_status(r[&quot;status&quot;]), r.get(&quot;commit&quot;) or None, dur))
+    return rows
+
+
+def analyze(rows, min_runs=3):
+    &quot;&quot;&quot;rows in run order. Returns OrderedDict test_id -&gt; stats dict.&quot;&quot;&quot;
+    tests = OrderedDict()
+    for run_id, test_id, status, commit, dur in rows:
+        t = tests.setdefault(test_id, {&quot;results&quot;: [], &quot;durations&quot;: []})
+        t[&quot;results&quot;].append((run_id, status, commit))
+        if status != &quot;skip&quot; and dur:
+            t[&quot;durations&quot;].append(dur)
+    out = OrderedDict()
+    for test_id, t in tests.items():
+        seq = [s for _, s, _ in t[&quot;results&quot;] if s != &quot;skip&quot;]
+        passes = seq.count(&quot;pass&quot;)
+        fails = seq.count(&quot;fail&quot;)
+        skips = sum(1 for _, s, _ in t[&quot;results&quot;] if s == &quot;skip&quot;)
+        flips = sum(1 for a, b in zip(seq, seq[1:]) if a != b)
+        by_commit = {}
+        for _, s, c in t[&quot;results&quot;]:
+            if c and s != &quot;skip&quot;:
+                by_commit.setdefault(c, set()).add(s)
+        mixed_commits = sorted(c for c, ss in by_commit.items() if ss == {&quot;pass&quot;, &quot;fail&quot;})
+        n = len(seq)
+        if passes and fails:
+            cls = &quot;flaky_confirmed&quot; if mixed_commits else &quot;flaky&quot;
+        elif n &lt; min_runs:
+            cls = &quot;insufficient_data&quot;
+        elif fails == n:
+            cls = &quot;always_failing&quot;
+        else:
+            cls = &quot;stable&quot;
+        durs = t[&quot;durations&quot;]
+        out[test_id] = {
+            &quot;runs&quot;: n,
+            &quot;passes&quot;: passes,
+            &quot;fails&quot;: fails,
+            &quot;skips&quot;: skips,
+            &quot;fail_rate&quot;: round(fails / n, 3) if n else 0.0,
+            &quot;flips&quot;: flips,
+            &quot;flip_rate&quot;: round(flips / (n - 1), 3) if n &gt; 1 else 0.0,
+            &quot;mixed_commits&quot;: mixed_commits,
+            &quot;max_duration_s&quot;: round(max(durs), 3) if durs else None,
+            &quot;duration_spread&quot;: round(max(durs) / min(durs), 2) if durs and min(durs) &gt; 0 else None,
+            &quot;classification&quot;: cls,
+        }
+    return out
+
+
+def priority(stats):
+    &quot;&quot;&quot;Higher = fix first. Confirmed flakiness and high flip rates rank highest.&quot;&quot;&quot;
+    base = {&quot;flaky_confirmed&quot;: 3.0, &quot;flaky&quot;: 2.0, &quot;always_failing&quot;: 1.0}.get(stats[&quot;classification&quot;], 0.0)
+    return round(base + stats[&quot;flip_rate&quot;] + stats[&quot;fail_rate&quot;], 3)
+
+
+def render_table(results):
+    lines = [&quot;| Test | Class | Runs | Fails | Fail rate | Flip rate | Same-commit mix | Priority |&quot;,
+             &quot;|---|---|---|---|---|---|---|---|&quot;]
+    ranked = sorted(results.items(), key=lambda kv: (-priority(kv[1]), kv[0]))
+    for tid, s in ranked:
+        lines.append(f&quot;| {tid} | {s[&#x27;classification&#x27;]} | {s[&#x27;runs&#x27;]} | {s[&#x27;fails&#x27;]} | &quot;
+                     f&quot;{s[&#x27;fail_rate&#x27;]:.0%} | {s[&#x27;flip_rate&#x27;]:.0%} | {&#x27;, &#x27;.join(s[&#x27;mixed_commits&#x27;]) or &#x27;-&#x27;} | {priority(s)} |&quot;)
+    return &quot;\n&quot;.join(lines)
+
+
+def summary(results):
+    counts = {}
+    for s in results.values():
+        counts[s[&quot;classification&quot;]] = counts.get(s[&quot;classification&quot;], 0) + 1
+    return counts
+
+
+JUNIT_RUN = &quot;&quot;&quot;&lt;testsuites&gt;&lt;testsuite name=&quot;api&quot;&gt;
+&lt;testcase classname=&quot;api.test_orders&quot; name=&quot;test_create&quot; time=&quot;0.12&quot;/&gt;
+&lt;testcase classname=&quot;api.test_orders&quot; name=&quot;test_refund&quot; time=&quot;{refund_time}&quot;&gt;{refund}&lt;/testcase&gt;
+&lt;testcase classname=&quot;api.test_auth&quot; name=&quot;test_expired_token&quot; time=&quot;0.05&quot;&gt;{auth}&lt;/testcase&gt;
+&lt;testcase classname=&quot;api.test_search&quot; name=&quot;test_reindex&quot; time=&quot;1.0&quot;&gt;&lt;skipped/&gt;&lt;/testcase&gt;
+&lt;/testsuite&gt;&lt;/testsuites&gt;&quot;&quot;&quot;
+
+
+def _run(refund_fail, auth_fail, refund_time=&quot;0.30&quot;):
+    return JUNIT_RUN.format(
+        refund=&#x27;&lt;failure message=&quot;timeout&quot;/&gt;&#x27; if refund_fail else &quot;&quot;,
+        auth=&#x27;&lt;error message=&quot;boom&quot;/&gt;&#x27; if auth_fail else &quot;&quot;,
+        refund_time=refund_time)
+
+
+def self_test():
+    rows = []
+    pattern = [(False, True), (True, True), (False, True), (True, True), (False, True)]
+    for i, (rf, af) in enumerate(pattern, 1):
+        rows += parse_junit_text(_run(rf, af, &quot;0.30&quot; if not rf else &quot;3.10&quot;), f&quot;run{i}&quot;)
+    res = analyze(rows, min_runs=3)
+    csv_text = (&quot;run_id,test,status,commit,duration_s\n&quot;
+                &quot;1,ui::login,pass,abc,1.0\n2,ui::login,failed,abc,1.2\n3,ui::login,pass,def,0.9\n&quot;
+                &quot;1,ui::cart,pass,abc,\n2,ui::cart,pass,abc,\n&quot;
+                &quot;1,ui::banner,skipped,abc,\n2,ui::banner,ok,abc,\n3,ui::banner,ok,def,\n4,ui::banner,ok,def,\n&quot;)
+    res_csv = analyze(parse_csv_text(csv_text), min_runs=3)
+    bad_status = False
+    try:
+        norm_status(&quot;weird&quot;)
+    except ValueError:
+        bad_status = True
+    bad_csv = False
+    try:
+        parse_csv_text(&quot;a,b\n1,2\n&quot;)
+    except ValueError:
+        bad_csv = True
+    cases = [
+        (&quot;junit_case_count&quot;, len(res), 4),
+        (&quot;create_stable&quot;, res[&quot;api.test_orders::test_create&quot;][&quot;classification&quot;], &quot;stable&quot;),
+        (&quot;refund_flaky&quot;, res[&quot;api.test_orders::test_refund&quot;][&quot;classification&quot;], &quot;flaky&quot;),
+        (&quot;refund_flips&quot;, res[&quot;api.test_orders::test_refund&quot;][&quot;flips&quot;], 4),
+        (&quot;refund_flip_rate&quot;, res[&quot;api.test_orders::test_refund&quot;][&quot;flip_rate&quot;], 1.0),
+        (&quot;refund_fail_rate&quot;, res[&quot;api.test_orders::test_refund&quot;][&quot;fail_rate&quot;], 0.4),
+        (&quot;refund_duration_spread&quot;, res[&quot;api.test_orders::test_refund&quot;][&quot;duration_spread&quot;], 10.33),
+        (&quot;error_counts_as_fail&quot;, res[&quot;api.test_auth::test_expired_token&quot;][&quot;classification&quot;], &quot;always_failing&quot;),
+        (&quot;skip_only_insufficient&quot;, res[&quot;api.test_search::test_reindex&quot;][&quot;classification&quot;], &quot;insufficient_data&quot;),
+        (&quot;skip_counted&quot;, res[&quot;api.test_search::test_reindex&quot;][&quot;skips&quot;], 5),
+        (&quot;csv_same_commit_confirmed&quot;, res_csv[&quot;ui::login&quot;][&quot;classification&quot;], &quot;flaky_confirmed&quot;),
+        (&quot;csv_mixed_commit_listed&quot;, res_csv[&quot;ui::login&quot;][&quot;mixed_commits&quot;], [&quot;abc&quot;]),
+        (&quot;csv_two_runs_insufficient&quot;, res_csv[&quot;ui::cart&quot;][&quot;classification&quot;], &quot;insufficient_data&quot;),
+        (&quot;csv_skip_ignored_stable&quot;, res_csv[&quot;ui::banner&quot;][&quot;classification&quot;], &quot;stable&quot;),
+        (&quot;priority_order&quot;, priority(res_csv[&quot;ui::login&quot;]) &gt; priority(res[&quot;api.test_orders::test_refund&quot;]), True),
+        (&quot;unknown_status_rejected&quot;, bad_status, True),
+        (&quot;bad_csv_rejected&quot;, bad_csv, True),
+        (&quot;summary_counts&quot;, summary(res), {&quot;stable&quot;: 1, &quot;flaky&quot;: 1, &quot;always_failing&quot;: 1, &quot;insufficient_data&quot;: 1}),
+    ]
+    failed = 0
+    for name, got, expected in cases:
+        ok = abs(got - expected) &lt; 0.01 if isinstance(expected, float) else got == expected
+        failed += not ok
+        print(f&quot;{&#x27;PASS&#x27; if ok else &#x27;FAIL&#x27;}  {name}: got={got!r} expected={expected!r}&quot;)
+    print(f&quot;\n{len(cases) - failed}/{len(cases)} passed&quot;)
+    return 1 if failed else 0
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description=&quot;Detect flaky tests from repeated JUnit XML runs or a CSV history.&quot;)
+    p.add_argument(&quot;junit&quot;, nargs=&quot;*&quot;, help=&quot;JUnit XML files in run order&quot;)
+    p.add_argument(&quot;--csv&quot;, help=&quot;CSV history: run_id,test,status[,commit][,duration_s]&quot;)
+    p.add_argument(&quot;--min-runs&quot;, type=int, default=3)
+    p.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;, help=&quot;print JSON instead of a markdown table&quot;)
+    p.add_argument(&quot;--only-flaky&quot;, action=&quot;store_true&quot;)
+    p.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = p.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    rows = []
+    try:
+        for i, path in enumerate(a.junit, 1):
+            with open(path, encoding=&quot;utf-8&quot;) as fh:
+                rows += parse_junit_text(fh.read(), f&quot;run{i}:{path}&quot;)
+        if a.csv:
+            with open(a.csv, encoding=&quot;utf-8&quot;) as fh:
+                rows += parse_csv_text(fh.read())
+    except (OSError, ValueError, ET.ParseError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    if not rows:
+        p.error(&quot;give JUnit XML files, --csv, or --self-test&quot;)
+    res = analyze(rows, a.min_runs)
+    if a.only_flaky:
+        res = OrderedDict((k, v) for k, v in res.items() if v[&quot;classification&quot;].startswith(&quot;flaky&quot;))
+    if a.json:
+        print(json.dumps({&quot;summary&quot;: summary(res), &quot;tests&quot;: res}, indent=2))
+    else:
+        print(render_table(res))
+        print(&quot;\nSummary:&quot;, &quot;, &quot;.join(f&quot;{k}={v}&quot; for k, v in sorted(summary(res).items())))
+    return 1 if any(v[&quot;classification&quot;].startswith(&quot;flaky&quot;) for v in res.values()) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/flaky-test-detector',TI="Flaky Test Detector";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

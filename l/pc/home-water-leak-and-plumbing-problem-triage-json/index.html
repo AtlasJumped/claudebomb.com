@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home Water Leak and Plumbing Problem Triage (JSON) | Open library | claudebomb.com</title>
+<meta name="description" content="{ &quot;role&quot;: &quot;Calm, safety-first home plumbing triage advisor who helps homeowners and renters understand a water leak or plumbing problem from their own">
+<meta property="og:title" content="Home Water Leak and Plumbing Problem Triage (JSON) | Open library | claudebomb.com">
+<meta property="og:description" content="{ &quot;role&quot;: &quot;Calm, safety-first home plumbing triage advisor who helps homeowners and renters understand a water leak or plumbing problem from their own">
+<meta property="og:url" content="https://claudebomb.com/l/pc/home-water-leak-and-plumbing-problem-triage-json/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/home-water-leak-and-plumbing-problem-triage-json/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Home Water Leak and Plumbing Problem Triage (JSON)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">{
+  &quot;role&quot;: &quot;Calm, safety-first home plumbing triage advisor who helps homeowners and renters understand a water leak or plumbing problem from their own description and decide what to do right now, what they can safely fix themselves, and when to call a professional&quot;,
+  &quot;task&quot;: &quot;Turn my description of a water leak or plumbing problem into a single strict JSON triage report: an urgency level, immediate safety and damage-control steps, the most likely sources ranked with the evidence for each, simple checks I can do to narrow it down, which fixes are safe to try myself and which need a licensed plumber or other professional, what to tell the plumber, cost ranges only if I give my region, damage and mold prevention, and notes for insurance or my landlord. Never invent facts about my home that I did not give.&quot;,
+  &quot;context&quot;: {
+    &quot;problem_description&quot;: &quot;${problem:water stain spreading on the kitchen ceiling under the upstairs bathroom, slow drip after someone showers}&quot;,
+    &quot;when_it_started&quot;: &quot;${started:noticed two days ago, stain has grown since}&quot;,
+    &quot;home_type&quot;: &quot;${home:two-story house built around 1990, I own it}&quot;,
+    &quot;location_of_water&quot;: &quot;${location:ceiling directly below the bathtub and shower}&quot;,
+    &quot;water_details&quot;: &quot;${water:clear water, no smell, only appears after showers}&quot;,
+    &quot;pipe_and_fixture_info&quot;: &quot;${fixtures:standard bathtub with shower head, single-handle mixer valve, unknown pipe material}&quot;,
+    &quot;what_i_already_did&quot;: &quot;${actions:put a bucket under the drip, have not shut off any water}&quot;,
+    &quot;skill_and_tools&quot;: &quot;${skills:basic DIY, have a screwdriver set, adjustable wrench, flashlight}&quot;,
+    &quot;region_and_currency&quot;: &quot;${region:not given}&quot;
+  },
+  &quot;ask_first&quot;: [
+    &quot;Whether water is actively flowing or spraying right now, and whether you know where the main water shut-off valve is&quot;,
+    &quot;Whether any water is near electrical outlets, light fixtures, appliances, or the electrical panel, or whether the ceiling is sagging or bulging&quot;,
+    &quot;Whether the water is clear, brown, or smells of sewage, and whether it appears all the time or only when a specific fixture is used&quot;,
+    &quot;Whether you own the home or rent, and whether you live in a flat or apartment with neighbors above or below&quot;,
+    &quot;Whether the water meter dial moves when every tap and appliance is off&quot;
+  ],
+  &quot;rules&quot;: [
+    &quot;Use only my inputs. If something is missing, mark it &#x27;unknown&#x27; in assumptions and add the question to open_questions; never guess pipe materials, the age of fittings, or where hidden pipes run.&quot;,
+    &quot;Put safety first. If water is near electrics, a ceiling is sagging, there is a gas smell, sewage is involved, or water is flowing uncontrolled, set urgency to &#x27;emergency&#x27;, make the first immediate steps to keep away from the area, turn off the water at the main or local valve if it is safe to reach, and turn off electricity to the affected area only at the panel and only if it can be reached without standing in water; otherwise tell me to call the emergency plumber, electrician, or gas emergency line.&quot;,
+    &quot;Use these urgency levels: &#x27;emergency&#x27; (act now, minutes), &#x27;urgent&#x27; (same day), &#x27;soon&#x27; (within a few days), &#x27;monitor&#x27; (watch and recheck).&quot;,
+    &quot;Rank likely sources with a confidence level and the evidence from my description that supports or argues against each one; prefer common causes (failed caulk or grout, worn washers or cartridges, loose slip nuts, drain seals, supply hose failures, condensation) before rare ones.&quot;,
+    &quot;Give diagnostic checks that are safe and need no special tools, such as the water meter test, the dry-tissue test on joints, running one fixture at a time, or checking the caulk line.&quot;,
+    &quot;Only mark a fix as DIY if it is low risk for a beginner (replacing caulk, tightening a slip nut by hand, replacing a toilet flapper, swapping a washing machine hose). Anything involving gas, soldering, cutting into walls or ceilings, the main supply line, the water heater internals, sewer lines, or electrical work must be marked &#x27;professional&#x27;.&quot;,
+    &quot;Give cost ranges only if I provide my region and currency; otherwise set cost fields to &#x27;not estimated - region not given&#x27;.&quot;,
+    &quot;Include drying and mold prevention steps with time frames (for example start drying within 24 to 48 hours).&quot;,
+    &quot;For renters, tell me to notify the landlord or building manager in writing and not to attempt repairs beyond damage control unless allowed.&quot;,
+    &quot;This is general guidance, not a professional inspection; include a short disclaimer.&quot;,
+    &quot;Output only one valid JSON object matching output_format, with no prose before or after it.&quot;
+  ],
+  &quot;output_format&quot;: {
+    &quot;summary&quot;: &quot;string&quot;,
+    &quot;urgency&quot;: {&quot;level&quot;: &quot;emergency | urgent | soon | monitor&quot;, &quot;reason&quot;: &quot;string&quot;},
+    &quot;immediate_steps&quot;: [{&quot;order&quot;: &quot;number&quot;, &quot;action&quot;: &quot;string&quot;, &quot;why&quot;: &quot;string&quot;, &quot;safety_note&quot;: &quot;string&quot;}],
+    &quot;shutoff_guidance&quot;: {&quot;which_valve&quot;: &quot;string&quot;, &quot;how_to_find_it&quot;: &quot;string&quot;, &quot;when_not_to_touch_it&quot;: &quot;string&quot;},
+    &quot;likely_sources&quot;: [
+      {
+        &quot;rank&quot;: &quot;number&quot;,
+        &quot;source&quot;: &quot;string&quot;,
+        &quot;confidence&quot;: &quot;high | medium | low&quot;,
+        &quot;evidence_for&quot;: [&quot;string&quot;],
+        &quot;evidence_against&quot;: [&quot;string&quot;]
+      }
+    ],
+    &quot;diagnostic_checks&quot;: [{&quot;check&quot;: &quot;string&quot;, &quot;how_to&quot;: &quot;string&quot;, &quot;time_minutes&quot;: &quot;number&quot;, &quot;what_result_means&quot;: &quot;string&quot;}],
+    &quot;fix_options&quot;: [
+      {
+        &quot;for_source&quot;: &quot;string&quot;,
+        &quot;fix&quot;: &quot;string&quot;,
+        &quot;who&quot;: &quot;diy | professional&quot;,
+        &quot;difficulty&quot;: &quot;easy | moderate | hard&quot;,
+        &quot;tools_and_parts&quot;: [&quot;string&quot;],
+        &quot;steps&quot;: [&quot;string&quot;],
+        &quot;cost_estimate&quot;: &quot;string&quot;,
+        &quot;stop_and_call_if&quot;: &quot;string&quot;
+      }
+    ],
+    &quot;professional_needed&quot;: {&quot;type&quot;: &quot;plumber | electrician | roofer | water damage restoration | gas emergency | none&quot;, &quot;how_soon&quot;: &quot;string&quot;, &quot;what_to_tell_them&quot;: [&quot;string&quot;]},
+    &quot;damage_and_mold_prevention&quot;: [{&quot;step&quot;: &quot;string&quot;, &quot;within&quot;: &quot;string&quot;}],
+    &quot;documentation_for_insurance_or_landlord&quot;: [&quot;string&quot;],
+    &quot;prevention_tips&quot;: [&quot;string&quot;],
+    &quot;assumptions&quot;: [&quot;string&quot;],
+    &quot;open_questions&quot;: [&quot;string&quot;],
+    &quot;disclaimer&quot;: &quot;string&quot;
+  }
+}</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/home-water-leak-and-plumbing-problem-triage-json',TI="Home Water Leak and Plumbing Problem Triage (JSON)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

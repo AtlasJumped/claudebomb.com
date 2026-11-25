@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Room Paint Quantity Estimator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: room-paint-quantity-estimator description: Works out how much paint to buy for one or more rooms and what it will cost. Measures walls (minu">
+<meta property="og:title" content="Room Paint Quantity Estimator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: room-paint-quantity-estimator description: Works out how much paint to buy for one or more rooms and what it will cost. Measures walls (minu">
+<meta property="og:url" content="https://claudebomb.com/l/pc/room-paint-quantity-estimator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/room-paint-quantity-estimator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Room Paint Quantity Estimator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: room-paint-quantity-estimator
+description: Works out how much paint to buy for one or more rooms and what it will cost. Measures walls (minus doors and windows) and ceilings, applies coats, coverage, texture and waste, adds up each paint across rooms, and picks the cheapest can mix with little left over. Flags dark-to-light changes and new plaster that need primer, one-coat plans, suspicious coverage or heights and big leftovers. Includes a stdlib Python estimator with --self-test.
+---
+
+# Room Paint Quantity Estimator
+
+You help people repainting a home buy the right amount of paint the first time: not three trips to the shop, not a garage full of half-empty cans. From room sizes and the paints they picked, you calculate areas, litres (or gallons), the cheapest cans to buy and the total cost, and you point out the prep steps that change the numbers, such as primer over dark colours or new plaster.
+
+## Files in this skill
+
+- `scripts/paint_estimate.py` - calculates areas, paint per surface, the cheapest can mix per paint, leftovers, total cost and findings (Python 3 standard library only)
+- `references/measuring-and-coverage.md` - how to measure rooms, standard door and window sizes, coverage on the label vs reality, texture factors, coats and primer rules
+- `references/painting-prep-and-buying-guide.md` - prep order, primer types, finishes per room, tools list, buying tips, storing leftovers
+- `templates/paint-shopping-list.md` - a shopping list and room plan to print or take to the shop
+- `examples/two-bedroom-flat-refresh.json` - four rooms in a flat with a dark bedroom going light, new drywall in the kids room and three paints in Turkish lira
+
+## Workflow
+
+### 1. Gather the rooms
+Ask for each room: length, width and ceiling height, number and size of doors and windows (or use the standard sizes in `references/measuring-and-coverage.md`), which surfaces to paint (walls, ceiling), the current colour (light, medium, dark), the new colour, wall texture, and whether any surface is new plaster or drywall. Ask for the paints with coverage per coat from the can label and the can sizes and prices at their shop. Use metric unless they work in feet and gallons.
+
+### 2. Run the estimator
+```
+python3 scripts/paint_estimate.py examples/two-bedroom-flat-refresh.json
+python3 scripts/paint_estimate.py job.json --json
+python3 scripts/paint_estimate.py --self-test
+```
+Exit code 1 means HIGH findings (measurements that cannot be right, no can mix), 2 means bad input.
+
+### 3. Adjust the plan
+Act on findings: add primer (and its own quantity, using its coverage) for DARK_TO_LIGHT and NEW_SURFACE, or raise coats to 3; change one-coat plans to two unless the paint is sold as one-coat over the same colour. Re-run after each change. Use `references/painting-prep-and-buying-guide.md` for finish and tool advice.
+
+### 4. Deliver
+Fill `templates/paint-shopping-list.md` with the cans to buy, primer, tools and the order of work. Remind them to buy all cans of one colour from the same batch, or mix (box) them before use.
+
+## Example result
+For `examples/two-bedroom-flat-refresh.json`: walls in warm white need 20.87 L -&gt; 1 x 15 L + 1 x 7.5 L (3,640 TRY); the kids room sage green needs 6.87 L -&gt; 1 x 7.5 L (1,450 TRY); ceilings need 8.75 L -&gt; 3 x 3.5 L (1,380 TRY); total 6,470 TRY before primer and tools. Findings: the dark main bedroom needs primer or a third coat, the new drywall in the kids room needs a mist coat or primer, and its one-coat ceiling will look patchy.
+
+## Rules
+
+- Use the coverage printed on the user&#x27;s paint, not a generic number, whenever they have it.
+- Round up to whole cans; never suggest stretching paint by thinning beyond the maker&#x27;s instructions.
+- Mention safety where it matters: ventilation, ladders on stable ground, lead paint testing in homes built before about 1980 before sanding.
+- Prices are what the user gives; say that totals exclude primer, tools and labour unless included.
+FILE:references/measuring-and-coverage.md
+# Measuring and Coverage
+
+## Measuring a room
+- Measure length and width at floor level and ceiling height in one or two places; round up to the next 5 cm (or 2 in).
+- Wall area = perimeter x height = 2 x (length + width) x height. For L-shaped rooms, add each wall&#x27;s width x height instead.
+- Ceiling area = length x width (add sloped parts separately).
+- Subtract doors and windows; leave in anything smaller than about 0.5 m2 (5 sq ft), the paint goes on the frame and cutting-in anyway.
+
+## Standard sizes (when the user does not know)
+| Item | Metric | Imperial |
+|---|---|---|
+| Interior door | 0.8-0.9 x 2.0-2.05 m (about 1.8 m2) | 30-36 x 80 in (about 20 sq ft) |
+| Balcony / patio door | 1.6-1.8 x 2.2 m | 6 x 6.7 ft |
+| Window | 1.2-1.5 x 1.2-1.4 m | 3 x 4 ft (about 12-15 sq ft) |
+| Ceiling height | 2.5-2.8 m (new flats), up to 3.5 m (old buildings) | 8-9 ft |
+
+## Coverage
+- The label gives coverage per coat, usually 10-14 m2/L for emulsion (about 350-400 sq ft per US gallon). Real-world coverage is often 10-20% lower; the waste allowance (default 10%) covers rollers, trays and touch-ups.
+- Texture factors used by the estimator: smooth x1.0, light texture (woodchip, orange peel, thin plaster) x1.1, rough (bare brick, stucco, popcorn) x1.25.
+- Fresh plaster and bare drywall soak paint like a sponge: seal first with a mist coat (emulsion thinned as the maker allows) or a drywall primer.
+
+## Coats
+| Situation | Plan |
+|---|---|
+| Same or similar colour, good surface | 2 coats (1 if the paint is sold as one-coat and the colour is the same) |
+| Light over dark | stain-blocking or tinted primer + 2 coats, or 3 coats |
+| Dark or strong colour over light | grey-tinted primer + 2 coats; reds and yellows can need 3 |
+| New plaster or drywall | mist coat or primer + 2 coats |
+| Ceiling | 2 coats of ceiling white; 1 coat looks patchy against the light |
+
+## Quick check by hand
+Litres = area x coats x texture / coverage x 1.1. Example: 35 m2 of walls, 2 coats, 10 m2/L, smooth -&gt; 7 L before waste, 7.7 L with 10% waste.
+FILE:references/painting-prep-and-buying-guide.md
+# Painting Prep and Buying Guide
+
+## Order of work
+1. Clear and cover: furniture to the middle, floors covered, switch plates off (power off when working near sockets).
+2. Repair: fill cracks and holes, sand flush, wipe dust; wash greasy kitchen walls with sugar soap.
+3. Prime where needed (stains, repairs, dark colours, new plaster).
+4. Ceiling first, then walls, then trim and doors last.
+5. Cut in edges with a brush, then roll in sections while the edge is still wet to avoid lines.
+6. Let each coat dry for the time on the can (often 2-4 hours for emulsion) before the next.
+
+## Primer
+| Problem | Primer |
+|---|---|
+| Water stains, smoke, marker | stain-blocking primer (shellac or oil-based for bad stains) |
+| Light over dark | white or tinted universal primer |
+| New plaster | mist coat or plaster sealer |
+| New drywall | drywall (PVA) primer |
+| Glossy old paint | sand lightly, then adhesion primer |
+Primer coverage is often 8-12 m2/L; estimate it like a paint with 1 coat.
+
+## Finish by room
+| Room | Finish | Why |
+|---|---|---|
+| Ceilings | flat / matte | hides flaws, no glare |
+| Living and bedrooms | matte or eggshell | soft look; washable matte for families |
+| Kids rooms, hallways | washable matte or eggshell | scrubbable |
+| Kitchens and bathrooms | satin or a kitchen/bathroom paint | moisture and grease resistant |
+| Doors and trim | satin or semi-gloss | durable, easy to wipe |
+
+## Tools for a typical flat
+Rollers (9 in / 23 cm) with an extension pole, a tray or bucket with a grid, angled brushes (5 cm), masking tape, drop sheets, filler and a knife, sandpaper (120-180 grit), a sturdy step ladder, rags, gloves. One roller sleeve per colour.
+
+## Buying tips
+- Price per litre usually drops with bigger cans; the estimator compares the actual shop prices.
+- Buy all cans of a colour together (same batch). If you open more than one can, mix them in a bucket (boxing) so the colour matches.
+- Keep about 0.5 L of each colour for touch-ups.
+- Low-VOC paints reduce smell; keep windows open and take breaks anyway.
+
+## Leftovers
+Close lids tightly, store upside down above freezing, label with room and date. Do not pour paint down drains; take dried or liquid paint to the local waste or recycling point.
+FILE:templates/paint-shopping-list.md
+# Paint Shopping List - &lt;home / project&gt; - &lt;date&gt;
+
+**Units:** &lt;metric / imperial&gt;  **Waste allowance:** &lt;10%&gt;  **Shop:** &lt;name&gt;
+
+## Rooms
+| Room | Surface | Area | Coats | Paint | Notes (primer, repairs) |
+|---|---|---|---|---|---|
+| | | | | | |
+
+## Paint to buy
+| Paint (brand, colour code, finish) | Needed | Cans | Price |
+|---|---|---|---|
+| | | | |
+
+## Primer and supplies
+- [ ] Primer: &lt;type&gt;, &lt;qty&gt;
+- [ ] Rollers &lt;n&gt;, sleeves &lt;n&gt;, tray, extension pole
+- [ ] Brushes &lt;sizes&gt;, masking tape &lt;rolls&gt;, drop sheets &lt;n&gt;
+- [ ] Filler, sandpaper, sugar soap
+
+**Total estimate:** &lt;paint&gt; + &lt;primer and supplies&gt; = &lt;total&gt;
+
+## Work order
+1. Prep and repairs: &lt;rooms&gt;
+2. Primer: &lt;rooms&gt;
+3. Ceilings: &lt;rooms&gt;
+4. Walls: &lt;rooms&gt;
+5. Trim and doors: &lt;rooms&gt;
+FILE:examples/two-bedroom-flat-refresh.json
+{
+  &quot;name&quot;: &quot;two-bedroom flat refresh before moving in (example prices)&quot;,
+  &quot;units&quot;: &quot;metric&quot;,
+  &quot;currency&quot;: &quot;TRY&quot;,
+  &quot;waste&quot;: 0.1,
+  &quot;paints&quot;: {
+    &quot;wall matte warm white&quot;: {&quot;coverage&quot;: 11, &quot;cans&quot;: [{&quot;size&quot;: 15, &quot;price&quot;: 2350}, {&quot;size&quot;: 7.5, &quot;price&quot;: 1290}, {&quot;size&quot;: 2.5, &quot;price&quot;: 520}]},
+    &quot;sage green (kids room)&quot;: {&quot;coverage&quot;: 10, &quot;cans&quot;: [{&quot;size&quot;: 7.5, &quot;price&quot;: 1450}, {&quot;size&quot;: 2.5, &quot;price&quot;: 590}, {&quot;size&quot;: 0.75, &quot;price&quot;: 240}]},
+    &quot;ceiling white&quot;: {&quot;coverage&quot;: 12, &quot;cans&quot;: [{&quot;size&quot;: 15, &quot;price&quot;: 1650}, {&quot;size&quot;: 3.5, &quot;price&quot;: 460}]}
+  },
+  &quot;rooms&quot;: [
+    {&quot;name&quot;: &quot;living room&quot;, &quot;length&quot;: 5.4, &quot;width&quot;: 4.2, &quot;height&quot;: 2.7,
+     &quot;openings&quot;: [{&quot;type&quot;: &quot;door&quot;, &quot;w&quot;: 0.9, &quot;h&quot;: 2.05}, {&quot;type&quot;: &quot;balcony door&quot;, &quot;w&quot;: 1.8, &quot;h&quot;: 2.2}, {&quot;type&quot;: &quot;window&quot;, &quot;w&quot;: 1.5, &quot;h&quot;: 1.4}],
+     &quot;walls&quot;: {&quot;paint&quot;: &quot;wall matte warm white&quot;, &quot;coats&quot;: 2}, &quot;ceiling&quot;: {&quot;paint&quot;: &quot;ceiling white&quot;, &quot;coats&quot;: 2}},
+    {&quot;name&quot;: &quot;main bedroom&quot;, &quot;length&quot;: 4.0, &quot;width&quot;: 3.5, &quot;height&quot;: 2.7, &quot;previous&quot;: &quot;dark&quot;, &quot;new&quot;: &quot;light&quot;,
+     &quot;openings&quot;: [{&quot;type&quot;: &quot;door&quot;, &quot;w&quot;: 0.9, &quot;h&quot;: 2.05}, {&quot;type&quot;: &quot;window&quot;, &quot;w&quot;: 1.4, &quot;h&quot;: 1.4}],
+     &quot;walls&quot;: {&quot;paint&quot;: &quot;wall matte warm white&quot;, &quot;coats&quot;: 2}, &quot;ceiling&quot;: {&quot;paint&quot;: &quot;ceiling white&quot;, &quot;coats&quot;: 2}},
+    {&quot;name&quot;: &quot;kids room&quot;, &quot;length&quot;: 3.4, &quot;width&quot;: 3.0, &quot;height&quot;: 2.7, &quot;new_surface&quot;: true,
+     &quot;openings&quot;: [{&quot;type&quot;: &quot;door&quot;, &quot;w&quot;: 0.8, &quot;h&quot;: 2.05}, {&quot;type&quot;: &quot;window&quot;, &quot;w&quot;: 1.2, &quot;h&quot;: 1.4}],
+     &quot;walls&quot;: {&quot;paint&quot;: &quot;sage green (kids room)&quot;, &quot;coats&quot;: 2}, &quot;ceiling&quot;: {&quot;paint&quot;: &quot;ceiling white&quot;, &quot;coats&quot;: 1}},
+    {&quot;name&quot;: &quot;hallway&quot;, &quot;length&quot;: 4.5, &quot;width&quot;: 1.2, &quot;height&quot;: 2.7, &quot;texture&quot;: &quot;light&quot;,
+     &quot;openings&quot;: [{&quot;type&quot;: &quot;doors&quot;, &quot;w&quot;: 0.9, &quot;h&quot;: 2.05, &quot;count&quot;: 5}],
+     &quot;walls&quot;: {&quot;paint&quot;: &quot;wall matte warm white&quot;, &quot;coats&quot;: 2}, &quot;ceiling&quot;: {&quot;paint&quot;: &quot;ceiling white&quot;, &quot;coats&quot;: 2}}
+  ]
+}
+FILE:scripts/paint_estimate.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Room paint quantity and cost estimator (Python 3 standard library only).
+
+Input: a painting job JSON file:
+  {&quot;units&quot;: &quot;metric&quot;, &quot;waste&quot;: 0.1, &quot;currency&quot;: &quot;TRY&quot;,
+   &quot;paints&quot;: {&quot;wall white&quot;: {&quot;coverage&quot;: 11, &quot;cans&quot;: [{&quot;size&quot;: 10, &quot;price&quot;: 1450}, {&quot;size&quot;: 2.5, &quot;price&quot;: 450}]}},
+   &quot;rooms&quot;: [{&quot;name&quot;: &quot;living room&quot;, &quot;length&quot;: 5.2, &quot;width&quot;: 4.1, &quot;height&quot;: 2.7,
+              &quot;openings&quot;: [{&quot;type&quot;: &quot;door&quot;, &quot;w&quot;: 0.9, &quot;h&quot;: 2.05}, {&quot;type&quot;: &quot;window&quot;, &quot;w&quot;: 1.6, &quot;h&quot;: 1.4, &quot;count&quot;: 2}],
+              &quot;walls&quot;: {&quot;paint&quot;: &quot;wall white&quot;, &quot;coats&quot;: 2},
+              &quot;ceiling&quot;: {&quot;paint&quot;: &quot;ceiling white&quot;, &quot;coats&quot;: 2},
+              &quot;texture&quot;: &quot;smooth&quot;, &quot;previous&quot;: &quot;dark&quot;, &quot;new&quot;: &quot;light&quot;, &quot;new_surface&quot;: false}]}
+units: metric (m, m2, coverage m2 per litre, cans in litres) or imperial (ft, sq ft,
+coverage sq ft per US gallon, cans in gallons). coverage = per coat, from the paint can.
+Areas: walls = 2 x (length + width) x height - openings; ceiling = length x width.
+texture: smooth (x1.0), light (x1.1, e.g. woodchip, orange peel), rough (x1.25, brick, stucco)
+multiplies the paint needed. waste (default 0.10) adds rollers, trays, touch-ups.
+Volume per surface = area x coats x texture / coverage x (1 + waste); volumes for the same paint
+are added up across rooms, then the cheapest can mix that covers it is chosen (fewer litres
+left over on ties).
+Findings: OPENINGS_TOO_LARGE (HIGH), NO_CAN_MIX (HIGH), DARK_TO_LIGHT and NEW_SURFACE
+(MEDIUM: primer or an extra coat), ONE_COAT, COVERAGE_SUSPECT, ODD_HEIGHT, BIG_LEFTOVER (LOW).
+Usage:
+  python3 paint_estimate.py job.json
+  python3 paint_estimate.py job.json --json
+  python3 paint_estimate.py --self-test
+Exit code: 0 OK, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import math
+import sys
+
+TEXTURE = {&quot;smooth&quot;: 1.0, &quot;light&quot;: 1.1, &quot;rough&quot;: 1.25}
+UNITS = {&quot;metric&quot;: {&quot;len&quot;: &quot;m&quot;, &quot;area&quot;: &quot;m2&quot;, &quot;vol&quot;: &quot;L&quot;, &quot;cov&quot;: (6, 16), &quot;height&quot;: (2.2, 4.0)},
+         &quot;imperial&quot;: {&quot;len&quot;: &quot;ft&quot;, &quot;area&quot;: &quot;sq ft&quot;, &quot;vol&quot;: &quot;gal&quot;, &quot;cov&quot;: (250, 450), &quot;height&quot;: (7.0, 13.0)}}
+LIGHTNESS = {&quot;light&quot;: 0, &quot;medium&quot;: 1, &quot;dark&quot;: 2}
+
+
+class JobError(ValueError):
+    pass
+
+
+def num(x, what, minimum=0.0, strict=True):
+    if isinstance(x, bool) or not isinstance(x, (int, float)) or (x &lt;= minimum if strict else x &lt; minimum):
+        raise JobError(f&quot;{what} must be a number {&#x27;&gt;&#x27; if strict else &#x27;&gt;=&#x27;} {minimum:g}&quot;)
+    return float(x)
+
+
+def best_mix(need, cans):
+    &quot;&quot;&quot;Cheapest combination of cans with total size &gt;= need; ties -&gt; less leftover, fewer cans.&quot;&quot;&quot;
+    cans = sorted(cans, key=lambda c: -c[&quot;size&quot;])
+    best = None
+
+    def rec(i, vol, cost, picked):
+        nonlocal best
+        if vol &gt;= need - 1e-9:
+            key = (round(cost, 6), round(vol - need, 6), sum(picked))
+            if best is None or key &lt; best[0]:
+                best = (key, list(picked), vol, cost)
+            return
+        if i == len(cans) or (best is not None and cost &gt; best[0][0] + 1e-9):
+            return
+        c = cans[i]
+        top = math.ceil((need - vol) / c[&quot;size&quot;] - 1e-9)
+        for k in ([top] if i == len(cans) - 1 else range(top, -1, -1)):
+            picked.append(k)
+            rec(i + 1, vol + k * c[&quot;size&quot;], cost + k * c[&quot;price&quot;], picked)
+            picked.pop()
+
+    if need &lt;= 0:
+        return {&quot;cans&quot;: [], &quot;volume&quot;: 0.0, &quot;cost&quot;: 0.0, &quot;leftover&quot;: 0.0}
+    rec(0, 0.0, 0.0, [])
+    if best is None:
+        return None
+    _, picked, vol, cost = best
+    return {&quot;cans&quot;: [{&quot;size&quot;: c[&quot;size&quot;], &quot;count&quot;: k, &quot;price&quot;: c[&quot;price&quot;]} for c, k in zip(cans, picked) if k],
+            &quot;volume&quot;: vol, &quot;cost&quot;: cost, &quot;leftover&quot;: vol - need}
+
+
+def estimate(job):
+    units = str(job.get(&quot;units&quot;, &quot;metric&quot;)).lower()
+    if units not in UNITS:
+        raise JobError(&quot;units must be metric or imperial&quot;)
+    U = UNITS[units]
+    waste = num(job.get(&quot;waste&quot;, 0.1), &quot;waste&quot;, 0, strict=False)
+    paints = job.get(&quot;paints&quot;) or {}
+    if not paints:
+        raise JobError(&quot;paints is empty&quot;)
+    for pname, p in paints.items():
+        num(p.get(&quot;coverage&quot;), f&quot;paint {pname!r} coverage&quot;)
+        if not p.get(&quot;cans&quot;):
+            raise JobError(f&quot;paint {pname!r} has no cans&quot;)
+        for c in p[&quot;cans&quot;]:
+            num(c.get(&quot;size&quot;), f&quot;paint {pname!r} can size&quot;)
+            num(c.get(&quot;price&quot;, 0), f&quot;paint {pname!r} can price&quot;, 0, strict=False)
+    rooms = job.get(&quot;rooms&quot;) or []
+    if not rooms:
+        raise JobError(&quot;rooms is empty&quot;)
+    findings, lines, need = [], [], {}
+
+    def f(sev, code, where, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;where&quot;: where, &quot;message&quot;: msg})
+
+    for r in rooms:
+        name = r.get(&quot;name&quot;) or &quot;room&quot;
+        L, W, H = (num(r.get(k), f&quot;{name}: {k}&quot;) for k in (&quot;length&quot;, &quot;width&quot;, &quot;height&quot;))
+        if not U[&quot;height&quot;][0] &lt;= H &lt;= U[&quot;height&quot;][1]:
+            f(&quot;LOW&quot;, &quot;ODD_HEIGHT&quot;, name, f&quot;height {H:g} {U[&#x27;len&#x27;]} is unusual; check the unit and the measurement&quot;)
+        tex = str(r.get(&quot;texture&quot;, &quot;smooth&quot;)).lower()
+        if tex not in TEXTURE:
+            raise JobError(f&quot;{name}: texture must be smooth, light or rough&quot;)
+        openings = 0.0
+        for o in r.get(&quot;openings&quot;) or []:
+            cnt = o.get(&quot;count&quot;, 1)
+            if not isinstance(cnt, int) or isinstance(cnt, bool) or cnt &lt; 0:
+                raise JobError(f&quot;{name}: opening count must be a whole number &gt;= 0&quot;)
+            openings += num(o.get(&quot;w&quot;), f&quot;{name}: opening w&quot;) * num(o.get(&quot;h&quot;), f&quot;{name}: opening h&quot;) * cnt
+        gross = 2 * (L + W) * H
+        surfaces = {&quot;walls&quot;: gross - openings, &quot;ceiling&quot;: L * W}
+        if openings &gt;= gross * 0.6:
+            f(&quot;HIGH&quot;, &quot;OPENINGS_TOO_LARGE&quot;, name, f&quot;openings {openings:.1f} {U[&#x27;area&#x27;]} are {openings / gross:.0%} of the walls; check the measurements&quot;)
+            surfaces[&quot;walls&quot;] = max(surfaces[&quot;walls&quot;], 0.0)
+        prev, new = r.get(&quot;previous&quot;), r.get(&quot;new&quot;)
+        for sname in (&quot;walls&quot;, &quot;ceiling&quot;):
+            s = r.get(sname)
+            if not s:
+                continue
+            pname = s.get(&quot;paint&quot;)
+            if pname not in paints:
+                raise JobError(f&quot;{name} {sname}: unknown paint {pname!r}&quot;)
+            coats = s.get(&quot;coats&quot;, 2)
+            if not isinstance(coats, int) or isinstance(coats, bool) or coats &lt; 1:
+                raise JobError(f&quot;{name} {sname}: coats must be a whole number &gt;= 1&quot;)
+            cov = float(paints[pname][&quot;coverage&quot;])
+            primer = bool(s.get(&quot;primer&quot;))
+            if sname == &quot;walls&quot; and prev in LIGHTNESS and new in LIGHTNESS and LIGHTNESS[prev] - LIGHTNESS[new] &gt;= 2 and coats &lt; 3 and not primer:
+                f(&quot;MEDIUM&quot;, &quot;DARK_TO_LIGHT&quot;, name, &quot;dark to light colour change: add a stain-blocking primer or a third coat&quot;)
+            if r.get(&quot;new_surface&quot;) and not primer and coats &lt; 3:
+                f(&quot;MEDIUM&quot;, &quot;NEW_SURFACE&quot;, name, f&quot;new plaster or drywall on the {sname}: seal with a mist coat or primer first (it soaks up paint)&quot;)
+            if coats == 1:
+                f(&quot;LOW&quot;, &quot;ONE_COAT&quot;, f&quot;{name} {sname}&quot;, &quot;one coat usually looks patchy; plan two&quot;)
+            vol = surfaces[sname] * coats * TEXTURE[tex] / cov * (1 + waste)
+            need[pname] = need.get(pname, 0.0) + vol
+            lines.append({&quot;room&quot;: name, &quot;surface&quot;: sname, &quot;area&quot;: round(surfaces[sname], 2), &quot;coats&quot;: coats,
+                          &quot;paint&quot;: pname, &quot;texture&quot;: tex, &quot;volume&quot;: round(vol, 2)})
+    for pname, p in paints.items():
+        lo, hi = U[&quot;cov&quot;]
+        if pname in need and not lo &lt;= p[&quot;coverage&quot;] &lt;= hi:
+            f(&quot;LOW&quot;, &quot;COVERAGE_SUSPECT&quot;, pname, f&quot;coverage {p[&#x27;coverage&#x27;]:g} {U[&#x27;area&#x27;]}/{U[&#x27;vol&#x27;]} per coat is outside the usual {lo}-{hi}; check the label&quot;)
+    buys, total = [], 0.0
+    for pname in sorted(need):
+        mix = best_mix(round(need[pname], 4), paints[pname][&quot;cans&quot;])
+        if mix is None:
+            f(&quot;HIGH&quot;, &quot;NO_CAN_MIX&quot;, pname, &quot;no can combination found&quot;)
+            continue
+        total += mix[&quot;cost&quot;]
+        buys.append(dict(mix, paint=pname, need=round(need[pname], 2)))
+        if mix[&quot;volume&quot;] and mix[&quot;leftover&quot;] &gt; 0.3 * mix[&quot;volume&quot;] and mix[&quot;leftover&quot;] &gt; 1:
+            f(&quot;LOW&quot;, &quot;BIG_LEFTOVER&quot;, pname, f&quot;{mix[&#x27;leftover&#x27;]:.1f} {U[&#x27;vol&#x27;]} left over; keep it for touch-ups or check smaller can prices&quot;)
+    rank = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+    findings.sort(key=lambda x: rank[x[&quot;severity&quot;]])
+    return {&quot;name&quot;: job.get(&quot;name&quot;, &quot;painting job&quot;), &quot;units&quot;: units, &quot;currency&quot;: job.get(&quot;currency&quot;, &quot;&quot;),
+            &quot;waste&quot;: waste, &quot;lines&quot;: lines, &quot;buy&quot;: buys, &quot;total_cost&quot;: round(total, 2), &quot;findings&quot;: findings}
+
+
+def g(x):
+    return f&quot;{x:.2f}&quot;.rstrip(&quot;0&quot;).rstrip(&quot;.&quot;)
+
+
+def report(res):
+    U = UNITS[res[&quot;units&quot;]]
+    cur = res[&quot;currency&quot;]
+    out = [f&quot;# Paint estimate: {res[&#x27;name&#x27;]}&quot;, &quot;&quot;,
+           f&quot;Units: {res[&#x27;units&#x27;]} ({U[&#x27;area&#x27;]}, {U[&#x27;vol&#x27;]}); waste allowance {res[&#x27;waste&#x27;]:.0%}&quot;, &quot;&quot;,
+           f&quot;| Room | Surface | Area ({U[&#x27;area&#x27;]}) | Coats | Paint | Texture | Paint needed ({U[&#x27;vol&#x27;]}) |&quot;, &quot;|---|---|---|---|---|---|---|&quot;]
+    for l in res[&quot;lines&quot;]:
+        out.append(f&quot;| {l[&#x27;room&#x27;]} | {l[&#x27;surface&#x27;]} | {g(l[&#x27;area&#x27;])} | {l[&#x27;coats&#x27;]} | {l[&#x27;paint&#x27;]} | {l[&#x27;texture&#x27;]} | {g(l[&#x27;volume&#x27;])} |&quot;)
+    out += [&quot;&quot;, &quot;## Shopping list&quot;, f&quot;| Paint | Needed ({U[&#x27;vol&#x27;]}) | Buy | Bought ({U[&#x27;vol&#x27;]}) | Left over | Cost |&quot;, &quot;|---|---|---|---|---|---|&quot;]
+    for b in res[&quot;buy&quot;]:
+        mix = &quot; + &quot;.join(f&quot;{c[&#x27;count&#x27;]} x {g(c[&#x27;size&#x27;])} {U[&#x27;vol&#x27;]}&quot; for c in b[&quot;cans&quot;])
+        out.append(f&quot;| {b[&#x27;paint&#x27;]} | {g(b[&#x27;need&#x27;])} | {mix} | {g(b[&#x27;volume&#x27;])} | {g(b[&#x27;leftover&#x27;])} | {g(b[&#x27;cost&#x27;])} {cur} |&quot;)
+    out += [&quot;&quot;, f&quot;**Total paint cost: {g(res[&#x27;total_cost&#x27;])} {cur}** (primer, tape, rollers and fillers not included)&quot;, &quot;&quot;, &quot;## Findings&quot;]
+    if not res[&quot;findings&quot;]:
+        out.append(&quot;- none&quot;)
+    for x in res[&quot;findings&quot;]:
+        out.append(f&quot;- **{x[&#x27;severity&#x27;]} {x[&#x27;code&#x27;]}** ({x[&#x27;where&#x27;]}): {x[&#x27;message&#x27;]}&quot;)
+    return &quot;\n&quot;.join(out) + &quot;\n&quot;
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append(bool(cond))
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    cans = [{&quot;size&quot;: 10, &quot;price&quot;: 100}, {&quot;size&quot;: 2.5, &quot;price&quot;: 30}]
+    m = best_mix(11, cans)
+    ok(&quot;11 L -&gt; 10 + 2.5 for 130&quot;, m[&quot;cost&quot;] == 130 and m[&quot;volume&quot;] == 12.5)
+    m = best_mix(8, cans)
+    ok(&quot;8 L -&gt; one 10 L (100 &lt; 4 x 30)&quot;, m[&quot;cans&quot;] == [{&quot;size&quot;: 10, &quot;count&quot;: 1, &quot;price&quot;: 100}])
+    m = best_mix(7, cans)
+    ok(&quot;7 L -&gt; 3 x 2.5 for 90&quot;, m[&quot;cost&quot;] == 90 and m[&quot;leftover&quot;] == 0.5)
+    ok(&quot;tie prefers less leftover&quot;, best_mix(2, [{&quot;size&quot;: 4, &quot;price&quot;: 10}, {&quot;size&quot;: 2, &quot;price&quot;: 10}])[&quot;volume&quot;] == 2)
+    ok(&quot;zero need buys nothing&quot;, best_mix(0, cans)[&quot;cans&quot;] == [])
+    base = {&quot;waste&quot;: 0, &quot;paints&quot;: {&quot;w&quot;: {&quot;coverage&quot;: 10, &quot;cans&quot;: cans}},
+            &quot;rooms&quot;: [{&quot;name&quot;: &quot;r&quot;, &quot;length&quot;: 4, &quot;width&quot;: 3, &quot;height&quot;: 2.5, &quot;walls&quot;: {&quot;paint&quot;: &quot;w&quot;, &quot;coats&quot;: 2}}]}
+    r = estimate(base)
+    ok(&quot;wall area 2x(4+3)x2.5 = 35&quot;, r[&quot;lines&quot;][0][&quot;area&quot;] == 35)
+    ok(&quot;35 m2 x 2 coats / 10 = 7 L&quot;, r[&quot;lines&quot;][0][&quot;volume&quot;] == 7)
+    ok(&quot;clean job has no findings&quot;, r[&quot;findings&quot;] == [] and r[&quot;total_cost&quot;] == 90)
+    j = json.loads(json.dumps(base)); j[&quot;rooms&quot;][0][&quot;openings&quot;] = [{&quot;w&quot;: 0.9, &quot;h&quot;: 2, &quot;count&quot;: 1}, {&quot;w&quot;: 1.2, &quot;h&quot;: 1.25, &quot;count&quot;: 2}]
+    ok(&quot;openings subtracted (35 - 1.8 - 3 = 30.2)&quot;, estimate(j)[&quot;lines&quot;][0][&quot;area&quot;] == 30.2)
+    j = json.loads(json.dumps(base)); j[&quot;rooms&quot;][0][&quot;ceiling&quot;] = {&quot;paint&quot;: &quot;w&quot;, &quot;coats&quot;: 1}
+    r = estimate(j)
+    ok(&quot;ceiling area 12 and one-coat flagged&quot;, r[&quot;lines&quot;][1][&quot;area&quot;] == 12 and any(x[&quot;code&quot;] == &quot;ONE_COAT&quot; for x in r[&quot;findings&quot;]))
+    ok(&quot;same paint summed across surfaces&quot;, r[&quot;buy&quot;][0][&quot;need&quot;] == 8.2)
+    j = json.loads(json.dumps(base)); j[&quot;waste&quot;] = 0.1; j[&quot;rooms&quot;][0][&quot;texture&quot;] = &quot;rough&quot;
+    ok(&quot;rough + 10% waste: 7 x 1.25 x 1.1&quot;, estimate(j)[&quot;lines&quot;][0][&quot;volume&quot;] == 9.62)
+    j = json.loads(json.dumps(base)); j[&quot;rooms&quot;][0].update(previous=&quot;dark&quot;, new=&quot;light&quot;)
+    ok(&quot;dark to light flagged&quot;, any(x[&quot;code&quot;] == &quot;DARK_TO_LIGHT&quot; for x in estimate(j)[&quot;findings&quot;]))
+    j[&quot;rooms&quot;][0][&quot;walls&quot;][&quot;primer&quot;] = True
+    ok(&quot;primer clears dark to light&quot;, not any(x[&quot;code&quot;] == &quot;DARK_TO_LIGHT&quot; for x in estimate(j)[&quot;findings&quot;]))
+    j = json.loads(json.dumps(base)); j[&quot;rooms&quot;][0][&quot;new_surface&quot;] = True
+    ok(&quot;new surface flagged&quot;, any(x[&quot;code&quot;] == &quot;NEW_SURFACE&quot; for x in estimate(j)[&quot;findings&quot;]))
+    j = json.loads(json.dumps(base)); j[&quot;rooms&quot;][0][&quot;openings&quot;] = [{&quot;w&quot;: 3, &quot;h&quot;: 2.5, &quot;count&quot;: 4}]
+    ok(&quot;openings too large flagged&quot;, any(x[&quot;code&quot;] == &quot;OPENINGS_TOO_LARGE&quot; for x in estimate(j)[&quot;findings&quot;]))
+    j = json.loads(json.dumps(base)); j[&quot;paints&quot;][&quot;w&quot;][&quot;coverage&quot;] = 30
+    ok(&quot;coverage suspect flagged&quot;, any(x[&quot;code&quot;] == &quot;COVERAGE_SUSPECT&quot; for x in estimate(j)[&quot;findings&quot;]))
+    j = json.loads(json.dumps(base)); j[&quot;rooms&quot;][0][&quot;height&quot;] = 8
+    ok(&quot;metric height 8 m flagged&quot;, any(x[&quot;code&quot;] == &quot;ODD_HEIGHT&quot; for x in estimate(j)[&quot;findings&quot;]))
+    imp = {&quot;units&quot;: &quot;imperial&quot;, &quot;waste&quot;: 0, &quot;paints&quot;: {&quot;w&quot;: {&quot;coverage&quot;: 350, &quot;cans&quot;: [{&quot;size&quot;: 1, &quot;price&quot;: 40}, {&quot;size&quot;: 5, &quot;price&quot;: 170}]}},
+           &quot;rooms&quot;: [{&quot;name&quot;: &quot;r&quot;, &quot;length&quot;: 12, &quot;width&quot;: 10, &quot;height&quot;: 8, &quot;walls&quot;: {&quot;paint&quot;: &quot;w&quot;, &quot;coats&quot;: 2}}]}
+    r = estimate(imp)
+    ok(&quot;imperial 352 sq ft x2 / 350 -&gt; 2.01 gal -&gt; 3 x 1 gal&quot;, r[&quot;lines&quot;][0][&quot;area&quot;] == 352 and r[&quot;buy&quot;][0][&quot;cans&quot;] == [{&quot;size&quot;: 1, &quot;count&quot;: 3, &quot;price&quot;: 40}])
+    j = json.loads(json.dumps(base)); j[&quot;paints&quot;][&quot;w&quot;][&quot;cans&quot;] = [{&quot;size&quot;: 1, &quot;price&quot;: 5}]; j[&quot;rooms&quot;][0][&quot;length&quot;] = 40
+    ok(&quot;big leftover not flagged for exact fit&quot;, not any(x[&quot;code&quot;] == &quot;BIG_LEFTOVER&quot; for x in estimate(j)[&quot;findings&quot;]))
+    j = json.loads(json.dumps(base)); j[&quot;paints&quot;][&quot;w&quot;][&quot;cans&quot;] = [{&quot;size&quot;: 20, &quot;price&quot;: 150}]
+    ok(&quot;big leftover flagged (20 L for 7 L)&quot;, any(x[&quot;code&quot;] == &quot;BIG_LEFTOVER&quot; for x in estimate(j)[&quot;findings&quot;]))
+    for mut, label in ((lambda j: j.update(units=&quot;cubits&quot;), &quot;bad units&quot;), (lambda j: j.update(paints={}), &quot;no paints&quot;),
+                       (lambda j: j[&quot;rooms&quot;][0].update(height=0), &quot;zero height&quot;),
+                       (lambda j: j[&quot;rooms&quot;][0][&quot;walls&quot;].update(paint=&quot;x&quot;), &quot;unknown paint&quot;),
+                       (lambda j: j[&quot;rooms&quot;][0][&quot;walls&quot;].update(coats=1.5), &quot;fractional coats&quot;),
+                       (lambda j: j[&quot;rooms&quot;][0].update(texture=&quot;glitter&quot;), &quot;bad texture&quot;),
+                       (lambda j: j.update(rooms=[]), &quot;no rooms&quot;)):
+        j = json.loads(json.dumps(base))
+        mut(j)
+        try:
+            estimate(j)
+            ok(label + &quot; rejected&quot;, False)
+        except JobError:
+            ok(label + &quot; rejected&quot;, True)
+    print(f&quot;{sum(cases)}/{len(cases)} passed&quot;)
+    return 0 if all(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Estimate paint quantity, cans to buy and cost for rooms.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;painting job JSON&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.file:
+        ap.error(&quot;give a job JSON file or --self-test&quot;)
+    try:
+        res = estimate(json.load(open(a.file, encoding=&quot;utf-8&quot;)))
+    except (OSError, json.JSONDecodeError, JobError, AttributeError, TypeError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(res, indent=2) if a.json else report(res), end=&quot;\n&quot; if a.json else &quot;&quot;)
+    return 1 if any(x[&quot;severity&quot;] == &quot;HIGH&quot; for x in res[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/room-paint-quantity-estimator',TI="Room Paint Quantity Estimator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

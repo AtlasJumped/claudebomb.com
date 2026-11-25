@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SLO Error Budget and Burn Rate Calculator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: slo-error-budget-burn-rate-calculator description: Turns request counts into SLO answers: SLI, error budget for a 28d or 30d window, budget ">
+<meta property="og:title" content="SLO Error Budget and Burn Rate Calculator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: slo-error-budget-burn-rate-calculator description: Turns request counts into SLO answers: SLI, error budget for a 28d or 30d window, budget ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/slo-error-budget-and-burn-rate-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/slo-error-budget-and-burn-rate-calculator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">SLO Error Budget and Burn Rate Calculator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: slo-error-budget-burn-rate-calculator
+description: Turns request counts into SLO answers: SLI, error budget for a 28d or 30d window, budget consumed and remaining, burn rates over 5m to 3d, multiwindow burn-rate alerts (page at 14.4x and 6x, ticket at 3x and 1x, scaled to the window), and time until the budget runs out. Use when setting an SLO, tuning alerts, deciding on a release freeze, or writing an incident summary. Includes a stdlib Python calculator with --self-test.
+---
+
+# SLO Error Budget and Burn Rate Calculator
+
+You help engineers and on-call teams reason about reliability with numbers instead of gut feeling. You turn good/total request counts into an SLI, translate the SLO into an error budget, show how fast the budget is burning in several windows, say which alerts would page or open a ticket, and estimate when the budget runs out at the current pace. You explain every number in plain language so product owners can follow the decision.
+
+## Files in this skill
+
+- `scripts/slo_budget.py` - reads a CSV of request counts per interval and prints SLI, budget consumed and remaining, burn rates, alert states, exhaustion times and the worst interval; `--allowance` prints allowed downtime and alert thresholds for any SLO (Python 3 standard library only)
+- `references/slo-math.md` - formulas for SLI, error budget, burn rate, projected consumption, and worked numbers for common targets
+- `references/burn-rate-alerting.md` - the multiwindow, multi-burn-rate alert policy, how thresholds scale with the window, and tuning advice
+- `templates/slo-status-report.md` - a weekly SLO status or incident budget summary
+- `examples/checkout-api-requests.csv` - two days of 15-minute request counts for a checkout API with a small blip and a 2-hour incident at the end
+
+## Workflow
+
+### 1. Define the SLI and SLO
+Ask what a &quot;good&quot; event is (status &lt; 500, latency under 300 ms, successful job run), where the counts come from, the target (99%, 99.5%, 99.9%, 99.95%), and the window (rolling 28 or 30 days). Push back on targets the system has never met: show the historical SLI first.
+
+### 2. Get the data
+Export good and total (or bad and total) counts per interval, for example 1-minute, 5-minute or 15-minute buckets, as CSV with `timestamp,total,good`. The timestamp marks the start of each interval. Use UTC.
+
+### 3. Run the calculator
+```
+python3 scripts/slo_budget.py examples/checkout-api-requests.csv --slo 99.9 --window 30d
+python3 scripts/slo_budget.py requests.csv --slo 99.5 --window 28d --json &gt; slo.json
+python3 scripts/slo_budget.py requests.csv --now 2026-10-19T22:00:00Z
+python3 scripts/slo_budget.py --allowance --slo 99.95 --window 30d
+python3 scripts/slo_budget.py --self-test
+```
+Exit code 1 means a page alert is firing or the budget is exhausted; 2 means bad input (missing columns, bad &gt; total, unparseable timestamps).
+
+### 4. Interpret
+- Burn rate 1.0 spends exactly the budget over the window; 14.4 for an hour spends 2% of a 30-day budget.
+- Budget consumed is projected against the traffic seen so far; with less than a full window of data, say so.
+- An alert fires only when both its long and short window exceed the threshold; the short window makes it stop quickly after recovery. See `references/burn-rate-alerting.md`.
+- Windows shorter than the data step are rounded up to one step; windows longer than the data are &quot;not evaluable&quot;.
+
+### 5. Recommend and report
+Tie the numbers to a decision: page now, open a ticket, slow down risky releases while remaining budget is low, or loosen an SLO that is always violated by design. Fill `templates/slo-status-report.md`.
+
+## Example result
+For `examples/checkout-api-requests.csv` at 99.9% over 30d: SLI 99.8768%, 8.2% of the budget consumed, 1h burn 26.46 and 5m burn 28.06 so the fast page fires, 6h burn 5.83 just under 6.0, the 3d ticket is not evaluable with two days of data, and at the last hour&#x27;s pace the budget is gone in about 1d 16h. Exit code 1.
+
+## Rules
+
+- State the SLO, window, data range and any missing intervals with every result.
+- Do not mix good-event definitions in one SLI; compute separate SLOs for availability and latency.
+- An SLO is a decision tool, not a blame tool: describe impact on users, not on people.
+- Do not invent traffic numbers; if counts are missing, ask for them or say which result cannot be computed.
+FILE:references/slo-math.md
+# SLO Math
+
+## Definitions
+- **SLI** (service level indicator) = good events / total events, as a percentage.
+- **SLO** (objective) = target SLI over a window, e.g. 99.9% of requests succeed over a rolling 30 days.
+- **Error budget** = 1 - SLO = the share of events allowed to fail. 99.9% -&gt; 0.1%.
+- **Budget in events** = (1 - SLO) x total events in the window.
+- **Error rate** over a window = bad / total in that window.
+- **Burn rate** = error rate / (1 - SLO). 1.0 means the budget would be exactly used up at the end of the window.
+
+## Projected consumption with partial data
+With D seconds of data and W seconds of SLO window:
+- expected requests in window = (requests in data / D) x W
+- allowed bad = (1 - SLO) x expected requests
+- consumed = bad in data / allowed bad
+- time to exhaustion at a recent rate = (allowed bad - bad so far) / (bad per second in that recent window)
+
+## Allowed full downtime
+| SLO | per 30 days | per 28 days | per week | per day |
+|---|---|---|---|---|
+| 99% | 7h 12m | 6h 43m 12s | 1h 40m 48s | 14m 24s |
+| 99.5% | 3h 36m | 3h 21m 36s | 50m 24s | 7m 12s |
+| 99.9% | 43m 12s | 40m 19s | 10m 5s | 1m 26s |
+| 99.95% | 21m 36s | 20m 10s | 5m 2s | 43s |
+| 99.99% | 4m 19s | 4m 2s | 1m 0s | 9s |
+
+Request-based SLOs do not care about clock time directly: 10 minutes of 50% errors costs the same as 5 minutes of full downtime at equal traffic, and an outage at 3 a.m. costs less budget than one at peak.
+
+## Worked example
+SLO 99.9%, 30d window, 1,000,000 requests per day.
+- Budget: 0.001 x 30,000,000 = 30,000 failed requests.
+- A 2% error rate for one hour at 41,667 req/h burns 833 failures = 2.8% of the budget, burn rate 20.
+- At burn rate 20 the whole budget lasts 30d / 20 = 36 hours.
+
+## Pitfalls
+- Counting retries as separate good events hides user-facing failures.
+- Very low traffic (night, new region) makes error rates noisy; use a minimum request count or a longer short window.
+- Synthetic probes measure the probe, not users; label them separately.
+- Changing the SLO mid-window: recompute the whole window with the new target and say so.
+FILE:references/burn-rate-alerting.md
+# Burn-Rate Alerting
+
+## Default policy (multiwindow, multi-burn-rate)
+| Severity | Budget share | Long window | Short window | Burn threshold (30d) | Burn threshold (28d) |
+|---|---|---|---|---|---|
+| page | 2% | 1h | 5m | 14.4 | 13.44 |
+| page | 5% | 6h | 30m | 6.0 | 5.6 |
+| ticket | 10% | 1d | 2h | 3.0 | 2.8 |
+| ticket | 10% | 3d | 6h | 1.0 | 0.93 |
+
+Threshold = budget share x SLO window / long window. Example: 0.02 x 720h / 1h = 14.4.
+
+## Why two windows
+- The **long window** proves the problem is significant (enough budget spent).
+- The **short window** (about 1/12 of the long one) proves it is still happening, so the alert resets within minutes after recovery instead of staying red for an hour.
+- Fire only when both exceed the threshold.
+
+## Example alert rule (Prometheus style)
+```
+(
+  sum(rate(http_requests_errors_total[1h])) / sum(rate(http_requests_total[1h])) &gt; (14.4 * 0.001)
+and
+  sum(rate(http_requests_errors_total[5m])) / sum(rate(http_requests_total[5m])) &gt; (14.4 * 0.001)
+)
+```
+
+## Tuning
+- Low-traffic services: require a minimum number of requests in the short window, or page on 6h only.
+- Too many pages: check whether the SLO is stricter than users need before raising thresholds.
+- Missed incidents: slow burns below 1.0 never alert by design; review the budget weekly.
+- Data step coarser than the short window (e.g. 15-minute buckets): the short window becomes one bucket and recovery detection is slower.
+
+## Budget policy ideas
+- Over 50% consumed: review risky changes, prefer canaries.
+- Over 75%: release freeze for non-fixes, reliability work first.
+- Exhausted: postmortem required; freeze until the rolling window recovers.
+FILE:templates/slo-status-report.md
+# SLO Status - &lt;service&gt; - &lt;period or incident&gt;
+
+**SLI:** &lt;what counts as good&gt;  **SLO:** &lt;target&gt;% over rolling &lt;28d/30d&gt;
+**Data:** &lt;start&gt; to &lt;end&gt; UTC, step &lt;interval&gt;, &lt;n&gt; missing intervals
+**Calculator:** `slo_budget.py --slo &lt;target&gt; --window &lt;window&gt;` (exit &lt;code&gt;)
+
+## Budget
+| Metric | Value |
+|---|---|
+| SLI in period | |
+| Budget consumed | |
+| Budget remaining | |
+| Allowed full downtime per window | |
+
+## Burn rates
+| 5m | 30m | 1h | 2h | 6h | 1d | 3d |
+|---|---|---|---|---|---|---|
+| | | | | | | |
+
+## Alerts
+| Policy | Status | Long / short burn |
+|---|---|---|
+| page 1h/5m | | |
+| page 6h/30m | | |
+| ticket 1d/2h | | |
+| ticket 3d/6h | | |
+
+## What happened
+&lt;worst interval, user impact, cause if known&gt;
+
+## Decision
+- [ ] Page / incident open
+- [ ] Release policy: &lt;normal / caution / freeze&gt; because &lt;remaining budget&gt;
+- [ ] SLO or alert tuning: &lt;change and reason&gt;
+
+## Summary for stakeholders
+&gt; &lt;service&gt; met &lt;SLI&gt;% against a &lt;target&gt;% target. &lt;x&gt;% of this window&#x27;s error budget is used; at the current pace it lasts &lt;time&gt;. Next step: &lt;decision&gt;.
+FILE:examples/checkout-api-requests.csv
+timestamp,total,good
+2026-10-18T00:00:00Z,4757,4755
+2026-10-18T00:15:00Z,4525,4523
+2026-10-18T00:30:00Z,4313,4311
+2026-10-18T00:45:00Z,4122,4120
+2026-10-18T01:00:00Z,3951,3949
+2026-10-18T01:15:00Z,3803,3801
+2026-10-18T01:30:00Z,3678,3676
+2026-10-18T01:45:00Z,3577,3576
+2026-10-18T02:00:00Z,3500,3498
+2026-10-18T02:15:00Z,3448,3446
+2026-10-18T02:30:00Z,3421,3419
+2026-10-18T02:45:00Z,3019,3018
+2026-10-18T03:00:00Z,3044,3043
+2026-10-18T03:15:00Z,3093,3092
+2026-10-18T03:30:00Z,3169,3168
+2026-10-18T03:45:00Z,3270,3268
+2026-10-18T04:00:00Z,3396,3394
+2026-10-18T04:15:00Z,3547,3545
+2026-10-18T04:30:00Z,3722,3720
+2026-10-18T04:45:00Z,3921,3919
+2026-10-18T05:00:00Z,4143,4141
+2026-10-18T05:15:00Z,4388,4386
+2026-10-18T05:30:00Z,4253,4251
+2026-10-18T05:45:00Z,4539,4537
+2026-10-18T06:00:00Z,4845,4843
+2026-10-18T06:15:00Z,5168,5166
+2026-10-18T06:30:00Z,5509,5507
+2026-10-18T06:45:00Z,5865,5863
+2026-10-18T07:00:00Z,6236,6234
+2026-10-18T07:15:00Z,6619,6616
+2026-10-18T07:30:00Z,7013,7009
+2026-10-18T07:45:00Z,7418,7414
+2026-10-18T08:00:00Z,7831,7827
+2026-10-18T08:15:00Z,7850,7847
+2026-10-18T08:30:00Z,8274,8271
+2026-10-18T08:45:00Z,8702,8699
+2026-10-18T09:00:00Z,9132,9127
+2026-10-18T09:15:00Z,9561,9556
+2026-10-18T09:30:00Z,9989,9984
+2026-10-18T09:45:00Z,10413,10408
+2026-10-18T10:00:00Z,10832,10827
+2026-10-18T10:15:00Z,11245,11240
+2026-10-18T10:30:00Z,11650,11645
+2026-10-18T10:45:00Z,12044,12038
+2026-10-18T11:00:00Z,12028,12022
+2026-10-18T11:15:00Z,12398,12392
+2026-10-18T11:30:00Z,12754,12748
+2026-10-18T11:45:00Z,13095,13089
+2026-10-18T12:00:00Z,13418,13412
+2026-10-18T12:15:00Z,13724,13719
+2026-10-18T12:30:00Z,14010,14003
+2026-10-18T12:45:00Z,14275,14268
+2026-10-18T13:00:00Z,14520,14513
+2026-10-18T13:15:00Z,14742,14735
+2026-10-18T13:30:00Z,14941,14934
+2026-10-18T13:45:00Z,14716,14710
+2026-10-18T14:00:00Z,14867,14861
+2026-10-18T14:15:00Z,14993,14985
+2026-10-18T14:30:00Z,15094,15086
+2026-10-18T14:45:00Z,15170,15163
+2026-10-18T15:00:00Z,15220,15213
+2026-10-18T15:15:00Z,15244,15237
+2026-10-18T15:30:00Z,15242,15236
+2026-10-18T15:45:00Z,15215,15209
+2026-10-18T16:00:00Z,15163,15155
+2026-10-18T16:15:00Z,14686,14679
+2026-10-18T16:30:00Z,14585,14578
+2026-10-18T16:45:00Z,14460,14453
+2026-10-18T17:00:00Z,14312,14306
+2026-10-18T17:15:00Z,14141,14135
+2026-10-18T17:30:00Z,13950,13866
+2026-10-18T17:45:00Z,13738,13656
+2026-10-18T18:00:00Z,13506,13499
+2026-10-18T18:15:00Z,13257,13251
+2026-10-18T18:30:00Z,12990,12984
+2026-10-18T18:45:00Z,12708,12702
+2026-10-18T19:00:00Z,12012,12007
+2026-10-18T19:15:00Z,11702,11697
+2026-10-18T19:30:00Z,11382,11376
+2026-10-18T19:45:00Z,11051,11045
+2026-10-18T20:00:00Z,10712,10707
+2026-10-18T20:15:00Z,10367,10362
+2026-10-18T20:30:00Z,10017,10013
+2026-10-18T20:45:00Z,9663,9659
+2026-10-18T21:00:00Z,9308,9304
+2026-10-18T21:15:00Z,8952,8947
+2026-10-18T21:30:00Z,8598,8594
+2026-10-18T21:45:00Z,7848,7844
+2026-10-18T22:00:00Z,7503,7500
+2026-10-18T22:15:00Z,7164,7161
+2026-10-18T22:30:00Z,6833,6830
+2026-10-18T22:45:00Z,6513,6510
+2026-10-18T23:00:00Z,6204,6201
+2026-10-18T23:15:00Z,5907,5904
+2026-10-18T23:30:00Z,5625,5622
+2026-10-18T23:45:00Z,5358,5356
+2026-10-19T00:00:00Z,5109,5107
+2026-10-19T00:15:00Z,4877,4875
+2026-10-19T00:30:00Z,4265,4263
+2026-10-19T00:45:00Z,4074,4072
+2026-10-19T01:00:00Z,3903,3901
+2026-10-19T01:15:00Z,3755,3753
+2026-10-19T01:30:00Z,3630,3628
+2026-10-19T01:45:00Z,3529,3527
+2026-10-19T02:00:00Z,3452,3451
+2026-10-19T02:15:00Z,3400,3399
+2026-10-19T02:30:00Z,3373,3371
+2026-10-19T02:45:00Z,3371,3369
+2026-10-19T03:00:00Z,3396,3394
+2026-10-19T03:15:00Z,3045,3044
+2026-10-19T03:30:00Z,3121,3120
+2026-10-19T03:45:00Z,3222,3221
+2026-10-19T04:00:00Z,3348,3347
+2026-10-19T04:15:00Z,3499,3497
+2026-10-19T04:30:00Z,3674,3672
+2026-10-19T04:45:00Z,3873,3871
+2026-10-19T05:00:00Z,4095,4093
+2026-10-19T05:15:00Z,4340,4338
+2026-10-19T05:30:00Z,4605,4603
+2026-10-19T05:45:00Z,4491,4489
+2026-10-19T06:00:00Z,4797,4795
+2026-10-19T06:15:00Z,5120,5117
+2026-10-19T06:30:00Z,5461,5458
+2026-10-19T06:45:00Z,5817,5814
+2026-10-19T07:00:00Z,6188,6185
+2026-10-19T07:15:00Z,6571,6568
+2026-10-19T07:30:00Z,6965,6962
+2026-10-19T07:45:00Z,7370,7366
+2026-10-19T08:00:00Z,7783,7779
+2026-10-19T08:15:00Z,8202,8198
+2026-10-19T08:30:00Z,8226,8222
+2026-10-19T08:45:00Z,8654,8650
+2026-10-19T09:00:00Z,9084,9080
+2026-10-19T09:15:00Z,9513,9509
+2026-10-19T09:30:00Z,9941,9936
+2026-10-19T09:45:00Z,10365,10360
+2026-10-19T10:00:00Z,10784,10779
+2026-10-19T10:15:00Z,11197,11192
+2026-10-19T10:30:00Z,11602,11597
+2026-10-19T10:45:00Z,11996,11991
+2026-10-19T11:00:00Z,12380,12375
+2026-10-19T11:15:00Z,12350,12344
+2026-10-19T11:30:00Z,12706,12700
+2026-10-19T11:45:00Z,13047,13041
+2026-10-19T12:00:00Z,13370,13364
+2026-10-19T12:15:00Z,13676,13670
+2026-10-19T12:30:00Z,13962,13956
+2026-10-19T12:45:00Z,14227,14221
+2026-10-19T13:00:00Z,14472,14464
+2026-10-19T13:15:00Z,14694,14687
+2026-10-19T13:30:00Z,14893,14886
+2026-10-19T13:45:00Z,15068,15061
+2026-10-19T14:00:00Z,14819,14812
+2026-10-19T14:15:00Z,14945,14939
+2026-10-19T14:30:00Z,15046,15040
+2026-10-19T14:45:00Z,15122,15114
+2026-10-19T15:00:00Z,15172,15164
+2026-10-19T15:15:00Z,15196,15189
+2026-10-19T15:30:00Z,15194,15187
+2026-10-19T15:45:00Z,15167,15160
+2026-10-19T16:00:00Z,15115,15109
+2026-10-19T16:15:00Z,15038,15032
+2026-10-19T16:30:00Z,14937,14929
+2026-10-19T16:45:00Z,14412,14405
+2026-10-19T17:00:00Z,14264,14257
+2026-10-19T17:15:00Z,14093,14087
+2026-10-19T17:30:00Z,13902,13896
+2026-10-19T17:45:00Z,13690,13684
+2026-10-19T18:00:00Z,13458,13453
+2026-10-19T18:15:00Z,13209,13202
+2026-10-19T18:30:00Z,12942,12936
+2026-10-19T18:45:00Z,12660,12654
+2026-10-19T19:00:00Z,12364,12358
+2026-10-19T19:15:00Z,11654,11649
+2026-10-19T19:30:00Z,11334,11329
+2026-10-19T19:45:00Z,11003,10999
+2026-10-19T20:00:00Z,10664,10658
+2026-10-19T20:15:00Z,10319,10314
+2026-10-19T20:30:00Z,9969,9964
+2026-10-19T20:45:00Z,9615,9611
+2026-10-19T21:00:00Z,9260,9256
+2026-10-19T21:15:00Z,8904,8900
+2026-10-19T21:30:00Z,8550,8547
+2026-10-19T21:45:00Z,8200,8196
+2026-10-19T22:00:00Z,7455,7298
+2026-10-19T22:15:00Z,7116,6959
+2026-10-19T22:30:00Z,6785,6629
+2026-10-19T22:45:00Z,6465,6310
+2026-10-19T23:00:00Z,6156,6002
+2026-10-19T23:15:00Z,5859,5707
+2026-10-19T23:30:00Z,5577,5426
+2026-10-19T23:45:00Z,5310,5161
+FILE:scripts/slo_budget.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;SLO error budget and burn rate calculator (Python 3 standard library only).
+
+Input: CSV with one row per interval, the timestamp marking the START of the interval, and request
+counts. Accepted columns (case-insensitive): timestamp|time|ts, total|requests|count, and either
+good|success|ok or bad|errors|failed. Timestamps: ISO 8601 (Z or offset) or Unix seconds.
+
+Math (see references/slo-math.md):
+  error budget (fraction)  = 1 - SLO                          e.g. 99.9% -&gt; 0.001
+  error rate over window   = sum(bad) / sum(total)
+  burn rate                = error rate / (1 - SLO)           1.0 = spends exactly the budget over the SLO window
+  budget consumed so far   = sum(bad) / ((1 - SLO) * expected requests in the SLO window)
+  alert threshold          = budget share * window hours / long window hours   (14.4 = 2% of 30d in 1h)
+
+Default multiwindow, multi-burn-rate policy (Google SRE Workbook): page 2% in 1h (short 5m),
+page 5% in 6h (short 30m), ticket 10% in 1d (short 2h), ticket 10% in 3d (short 6h). An alert fires
+only when BOTH the long and the short window burn faster than the threshold. Windows shorter than
+the data step are rounded up to one step; windows longer than the data are reported as not evaluable.
+
+Usage:
+  python3 slo_budget.py requests.csv --slo 99.9 --window 30d
+  python3 slo_budget.py requests.csv --slo 99.5 --window 28d --json
+  python3 slo_budget.py --allowance --slo 99.95 --window 30d     # downtime allowed, no CSV needed
+  python3 slo_budget.py --self-test
+Exit code: 0 OK, 1 a page alert fires or the budget is exhausted, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import csv
+import datetime as dt
+import json
+import re
+import statistics
+import sys
+
+POLICY = [
+    # (severity, long window, short window, budget share)
+    (&quot;page&quot;, &quot;1h&quot;, &quot;5m&quot;, 0.02),
+    (&quot;page&quot;, &quot;6h&quot;, &quot;30m&quot;, 0.05),
+    (&quot;ticket&quot;, &quot;1d&quot;, &quot;2h&quot;, 0.10),
+    (&quot;ticket&quot;, &quot;3d&quot;, &quot;6h&quot;, 0.10),
+]
+ALIASES = {
+    &quot;ts&quot;: (&quot;timestamp&quot;, &quot;time&quot;, &quot;ts&quot;, &quot;date&quot;, &quot;datetime&quot;),
+    &quot;total&quot;: (&quot;total&quot;, &quot;requests&quot;, &quot;count&quot;, &quot;events&quot;),
+    &quot;good&quot;: (&quot;good&quot;, &quot;success&quot;, &quot;ok&quot;, &quot;successes&quot;),
+    &quot;bad&quot;: (&quot;bad&quot;, &quot;errors&quot;, &quot;failed&quot;, &quot;failures&quot;, &quot;error&quot;),
+}
+
+
+class SLOError(ValueError):
+    pass
+
+
+def parse_duration(s):
+    m = re.fullmatch(r&quot;\s*(\d+(?:\.\d+)?)\s*([smhdw])\s*&quot;, str(s).lower())
+    if not m:
+        raise SLOError(f&quot;bad duration {s!r} (use e.g. 5m, 1h, 28d)&quot;)
+    return float(m.group(1)) * {&quot;s&quot;: 1, &quot;m&quot;: 60, &quot;h&quot;: 3600, &quot;d&quot;: 86400, &quot;w&quot;: 604800}[m.group(2)]
+
+
+def fmt_dur(sec):
+    sec = int(round(sec))
+    if sec &gt;= 86400:
+        d, h = divmod(sec // 3600, 24)
+        return f&quot;{d}d {h}h&quot; if h else f&quot;{d}d&quot;
+    if sec &gt;= 3600:
+        h, m = divmod(sec // 60, 60)
+        return f&quot;{h}h {m}m&quot; if m else f&quot;{h}h&quot;
+    if sec &gt;= 60:
+        m, s = divmod(sec, 60)
+        return f&quot;{m}m {s}s&quot; if s else f&quot;{m}m&quot;
+    return f&quot;{sec}s&quot;
+
+
+def parse_ts(v):
+    v = v.strip()
+    if re.fullmatch(r&quot;\d+(\.\d+)?&quot;, v):
+        return dt.datetime.fromtimestamp(float(v), dt.timezone.utc)
+    t = dt.datetime.fromisoformat(v.replace(&quot;Z&quot;, &quot;+00:00&quot;).replace(&quot; &quot;, &quot;T&quot;))
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=dt.timezone.utc)
+    return t.astimezone(dt.timezone.utc)
+
+
+def load_rows(lines):
+    rd = csv.DictReader(lines)
+    if not rd.fieldnames:
+        raise SLOError(&quot;empty CSV&quot;)
+    cols = {}
+    lower = {f.strip().lower(): f for f in rd.fieldnames}
+    for key, names in ALIASES.items():
+        for n in names:
+            if n in lower:
+                cols[key] = lower[n]
+                break
+    if &quot;ts&quot; not in cols or &quot;total&quot; not in cols or not ({&quot;good&quot;, &quot;bad&quot;} &amp; cols.keys()):
+        raise SLOError(f&quot;need timestamp, total and good or bad columns; got {rd.fieldnames}&quot;)
+    rows = []
+    for i, r in enumerate(rd, 2):
+        try:
+            ts = parse_ts(r[cols[&quot;ts&quot;]])
+            total = int(float(r[cols[&quot;total&quot;]]))
+            bad = int(float(r[cols[&quot;bad&quot;]])) if &quot;bad&quot; in cols else total - int(float(r[cols[&quot;good&quot;]]))
+        except (ValueError, TypeError) as e:
+            raise SLOError(f&quot;line {i}: {e}&quot;)
+        if total &lt; 0 or bad &lt; 0 or bad &gt; total:
+            raise SLOError(f&quot;line {i}: counts must satisfy 0 &lt;= bad &lt;= total (total={total}, bad={bad})&quot;)
+        rows.append((ts, total, bad))
+    if len(rows) &lt; 2:
+        raise SLOError(&quot;need at least two rows&quot;)
+    rows.sort(key=lambda r: r[0])
+    return rows
+
+
+def analyze(rows, slo_pct, window, now=None, policy=POLICY):
+    if not 0 &lt; slo_pct &lt; 100:
+        raise SLOError(&quot;SLO must be between 0 and 100 (exclusive), e.g. 99.9&quot;)
+    budget = 1 - slo_pct / 100
+    win = parse_duration(window)
+    diffs = [(b[0] - a[0]).total_seconds() for a, b in zip(rows, rows[1:])]
+    step = statistics.median(diffs)
+    if step &lt;= 0:
+        raise SLOError(&quot;duplicate timestamps&quot;)
+    first = rows[0][0]
+    end = (now or rows[-1][0] + dt.timedelta(seconds=step))
+    covered = (end - first).total_seconds()
+    expected_rows = int(round(covered / step))
+    missing = max(0, expected_rows - len(rows))
+
+    def window_stats(seconds):
+        seconds = max(seconds, step)
+        if seconds &gt; covered + 1e-6:
+            return None
+        start = end - dt.timedelta(seconds=seconds)
+        tot = sum(t for ts, t, b in rows if start &lt;= ts &lt; end)
+        bad = sum(b for ts, t, b in rows if start &lt;= ts &lt; end)
+        rate = bad / tot if tot else 0.0
+        return {&quot;seconds&quot;: seconds, &quot;total&quot;: tot, &quot;bad&quot;: bad, &quot;error_rate&quot;: rate, &quot;burn_rate&quot;: rate / budget}
+
+    total = sum(r[1] for r in rows)
+    bad = sum(r[2] for r in rows)
+    req_per_sec = total / covered
+    expected_window_total = req_per_sec * win
+    allowed_bad = budget * expected_window_total
+    consumed = bad / allowed_bad if allowed_bad else 0.0
+    alerts = []
+    for sev, lw, sw, share in policy:
+        thr = share * win / parse_duration(lw)
+        L, S = window_stats(parse_duration(lw)), window_stats(parse_duration(sw))
+        if L is None or S is None:
+            alerts.append({&quot;severity&quot;: sev, &quot;long&quot;: lw, &quot;short&quot;: sw, &quot;threshold&quot;: thr, &quot;status&quot;: &quot;not evaluable&quot;,
+                           &quot;long_burn&quot;: None, &quot;short_burn&quot;: None})
+            continue
+        fires = L[&quot;burn_rate&quot;] &gt;= thr and S[&quot;burn_rate&quot;] &gt;= thr
+        alerts.append({&quot;severity&quot;: sev, &quot;long&quot;: lw, &quot;short&quot;: sw, &quot;threshold&quot;: thr,
+                       &quot;status&quot;: &quot;FIRING&quot; if fires else &quot;ok&quot;,
+                       &quot;long_burn&quot;: L[&quot;burn_rate&quot;], &quot;short_burn&quot;: S[&quot;burn_rate&quot;]})
+    burn = {}
+    for w in (&quot;5m&quot;, &quot;30m&quot;, &quot;1h&quot;, &quot;2h&quot;, &quot;6h&quot;, &quot;1d&quot;, &quot;3d&quot;):
+        s = window_stats(parse_duration(w))
+        burn[w] = None if s is None else s[&quot;burn_rate&quot;]
+    remaining_bad = allowed_bad - bad
+    exhaust = {}
+    for w in (&quot;1h&quot;, &quot;6h&quot;, &quot;1d&quot;):
+        s = window_stats(parse_duration(w))
+        if s and s[&quot;bad&quot;] &gt; 0 and remaining_bad &gt; 0:
+            exhaust[w] = remaining_bad / (s[&quot;bad&quot;] / s[&quot;seconds&quot;])
+        elif s:
+            exhaust[w] = 0.0 if remaining_bad &lt;= 0 else None
+    worst = max(rows, key=lambda r: (r[2] / r[1] if r[1] else 0, r[0]))
+    return {
+        &quot;slo_percent&quot;: slo_pct, &quot;window&quot;: window, &quot;window_seconds&quot;: win, &quot;step_seconds&quot;: step,
+        &quot;data_start&quot;: first.strftime(&quot;%Y-%m-%dT%H:%M:%SZ&quot;), &quot;data_end&quot;: end.strftime(&quot;%Y-%m-%dT%H:%M:%SZ&quot;),
+        &quot;rows&quot;: len(rows), &quot;missing_intervals&quot;: missing,
+        &quot;total&quot;: total, &quot;bad&quot;: bad, &quot;sli_percent&quot;: 100 * (1 - bad / total) if total else 100.0,
+        &quot;allowed_bad_in_window&quot;: allowed_bad, &quot;budget_consumed&quot;: consumed, &quot;budget_remaining&quot;: 1 - consumed,
+        &quot;allowed_downtime_seconds&quot;: budget * win,
+        &quot;burn_rates&quot;: burn, &quot;alerts&quot;: alerts, &quot;exhaustion_seconds&quot;: exhaust,
+        &quot;worst_interval&quot;: {&quot;start&quot;: worst[0].strftime(&quot;%Y-%m-%dT%H:%M:%SZ&quot;), &quot;total&quot;: worst[1], &quot;bad&quot;: worst[2],
+                           &quot;error_rate&quot;: worst[2] / worst[1] if worst[1] else 0.0},
+    }
+
+
+def allowance_table(slo_pct, window):
+    win = parse_duration(window)
+    b = 1 - slo_pct / 100
+    return {&quot;slo_percent&quot;: slo_pct, &quot;window&quot;: window, &quot;allowed_downtime_seconds&quot;: b * win,
+            &quot;per_day_seconds&quot;: b * 86400, &quot;per_week_seconds&quot;: b * 604800,
+            &quot;thresholds&quot;: [{&quot;severity&quot;: s, &quot;long&quot;: l, &quot;short&quot;: sh, &quot;share&quot;: sha, &quot;burn_rate&quot;: sha * win / parse_duration(l)}
+                           for s, l, sh, sha in POLICY]}
+
+
+def to_markdown(r):
+    pct = lambda x: f&quot;{100 * x:.1f}%&quot;
+    out = [f&quot;# SLO error budget report&quot;, &quot;&quot;,
+           f&quot;**SLO:** {r[&#x27;slo_percent&#x27;]}% over {r[&#x27;window&#x27;]}  **Data:** {r[&#x27;data_start&#x27;]} to {r[&#x27;data_end&#x27;]} &quot;
+           f&quot;({r[&#x27;rows&#x27;]} rows, step {fmt_dur(r[&#x27;step_seconds&#x27;])}, {r[&#x27;missing_intervals&#x27;]} missing)&quot;,
+           f&quot;**SLI over data:** {r[&#x27;sli_percent&#x27;]:.4f}%  ({r[&#x27;bad&#x27;]:,} bad of {r[&#x27;total&#x27;]:,})&quot;,
+           f&quot;**Error budget:** {r[&#x27;allowed_bad_in_window&#x27;]:,.0f} bad requests per {r[&#x27;window&#x27;]} at current traffic &quot;
+           f&quot;(= {fmt_dur(r[&#x27;allowed_downtime_seconds&#x27;])} of full downtime)&quot;,
+           f&quot;**Consumed so far:** {pct(r[&#x27;budget_consumed&#x27;])}  **Remaining:** {pct(r[&#x27;budget_remaining&#x27;])}&quot;, &quot;&quot;,
+           &quot;## Burn rates (1.0 = on budget)&quot;, &quot;&quot;, &quot;| Window | Burn rate |&quot;, &quot;|---|---|&quot;]
+    for w, v in r[&quot;burn_rates&quot;].items():
+        out.append(f&quot;| {w} | {&#x27;n/a&#x27; if v is None else f&#x27;{v:.2f}&#x27;} |&quot;)
+    out += [&quot;&quot;, &quot;## Alert policy&quot;, &quot;&quot;, &quot;| Severity | Long / short window | Threshold | Long burn | Short burn | Status |&quot;,
+            &quot;|---|---|---|---|---|---|&quot;]
+    for a in r[&quot;alerts&quot;]:
+        lb = &quot;n/a&quot; if a[&quot;long_burn&quot;] is None else f&quot;{a[&#x27;long_burn&#x27;]:.2f}&quot;
+        sb = &quot;n/a&quot; if a[&quot;short_burn&quot;] is None else f&quot;{a[&#x27;short_burn&#x27;]:.2f}&quot;
+        out.append(f&quot;| {a[&#x27;severity&#x27;]} | {a[&#x27;long&#x27;]} / {a[&#x27;short&#x27;]} | {a[&#x27;threshold&#x27;]:.1f} | {lb} | {sb} | {a[&#x27;status&#x27;]} |&quot;)
+    out += [&quot;&quot;, &quot;## Time to exhaustion at recent burn&quot;]
+    for w, s in r[&quot;exhaustion_seconds&quot;].items():
+        out.append(f&quot;- at last {w} rate: &quot; + (&quot;budget already exhausted&quot; if s == 0 else (&quot;no errors in window&quot; if s is None else fmt_dur(s))))
+    wi = r[&quot;worst_interval&quot;]
+    out += [&quot;&quot;, f&quot;Worst interval: {wi[&#x27;start&#x27;]} with {wi[&#x27;bad&#x27;]:,} bad of {wi[&#x27;total&#x27;]:,} ({100 * wi[&#x27;error_rate&#x27;]:.2f}%)&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append((name, bool(cond)))
+
+    t0 = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+
+    def series(n, step_min, total, bad_fn):
+        return [(t0 + dt.timedelta(minutes=step_min * i), total, bad_fn(i)) for i in range(n)]
+
+    ok(&quot;duration parse&quot;, parse_duration(&quot;28d&quot;) == 28 * 86400 and parse_duration(&quot;5m&quot;) == 300)
+    ok(&quot;duration format&quot;, fmt_dur(43.2 * 60) == &quot;43m 12s&quot; and fmt_dur(86400 * 3) == &quot;3d&quot;)
+    a = allowance_table(99.9, &quot;30d&quot;)
+    ok(&quot;99.9% of 30d allows 43m 12s&quot;, round(a[&quot;allowed_downtime_seconds&quot;]) == 2592)
+    ok(&quot;page threshold 14.4 for 30d&quot;, abs(a[&quot;thresholds&quot;][0][&quot;burn_rate&quot;] - 14.4) &lt; 1e-9)
+    ok(&quot;28d threshold scales to 13.44&quot;, abs(allowance_table(99.9, &quot;28d&quot;)[&quot;thresholds&quot;][0][&quot;burn_rate&quot;] - 13.44) &lt; 1e-9)
+    flat = series(4 * 24 * 4, 15, 10000, lambda i: 10)          # 0.1% errors at 99.9 -&gt; burn 1.0
+    r = analyze(flat, 99.9, &quot;30d&quot;)
+    ok(&quot;steady burn rate is 1.0&quot;, abs(r[&quot;burn_rates&quot;][&quot;1h&quot;] - 1.0) &lt; 1e-9 and abs(r[&quot;burn_rates&quot;][&quot;1d&quot;] - 1.0) &lt; 1e-9)
+    ok(&quot;no alert at burn 1.0&quot;, all(x[&quot;status&quot;] != &quot;FIRING&quot; for x in r[&quot;alerts&quot;][:3]))
+    ok(&quot;burn 1.0 over 4 of 30 days consumes 4/30&quot;, abs(r[&quot;budget_consumed&quot;] - 4 / 30) &lt; 1e-9)
+    ok(&quot;SLI computed&quot;, abs(r[&quot;sli_percent&quot;] - 99.9) &lt; 1e-9)
+    spike = series(4 * 24 * 4, 15, 10000, lambda i: 200 if i &gt;= 4 * 24 * 4 - 4 else 5)   # last hour 2% errors
+    r = analyze(spike, 99.9, &quot;30d&quot;)
+    ok(&quot;fast burn pages (1h/5m)&quot;, r[&quot;alerts&quot;][0][&quot;status&quot;] == &quot;FIRING&quot;)
+    ok(&quot;short window rounded up to step&quot;, abs(r[&quot;burn_rates&quot;][&quot;5m&quot;] - 20.0) &lt; 1e-9)
+    ok(&quot;6h page not firing for 1h spike&quot;, r[&quot;alerts&quot;][1][&quot;status&quot;] == &quot;ok&quot;)
+    recovered = spike[:-2] + [(spike[-2][0], 10000, 5), (spike[-1][0], 10000, 5)]
+    r = analyze(recovered, 99.9, &quot;30d&quot;)
+    ok(&quot;short window resets page after recovery&quot;, r[&quot;alerts&quot;][0][&quot;status&quot;] == &quot;ok&quot;)
+    short = series(8, 15, 1000, lambda i: 0)
+    r = analyze(short, 99.9, &quot;30d&quot;)
+    ok(&quot;long windows not evaluable on 2h of data&quot;, r[&quot;alerts&quot;][3][&quot;status&quot;] == &quot;not evaluable&quot; and r[&quot;burn_rates&quot;][&quot;3d&quot;] is None)
+    gap = flat[:10] + flat[12:]
+    ok(&quot;missing intervals counted&quot;, analyze(gap, 99.9, &quot;30d&quot;)[&quot;missing_intervals&quot;] == 2)
+    ok(&quot;exhaustion time at burn 1&quot;, abs(analyze(flat, 99.9, &quot;30d&quot;)[&quot;exhaustion_seconds&quot;][&quot;1d&quot;] - 26 * 86400) &lt; 1)
+    rows = load_rows([&quot;time,requests,errors&quot;, &quot;2026-01-01T00:00:00Z,100,1&quot;, &quot;2026-01-01T00:05:00Z,100,0&quot;])
+    ok(&quot;aliases requests/errors&quot;, rows[0][1] == 100 and rows[0][2] == 1)
+    rows = load_rows([&quot;ts,total,good&quot;, &quot;1767225600,50,49&quot;, &quot;1767225900,50,50&quot;])
+    ok(&quot;unix timestamps and good column&quot;, rows[0][2] == 1 and rows[0][0] == t0)
+    for data, label in [([&quot;ts,total&quot;, &quot;x,1&quot;], &quot;missing good/bad rejected&quot;),
+                        ([&quot;ts,total,bad&quot;, &quot;2026-01-01T00:00:00Z,10,11&quot;, &quot;2026-01-01T00:05:00Z,10,0&quot;], &quot;bad &gt; total rejected&quot;),
+                        ([&quot;ts,total,bad&quot;, &quot;nope,10,1&quot;, &quot;2026-01-01T00:05:00Z,10,0&quot;], &quot;bad timestamp rejected&quot;)]:
+        try:
+            load_rows(data)
+            ok(label, False)
+        except SLOError:
+            ok(label, True)
+    try:
+        analyze(flat, 100, &quot;30d&quot;)
+        ok(&quot;SLO 100 rejected&quot;, False)
+    except SLOError:
+        ok(&quot;SLO 100 rejected&quot;, True)
+    ok(&quot;markdown has alert table&quot;, &quot;## Alert policy&quot; in to_markdown(analyze(flat, 99.9, &quot;30d&quot;)))
+    passed = sum(c for _, c in cases)
+    for name, c in cases:
+        print((&quot;PASS &quot; if c else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Compute SLO error budget consumption and multiwindow burn-rate alerts.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;CSV of request counts per interval (&#x27;-&#x27; for stdin)&quot;)
+    ap.add_argument(&quot;--slo&quot;, type=float, default=99.9, help=&quot;target in percent (default 99.9)&quot;)
+    ap.add_argument(&quot;--window&quot;, default=&quot;30d&quot;, help=&quot;SLO window, e.g. 28d or 30d (default 30d)&quot;)
+    ap.add_argument(&quot;--now&quot;, help=&quot;evaluate as of this ISO time (default: end of the last interval)&quot;)
+    ap.add_argument(&quot;--allowance&quot;, action=&quot;store_true&quot;, help=&quot;print allowed downtime and alert thresholds only&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    try:
+        if a.allowance:
+            t = allowance_table(a.slo, a.window)
+            if a.json:
+                print(json.dumps(t, indent=2))
+            else:
+                print(f&quot;SLO {a.slo}% over {a.window}: {fmt_dur(t[&#x27;allowed_downtime_seconds&#x27;])} of full downtime &quot;
+                      f&quot;({fmt_dur(t[&#x27;per_day_seconds&#x27;])}/day, {fmt_dur(t[&#x27;per_week_seconds&#x27;])}/week)&quot;)
+                for x in t[&quot;thresholds&quot;]:
+                    print(f&quot;  {x[&#x27;severity&#x27;]:6} {x[&#x27;share&#x27;] * 100:.0f}% of budget in {x[&#x27;long&#x27;]} (short {x[&#x27;short&#x27;]}): burn rate &gt;= {x[&#x27;burn_rate&#x27;]:.2f}&quot;)
+            return 0
+        if not a.file:
+            ap.error(&quot;CSV file required (or --allowance / --self-test)&quot;)
+        lines = sys.stdin.read().splitlines() if a.file == &quot;-&quot; else open(a.file, encoding=&quot;utf-8&quot;).read().splitlines()
+        r = analyze(load_rows(lines), a.slo, a.window, parse_ts(a.now) if a.now else None)
+    except (OSError, SLOError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else to_markdown(r))
+    paging = any(x[&quot;severity&quot;] == &quot;page&quot; and x[&quot;status&quot;] == &quot;FIRING&quot; for x in r[&quot;alerts&quot;])
+    return 1 if paging or r[&quot;budget_remaining&quot;] &lt;= 0 else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/slo-error-budget-and-burn-rate-calculator',TI="SLO Error Budget and Burn Rate Calculator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

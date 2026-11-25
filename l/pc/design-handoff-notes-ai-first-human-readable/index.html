@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design Handoff Notes - AI First, Human Readable | Open library | claudebomb.com</title>
+<meta name="description" content="# Design Handoff Notes — AI-First, Human-Readable ### A structured handoff document optimized for AI implementation agents (Claude Code, Cursor, Copil">
+<meta property="og:title" content="Design Handoff Notes - AI First, Human Readable | Open library | claudebomb.com">
+<meta property="og:description" content="# Design Handoff Notes — AI-First, Human-Readable ### A structured handoff document optimized for AI implementation agents (Claude Code, Cursor, Copil">
+<meta property="og:url" content="https://claudebomb.com/l/pc/design-handoff-notes-ai-first-human-readable/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/design-handoff-notes-ai-first-human-readable/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Design Handoff Notes - AI First, Human Readable</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by gokbeyinac. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt"># Design Handoff Notes — AI-First, Human-Readable
+
+### A structured handoff document optimized for AI implementation agents (Claude Code, Cursor, Copilot) while remaining clear for human developers
+
+---
+
+## About This Prompt
+
+**Description:** Generates a design handoff document that serves as direct implementation instructions for AI coding agents. Unlike traditional handoff notes that describe how a design &quot;should feel,&quot; this document provides machine-parseable specifications with zero ambiguity. Every value is explicit, every state is defined, every edge case has a rule. The document is structured so an AI agent can read it top-to-bottom and implement without asking clarifying questions — while a human developer can also read it naturally.
+
+**The core philosophy:** If an AI reads this document and has to guess anything, the document has failed.
+
+**When to use:** After design is finalized, before implementation begins. This replaces Figma handoff, design spec PDFs, and &quot;just make it look like the mockup&quot; conversations.
+
+**Who reads this:**
+- Primary: AI coding agents (Claude Code, Cursor, Copilot, etc.)
+- Secondary: Human developers reviewing or debugging the AI&#x27;s output
+- Tertiary: You (the designer), when checking if implementation matches intent
+
+**Relationship to CLAUDE.md:** This document assumes a CLAUDE.md design system file already exists in the project root. Handoff Notes reference tokens from CLAUDE.md but don&#x27;t redefine them. If no CLAUDE.md exists, run the Design System Extraction prompts first.
+
+---
+
+## The Prompt
+
+```
+You are a design systems engineer writing implementation specifications.
+Your output will be read primarily by AI coding agents (Claude Code, Cursor)
+and secondarily by human developers.
+
+Your writing must follow one absolute rule:
+**If the reader has to guess, infer, or assume anything, you have failed.**
+
+Every value must be explicit. Every state must be defined. Every edge case
+must have a rule. No &quot;as appropriate,&quot; no &quot;roughly,&quot; no &quot;similar to.&quot;
+
+## Project Context
+- **Project:** ${name}
+- **Framework:** [Next.js 14+ / React / etc.]
+- **Styling:** [Tailwind 3.x / CSS Modules / etc.]
+- **Component library:** [shadcn/ui / custom / etc.]
+- **CLAUDE.md location:** [path — or &quot;not yet created&quot;]
+- **Design source:** [uploaded code / live URL / screenshots]
+- **Pages to spec:** [all / specific pages]
+
+## Output Format Rules
+
+Before writing any specs, follow these formatting rules exactly:
+
+1. **Values are always code-ready.**
+   WRONG: &quot;medium spacing&quot;
+   RIGHT: `p-6` (24px)
+
+2. **Colors are always token references + fallback hex.**
+   WRONG: &quot;brand blue&quot;
+   RIGHT: `text-brand-500` (#2563EB) — from CLAUDE.md tokens
+
+3. **Sizes are always in the project&#x27;s unit system.**
+   If Tailwind: use Tailwind classes as primary, px as annotation
+   If CSS: use rem as primary, px as annotation
+   WRONG: &quot;make it bigger on desktop&quot;
+   RIGHT: `text-lg` (18px) at ≥768px, `text-base` (16px) below
+
+4. **Conditionals use explicit if/else, never &quot;as needed.&quot;**
+   WRONG: &quot;show loading state as appropriate&quot;
+   RIGHT: &quot;if data fetch takes &gt;300ms, show skeleton. If fetch fails, show error state. If data returns empty array, show empty state.&quot;
+
+5. **File paths are explicit.**
+   WRONG: &quot;create a button component&quot;
+   RIGHT: &quot;create `src/components/ui/Button.tsx`&quot;
+
+6. **Every visual property is stated, never inherited by assumption.**
+   Even if &quot;obvious&quot; — state it. AI agents don&#x27;t have visual context.
+
+---
+
+## Document Structure
+
+Generate the handoff document with these sections:
+
+### SECTION 1: IMPLEMENTATION MAP
+
+A priority-ordered table of everything to build.
+AI agents should implement in this order to resolve dependencies correctly.
+
+| Order | Component/Section | File Path | Dependencies | Complexity | Notes |
+|-------|------------------|-----------|-------------|-----------|-------|
+| 1 | Design tokens setup | `tailwind.config.ts` | None | Low | Must be first — all other components reference these |
+| 2 | Typography components | `src/components/ui/Text.tsx` | Tokens | Low | Heading, Body, Caption, Label variants |
+| 3 | Button | `src/components/ui/Button.tsx` | Tokens, Typography | Medium | 3 variants × 3 sizes × 6 states |
+| ... | ... | ... | ... | ... | ... |
+
+Rules:
+- Nothing can reference a component that comes later in the table
+- Complexity = how many variants × states the component has
+- Notes = anything non-obvious about implementation
+
+---
+
+### SECTION 2: GLOBAL SPECIFICATIONS
+
+These apply everywhere. AI agent should configure these BEFORE building any components.
+
+#### 2.1 Breakpoints
+Define exact behavior boundaries:
+
+```
+BREAKPOINTS {
+  mobile:  0px    — 767px
+  tablet:  768px  — 1023px
+  desktop: 1024px — 1279px
+  wide:    1280px — ∞
+}
+```
+
+For each breakpoint, state:
+- Container max-width and padding
+- Base font size
+- Global spacing multiplier (if it changes)
+- Navigation mode (hamburger / horizontal / etc.)
+
+#### 2.2 Transition Defaults
+```
+TRANSITIONS {
+  default:    duration-200 ease-out
+  slow:       duration-300 ease-in-out
+  spring:     duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
+  none:       duration-0
+}
+
+RULE: Every interactive element uses `default` unless
+      this document specifies otherwise.
+RULE: Transitions apply to: background-color, color, border-color,
+      opacity, transform, box-shadow. Never to: width, height, padding,
+      margin (these cause layout recalculation).
+```
+
+#### 2.3 Z-Index Scale
+```
+Z-INDEX {
+  base:       0
+  dropdown:   10
+  sticky:     20
+  overlay:    30
+  modal:      40
+  toast:      50
+  tooltip:    60
+}
+
+RULE: No z-index value outside this scale. Ever.
+```
+
+#### 2.4 Focus Style
+```
+FOCUS {
+  style:      ring-2 ring-offset-2 ring-brand-500
+  applies-to: every interactive element (buttons, links, inputs, selects, checkboxes)
+  visible:    only on keyboard navigation (use focus-visible, not focus)
+}
+```
+
+---
+
+### SECTION 3: PAGE SPECIFICATIONS
+
+For each page, provide a complete implementation spec.
+
+#### Page: ${page_name}
+**Route:** `/exact-route-path`
+**Layout:** ${which_layout_wrapper_to_use}
+**Data requirements:** [what data this page needs, from where]
+
+##### Page Structure (top to bottom)
+
+```
+PAGE STRUCTURE: ${page_name}
+├── Section: Hero
+│   ├── Component: Heading (h1)
+│   ├── Component: Subheading (p)
+│   ├── Component: CTA Button (primary, lg)
+│   └── Component: HeroImage
+├── Section: Features
+│   ├── Component: SectionHeading (h2)
+│   └── Component: FeatureCard × 3 (grid)
+├── Section: Testimonials
+│   └── Component: TestimonialSlider
+└── Section: CTA
+    ├── Component: Heading (h2)
+    └── Component: CTA Button (primary, lg)
+```
+
+##### Section-by-Section Specs
+
+For each section:
+
+**${section_name}**
+
+```
+LAYOUT {
+  container:    max-w-[1280px] mx-auto px-6 (mobile: px-4)
+  direction:    flex-col (mobile) → flex-row (desktop)
+  gap:          gap-8 (32px)
+  padding:      py-16 (64px) (mobile: py-10)
+  background:   bg-white
+}
+
+CONTENT {
+  heading {
+    text:       &quot;${exact_heading_text_or_content_source}&quot;
+    element:    h2
+    class:      text-3xl font-bold text-gray-900 (mobile: text-2xl)
+    max-width:  max-w-[640px]
+  }
+  body {
+    text:       &quot;${exact_body_text_or_content_source}&quot;
+    class:      text-lg text-gray-600 leading-relaxed (mobile: text-base)
+    max-width:  max-w-[540px]
+  }
+}
+
+GRID (if applicable) {
+  columns:      grid-cols-3 (tablet: grid-cols-2) (mobile: grid-cols-1)
+  gap:          gap-6 (24px)
+  items:        ${what_component_renders_in_each_cell}
+  alignment:    items-start
+}
+
+ANIMATION (if applicable) {
+  type:         fade-up on scroll
+  trigger:      when section enters viewport (threshold: 0.2)
+  stagger:      each child delays 100ms after previous
+  duration:     duration-500
+  easing:       ease-out
+  runs:         once (do not re-trigger on scroll up)
+}
+```
+
+---
+
+### SECTION 4: COMPONENT SPECIFICATIONS
+
+For each component, provide a complete implementation contract.
+
+#### Component: ${componentname}
+**File:** `src/components/${path}/${componentname}.tsx`
+**Purpose:** [one sentence — what this component does]
+
+##### Props Interface
+```typescript
+interface ${componentname}Props {
+  variant: &#x27;primary&#x27; | &#x27;secondary&#x27; | &#x27;ghost&#x27;     // visual style
+  size: &#x27;sm&#x27; | &#x27;md&#x27; | &#x27;lg&#x27;                        // dimensions
+  disabled?: boolean                                // default: false
+  loading?: boolean                                 // default: false
+  icon?: React.ReactNode                           // optional leading icon
+  children: React.ReactNode                         // label content
+  onClick?: () =&gt; void                              // click handler
+}
+```
+
+##### Variant × Size Matrix
+Define exact values for every combination:
+
+```
+VARIANT: primary
+  SIZE: sm
+    height:           h-8 (32px)
+    padding:          px-3 (12px)
+    font:             text-sm font-medium (14px)
+    background:       bg-brand-500 (#2563EB)
+    text:             text-white (#FFFFFF)
+    border:           none
+    border-radius:    rounded-md (6px)
+    shadow:           none
+
+  SIZE: md
+    height:           h-10 (40px)
+    padding:          px-4 (16px)
+    font:             text-sm font-medium (14px)
+    background:       bg-brand-500 (#2563EB)
+    text:             text-white (#FFFFFF)
+    border:           none
+    border-radius:    rounded-lg (8px)
+    shadow:           shadow-sm
+
+  SIZE: lg
+    height:           h-12 (48px)
+    padding:          px-6 (24px)
+    font:             text-base font-semibold (16px)
+    background:       bg-brand-500 (#2563EB)
+    text:             text-white (#FFFFFF)
+    border:           none
+    border-radius:    rounded-lg (8px)
+    shadow:           shadow-sm
+
+VARIANT: secondary
+  [same structure, different values]
+
+VARIANT: ghost
+  [same structure, different values]
+```
+
+##### State Specifications
+Every state must be defined for every variant:
+
+```
+STATES (apply to ALL variants unless overridden):
+
+  hover {
+    background:     ${token} — darken one step from default
+    transform:      none (no scale/translate on hover)
+    shadow:         ${token_or_none}
+    cursor:         pointer
+    transition:     default (duration-200 ease-out)
+  }
+
+  active {
+    background:     ${token} — darken two steps from default
+    transform:      scale-[0.98]
+    transition:     duration-75
+  }
+
+  focus-visible {
+    ring:           ring-2 ring-offset-2 ring-brand-500
+    all other:      same as default state
+  }
+
+  disabled {
+    opacity:        opacity-50
+    cursor:         not-allowed
+    pointer-events: none
+    ALL hover/active/focus states: do not apply
+  }
+
+  loading {
+    content:        replace children with spinner (16px, animate-spin)
+    width:          maintain same width as non-loading state (prevent layout shift)
+    pointer-events: none
+    opacity:        opacity-80
+  }
+```
+
+##### Icon Behavior
+```
+ICON RULES {
+  position:       left of label text (always)
+  size:           16px (sm), 16px (md), 20px (lg)
+  gap:            gap-1.5 (sm), gap-2 (md), gap-2 (lg)
+  color:          inherits text color (currentColor)
+  when loading:   icon is hidden, spinner takes its position
+  icon-only:      if no children, component becomes square (width = height)
+                  add aria-label prop requirement
+}
+```
+
+---
+
+### SECTION 5: INTERACTION FLOWS
+
+For each user flow, provide step-by-step implementation:
+
+#### Flow: [Flow Name, e.g., &quot;User Signs Up&quot;]
+```
+TRIGGER:     user clicks &quot;Sign Up&quot; button in header
+
+STEP 1:      Modal opens
+             animation:   fade-in (opacity 0→1, duration-200)
+             backdrop:    bg-black/50, click-outside closes modal
+             focus:       trap focus inside modal, auto-focus first input
+             body:        scroll-lock (prevent background scroll)
+
+STEP 2:      User fills form
+             fields:      ${list_exact_fields_with_validation_rules}
+             validation:  on blur (not on change — reduces noise)
+             
+             field: email {
+               type:       email
+               required:   true
+               validate:   regex pattern + &quot;must contain @ and domain&quot;
+               error:      &quot;That doesn&#x27;t look like an email — check for typos&quot;
+               success:    green checkmark icon appears (fade-in, duration-150)
+             }
+             
+             field: password {
+               type:       password (with show/hide toggle)
+               required:   true
+               validate:   min 8 chars, 1 uppercase, 1 number
+               error:      show checklist of requirements, highlight unmet
+               strength:   show strength bar (weak/medium/strong)
+             }
+
+STEP 3:      User submits
+             button:      shows loading state (see Button component spec)
+             request:     POST /api/auth/signup
+             duration:    expect 1-3 seconds
+
+STEP 4a:     Success
+             modal:       content transitions to success message (crossfade, duration-200)
+             message:     &quot;Account created! Check your email to verify.&quot;
+             action:      &quot;Got it&quot; button closes modal
+             redirect:    after close, redirect to /dashboard
+             toast:       none (the modal IS the confirmation)
+
+STEP 4b:     Error — email exists
+             field:       email input shows error state
+             message:     &quot;This email already has an account — want to log in instead?&quot;
+             action:      &quot;Log in&quot; link switches modal to login form
+             button:      returns to default state (not loading)
+
+STEP 4c:     Error — network failure
+             display:     error banner at top of modal (not a toast)
+             message:     &quot;Something went wrong on our end. Try again?&quot;
+             action:      &quot;Try again&quot; button re-submits
+             button:      returns to default state
+
+STEP 4d:     Error — rate limited
+             display:     error banner
+             message:     &quot;Too many attempts. Wait 60 seconds and try again.&quot;
+             button:      disabled for 60 seconds with countdown visible
+```
+
+---
+
+### SECTION 6: RESPONSIVE BEHAVIOR RULES
+
+Don&#x27;t describe what changes — specify the exact rules:
+
+```
+RESPONSIVE RULES:
+
+Rule 1: Navigation
+  ≥1024px:    horizontal nav, all items visible
+  &lt;1024px:    hamburger icon, slide-in drawer from right
+              drawer-width: 80vw (max-w-[320px])
+              animation: translate-x (duration-300 ease-out)
+              backdrop: bg-black/50, click-outside closes
+
+Rule 2: Grid Sections
+  ≥1024px:    grid-cols-3
+  768-1023px: grid-cols-2 (last item spans full if odd count)
+  &lt;768px:     grid-cols-1
+
+Rule 3: Hero Section
+  ≥1024px:    two-column (text left, image right) — 55/45 split
+  &lt;1024px:    single column (text top, image bottom)
+              image max-height: 400px, object-cover
+
+Rule 4: Typography Scaling
+  ≥1024px:    h1=text-5xl, h2=text-3xl, h3=text-xl, body=text-base
+  &lt;1024px:    h1=text-3xl, h2=text-2xl, h3=text-lg, body=text-base
+
+Rule 5: Spacing Scaling
+  ≥1024px:    section-padding: py-16, container-padding: px-8
+  768-1023px: section-padding: py-12, container-padding: px-6
+  &lt;768px:     section-padding: py-10, container-padding: px-4
+
+Rule 6: Touch Targets
+  &lt;1024px:    all interactive elements minimum 44×44px hit area
+              if visual size &lt; 44px, use invisible padding to reach 44px
+
+Rule 7: Images
+  all images: use next/image with responsive sizes prop
+  hero:       sizes=&quot;(max-width: 1024px) 100vw, 50vw&quot;
+  grid items: sizes=&quot;(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw&quot;
+```
+
+---
+
+### SECTION 7: EDGE CASES &amp; BOUNDARY CONDITIONS
+
+This section prevents the &quot;but what happens when...&quot; problems:
+
+```
+EDGE CASES:
+
+Text Overflow {
+  headings:     max 2 lines, then truncate with text-ellipsis (add title attr for full text)
+  body text:    allow natural wrapping, no truncation
+  button labels: single line only, max 30 characters, no truncation (design constraint)
+  nav items:    single line, truncate if &gt;16 characters on mobile
+  table cells:  truncate with tooltip on hover
+}
+
+Empty States {
+  lists/grids with 0 items: show ${emptystate} component
+    - illustration: ${describe_or_reference_asset}
+    - heading: &quot;${exact_text}&quot;
+    - body: &quot;${exact_text}&quot;
+    - CTA: &quot;${exact_text}&quot; → ${action}
+  
+  user avatar missing: show initials on colored background
+    - background: generate from user name hash (deterministic)
+    - initials: first letter of first + last name, uppercase
+    - font: text-sm font-medium text-white
+  
+  image fails to load: show gray placeholder with image icon
+    - background: bg-gray-100
+    - icon: ImageOff from lucide-react, text-gray-400, 24px
+}
+
+Loading States {
+  page load:      full-page skeleton (not spinner)
+  component load: component-level skeleton matching final dimensions
+  button action:  inline spinner in button (see Button spec)
+  infinite list:  skeleton row × 3 at bottom while fetching next page
+  
+  skeleton style: bg-gray-200 rounded animate-pulse
+  skeleton rule:  skeleton shape must match final content shape
+                  (rectangle for text, circle for avatars, rounded-lg for cards)
+}
+
+Error States {
+  API error (500):     show inline error banner with retry button
+  Network error:       show &quot;You seem offline&quot; banner at top (auto-dismiss when reconnected)
+  404 content:         show custom 404 component (not Next.js default)
+  Permission denied:   redirect to /login with return URL param
+  Form validation:     inline per-field (see flow specs), never alert()
+}
+
+Data Extremes {
+  username 1 character:   display normally
+  username 50 characters: truncate at 20 in nav, full in profile
+  price $0.00:            show &quot;Free&quot;
+  price $999,999.99:      ensure layout doesn&#x27;t break (test with formatted number)
+  list with 1 item:       same layout as multiple (no special case)
+  list with 500 items:    paginate at 20, show &quot;Load more&quot; button
+  date today:             show &quot;Today&quot; not the date
+  date this year:         show &quot;Mar 13&quot; not &quot;Mar 13, 2026&quot;
+  date other year:        show &quot;Mar 13, 2025&quot;
+}
+```
+
+---
+
+### SECTION 8: IMPLEMENTATION VERIFICATION CHECKLIST
+
+After implementation, the AI agent (or human developer) should verify:
+
+```
+VERIFICATION:
+
+□ Every component matches the variant × size matrix exactly
+□ Every state (hover, active, focus, disabled, loading) works
+□ Tab order follows visual order on all pages
+□ Focus-visible ring appears on keyboard nav, not on mouse click
+□ All transitions use specified duration and easing (not browser default)
+□ No layout shift during page load (check CLS)
+□ Skeleton states match final content dimensions
+□ All edge cases from Section 7 are handled
+□ Touch targets ≥ 44×44px on mobile breakpoints
+□ No horizontal scroll at any breakpoint
+□ All images use next/image with correct sizes prop
+□ Z-index values only use the defined scale
+□ Error states display correctly (test with network throttle)
+□ Empty states display correctly (test with empty data)
+□ Text truncation works at boundary lengths
+□ Dark mode tokens (if applicable) are all mapped
+```
+
+---
+
+## How the AI Agent Should Use This Document
+
+Include this instruction at the top of the generated handoff document
+so the implementing AI knows how to work with it:
+
+```
+INSTRUCTIONS FOR AI IMPLEMENTATION AGENT:
+
+1. Read this document fully before writing any code.
+2. Implement in the order specified in SECTION 1 (Implementation Map).
+3. Reference CLAUDE.md for token values. If a token referenced here
+   is not in CLAUDE.md, flag it and use the fallback value provided.
+4. Every value in this document is intentional. Do not substitute
+   with &quot;close enough&quot; values. `gap-6` means `gap-6`, not `gap-5`.
+5. Every state must be implemented. If a state is not specified for
+   a component, that is a gap in the spec — flag it, do not guess.
+6. After implementing each component, run through its state matrix
+   and verify all states work before moving to the next component.
+7. When encountering ambiguity, prefer the more explicit interpretation.
+   If still ambiguous, add a TODO comment: &quot;// HANDOFF-AMBIGUITY: [description]&quot;
+```
+```
+
+---
+
+## Customization Notes
+
+**If you&#x27;re not using Tailwind:** Replace all Tailwind class references in the prompt with your system&#x27;s equivalents. The structure stays the same — only the value format changes. Tell Claude: &quot;Use CSS custom properties as primary, px values as annotations.&quot;
+
+**If you&#x27;re handing off to a specific AI tool:** Add tool-specific notes. For example, for Cursor: &quot;Generate implementation as step-by-step edits to existing files, not full file rewrites.&quot; For Claude Code: &quot;Create each component as a complete file, test it, then move to the next.&quot;
+
+**If no CLAUDE.md exists yet:** Tell the prompt to generate a minimal token section at the top of the handoff document covering only the tokens needed for this specific handoff. It won&#x27;t be a full design system, but it prevents hardcoded values.
+
+**For multi-page projects:** Run the prompt once per page, but include Section 1 (Implementation Map) and Section 2 (Global Specs) only in the first run. Subsequent pages reference the same globals.</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/design-handoff-notes-ai-first-human-readable',TI="Design Handoff Notes - AI First, Human Readable";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

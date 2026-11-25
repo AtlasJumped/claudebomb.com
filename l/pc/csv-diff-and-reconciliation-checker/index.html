@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSV Diff and Reconciliation Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: csv-diff-and-reconciliation-checker description: Compares two CSV exports of the same records (old vs new, billing vs ledger, source vs ware">
+<meta property="og:title" content="CSV Diff and Reconciliation Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: csv-diff-and-reconciliation-checker description: Compares two CSV exports of the same records (old vs new, billing vs ledger, source vs ware">
+<meta property="og:url" content="https://claudebomb.com/l/pc/csv-diff-and-reconciliation-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/csv-diff-and-reconciliation-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">CSV Diff and Reconciliation Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: csv-diff-and-reconciliation-checker
+description: Compares two CSV exports of the same records (old vs new, billing vs ledger, source vs warehouse) by key after normalizing headers, delimiters, currency formats, accounting negatives, dates and case. Reports added, removed and duplicate keys, key format drift, changed values per column with tolerances, possible re-keys and a control-total bridge, then writes a reconciliation report. Includes a stdlib Python checker with --self-test.
+---
+
+# CSV Diff and Reconciliation Checker
+
+You help analysts, finance teams and data engineers answer &quot;do these two files agree, and if not, exactly why?&quot;. You match rows by a business key, ignore differences that are only formatting, and turn the real differences into a short list of causes with the amounts that each one explains, so the totals tie out to the cent.
+
+## Files in this skill
+
+- `scripts/csv_recon.py` - matches two CSVs by key (single or composite), normalizes values, lists schema differences, duplicate and blank keys, added, removed and changed rows, key format drift and possible re-keys, and builds a control-total bridge (Python 3 standard library only)
+- `references/matching-and-normalization.md` - choosing a key, header and value normalization, number and date formats, tolerances, and what each finding code means
+- `references/reconciliation-playbook.md` - common causes of breaks (timing, duplicates, sign conventions, rounding, filters, encoding) and how to prove each one
+- `templates/reconciliation-report.md` - the report to hand back
+- `examples/billing-export-sept.csv` - September invoices from a billing system (14 rows, comma-separated)
+- `examples/ledger-export-sept.csv` - the same month from the general ledger (15 rows, semicolons, $1,200.00 amounts, US dates, renamed and extra columns)
+
+## Workflow
+
+### 1. Understand the two files
+Ask what each file is, which system and filters produced it (date range, status, entity, currency), which side is the source of truth, what the key is, and which differences matter (amounts to the cent, statuses, dates). Ask for row counts and totals the user already expects. Look at the first lines of both files before running anything.
+
+### 2. Run the checker
+```
+python3 scripts/csv_recon.py examples/billing-export-sept.csv examples/ledger-export-sept.csv --key invoice_id --map customer=customer_name --tol amount=0.01 --sum amount --ignore-case --dates invoice_date
+python3 scripts/csv_recon.py orders_old.csv orders_new.csv --key order_id,line_no --ignore updated_at --out-csv diff.csv
+python3 scripts/csv_recon.py a.csv b.csv --key id --json
+python3 scripts/csv_recon.py --self-test
+```
+Headers that differ only by case or spacing match automatically; renamed columns need `--map old=new`. Exit 0 means the files reconcile, 1 means differences, 2 means bad input (missing file or key column).
+
+### 3. Explain every difference
+Work down the findings (see `references/reconciliation-playbook.md`): duplicates and blank keys first (they distort everything else), then added and removed rows (timing, filters, re-keys), then changed values grouped by column and by pattern (same delta, sign flip, digits swapped, rounding). Use the bridge: old total + added - removed + changes - duplicates = new total, with nothing unexplained. Check a sample of rows by hand in both source systems.
+
+### 4. Deliver
+Fill `templates/reconciliation-report.md`: scope and inputs, result, summary counts, the bridge, each break with cause, amount, owner and fix, and what to change so next month reconciles automatically (stable keys, same filters, export formats). Attach `--out-csv` output for the people who fix the rows.
+
+## Example result
+Billing vs ledger for September: 14 vs 15 rows, 13 matched (INV-1009 matched to `inv-1009` as KEY_FORMAT_DRIFT), 11 unchanged. Breaks: INV-1011 posted twice in the ledger (HIGH DUPLICATE_KEY, +880.00), INV-1004 450.00 vs 405.00 (digits swapped, -45.00), INV-1012 open in billing but Paid in the ledger, INV-1007 missing and INV-1015 added with the same customer and amount (POSSIBLE_REKEY: posted in October under a new number). $ signs, thousands separators, (150.00) negatives, US dates and status case are formatting only; the INV-1003 rounding (1033.335 vs 1033.34) is inside the 0.01 tolerance. Bridge: 9545.965 + 310.00 - 310.00 - 44.995 + 880.00 = 10380.97, unexplained 0.
+
+## Rules
+
+- Never compare by row position; agree on a key first and check it is unique on both sides.
+- Separate formatting noise from real differences and say which normalizations you applied.
+- Every break gets a cause, an amount and an owner; &quot;timing&quot; is a cause only if you name the period it lands in.
+- Do not net differences against each other to make totals tie; list them.
+- Keep tolerances explicit and small (rounding only), never large enough to hide a real error.
+- Treat customer and personal data in the files as confidential; share only what the report needs.
+FILE:references/matching-and-normalization.md
+# Matching and normalization
+
+## Choosing the key
+- Use a business key that both systems carry: invoice number, order id + line number, transaction id. Composite keys: `--key order_id,line_no`.
+- Check uniqueness on both sides before anything else. Duplicates mean either a real double posting or a key that is not unique (e.g. invoice_id without line number).
+- Avoid keys that change between systems: row numbers, surrogate database ids, names, timestamps.
+- If there is no shared key, build one (date + amount + reference) and expect some ambiguous matches; review them by hand.
+
+## Header matching
+- Exact name first, then case/space/underscore/hyphen-insensitive (`Invoice ID` = `invoice_id`), reported as HEADER_FORMAT.
+- Renamed columns: `--map customer=customer_name`. Columns only on one side are reported and not compared.
+- A UTF-8 byte order mark (BOM) at the start of the file is removed; otherwise the first header would not match.
+
+## Delimiters and encoding
+- Comma, semicolon, tab and pipe are detected. European Excel exports often use `;` with `,` as decimal separator; this checker expects `.` decimals, so convert those first (or export again with `.`).
+- Read files as UTF-8. If you see `Ã©` instead of `é`, the file is Windows-1252: convert with `iconv -f cp1252 -t utf-8`.
+
+## Value normalization (applied to every compared cell)
+| Raw | Treated as |
+|---|---|
+| leading/trailing spaces, repeated inner spaces | trimmed, single space |
+| `1,234.50`, `$1,234.50`, `1234.5`, `1234.50 USD` | number 1234.5 |
+| `(150.00)`, `150.00-`, `-$150.00` | number -150 |
+| `12.5%` | number 12.5 (not 0.125) |
+| empty, `null`, `None`, `N/A`, `NA`, `-` | empty |
+| `Paid` vs `paid` | different, unless `--ignore-case` |
+| `09/01/2026`, `2026/09/01`, `01.09.2026` | 2026-09-01 for columns in `--dates` (US month-first unless `--dayfirst`) |
+
+Numbers are compared as decimals, not floats, so `0.1 + 0.2` problems do not appear. Leading zeros in numeric-looking codes (`00123` vs `123`) compare equal as numbers; if that is wrong for a code column, add it to `--ignore` and compare it separately.
+
+## Tolerances
+- `--tol amount=0.01` per column, or `--tol 0.01` for every numeric column.
+- Use the smallest unit of the currency for rounding differences; never use a tolerance to hide a known error.
+- Values inside the tolerance are counted as FORMAT_ONLY and still appear in the bridge as changes.
+
+## Finding codes
+| Code | Severity | Meaning |
+|---|---|---|
+| DUPLICATE_KEY | HIGH | the same key appears more than once on one side; only the first row is compared |
+| MISSING_KEY | HIGH | rows with a blank key; they cannot be matched |
+| TOTAL_UNEXPLAINED | HIGH | the bridge does not tie (non-numeric cells, blank keys) |
+| COLUMN_ONLY_IN_OLD / NEW | MEDIUM | schema difference; map it if it was renamed |
+| ROWS_ADDED / ROWS_REMOVED | MEDIUM | keys on one side only |
+| VALUE_CHANGED | MEDIUM | per column, rows whose normalized values differ |
+| RAGGED_ROWS | MEDIUM | rows with more or fewer cells than the header (bad quoting, embedded delimiters) |
+| NON_NUMERIC | MEDIUM | cells in a --sum column that are not numbers |
+| HEADER_FORMAT | LOW | columns matched only after ignoring case and spacing |
+| KEY_FORMAT_DRIFT | LOW | keys equal after ignoring case, spaces, separators and leading zeros; compared as one row |
+| POSSIBLE_REKEY | LOW | a removed and an added row with the same non-key, non-date values |
+| FORMAT_ONLY, DELIMITER, TOTAL_DIFF | INFO | context: equal after normalization, different delimiters, totals moved |
+
+## The control-total bridge
+```
+OLD total
++ amounts of rows only in NEW
+- amounts of rows only in OLD
++ (NEW - OLD) on matched rows
+- extra duplicate or blank-key rows in OLD
++ extra duplicate or blank-key rows in NEW
+= NEW total            (unexplained must be 0)
+```
+FILE:references/reconciliation-playbook.md
+# Reconciliation playbook: causes of breaks and how to prove them
+
+Work in this order: duplicates and blank keys, then rows on one side only, then changed values, then totals.
+
+## Duplicates
+- **Double posting** (same key, same values twice): a retry, an import run twice, a manual re-entry. Prove: identical rows, often the same created timestamp or batch id. Fix: reverse one posting; add an idempotency key to the import.
+- **Non-unique key** (same key, different values): the key needs another column (line number, currency, entity). Re-run with a composite key.
+
+## Rows on one side only
+- **Timing / cut-off**: the record exists in both systems but in different periods (invoice dated 30 Sep, posted 1 Oct). Prove: find it in the next or previous period export. Typical sign: POSSIBLE_REKEY with a date just across the boundary.
+- **Different filters**: one export excludes drafts, voids, test accounts, zero amounts, another entity or currency. Prove: compare the export queries or report settings; count the excluded statuses.
+- **Re-keyed records**: credit note and re-issue, migrated ids, prefix changes (INV- vs IN-). Prove: same customer, amount and date with a new key.
+- **Failed sync**: the record never reached the target. Prove: integration logs, error queue, last successful sync time.
+- **Key format**: case, spaces, leading zeros, separators (KEY_FORMAT_DRIFT). Fix at the source; normalize keys in the export.
+
+## Changed values
+| Pattern | Likely cause |
+|---|---|
+| delta is a multiple of 9 (450 -&gt; 405, 1,234 -&gt; 1,324) | transposed digits on manual entry |
+| exact sign flip | debit/credit convention, credit notes stored as positive with a type column |
+| delta equals tax or fee rate x amount | one side gross, the other net |
+| delta of 0.01 to 0.05 | rounding per line vs on the total; half-up vs banker&#x27;s rounding |
+| amount / rate | currency conversion, different rate date |
+| date off by one day | time zone (UTC vs local) on timestamps near midnight |
+| status differs | sync lag, or the systems use different state machines (paid vs settled) |
+| text differs only in accents or odd characters | encoding (UTF-8 vs Windows-1252) |
+
+## Totals
+- Tie the bridge to zero before reporting. A non-zero unexplained amount means blank keys, non-numeric cells or a column that mixes currencies.
+- Report totals per currency; never add USD and EUR.
+- Check the totals against the system&#x27;s own report (trial balance, payout report), not just against the export.
+
+## Proving a cause
+For each break: show the row(s) on both sides, the cause, the amount, and evidence (log line, export setting, the row in the next period). Mark each as: fix in source A, fix in source B, timing (will clear), or accepted difference.
+
+## Preventing next month&#x27;s breaks
+- Same filters and period definition (time zone, inclusive end date) on both exports.
+- Stable, unique keys carried end to end; no manual re-keying.
+- Export amounts as plain numbers with `.` decimals and a separate currency column; dates as ISO 8601.
+- Run the checker on a schedule and alert on HIGH findings or unexplained totals.
+FILE:templates/reconciliation-report.md
+# Reconciliation: &lt;OLD source&gt; vs &lt;NEW source&gt;, &lt;period&gt;
+
+**Inputs:** &lt;billing-export-sept.csv (14 rows, exported 2026-10-02 by ...)&gt;, &lt;ledger-export-sept.csv (15 rows)&gt;
+**Key:** &lt;invoice_id&gt;   **Compared columns:** &lt;customer, amount, currency, status, invoice_date&gt;
+**Normalization:** &lt;$ and thousands separators removed, (x) = -x, status case ignored, US dates read as dates, tolerance amount 0.01&gt;
+**Result:** &lt;RECONCILES / DIFFERENCES FOUND: 4 breaks, net +835.005, unexplained 0&gt;
+
+## Summary
+| Rows OLD | Rows NEW | Matched | Unchanged | Changed | Added | Removed | Duplicates |
+|---|---|---|---|---|---|---|---|
+| &lt;14&gt; | &lt;15&gt; | &lt;13&gt; | &lt;11&gt; | &lt;2&gt; | &lt;1&gt; | &lt;1&gt; | &lt;1&gt; |
+
+## Control total bridge (&lt;amount&gt;, &lt;USD&gt;)
+| Step | Amount |
+|---|---|
+| OLD total | &lt;9,545.97&gt; |
+| + rows only in NEW | &lt;310.00&gt; |
+| - rows only in OLD | &lt;310.00&gt; |
+| + changes on matched rows | &lt;-45.00&gt; |
+| + duplicates in NEW | &lt;880.00&gt; |
+| = NEW total | &lt;10,380.97&gt; |
+| Unexplained | &lt;0.00&gt; |
+
+## Breaks
+| # | Key(s) | Type | OLD | NEW | Amount | Cause (evidence) | Owner | Action |
+|---|---|---|---|---|---|---|---|---|
+| 1 | &lt;INV-1011&gt; | &lt;Duplicate&gt; | &lt;880.00 x1&gt; | &lt;880.00 x2&gt; | &lt;+880.00&gt; | &lt;posted twice by import retry (batch 7731)&gt; | &lt;GL team&gt; | &lt;reverse second posting&gt; |
+
+## Formatting-only differences (no action)
+- &lt;amount formats, status case, date formats, header names&gt;
+
+## Recommendations
+- &lt;same filters and period definition on both exports&gt;
+- &lt;add an idempotency key to the ledger import&gt;
+
+## Attachments
+- &lt;diff.csv from --out-csv (status, key, column, old, new, delta)&gt;
+FILE:examples/billing-export-sept.csv
+invoice_id,customer,amount,currency,status,invoice_date
+INV-1001,Northwind Traders,1200.00,USD,paid,2026-09-01
+INV-1002,Blue Harbor Cafe,89.90,USD,paid,2026-09-02
+INV-1003,Atlas Fitness,1033.335,USD,paid,2026-09-03
+INV-1004,Greenleaf Dental,450.00,USD,paid,2026-09-05
+INV-1005,Orbit Labs,2500.00,USD,paid,2026-09-08
+INV-1006,Maple &amp; Co,74.50,USD,refunded,2026-09-09
+INV-1007,Copperline Studio,310.00,USD,paid,2026-09-11
+INV-1008,Riverbend School,640.00,USD,paid,2026-09-12
+INV-1009,Juniper Vet Clinic,195.00,USD,paid,2026-09-15
+INV-1010,Northwind Traders,1200.00,USD,paid,2026-09-18
+INV-1011,Summit Roofing,880.00,USD,paid,2026-09-22
+INV-1012,Blue Harbor Cafe,89.90,USD,open,2026-09-25
+INV-1013,Orbit Labs,-150.00,USD,credit,2026-09-26
+INV-1014,Atlas Fitness,1033.33,USD,paid,2026-09-30
+FILE:examples/ledger-export-sept.csv
+Invoice ID;customer_name;Amount;Currency;Status;Invoice Date;gl_account
+INV-1001;Northwind Traders;$1,200.00;USD;Paid;09/01/2026;4000
+INV-1002;Blue Harbor Cafe;$89.90;USD;Paid;09/02/2026;4000
+INV-1003;Atlas Fitness;$1,033.34;USD;Paid;09/03/2026;4000
+INV-1004;Greenleaf Dental;$405.00;USD;Paid;09/05/2026;4000
+INV-1005;Orbit Labs;$2,500.00;USD;Paid;09/08/2026;4000
+INV-1006;Maple &amp; Co;$74.50;USD;Refunded;09/09/2026;4000
+INV-1008;Riverbend School;$640.00;USD;Paid;09/12/2026;4000
+inv-1009;Juniper Vet Clinic;$195.00;USD;Paid;09/15/2026;4000
+INV-1010;Northwind Traders;$1,200.00;USD;Paid;09/18/2026;4000
+INV-1011;Summit Roofing;$880.00;USD;Paid;09/22/2026;4000
+INV-1011;Summit Roofing;$880.00;USD;Paid;09/22/2026;4000
+INV-1012;Blue Harbor Cafe;$89.90;USD;Paid;09/25/2026;4000
+INV-1013;Orbit Labs;($150.00);USD;Credit;09/26/2026;4090
+INV-1014;Atlas Fitness;$1,033.33;USD;Paid;09/30/2026;4000
+INV-1015;Copperline Studio;$310.00;USD;Paid;10/01/2026;4000
+FILE:scripts/csv_recon.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;CSV diff and reconciliation checker (Python 3 standard library only).
+
+Compares two CSV exports of the same records (old vs new, system A vs system B) by a
+key, after normalizing the noise that makes naive diffs useless: spaces, header case,
+thousands separators, currency signs, accounting negatives &quot;(12.50)&quot;, number
+formatting, optional text case and date formats. Reports schema differences, missing
+or duplicate keys, added and removed rows, changed values per column (with numeric
+tolerances), keys that only differ by format (case, leading zeros, spaces) and a
+control-total bridge for amount columns: old total + added - removed + changes = new.
+
+Usage:
+  python3 csv_recon.py OLD.csv NEW.csv --key id [--key2 line] [--map old_col=new_col]
+        [--ignore col,col] [--tol amount=0.01] [--sum amount] [--ignore-case]
+        [--dates col,col] [--dayfirst] [--limit 20] [--out-csv diff.csv] [--json]
+  python3 csv_recon.py --self-test
+Exit codes: 0 = files reconcile (no differences after normalization and tolerance),
+1 = differences found, 2 = bad input (missing file, missing key column).
+&quot;&quot;&quot;
+import argparse, csv, datetime, io, json, re, sys
+from decimal import Decimal, InvalidOperation
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2, &quot;INFO&quot;: 3}
+NUM_RE = re.compile(r&quot;^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$&quot;)
+DATE_FORMATS = [&quot;%Y-%m-%d&quot;, &quot;%Y/%m/%d&quot;, &quot;%Y%m%d&quot;, &quot;%d.%m.%Y&quot;, &quot;%Y-%m-%dT%H:%M:%S&quot;, &quot;%Y-%m-%d %H:%M:%S&quot;]
+
+
+class InputError(Exception):
+    pass
+
+
+def norm_header(h):
+    return re.sub(r&quot;[\s_\-]+&quot;, &quot;_&quot;, h.strip().lstrip(&quot;\ufeff&quot;).lower())
+
+
+def read_csv(text, name):
+    text = text.lstrip(&quot;\ufeff&quot;)
+    if not text.strip():
+        raise InputError(f&quot;{name} is empty&quot;)
+    sample = text[:4096]
+    try:
+        dialect = csv.Sniffer().sniff(sample, delimiters=&quot;,;\t|&quot;)
+    except csv.Error:
+        dialect = csv.excel
+    rows = list(csv.reader(io.StringIO(text), dialect))
+    rows = [r for r in rows if any(c.strip() for c in r)]
+    header = [h.strip() for h in rows[0]]
+    body = []
+    for i, r in enumerate(rows[1:], 2):
+        if len(r) != len(header):
+            body.append((i, dict(zip(header, r + [&quot;&quot;] * (len(header) - len(r)))), len(r)))
+        else:
+            body.append((i, dict(zip(header, r)), len(r)))
+    return header, body, getattr(dialect, &quot;delimiter&quot;, &quot;,&quot;)
+
+
+def parse_number(s):
+    &quot;&quot;&quot;Return Decimal for &#x27;1,234.50&#x27;, &#x27;$1,234.50&#x27;, &#x27;(12.00)&#x27;, &#x27;-5&#x27;, &#x27;12.5%&#x27; (as 12.5), else None.&quot;&quot;&quot;
+    t = s.strip().replace(&quot;\u00a0&quot;, &quot;&quot;).replace(&quot; &quot;, &quot;&quot;)
+    if not t:
+        return None
+    neg = False
+    if t.startswith(&quot;(&quot;) and t.endswith(&quot;)&quot;):
+        neg, t = True, t[1:-1]
+    if t.endswith(&quot;-&quot;) and NUM_RE.match(t[:-1].lstrip(&quot;$&quot;)):
+        neg, t = True, t[:-1]
+    t = re.sub(r&quot;^([+-]?)(USD|EUR|GBP|[$\u20ac\u00a3])&quot;, r&quot;\1&quot;, t)
+    t = re.sub(r&quot;(USD|EUR|GBP|[$\u20ac\u00a3])$&quot;, &quot;&quot;, t)
+    t = t.rstrip(&quot;%&quot;)
+    if re.match(r&quot;^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$&quot;, t):
+        t = t.replace(&quot;,&quot;, &quot;&quot;)
+    if not NUM_RE.match(t):
+        return None
+    try:
+        d = Decimal(t)
+    except InvalidOperation:
+        return None
+    return -d if neg else d
+
+
+def parse_date(s, dayfirst):
+    t = s.strip()
+    fmts = DATE_FORMATS + ([&quot;%d/%m/%Y&quot;] if dayfirst else [&quot;%m/%d/%Y&quot;])
+    for f in fmts:
+        try:
+            return datetime.datetime.strptime(t, f).date().isoformat() if &quot;%H&quot; not in f else datetime.datetime.strptime(t, f).isoformat()
+        except ValueError:
+            pass
+    return None
+
+
+def normalize(value, col, opts):
+    v = value.strip()
+    if col in opts[&quot;dates&quot;]:
+        d = parse_date(v, opts[&quot;dayfirst&quot;])
+        if d:
+            return (&quot;date&quot;, d)
+    n = parse_number(v)
+    if n is not None:
+        return (&quot;num&quot;, n)
+    if v.lower() in (&quot;&quot;, &quot;null&quot;, &quot;none&quot;, &quot;n/a&quot;, &quot;na&quot;, &quot;-&quot;):
+        return (&quot;empty&quot;, &quot;&quot;)
+    v = re.sub(r&quot;\s+&quot;, &quot; &quot;, v)
+    return (&quot;text&quot;, v.lower() if opts[&quot;ignore_case&quot;] else v)
+
+
+def same(a, b, col, opts):
+    if a[0] == &quot;num&quot; and b[0] == &quot;num&quot;:
+        tol = opts[&quot;tol&quot;].get(col, opts[&quot;tol&quot;].get(&quot;*&quot;, Decimal(0)))
+        return abs(a[1] - b[1]) &lt;= tol
+    return a == b
+
+
+def key_variant(k):
+    &quot;&quot;&quot;Format-insensitive form of a key: case, spaces, separators and leading zeros.&quot;&quot;&quot;
+    t = re.sub(r&quot;[\s\-_./]&quot;, &quot;&quot;, k.lower())
+    return re.sub(r&quot;(?&lt;!\d)0+(?=\d)&quot;, &quot;&quot;, t)
+
+
+def reconcile(old_text, new_text, keys, opts):
+    oh, ob, odelim = read_csv(old_text, &quot;OLD&quot;)
+    nh, nb, ndelim = read_csv(new_text, &quot;NEW&quot;)
+    findings = []
+
+    def add(sev, code, detail, count=1):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;detail&quot;: detail, &quot;count&quot;: count})
+
+    # column matching: explicit map, then exact, then normalized header
+    cmap, fuzzy = {}, []
+    n_by_norm = {norm_header(h): h for h in nh}
+    for h in oh:
+        if h in opts[&quot;map&quot;]:
+            target = opts[&quot;map&quot;][h]
+            if target not in nh:
+                raise InputError(f&quot;--map target column &#x27;{target}&#x27; not in NEW&quot;)
+            cmap[h] = target
+        elif h in nh:
+            cmap[h] = h
+        elif norm_header(h) in n_by_norm:
+            cmap[h] = n_by_norm[norm_header(h)]
+            fuzzy.append(f&quot;{h} = {cmap[h]}&quot;)
+    if fuzzy:
+        add(&quot;LOW&quot;, &quot;HEADER_FORMAT&quot;, f&quot;{len(fuzzy)} column(s) matched by case/spacing only: &quot; + &quot;; &quot;.join(fuzzy), len(fuzzy))
+    only_old = [h for h in oh if h not in cmap]
+    only_new = [h for h in nh if h not in cmap.values()]
+    for h in only_old:
+        add(&quot;MEDIUM&quot;, &quot;COLUMN_ONLY_IN_OLD&quot;, f&quot;&#x27;{h}&#x27; has no match in NEW (use --map {h}=&lt;new name&gt; if it was renamed)&quot;)
+    for h in only_new:
+        add(&quot;MEDIUM&quot;, &quot;COLUMN_ONLY_IN_NEW&quot;, f&quot;&#x27;{h}&#x27; has no match in OLD&quot;)
+    for k in keys:
+        if k not in oh:
+            raise InputError(f&quot;key column &#x27;{k}&#x27; not in OLD header {oh}&quot;)
+        if cmap.get(k) not in nh:
+            raise InputError(f&quot;key column &#x27;{k}&#x27; has no match in NEW header {nh}&quot;)
+    if odelim != ndelim:
+        add(&quot;INFO&quot;, &quot;DELIMITER&quot;, f&quot;OLD uses &#x27;{odelim}&#x27;, NEW uses &#x27;{ndelim}&#x27;&quot;)
+
+    def index(body, side, colnames):
+        idx, dups, blanks, ragged = {}, {}, 0, 0
+        for line, row, ncells in body:
+            if ncells != (len(oh) if side == &quot;OLD&quot; else len(nh)):
+                ragged += 1
+            kv = tuple(row.get(c, &quot;&quot;).strip() for c in colnames)
+            if not all(kv):
+                blanks += 1
+                continue
+            if kv in idx:
+                dups.setdefault(kv, [idx[kv][0]]).append(line)
+            else:
+                idx[kv] = (line, row)
+        return idx, dups, blanks, ragged
+
+    oidx, odups, oblank, orag = index(ob, &quot;OLD&quot;, keys)
+    nidx, ndups, nblank, nrag = index(nb, &quot;NEW&quot;, [cmap[k] for k in keys])
+    for side, dups in ((&quot;OLD&quot;, odups), (&quot;NEW&quot;, ndups)):
+        for kv, lines in dups.items():
+            add(&quot;HIGH&quot;, &quot;DUPLICATE_KEY&quot;, f&quot;{side} key {&#x27;/&#x27;.join(kv)} on lines {&#x27;, &#x27;.join(map(str, lines))} (only the first is compared)&quot;)
+    for side, n in ((&quot;OLD&quot;, oblank), (&quot;NEW&quot;, nblank)):
+        if n:
+            add(&quot;HIGH&quot;, &quot;MISSING_KEY&quot;, f&quot;{side} has {n} row(s) with a blank key (not compared)&quot;, n)
+    for side, n in ((&quot;OLD&quot;, orag), (&quot;NEW&quot;, nrag)):
+        if n:
+            add(&quot;MEDIUM&quot;, &quot;RAGGED_ROWS&quot;, f&quot;{side} has {n} row(s) with a different number of cells than the header&quot;, n)
+
+    removed = [k for k in oidx if k not in nidx]
+    added = [k for k in nidx if k not in oidx]
+    # keys that only differ by format
+    drift = []
+    add_by_variant = {}
+    for k in added:
+        add_by_variant.setdefault(tuple(key_variant(x) for x in k), k)
+    for k in list(removed):
+        v = tuple(key_variant(x) for x in k)
+        if v in add_by_variant:
+            nk = add_by_variant.pop(v)
+            drift.append((k, nk))
+            removed.remove(k); added.remove(nk)
+    for ok, nk in drift:
+        add(&quot;LOW&quot;, &quot;KEY_FORMAT_DRIFT&quot;, f&quot;OLD key {&#x27;/&#x27;.join(ok)} = NEW key {&#x27;/&#x27;.join(nk)} after ignoring case, spaces, separators and leading zeros (compared as one row)&quot;)
+    if removed:
+        add(&quot;MEDIUM&quot;, &quot;ROWS_REMOVED&quot;, f&quot;{len(removed)} key(s) in OLD only: &quot; + &quot;, &quot;.join(&#x27;/&#x27;.join(k) for k in removed[:opts[&#x27;limit&#x27;]]), len(removed))
+    if added:
+        add(&quot;MEDIUM&quot;, &quot;ROWS_ADDED&quot;, f&quot;{len(added)} key(s) in NEW only: &quot; + &quot;, &quot;.join(&#x27;/&#x27;.join(k) for k in added[:opts[&#x27;limit&#x27;]]), len(added))
+
+    compare_cols = [h for h in oh if h in cmap and h not in keys and h not in opts[&quot;ignore&quot;]]
+    pairs = [(k, k) for k in oidx if k in nidx] + drift
+    changes, per_col, unchanged, fmt_only = [], {c: 0 for c in compare_cols}, 0, {c: 0 for c in compare_cols}
+    for ok, nk in pairs:
+        orow, nrow = oidx[ok][1], nidx[nk][1]
+        row_changed = False
+        for c in compare_cols:
+            a_raw, b_raw = orow.get(c, &quot;&quot;), nrow.get(cmap[c], &quot;&quot;)
+            a, b = normalize(a_raw, c, opts), normalize(b_raw, c, opts)
+            if same(a, b, c, opts):
+                if a_raw.strip() != b_raw.strip():
+                    fmt_only[c] += 1
+                continue
+            row_changed = True
+            per_col[c] += 1
+            delta = (b[1] - a[1]) if a[0] == &quot;num&quot; and b[0] == &quot;num&quot; else None
+            changes.append({&quot;key&quot;: &quot;/&quot;.join(ok), &quot;column&quot;: c, &quot;old&quot;: a_raw, &quot;new&quot;: b_raw,
+                            &quot;delta&quot;: str(delta) if delta is not None else &quot;&quot;})
+        unchanged += not row_changed
+    # removed and added rows that look like the same record under a new key or period
+    nondate = [c for c in compare_cols if c not in opts[&quot;dates&quot;]]
+    used = set()
+    for rk in removed:
+        orow = oidx[rk][1]
+        for ak in added:
+            if ak in used or not nondate:
+                continue
+            nrow = nidx[ak][1]
+            hits = sum(same(normalize(orow.get(c, &quot;&quot;), c, opts), normalize(nrow.get(cmap[c], &quot;&quot;), c, opts), c, opts) for c in nondate)
+            if hits == len(nondate):
+                used.add(ak)
+                add(&quot;LOW&quot;, &quot;POSSIBLE_REKEY&quot;, f&quot;removed {&#x27;/&#x27;.join(rk)} and added {&#x27;/&#x27;.join(ak)} have the same values in {&#x27;, &#x27;.join(nondate)} (re-keyed, re-posted or moved to another period?)&quot;)
+                break
+    for c, n in per_col.items():
+        if n:
+            add(&quot;MEDIUM&quot;, &quot;VALUE_CHANGED&quot;, f&quot;&#x27;{c}&#x27; differs in {n} row(s)&quot;, n)
+    for c, n in fmt_only.items():
+        if n:
+            add(&quot;INFO&quot;, &quot;FORMAT_ONLY&quot;, f&quot;&#x27;{c}&#x27; equal after normalization in {n} row(s) (formatting, case or within tolerance)&quot;, n)
+
+    bridges = []
+    for col in opts[&quot;sum&quot;]:
+        if col not in oh or cmap.get(col) not in nh:
+            raise InputError(f&quot;--sum column &#x27;{col}&#x27; missing in OLD or NEW&quot;)
+        def total(body, c):
+            t, bad = Decimal(0), 0
+            for _, row, _ in body:
+                n = parse_number(row.get(c, &quot;&quot;))
+                if n is None:
+                    bad += bool(row.get(c, &quot;&quot;).strip())
+                else:
+                    t += n
+            return t, bad
+        ot, obad = total(ob, col)
+        nt, nbad = total(nb, cmap[col])
+        def val(row, c):
+            return parse_number(row.get(c, &quot;&quot;)) or Decimal(0)
+        s_add = sum((val(nidx[k][1], cmap[col]) for k in added), Decimal(0))
+        s_rem = sum((val(oidx[k][1], col) for k in removed), Decimal(0))
+        s_chg = sum((val(nidx[nk][1], cmap[col]) - val(oidx[ok][1], col) for ok, nk in pairs), Decimal(0))
+        s_dup_o = sum((val(r, col) for _, r, _ in ob), Decimal(0)) - sum((val(r, col) for _, r in oidx.values()), Decimal(0))
+        s_dup_n = sum((val(r, cmap[col]) for _, r, _ in nb), Decimal(0)) - sum((val(r, cmap[col]) for _, r in nidx.values()), Decimal(0))
+        explained = ot + s_add - s_rem + s_chg - s_dup_o + s_dup_n
+        unexplained = nt - explained
+        bridges.append({&quot;column&quot;: col, &quot;old_total&quot;: str(ot), &quot;added&quot;: str(s_add), &quot;removed&quot;: str(s_rem),
+                        &quot;changed&quot;: str(s_chg), &quot;duplicates_old&quot;: str(s_dup_o), &quot;duplicates_new&quot;: str(s_dup_n),
+                        &quot;new_total&quot;: str(nt), &quot;unexplained&quot;: str(unexplained), &quot;non_numeric_old&quot;: obad, &quot;non_numeric_new&quot;: nbad})
+        if nt != ot:
+            add(&quot;INFO&quot;, &quot;TOTAL_DIFF&quot;, f&quot;&#x27;{col}&#x27; total {ot} -&gt; {nt} (diff {nt - ot}); see bridge&quot;)
+        if unexplained != 0:
+            add(&quot;HIGH&quot;, &quot;TOTAL_UNEXPLAINED&quot;, f&quot;&#x27;{col}&#x27; bridge leaves {unexplained} unexplained (blank keys or non-numeric cells?)&quot;)
+        if obad or nbad:
+            add(&quot;MEDIUM&quot;, &quot;NON_NUMERIC&quot;, f&quot;&#x27;{col}&#x27; has {obad} non-numeric cell(s) in OLD and {nbad} in NEW (left out of totals)&quot;, obad + nbad)
+
+    findings.sort(key=lambda f: (SEV_ORDER[f[&quot;severity&quot;]], f[&quot;code&quot;]))
+    summary = {&quot;old_rows&quot;: len(ob), &quot;new_rows&quot;: len(nb), &quot;matched&quot;: len(pairs), &quot;unchanged&quot;: unchanged,
+               &quot;changed_rows&quot;: len(pairs) - unchanged, &quot;added&quot;: len(added), &quot;removed&quot;: len(removed),
+               &quot;compared_columns&quot;: compare_cols, &quot;column_map&quot;: {k: v for k, v in cmap.items() if k != v}}
+    differs = any(f[&quot;severity&quot;] in (&quot;HIGH&quot;, &quot;MEDIUM&quot;) for f in findings)
+    return {&quot;summary&quot;: summary, &quot;findings&quot;: findings, &quot;changes&quot;: changes, &quot;bridges&quot;: bridges,
+            &quot;added_keys&quot;: [&quot;/&quot;.join(k) for k in added], &quot;removed_keys&quot;: [&quot;/&quot;.join(k) for k in removed],
+            &quot;reconciles&quot;: not differs}
+
+
+def render_md(res, old_name, new_name, limit):
+    s = res[&quot;summary&quot;]
+    out = [f&quot;# CSV reconciliation: {old_name} vs {new_name}&quot;, &quot;&quot;,
+           f&quot;**Result:** {&#x27;RECONCILES&#x27; if res[&#x27;reconciles&#x27;] else &#x27;DIFFERENCES FOUND&#x27;}&quot;, &quot;&quot;,
+           &quot;| Rows OLD | Rows NEW | Matched | Unchanged | Changed | Added | Removed |&quot;, &quot;|---|---|---|---|---|---|---|&quot;,
+           f&quot;| {s[&#x27;old_rows&#x27;]} | {s[&#x27;new_rows&#x27;]} | {s[&#x27;matched&#x27;]} | {s[&#x27;unchanged&#x27;]} | {s[&#x27;changed_rows&#x27;]} | {s[&#x27;added&#x27;]} | {s[&#x27;removed&#x27;]} |&quot;, &quot;&quot;]
+    if s[&quot;column_map&quot;]:
+        out.append(&quot;Column map: &quot; + &quot;, &quot;.join(f&quot;{k} -&gt; {v}&quot; for k, v in s[&quot;column_map&quot;].items()))
+        out.append(&quot;&quot;)
+    out += [&quot;## Findings&quot;, &quot;&quot;]
+    if res[&quot;findings&quot;]:
+        out += [&quot;| Severity | Code | Detail |&quot;, &quot;|---|---|---|&quot;]
+        out += [f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | {f[&#x27;detail&#x27;]} |&quot; for f in res[&quot;findings&quot;]]
+    else:
+        out.append(&quot;No findings.&quot;)
+    if res[&quot;changes&quot;]:
+        out += [&quot;&quot;, f&quot;## Changed values (first {min(limit, len(res[&#x27;changes&#x27;]))} of {len(res[&#x27;changes&#x27;])})&quot;, &quot;&quot;,
+                &quot;| Key | Column | OLD | NEW | Delta |&quot;, &quot;|---|---|---|---|---|&quot;]
+        out += [f&quot;| {c[&#x27;key&#x27;]} | {c[&#x27;column&#x27;]} | {c[&#x27;old&#x27;]} | {c[&#x27;new&#x27;]} | {c[&#x27;delta&#x27;]} |&quot; for c in res[&quot;changes&quot;][:limit]]
+    for b in res[&quot;bridges&quot;]:
+        out += [&quot;&quot;, f&quot;## Control total bridge: {b[&#x27;column&#x27;]}&quot;, &quot;&quot;, &quot;| Step | Amount |&quot;, &quot;|---|---|&quot;,
+                f&quot;| OLD total | {b[&#x27;old_total&#x27;]} |&quot;, f&quot;| + rows added | {b[&#x27;added&#x27;]} |&quot;, f&quot;| - rows removed | {b[&#x27;removed&#x27;]} |&quot;,
+                f&quot;| + changes on matched rows | {b[&#x27;changed&#x27;]} |&quot;, f&quot;| - duplicate/blank-key rows in OLD | {b[&#x27;duplicates_old&#x27;]} |&quot;,
+                f&quot;| + duplicate/blank-key rows in NEW | {b[&#x27;duplicates_new&#x27;]} |&quot;, f&quot;| = NEW total | {b[&#x27;new_total&#x27;]} |&quot;,
+                f&quot;| Unexplained | {b[&#x27;unexplained&#x27;]} |&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def parse_args(argv):
+    ap = argparse.ArgumentParser(description=&quot;CSV diff and reconciliation checker (stdlib only)&quot;)
+    ap.add_argument(&quot;old&quot;, nargs=&quot;?&quot;); ap.add_argument(&quot;new&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--key&quot;, help=&quot;key column(s) in OLD, comma-separated&quot;)
+    ap.add_argument(&quot;--map&quot;, action=&quot;append&quot;, default=[], help=&quot;old_col=new_col (repeatable)&quot;)
+    ap.add_argument(&quot;--ignore&quot;, default=&quot;&quot;, help=&quot;columns to skip, comma-separated&quot;)
+    ap.add_argument(&quot;--tol&quot;, action=&quot;append&quot;, default=[], help=&quot;col=0.01 or 0.01 for all numeric columns&quot;)
+    ap.add_argument(&quot;--sum&quot;, default=&quot;&quot;, help=&quot;amount columns for the control-total bridge&quot;)
+    ap.add_argument(&quot;--ignore-case&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--dates&quot;, default=&quot;&quot;, help=&quot;date columns to compare as dates&quot;)
+    ap.add_argument(&quot;--dayfirst&quot;, action=&quot;store_true&quot;, help=&quot;read 03/04/2026 as 3 April&quot;)
+    ap.add_argument(&quot;--limit&quot;, type=int, default=20)
+    ap.add_argument(&quot;--out-csv&quot;); ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    return ap, ap.parse_args(argv)
+
+
+def build_opts(a):
+    tol = {}
+    for t in a.tol:
+        if &quot;=&quot; in t:
+            c, v = t.split(&quot;=&quot;, 1); tol[c.strip()] = Decimal(v)
+        else:
+            tol[&quot;*&quot;] = Decimal(t)
+    mp = {}
+    for m in a.map:
+        if &quot;=&quot; not in m:
+            raise InputError(f&quot;--map needs old=new, got &#x27;{m}&#x27;&quot;)
+        o, n = m.split(&quot;=&quot;, 1); mp[o.strip()] = n.strip()
+    split = lambda s: [x.strip() for x in s.split(&quot;,&quot;) if x.strip()]
+    return {&quot;tol&quot;: tol, &quot;map&quot;: mp, &quot;ignore&quot;: set(split(a.ignore)), &quot;sum&quot;: split(a.sum),
+            &quot;ignore_case&quot;: a.ignore_case, &quot;dates&quot;: set(split(a.dates)), &quot;dayfirst&quot;: a.dayfirst, &quot;limit&quot;: a.limit}
+
+
+# ---------------------------------------------------------------- self-test
+def self_test():
+    D = Decimal
+    O = &quot;id,customer,amount,status,date\nA1,Ann,100.00,paid,2026-09-01\nA2,Bob,50,open,2026-09-02\nA3,Cy,10,paid,2026-09-03\n&quot;
+    def run(old, new, keys=(&quot;id&quot;,), **kw):
+        opts = {&quot;tol&quot;: {}, &quot;map&quot;: {}, &quot;ignore&quot;: set(), &quot;sum&quot;: [], &quot;ignore_case&quot;: False, &quot;dates&quot;: set(), &quot;dayfirst&quot;: False, &quot;limit&quot;: 20}
+        opts.update(kw)
+        return reconcile(old, new, list(keys), opts)
+    codes = lambda r: [f[&quot;code&quot;] for f in r[&quot;findings&quot;]]
+    cases = [
+        (&quot;number 1,234.50&quot;, lambda: parse_number(&quot;1,234.50&quot;) == D(&quot;1234.50&quot;)),
+        (&quot;currency $1,234.50&quot;, lambda: parse_number(&quot;$1,234.50&quot;) == D(&quot;1234.50&quot;)),
+        (&quot;accounting (12.00)&quot;, lambda: parse_number(&quot;(12.00)&quot;) == D(&quot;-12.00&quot;)),
+        (&quot;trailing minus 5-&quot;, lambda: parse_number(&quot;5-&quot;) == D(&quot;-5&quot;)),
+        (&quot;percent 12.5%&quot;, lambda: parse_number(&quot;12.5%&quot;) == D(&quot;12.5&quot;)),
+        (&quot;text is not a number&quot;, lambda: parse_number(&quot;INV-12&quot;) is None and parse_number(&quot;1,23&quot;) is None),
+        (&quot;EUR suffix&quot;, lambda: parse_number(&quot;99.90 EUR&quot;) == D(&quot;99.90&quot;)),
+        (&quot;date formats&quot;, lambda: parse_date(&quot;2026-09-01&quot;, False) == parse_date(&quot;09/01/2026&quot;, False) == parse_date(&quot;01.09.2026&quot;, False)),
+        (&quot;dayfirst&quot;, lambda: parse_date(&quot;03/04/2026&quot;, True) == &quot;2026-04-03&quot;),
+        (&quot;key variant&quot;, lambda: key_variant(&quot;INV-0012&quot;) == key_variant(&quot;inv12&quot;)),
+        (&quot;identical files reconcile&quot;, lambda: run(O, O)[&quot;reconciles&quot;] and codes(run(O, O)) == []),
+        (&quot;semicolon + formatting only&quot;, lambda: run(O, O.replace(&quot;,&quot;, &quot;;&quot;).replace(&quot;100.00&quot;, &quot;100&quot;).replace(&quot;50;&quot;, &quot;50.0;&quot;))[&quot;reconciles&quot;]),
+        (&quot;added and removed&quot;, lambda: (lambda r: r[&quot;summary&quot;][&quot;added&quot;] == 1 and r[&quot;summary&quot;][&quot;removed&quot;] == 1)(
+            run(O, O.replace(&quot;A3,Cy&quot;, &quot;A4,Cy&quot;)))),
+        (&quot;value change counted&quot;, lambda: (lambda r: r[&quot;summary&quot;][&quot;changed_rows&quot;] == 1 and &quot;VALUE_CHANGED&quot; in codes(r))(
+            run(O, O.replace(&quot;50,open&quot;, &quot;55,open&quot;)))),
+        (&quot;tolerance hides rounding&quot;, lambda: run(O, O.replace(&quot;100.00&quot;, &quot;100.004&quot;), tol={&quot;amount&quot;: D(&quot;0.01&quot;)})[&quot;reconciles&quot;]),
+        (&quot;tolerance does not hide real diff&quot;, lambda: not run(O, O.replace(&quot;100.00&quot;, &quot;100.02&quot;), tol={&quot;amount&quot;: D(&quot;0.01&quot;)})[&quot;reconciles&quot;]),
+        (&quot;ignore case&quot;, lambda: run(O, O.replace(&quot;paid&quot;, &quot;PAID&quot;), ignore_case=True)[&quot;reconciles&quot;] and not run(O, O.replace(&quot;paid&quot;, &quot;PAID&quot;))[&quot;reconciles&quot;]),
+        (&quot;dates compared as dates&quot;, lambda: run(O, O.replace(&quot;2026-09-01&quot;, &quot;09/01/2026&quot;), dates={&quot;date&quot;})[&quot;reconciles&quot;]),
+        (&quot;duplicate key HIGH&quot;, lambda: &quot;DUPLICATE_KEY&quot; in codes(run(O, O + &quot;A2,Bob,50,open,2026-09-02\n&quot;))),
+        (&quot;blank key HIGH&quot;, lambda: &quot;MISSING_KEY&quot; in codes(run(O, O + &quot;,Zed,5,open,2026-09-09\n&quot;))),
+        (&quot;column only in new&quot;, lambda: &quot;COLUMN_ONLY_IN_NEW&quot; in codes(run(O, O.replace(&quot;date\n&quot;, &quot;date,region\n&quot;, 1)))),
+        (&quot;header case matched&quot;, lambda: (lambda r: &quot;HEADER_FORMAT&quot; in codes(r) and r[&quot;reconciles&quot;])(run(O, O.replace(&quot;customer&quot;, &quot;Customer&quot;)))),
+        (&quot;rename via map&quot;, lambda: run(O, O.replace(&quot;customer&quot;, &quot;client&quot;), map={&quot;customer&quot;: &quot;client&quot;})[&quot;reconciles&quot;]),
+        (&quot;key format drift&quot;, lambda: (lambda r: &quot;KEY_FORMAT_DRIFT&quot; in codes(r) and r[&quot;summary&quot;][&quot;added&quot;] == 0)(run(O, O.replace(&quot;A3,&quot;, &quot;a03,&quot;)))),
+        (&quot;possible rekey&quot;, lambda: &quot;POSSIBLE_REKEY&quot; in codes(run(O, O.replace(&quot;A3,Cy,10,paid,2026-09-03&quot;, &quot;A9,Cy,10,paid,2026-10-01&quot;), dates={&quot;date&quot;}))),
+        (&quot;ragged rows&quot;, lambda: &quot;RAGGED_ROWS&quot; in codes(run(O, O + &quot;A5,Dee,5\n&quot;))),
+        (&quot;sign before currency&quot;, lambda: parse_number(&quot;-$5.00&quot;) == parse_number(&quot;$-5.00&quot;) == D(&quot;-5.00&quot;)),
+        (&quot;composite key&quot;, lambda: run(&quot;o,l,v\n1,1,a\n1,2,b\n&quot;, &quot;o,l,v\n1,2,b\n1,1,a\n&quot;, keys=(&quot;o&quot;, &quot;l&quot;))[&quot;reconciles&quot;]),
+        (&quot;bridge explains totals&quot;, lambda: (lambda b: D(b[&quot;unexplained&quot;]) == 0 and b[&quot;old_total&quot;] == &quot;160.00&quot; and b[&quot;new_total&quot;] == &quot;175.00&quot;)(
+            run(O, O.replace(&quot;A3,Cy,10&quot;, &quot;A4,Cy,20&quot;).replace(&quot;50,open&quot;, &quot;55,open&quot;), sum=[&quot;amount&quot;])[&quot;bridges&quot;][0])),
+        (&quot;bridge with duplicate&quot;, lambda: D(run(O, O + &quot;A2,Bob,50,open,2026-09-02\n&quot;, sum=[&quot;amount&quot;])[&quot;bridges&quot;][0][&quot;unexplained&quot;]) == 0),
+        (&quot;missing key column error&quot;, lambda: _raises(lambda: run(O, O, keys=(&quot;nope&quot;,)))),
+        (&quot;empty file error&quot;, lambda: _raises(lambda: run(&quot;&quot;, O))),
+        (&quot;BOM stripped&quot;, lambda: run(&quot;\ufeff&quot; + O, O)[&quot;reconciles&quot;]),
+        (&quot;render has result line&quot;, lambda: &quot;RECONCILES&quot; in render_md(run(O, O), &quot;a&quot;, &quot;b&quot;, 5)),
+    ]
+    passed = 0
+    for name, fn in cases:
+        try:
+            ok = bool(fn())
+        except Exception as e:  # noqa: BLE001 - report in test output
+            ok = False; name += f&quot; (raised {e!r})&quot;
+        passed += ok
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def _raises(fn):
+    try:
+        fn()
+    except InputError:
+        return True
+    return False
+
+
+def main(argv=None):
+    ap, a = parse_args(argv if argv is not None else sys.argv[1:])
+    if a.self_test:
+        return self_test()
+    if not (a.old and a.new and a.key):
+        ap.error(&quot;need OLD NEW --key (or --self-test)&quot;)
+    try:
+        opts = build_opts(a)
+        with open(a.old, encoding=&quot;utf-8-sig&quot;, newline=&quot;&quot;) as f1, open(a.new, encoding=&quot;utf-8-sig&quot;, newline=&quot;&quot;) as f2:
+            old_text, new_text = f1.read(), f2.read()
+        res = reconcile(old_text, new_text, [k.strip() for k in a.key.split(&quot;,&quot;)], opts)
+    except (OSError, UnicodeDecodeError, InputError, InvalidOperation) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    if a.out_csv:
+        with open(a.out_csv, &quot;w&quot;, newline=&quot;&quot;, encoding=&quot;utf-8&quot;) as fh:
+            w = csv.writer(fh)
+            w.writerow([&quot;status&quot;, &quot;key&quot;, &quot;column&quot;, &quot;old&quot;, &quot;new&quot;, &quot;delta&quot;])
+            for k in res[&quot;removed_keys&quot;]:
+                w.writerow([&quot;removed&quot;, k, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;])
+            for k in res[&quot;added_keys&quot;]:
+                w.writerow([&quot;added&quot;, k, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;])
+            for c in res[&quot;changes&quot;]:
+                w.writerow([&quot;changed&quot;, c[&quot;key&quot;], c[&quot;column&quot;], c[&quot;old&quot;], c[&quot;new&quot;], c[&quot;delta&quot;]])
+    print(json.dumps(res, indent=2, default=str) if a.json else render_md(res, a.old, a.new, a.limit))
+    return 0 if res[&quot;reconciles&quot;] else 1
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/csv-diff-and-reconciliation-checker',TI="CSV Diff and Reconciliation Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

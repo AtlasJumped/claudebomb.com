@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Database Migration Safety Review | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: migration-safety-review description: Reviews database schema migrations (raw SQL or ORM-generated from Rails, Django, Alembic, Prisma, Knex,">
+<meta property="og:title" content="Database Migration Safety Review | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: migration-safety-review description: Reviews database schema migrations (raw SQL or ORM-generated from Rails, Django, Alembic, Prisma, Knex,">
+<meta property="og:url" content="https://claudebomb.com/l/pc/database-migration-safety-review/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/database-migration-safety-review/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Database Migration Safety Review</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: migration-safety-review
+description: Reviews database schema migrations (raw SQL or ORM-generated from Rails, Django, Alembic, Prisma, Knex, Laravel, Flyway) for production risks before they ship - table-locking DDL, full table rewrites, data loss, breaking changes for running app code, and missing rollback paths - and proposes safe zero-downtime rewrites. Use when a diff or PR adds or changes migration files, when the user asks &quot;is this migration safe?&quot;, or before deploying schema changes to a busy PostgreSQL or MySQL database.
+---
+
+# Migration Safety Review
+
+You are reviewing schema migrations the way a careful senior DBA would before a
+production deploy. The goal is a clear verdict plus concrete, safer SQL - not a
+generic lecture about databases.
+
+## Files in this skill
+
+- `scripts/scan_migration.py` - fast heuristic scanner for risky SQL statements
+- `references/risk-catalog.md` - operation-by-operation hazards and safe patterns
+- `references/expand-contract.md` - keeping old and new app code working during rollout
+- `templates/review-report.md` - the report format you must produce
+- `examples/example-review.md` - a complete worked review to calibrate tone and depth
+
+## Workflow
+
+### 1. Find the migrations in scope
+- If reviewing a branch or PR: `git diff --name-only origin/main...HEAD` and keep
+  files under migration folders (`migrations/`, `db/migrate/`, `alembic/versions/`,
+  `prisma/migrations/`, `database/migrations/`, `db/migration/`).
+- Otherwise use the files or SQL the user pointed to.
+- Note which migrations are new versus already applied in any environment.
+  Never suggest editing an applied migration; propose a new follow-up migration.
+
+### 2. Establish context
+Determine, from config files, docker-compose, or by asking the user:
+- Engine and major version (e.g. PostgreSQL 15, MySQL 8.0). Lock behavior depends on it.
+- Approximate size and write traffic of each touched table.
+- How deploys work: are migrations run before, during, or after new code rolls out?
+
+If size or traffic is unknown, assume the table is large and hot, and say so.
+
+### 3. Get the real SQL
+ORM code hides what actually runs. Render the SQL first:
+
+| Framework | Command |
+|-----------|---------|
+| Django | `python manage.py sqlmigrate &lt;app&gt; &lt;migration&gt;` |
+| Rails | `rails db:migrate` on a scratch DB, then inspect `db/structure.sql` diff |
+| Alembic | `alembic upgrade &lt;from&gt;:&lt;to&gt; --sql` |
+| Prisma | read `prisma/migrations/&lt;name&gt;/migration.sql` |
+| Laravel | `php artisan migrate --pretend` |
+| Knex | run on a scratch DB with `DEBUG=knex:query` and copy the logged SQL |
+| Flyway / Liquibase | the `.sql` file or `liquibase update-sql` |
+
+Save rendered SQL to a temp file if it is not already a `.sql` file.
+
+### 4. Run the scanner
+```bash
+python3 scripts/scan_migration.py --dialect postgres path/to/migration.sql
+python3 scripts/scan_migration.py --dialect mysql db/*.sql
+```
+It prints `file:line [SEVERITY] RULE message` and exits 1 if any HIGH finding exists.
+Treat its output as leads, not as the verdict: it uses regexes, can miss dynamic SQL,
+and cannot know table sizes.
+
+### 5. Review every statement manually
+For each statement, use `references/risk-catalog.md` to answer:
+1. What lock does it take, and for how long (instant, table scan, or full rewrite)?
+2. Can it lose or corrupt data? Is that intended and backed up?
+3. Will it queue behind long transactions? Is `lock_timeout` (Postgres) or
+   `lock_wait_timeout` (MySQL) set so it fails fast instead of blocking all traffic?
+4. Does it run in a transaction where it must not (e.g. `CREATE INDEX CONCURRENTLY`)?
+5. Are large data backfills batched and separated from DDL?
+
+### 6. Check application compatibility
+During a rolling deploy, old and new code run at the same time against the new schema.
+Follow `references/expand-contract.md`:
+- Search the codebase (`rg -n &#x27;&lt;column_or_table_name&gt;&#x27;`) for every renamed, dropped,
+  or retyped object, including raw SQL, serializers, and analytics queries.
+- Flag any change the currently deployed code cannot tolerate.
+
+### 7. Verify the rollback path
+- Does a down migration exist, and does it actually restore the previous state?
+- Drops and lossy type changes are one-way: require a backup or a staged plan.
+
+### 8. Write the report
+Fill in `templates/review-report.md` exactly. Match the depth of
+`examples/example-review.md`. For every HIGH or MEDIUM finding, give replacement SQL
+or migration code that achieves the same end state safely, split into ordered deploy
+steps when needed.
+
+## Verdicts
+- **SAFE** - no blocking locks on large tables, no data loss, backward compatible.
+- **SAFE WITH CHANGES** - can ship once the listed rewrites are applied.
+- **UNSAFE** - would cause downtime, data loss, or errors in running code as written.
+
+## Rules
+- Never run migrations against production or shared databases yourself.
+- Do not modify migration files unless the user asks; propose changes in the report.
+- Be specific: name the table, the lock, and the failure mode. Skip generic advice.
+- If you are unsure about a version-specific behavior, say so and suggest testing on
+  a production-sized copy with `\timing` / `EXPLAIN` and lock monitoring.
+FILE:references/risk-catalog.md
+# Risk Catalog: Common Migration Operations
+
+Lock names are PostgreSQL. ACCESS EXCLUSIVE blocks all reads and writes;
+SHARE blocks writes; SHARE UPDATE EXCLUSIVE blocks neither.
+
+## The lock queue problem (applies to everything below)
+Even an &quot;instant&quot; ALTER TABLE needs ACCESS EXCLUSIVE briefly. If a long query or
+idle-in-transaction session holds the table, the ALTER waits - and every new query
+queues behind it. A 1 ms change can cause a multi-minute outage.
+Always start risky migrations with:
+```sql
+SET lock_timeout = &#x27;5s&#x27;;        -- fail fast, retry later
+SET statement_timeout = &#x27;15min&#x27;; -- optional upper bound
+```
+MySQL equivalent: `SET SESSION lock_wait_timeout = 5;` (metadata locks).
+
+## PostgreSQL operations
+
+| Operation | Risk | Safe pattern |
+|-----------|------|--------------|
+| `CREATE INDEX` | SHARE lock: writes blocked for whole build | `CREATE INDEX CONCURRENTLY`, outside a transaction; on failure drop the INVALID index and retry. Rails: `disable_ddl_transaction!`; Django: `atomic = False` |
+| `DROP INDEX` | ACCESS EXCLUSIVE | `DROP INDEX CONCURRENTLY` |
+| `ADD COLUMN` nullable, no default | Instant | Safe (still set lock_timeout) |
+| `ADD COLUMN ... DEFAULT &lt;constant&gt;` | Instant on PG 11+, rewrite before 11 | Safe on 11+ |
+| `ADD COLUMN ... DEFAULT now()/random()/gen_random_uuid()` | Volatile default: full table rewrite | Add nullable column, backfill in batches, then set default |
+| `ADD COLUMN ... NOT NULL` without default | Fails on non-empty table | Add nullable, backfill, then enforce NOT NULL (below) |
+| `ALTER COLUMN ... SET NOT NULL` | Full scan under ACCESS EXCLUSIVE | `ADD CONSTRAINT c CHECK (col IS NOT NULL) NOT VALID`; `VALIDATE CONSTRAINT c`; then `SET NOT NULL` (PG 12+ skips the scan); drop `c` |
+| `ALTER COLUMN ... TYPE` | Usually full rewrite + index rebuild under ACCESS EXCLUSIVE | Safe only if binary-coercible (varchar(n) to larger n or to text). Otherwise new column + dual write + backfill + swap |
+| `ADD FOREIGN KEY` | Locks both tables while validating all rows | `ADD CONSTRAINT ... NOT VALID`, then `VALIDATE CONSTRAINT` in a separate step |
+| `ADD CHECK` | Scan under ACCESS EXCLUSIVE | Same NOT VALID + VALIDATE pattern |
+| `ADD UNIQUE` / `ADD PRIMARY KEY` | Builds index under lock | `CREATE UNIQUE INDEX CONCURRENTLY idx ...`; then `ADD CONSTRAINT ... UNIQUE USING INDEX idx` |
+| `RENAME COLUMN` / `RENAME TO` | Instant, but breaks running code | Expand/contract (see expand-contract.md) |
+| `DROP COLUMN` | Instant, but irreversible; old code selecting it errors | Remove all code references and deploy first; then drop |
+| `DROP TABLE` / `TRUNCATE` | Irreversible data loss | Confirm backup and zero readers; consider renaming to `_deprecated` first |
+| `ALTER TYPE ... ADD VALUE` | New value unusable in same transaction; no transaction at all before PG 12 | Put it in its own migration |
+| `VACUUM FULL` / `CLUSTER` / `REINDEX` | Full rewrite under ACCESS EXCLUSIVE | `REINDEX CONCURRENTLY` (PG 12+), `pg_repack` for bloat |
+| Big `UPDATE` / `DELETE` | Long row locks, WAL spike, replica lag | Batch by primary key (1k-10k rows), commit per batch, run outside the DDL migration |
+
+## MySQL 8.0 (InnoDB) notes
+- Always state the algorithm so MySQL errors instead of silently copying the table:
+  `ALTER TABLE t ADD COLUMN c INT, ALGORITHM=INSTANT;` or
+  `ALTER TABLE t ADD INDEX i (c), ALGORITHM=INPLACE, LOCK=NONE;`
+- `ADD COLUMN` is INSTANT on 8.0.12+ (last position) and 8.0.29+ (any position).
+- `MODIFY` / `CHANGE COLUMN` type changes use ALGORITHM=COPY: writes blocked.
+- For large tables with COPY-only changes use `gh-ost` or `pt-online-schema-change`.
+- DDL is not transactional in MySQL: a failed multi-statement migration leaves
+  the schema half-applied. Keep one DDL statement per migration.
+FILE:references/expand-contract.md
+# Expand / Contract: Backward-Compatible Schema Changes
+
+During a rolling deploy, old and new application versions run side by side.
+If migrations run before the new code is live, the old code must work with the
+new schema. If they run after, the new code must work with the old schema.
+Expand/contract makes every step compatible with both.
+
+## The three phases
+1. **Expand** - add new structures only (columns, tables, indexes). Nothing is
+   removed or renamed. Old code ignores the additions.
+2. **Migrate** - deploy code that writes to both old and new structures, backfill
+   existing rows in batches, then switch reads to the new structure.
+3. **Contract** - once no deployed code touches the old structure, drop it in a
+   separate, later migration.
+
+Each phase is its own deploy. Never combine expand and contract in one migration.
+
+## Recipes
+
+### Rename a column (`users.name` to `users.full_name`)
+1. Migration: add nullable `full_name`.
+2. Code: write both `name` and `full_name`; read `name`.
+3. Backfill `full_name = name` in batches where `full_name IS NULL`.
+4. Code: read `full_name`; keep writing both.
+5. Code: stop writing `name`. (Rails: add `name` to `ignored_columns` here.)
+6. Migration: drop `name`.
+
+### Change a column type (`orders.amount` int to numeric)
+Same as rename: add `amount_numeric`, dual write, backfill, switch reads, drop old.
+A trigger can handle dual writes if application changes are hard.
+
+### Make a column NOT NULL
+1. Code: always write a value.
+2. Backfill NULL rows in batches.
+3. Migration: CHECK ... NOT VALID, VALIDATE, SET NOT NULL (see risk-catalog.md).
+
+### Drop a column or table
+1. Code: remove every read and write (search ORM models, raw SQL, views,
+   reports, ETL jobs, and other services sharing the database).
+2. Deploy and wait at least one full release cycle.
+3. Migration: drop. Take a backup or snapshot of the data first if it matters.
+
+### Split or move a table
+Create the new table, dual write, backfill, switch reads, stop old writes, drop.
+
+## Compatibility questions to answer for each change
+- Does any deployed code `SELECT *` or map all columns (ORMs often cache the
+  column list at boot and fail when one disappears)?
+- Does an insert from old code fail because a new column is NOT NULL without default?
+- Do other services, cron jobs, BI dashboards, or replicas read this table?
+- Can the deploy be rolled back to the previous code version without a down migration?
+
+If the answer to the last question is &quot;no&quot;, the change is not backward compatible.
+FILE:templates/review-report.md
+# Migration Safety Review: &lt;migration name or PR title&gt;
+
+**Verdict:** SAFE | SAFE WITH CHANGES | UNSAFE
+**Engine:** &lt;e.g. PostgreSQL 15&gt;  |  **Files reviewed:** &lt;count&gt;
+**Assumptions:** &lt;table sizes, traffic, deploy order - mark anything guessed&gt;
+
+## Summary
+&lt;2-4 sentences: what the migration does, the biggest risk, and what to change.&gt;
+
+## Findings
+
+| # | Severity | File:Line | Statement | Risk |
+|---|----------|-----------|-----------|------|
+| 1 | HIGH | &lt;path:line&gt; | `&lt;short SQL&gt;` | &lt;lock / data loss / breaks old code&gt; |
+
+### 1. &lt;Short title of finding&gt;
+- **What happens:** &lt;lock taken, duration, who is blocked, or what breaks&gt;
+- **Why it matters here:** &lt;table size, traffic, code that depends on it&gt;
+- **Safe alternative:**
+```sql
+-- replacement SQL or migration code, in run order
+```
+
+&lt;Repeat for each HIGH and MEDIUM finding. Group LOW findings in one list.&gt;
+
+## Application Compatibility
+- &lt;Each renamed / dropped / retyped object and where the code still uses it&gt;
+- &lt;Or: &quot;No code references affected - checked with rg for X, Y.&quot;&gt;
+
+## Rollback Plan
+- &lt;Does the down migration restore state? What is irreversible?&gt;
+- &lt;Backup or snapshot required before running: yes/no&gt;
+
+## Recommended Deploy Sequence
+1. &lt;Migration or code deploy step&gt;
+2. &lt;...&gt;
+
+## Scanner Output
+```
+&lt;paste scripts/scan_migration.py output, or note false positives&gt;
+```
+FILE:examples/example-review.md
+# Example Review
+
+**Input:** PR &quot;Add order status tracking&quot; with one Rails migration for PostgreSQL 15.
+`orders` has ~40M rows and receives constant writes. Migrations run before new code.
+
+```sql
+-- rendered from db/migrate/20261002_add_status_to_orders.rb
+ALTER TABLE orders ADD COLUMN status varchar NOT NULL DEFAULT &#x27;pending&#x27;;
+ALTER TABLE orders RENAME COLUMN shipped_on TO shipped_at;
+CREATE INDEX index_orders_on_status ON orders (status);
+ALTER TABLE orders ADD CONSTRAINT fk_orders_carrier
+  FOREIGN KEY (carrier_id) REFERENCES carriers (id);
+```
+
+**Scanner:** 3 HIGH (rename, index-not-concurrent, fk-validated), 1 MEDIUM (no-lock-timeout).
+
+---
+
+# Migration Safety Review: Add order status tracking
+
+**Verdict:** UNSAFE
+**Engine:** PostgreSQL 15  |  **Files reviewed:** 1
+**Assumptions:** orders ~40M rows, high write traffic (from user); carriers is small.
+
+## Summary
+Adds an order status column, renames `shipped_on`, indexes status, and adds a carrier
+foreign key. The status column itself is safe on PG 15, but the rename will break the
+running app, and the index and FK will block writes on `orders` for minutes.
+Split into three migrations and use concurrent / NOT VALID variants.
+
+## Findings
+
+| # | Severity | File:Line | Statement | Risk |
+|---|----------|-----------|-----------|------|
+| 1 | HIGH | rendered.sql:3 | `RENAME COLUMN shipped_on` | Old code errors on deploy |
+| 2 | HIGH | rendered.sql:4 | `CREATE INDEX ... (status)` | Writes blocked during build |
+| 3 | HIGH | rendered.sql:5 | `ADD ... FOREIGN KEY` | Full validation scan under lock |
+| 4 | MEDIUM | rendered.sql:1 | no `lock_timeout` | ALTERs can queue and stall traffic |
+
+### 1. Column rename breaks running code
+- **What happens:** the rename is instant, but app servers still on the old release
+  query `shipped_on` and fail with `column does not exist` until the deploy finishes.
+- **Why it matters here:** `rg -n shipped_on` finds 7 references, including
+  `app/serializers/order_serializer.rb` and the nightly `reports/fulfillment.sql`.
+- **Safe alternative:** expand/contract. Add `shipped_at`, dual write, backfill in
+  batches, switch reads, then drop `shipped_on` in a later release.
+
+### 2. Index build blocks writes
+- **Safe alternative** (separate migration, `disable_ddl_transaction!`):
+```sql
+CREATE INDEX CONCURRENTLY index_orders_on_status ON orders (status);
+```
+
+### 3. Foreign key validates 40M rows under lock
+- **Safe alternative:**
+```sql
+SET lock_timeout = &#x27;5s&#x27;;
+ALTER TABLE orders ADD CONSTRAINT fk_orders_carrier
+  FOREIGN KEY (carrier_id) REFERENCES carriers (id) NOT VALID;
+-- next migration (takes only SHARE UPDATE EXCLUSIVE on orders):
+ALTER TABLE orders VALIDATE CONSTRAINT fk_orders_carrier;
+```
+
+**LOW:** none. Note `ADD COLUMN ... DEFAULT &#x27;pending&#x27;` is metadata-only on PG 11+.
+
+## Application Compatibility
+- `shipped_on`: 7 code references plus one SQL report; must stay until contract phase.
+
+## Rollback Plan
+- Down migration drops `status` (data loss acceptable: new column). Rename is reversible.
+- No backup required for this change set once the rename is removed.
+
+## Recommended Deploy Sequence
+1. Migration A: `SET lock_timeout`; add `status`; add `shipped_at`; add FK NOT VALID.
+2. Migration B (no transaction): create status index concurrently.
+3. Migration C: validate FK. Deploy code that dual writes `shipped_on`/`shipped_at`.
+4. Backfill `shipped_at`; switch reads; later release drops `shipped_on`.
+FILE:scripts/scan_migration.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Heuristic scanner for risky SQL in migration files (PostgreSQL / MySQL).
+Usage: python3 scan_migration.py [--dialect postgres|mysql] FILE [FILE ...]
+Exit codes: 0 = no HIGH findings, 1 = HIGH findings, 2 = usage error.&quot;&quot;&quot;
+import re, sys
+
+F = re.I | re.S
+COLDEF = r&quot;(?:\([^)]*\)|[^,(])*&quot;  # one column definition, allowing numeric(10,2)
+RULES = [  # (severity, rule id, dialect or None for both, regex, message)
+    (&quot;HIGH&quot;, &quot;drop-table&quot;, None, r&quot;^DROP\s+TABLE\b&quot;, &quot;Irreversible data loss; confirm backup and no readers&quot;),
+    (&quot;HIGH&quot;, &quot;truncate&quot;, None, r&quot;^TRUNCATE\b&quot;, &quot;Irreversible data loss&quot;),
+    (&quot;HIGH&quot;, &quot;drop-column&quot;, None, r&quot;^ALTER\s+TABLE\b.*\bDROP\s+(COLUMN\b|(?!CONSTRAINT|INDEX|KEY|PRIMARY|FOREIGN|CHECK|DEFAULT|NOT|IDENTITY|EXPRESSION)\w)&quot;, &quot;Data loss; deployed code reading it will fail - remove code refs first&quot;),
+    (&quot;HIGH&quot;, &quot;rename&quot;, None, r&quot;^ALTER\s+TABLE\b.*\bRENAME\b&quot;, &quot;Breaks running code; use expand/contract&quot;),
+    (&quot;HIGH&quot;, &quot;type-change&quot;, &quot;postgres&quot;, r&quot;^ALTER\s+TABLE\b.*\bALTER\s+(COLUMN\s+)?\S+\s+(SET\s+DATA\s+)?TYPE\b&quot;, &quot;Usually a full table rewrite under ACCESS EXCLUSIVE&quot;),
+    (&quot;HIGH&quot;, &quot;type-change&quot;, &quot;mysql&quot;, r&quot;^ALTER\s+TABLE\b.*\b(MODIFY|CHANGE)\s+(COLUMN\s+)?\S+&quot;, &quot;Column redefinition usually uses ALGORITHM=COPY (writes blocked)&quot;),
+    (&quot;HIGH&quot;, &quot;index-not-concurrent&quot;, &quot;postgres&quot;, r&quot;^CREATE\s+(UNIQUE\s+)?INDEX\s+(?!CONCURRENTLY)&quot;, &quot;Blocks writes during build; use CREATE INDEX CONCURRENTLY&quot;),
+    (&quot;MEDIUM&quot;, &quot;drop-index-not-concurrent&quot;, &quot;postgres&quot;, r&quot;^DROP\s+INDEX\s+(?!CONCURRENTLY)&quot;, &quot;Takes ACCESS EXCLUSIVE; use DROP INDEX CONCURRENTLY&quot;),
+    (&quot;HIGH&quot;, &quot;fk-validated&quot;, &quot;postgres&quot;, r&quot;^ALTER\s+TABLE\b(?!.*\bNOT\s+VALID\b).*\b(FOREIGN\s+KEY|REFERENCES)\b&quot;, &quot;Validates all rows while locking both tables; add NOT VALID, then VALIDATE&quot;),
+    (&quot;MEDIUM&quot;, &quot;check-validated&quot;, &quot;postgres&quot;, r&quot;^ALTER\s+TABLE\b(?!.*\bNOT\s+VALID\b).*\bADD\s+(CONSTRAINT\s+\S+\s+)?CHECK\b&quot;, &quot;Full scan under lock; add NOT VALID, then VALIDATE&quot;),
+    (&quot;MEDIUM&quot;, &quot;set-not-null&quot;, &quot;postgres&quot;, r&quot;\bSET\s+NOT\s+NULL\b&quot;, &quot;Full scan under ACCESS EXCLUSIVE; validate a CHECK (col IS NOT NULL) first&quot;),
+    (&quot;HIGH&quot;, &quot;add-not-null-no-default&quot;, None, r&quot;^ALTER\s+TABLE\b.*\bADD\s+(COLUMN\s+)?(?!&quot; + COLDEF + r&quot;\bDEFAULT\b)&quot; + COLDEF + r&quot;\bNOT\s+NULL\b&quot;, &quot;Fails on non-empty tables (or old code inserts fail); add nullable, backfill, then enforce&quot;),
+    (&quot;MEDIUM&quot;, &quot;volatile-default&quot;, &quot;postgres&quot;, r&quot;^ALTER\s+TABLE\b.*\bADD\b.*\bDEFAULT\s+(now|random|clock_timestamp|gen_random_uuid|uuid_generate_v\d)\s*\(&quot;, &quot;Volatile default rewrites the table; add nullable, backfill, then set default&quot;),
+    (&quot;MEDIUM&quot;, &quot;unique-without-index&quot;, &quot;postgres&quot;, r&quot;^ALTER\s+TABLE\b(?!.*\bUSING\s+INDEX\b).*\bADD\s+(CONSTRAINT\s+\S+\s+)?(UNIQUE|PRIMARY\s+KEY)\b&quot;, &quot;Builds index under lock; create it CONCURRENTLY, then ADD CONSTRAINT ... USING INDEX&quot;),
+    (&quot;MEDIUM&quot;, &quot;mysql-no-algorithm&quot;, &quot;mysql&quot;, r&quot;^(ALTER\s+TABLE|CREATE\s+(UNIQUE\s+)?INDEX)\b(?!.*\bALGORITHM\s*=)&quot;, &quot;State ALGORITHM=INSTANT|INPLACE, LOCK=NONE so MySQL refuses a blocking copy&quot;),
+    (&quot;HIGH&quot;, &quot;dml-no-where&quot;, None, r&quot;^(UPDATE|DELETE)\b(?!.*\bWHERE\b)&quot;, &quot;Touches every row in one transaction; batch it&quot;),
+    (&quot;LOW&quot;, &quot;dml-in-migration&quot;, None, r&quot;^(UPDATE|DELETE|INSERT)\b.*\bWHERE\b&quot;, &quot;Data change in migration; batch it if the table is large&quot;),
+    (&quot;MEDIUM&quot;, &quot;table-rewrite&quot;, &quot;postgres&quot;, r&quot;^(VACUUM\s+FULL|CLUSTER|REINDEX\s+(?!.*CONCURRENTLY))&quot;, &quot;Rewrites under ACCESS EXCLUSIVE; use REINDEX CONCURRENTLY or pg_repack&quot;),
+    (&quot;LOW&quot;, &quot;enum-add-value&quot;, &quot;postgres&quot;, r&quot;^ALTER\s+TYPE\b.*\bADD\s+VALUE\b&quot;, &quot;New value unusable in same transaction; keep in its own migration&quot;),
+]
+
+def statements(sql):
+    &quot;&quot;&quot;Yield (line_number, statement) after stripping comments. Naive &#x27;;&#x27; split.&quot;&quot;&quot;
+    sql = re.sub(r&quot;/\*.*?\*/&quot;, lambda m: re.sub(r&quot;[^\n]&quot;, &quot; &quot;, m.group()), sql, flags=re.S)
+    sql = re.sub(r&quot;--[^\n]*&quot;, &quot;&quot;, sql)
+    pos = 0
+    for part in sql.split(&quot;;&quot;):
+        stripped = part.lstrip()
+        line = sql.count(&quot;\n&quot;, 0, pos + len(part) - len(stripped)) + 1
+        pos += len(part) + 1
+        if stripped.strip():
+            yield line, &quot; &quot;.join(stripped.split())
+
+def scan(path, dialect):
+    text = open(path, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;).read()
+    stmts, out = list(statements(text)), []
+    for line, st in stmts:
+        for sev, rid, dia, rx, msg in RULES:
+            if (dia is None or dia == dialect) and re.search(rx, st, F):
+                out.append((sev, f&quot;{path}:{line} [{sev}] {rid}: {msg}\n    &gt; {st[:110]}&quot;))
+    has_ddl = any(re.match(r&quot;(ALTER|CREATE\s+(UNIQUE\s+)?INDEX|DROP)\b&quot;, s, re.I) for _, s in stmts)
+    timeout = &quot;lock_timeout&quot; if dialect == &quot;postgres&quot; else &quot;lock_wait_timeout&quot;
+    if has_ddl and timeout not in text.lower():
+        out.append((&quot;MEDIUM&quot;, f&quot;{path}:1 [MEDIUM] no-lock-timeout: DDL without {timeout}; it may queue and block all traffic&quot;))
+    if re.search(r&quot;\bCONCURRENTLY\b&quot;, text, re.I) and re.search(r&quot;^\s*(BEGIN|START\s+TRANSACTION)\b&quot;, text, re.I | re.M):
+        out.append((&quot;HIGH&quot;, f&quot;{path}:1 [HIGH] concurrently-in-transaction: CONCURRENTLY cannot run inside a transaction block&quot;))
+    return out
+
+def main(argv):
+    dialect = &quot;postgres&quot;
+    if len(argv) &gt;= 2 and argv[0] == &quot;--dialect&quot;:
+        dialect, argv = argv[1].lower(), argv[2:]
+    if dialect not in (&quot;postgres&quot;, &quot;mysql&quot;) or not argv:
+        print(__doc__, file=sys.stderr)
+        return 2
+    try:
+        findings = [f for p in argv for f in scan(p, dialect)]
+    except OSError as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    for _, text in findings:
+        print(text)
+    counts = {s: sum(1 for f in findings if f[0] == s) for s in (&quot;HIGH&quot;, &quot;MEDIUM&quot;, &quot;LOW&quot;)}
+    print(f&quot;\n{len(argv)} file(s) scanned: {counts[&#x27;HIGH&#x27;]} HIGH, {counts[&#x27;MEDIUM&#x27;]} MEDIUM, {counts[&#x27;LOW&#x27;]} LOW&quot;)
+    print(&quot;Heuristic only: confirm each finding against references/risk-catalog.md.&quot;)
+    return 1 if counts[&quot;HIGH&quot;] else 0
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/database-migration-safety-review',TI="Database Migration Safety Review";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

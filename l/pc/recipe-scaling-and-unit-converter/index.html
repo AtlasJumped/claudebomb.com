@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recipe Scaling and Unit Converter | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: recipe-scaling-and-unit-converter description: Scales a recipe by servings, a factor, or pan size (square, rectangle, round, loaf), converts">
+<meta property="og:title" content="Recipe Scaling and Unit Converter | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: recipe-scaling-and-unit-converter description: Scales a recipe by servings, a factor, or pan size (square, rectangle, round, loaf), converts">
+<meta property="og:url" content="https://claudebomb.com/l/pc/recipe-scaling-and-unit-converter/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/recipe-scaling-and-unit-converter/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Recipe Scaling and Unit Converter</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: recipe-scaling-and-unit-converter
+description: Scales a recipe by servings, a factor, or pan size (square, rectangle, round, loaf), converts between US cups and spoons, metric volume and grams with an ingredient density table, rounds to measurable amounts, and flags baking caveats such as fractional eggs, leavening at large factors, batter depth and bake time when the pan changes, tiny amounts, seasoning and cooking time. Includes a stdlib Python scaler with --self-test.
+---
+
+# Recipe Scaling and Unit Converter
+
+You help home cooks and bakers make a recipe bigger, smaller or fit a different pan, in the units they actually use. You give amounts they can measure, show the factor and the conversions behind them, and warn about the things that do not scale in a straight line: eggs, leavening, pan depth, bake time, seasoning and cooking time.
+
+## Files in this skill
+
+- `scripts/scale_recipe.py` - reads an ingredients CSV, scales by servings, factor or pan area, converts to US, metric or grams, rounds to kitchen measures and lists caveats (Python 3 standard library only)
+- `references/conversions-and-densities.md` - US/metric volume and weight, grams per cup for about 30 common ingredients, egg sizes, oven temperatures with fan and gas mark, and pan areas
+- `references/baking-scaling-caveats.md` - what scales linearly, eggs, leavening, pan size and bake time, cooking (non-baking) caveats and rounding rules
+- `templates/scaled-recipe.md` - the scaled recipe to hand back
+- `examples/fudgy-brownies-8x8.csv` - brownies for an 8x8 pan (16 pieces), used in the example
+
+## Workflow
+
+### 1. Get the recipe and the goal
+Ask for the ingredient list with amounts and units, the original yield or pan, and the target: servings, a factor, or a different pan. Ask whether it is baking, which units they want (cups, grams, or as written), and where the recipe is from if cup, tablespoon or egg sizes could differ (US, UK, Australia). Put the ingredients in a CSV with columns `quantity,unit,ingredient,note`.
+
+### 2. Run the scaler
+```
+python3 scripts/scale_recipe.py examples/fudgy-brownies-8x8.csv --from-pan 8x8 --to-pan 9x13 --to weight --baking --oven 350F --time 20-25
+python3 scripts/scale_recipe.py stew.csv --servings 4 10 --to metric
+python3 scripts/scale_recipe.py cake.csv --factor 2 --from-pan round8 --to-pan round9 --baking
+python3 scripts/scale_recipe.py --self-test
+```
+Pans: `8x8`, `9x13`, `20x30cm`, `round9`, `round23cm`, `loaf9x5`. With only pans, the factor is the area ratio. With a factor or servings plus pans, the script checks how the batter depth changes. Exit 1 means a HIGH caveat (batter depth changes by more than 1.5x), 2 means bad input.
+
+### 3. Check and adjust
+- Read every caveat and turn it into a concrete instruction (see `references/baking-scaling-caveats.md`): weigh the partial egg, bake in batches, change the pan, lower the oven, taste before adding all the salt.
+- For ingredients without a density (NO_DENSITY), keep the volume or look the weight up; never guess for salt brands or leavening.
+- Sanity-check the result: does the pan hold it (2/3 full for cakes)? Did rounding move a key ingredient by more than 5 %? If yes, give grams.
+
+### 4. Deliver
+Fill `templates/scaled-recipe.md`: factor, yield, pan, oven in °F and °C (fan), ingredients in the cook&#x27;s units with the alternative in brackets, method changes, caveats and a doneness test instead of a fixed time.
+
+## Example result
+`examples/fudgy-brownies-8x8.csv` moved from an 8x8 to a 9x13 pan: factor x1.83 (64 to 117 sq in), same batter depth, so bake 350°F / 180°C (fan 160°C) and start checking at 20 minutes. In grams: butter 205 g, sugar 365 g, cocoa 52 g, flour 115 g, chocolate chips 235 g, salt 2.5 g, baking powder 2 g, vanilla 7.5 g. Eggs scale to 3.66 (MEDIUM EGG_FRACTION): use 3 eggs plus 33 g beaten egg. Doubling the recipe but baking it in a 9 in round pan (about the same area as 8x8) doubles the batter depth (HIGH DEPTH_CHANGE, exit 1).
+
+## Rules
+
+- Show the factor and how you got it (servings ratio or pan areas) before the amounts.
+- Never multiply bake or cooking times by the factor; give a doneness test and an early check time.
+- Keep salt and leavening ratios in baking; in cooking add about three quarters of scaled strong seasonings and taste.
+- Prefer grams for baking and say that densities are averages; trust the author&#x27;s grams when they exist.
+- Ask before assuming US cups or egg sizes for recipes from other countries.
+- Mention food safety for large batches (cool quickly in shallow containers) when scaling cooked dishes up a lot.
+FILE:references/conversions-and-densities.md
+# Conversions and densities
+
+## Volume (US customary)
+| Unit | ml | Also |
+|---|---|---|
+| 1 tsp | 4.93 | 1/3 tbsp |
+| 1 tbsp | 14.79 | 3 tsp |
+| 1 fl oz | 29.57 | 2 tbsp |
+| 1 cup | 236.59 | 16 tbsp, 8 fl oz |
+| 1 pint | 473.18 | 2 cups |
+| 1 quart | 946.35 | 4 cups |
+
+Other cups: metric cup (Australia, NZ, Canada recipes) = 250 ml; UK imperial pint = 568 ml; Australian tablespoon = 20 ml (4 tsp). Ask where a recipe is from when the cup or tablespoon size matters (baking, salt, leavening).
+
+## Weight
+| Unit | g |
+|---|---|
+| 1 oz | 28.35 |
+| 1 lb | 453.6 (16 oz) |
+| 1 stick butter (US) | 113 (1/2 cup, 8 tbsp) |
+
+&quot;oz&quot; in a recipe is weight unless it says &quot;fl oz&quot;. For water and milk 8 fl oz weighs about 8 oz; for flour it is about 4.4 oz.
+
+## Grams per US cup (spoon-and-level, used by the script)
+| Ingredient | g/cup | g/tbsp | g/tsp |
+|---|---|---|---|
+| All-purpose (plain) flour | 125 | 7.8 | 2.6 |
+| Bread flour | 127 | 7.9 | |
+| Cake flour | 114 | 7.1 | |
+| Whole wheat flour | 113 | 7.1 | |
+| Almond flour | 96 | 6 | |
+| Cornstarch (cornflour) | 112 | 7 | |
+| Granulated or caster sugar | 200 | 12.5 | 4.2 |
+| Brown sugar, packed | 213 | 13.3 | |
+| Powdered (icing) sugar | 120 | 7.5 | |
+| Butter | 227 | 14.2 | |
+| Water | 237 | 14.8 | 4.9 |
+| Milk, buttermilk, sour cream | 242 | 15.1 | |
+| Heavy cream | 238 | 14.9 | |
+| Yogurt | 245 | 15.3 | |
+| Vegetable or canola oil | 218 | 13.6 | |
+| Olive oil | 216 | 13.5 | |
+| Honey, golden syrup | 340 | 21 | 7 |
+| Maple syrup | 322 | 20 | |
+| Cocoa powder | 85 | 5.3 | |
+| Rolled oats | 90 | | |
+| Chocolate chips | 170 | | |
+| Raw white rice | 185 | | |
+| Chopped nuts / walnuts | 120 | | |
+| Pecans | 110 | | |
+| Raisins | 150 | | |
+| Peanut butter | 270 | 17 | |
+| Table (fine) salt | 288 | 18 | 6 |
+| Baking soda | 230 | | 4.8 |
+| Baking powder | 192 | | 4 |
+| Instant or active dry yeast | 149 | | 3.1 |
+| Vanilla extract | 202 | | 4.2 |
+| Ground cinnamon | 125 | | 2.6 |
+
+Notes:
+- Flour scooped straight from the bag can weigh 140 to 150 g per cup. If a recipe author gives grams, trust the grams.
+- Kosher salt depends on the brand: Diamond Crystal about 2.8 g/tsp, Morton about 5 g/tsp, table salt about 6 g/tsp. Swapping brands by volume can double the salt. The script leaves &quot;kosher salt&quot; in volume and says so.
+- The table is a practical average; published tables differ by about 5 %. That is fine for cooking and most baking; for macarons, bread and candy, weigh.
+
+## Eggs
+| Size (US) | Out of shell |
+|---|---|
+| Large | 50 g (yolk 18 g, white 32 g), about 3 tbsp beaten |
+| Medium | 44 g |
+| Extra large | 56 g |
+| Jumbo | 63 g |
+UK/EU &quot;large&quot; (63 to 73 g in shell) is about 58 g out of the shell: a UK large is closer to a US extra large.
+
+## Oven temperatures
+| °F | °C | Fan °C | Gas mark |
+|---|---|---|---|
+| 300 | 150 | 130 | 2 |
+| 325 | 160 | 140 | 3 |
+| 350 | 180 | 160 | 4 |
+| 375 | 190 | 170 | 5 |
+| 400 | 200 | 180 | 6 |
+| 425 | 220 | 200 | 7 |
+| 450 | 230 | 210 | 8 |
+Fan (convection) ovens: lower about 20 °C / 25 °F, or keep the temperature and check earlier.
+
+## Pan areas
+| Pan | Area (sq in) | Area (cm²) |
+|---|---|---|
+| 8x8 square | 64 | 413 |
+| 9x9 square | 81 | 523 |
+| 9x13 rectangle | 117 | 755 |
+| 10x15 jelly roll | 150 | 968 |
+| 8 in round | 50 | 324 |
+| 9 in round | 64 | 410 |
+| 10 in round | 79 | 507 |
+| 9x5 loaf | 45 | 290 |
+| 20 cm round | 49 | 314 |
+| 23 cm round | 64 | 415 |
+| 20x20 cm square | 62 | 400 |
+Area of a round pan = 3.14 x radius². An 8x8 square and a 9 in round hold almost the same batter.
+FILE:references/baking-scaling-caveats.md
+# Scaling caveats
+
+## What scales linearly
+Flour, sugar, fat, liquids, chocolate, nuts, fruit and (by weight) eggs scale with the factor. In baking, salt and leavening also start at the linear amount: the chemistry depends on the ratio to flour, so keep the ratio.
+
+## Eggs
+- Fractions of an egg: beat the eggs, weigh, and use the needed grams (large egg = 50 g out of the shell). 3.66 eggs = 3 eggs + 33 g beaten egg (about 2 tbsp).
+- If you round instead: more egg makes cakes and brownies firmer, cakier or richer; less egg makes them denser and more fragile. Round up for cakes, down for fudgy brownies and cookies when in doubt.
+- Recipes written in another country may use a different egg size (see conversions).
+
+## Leavening (baking powder, baking soda, yeast)
+- Start linear and measure precisely; at small factors 1/8 tsp errors are large, so weigh on a 0.1 g scale.
+- For factors above 2, mixing and oven heat do not scale: big batters are harder to mix evenly and the centre heats slowly. Make separate batches of the original size when you can.
+- If the batter ends up deeper than the original (same pan, more batter), it rises more slowly in the centre. Do not &quot;fix&quot; this with more leavening; use a wider pan or lower the oven and bake longer.
+- Bread: yeast scales linearly with flour; rising time depends on dough temperature, not quantity.
+
+## Pan size and bake time
+- Scaling by pan area keeps the batter depth the same, so the bake time stays about the same. Start checking 5 minutes early.
+- Same recipe in a different pan: depth ratio = old area / new area. Deeper batter needs a longer bake at a lower temperature (about 25 °F / 15 °C lower); thinner batter bakes faster.
+- Fill cake pans at most 2/3 full, brownie pans about halfway.
+- Glass and dark metal pans bake faster at the edges: lower 25 °F / 15 °C.
+- Cupcakes from a cake recipe: 18 to 22 minutes at the same temperature; a 9x13 cake recipe makes about 24 cupcakes.
+- Never multiply the bake time by the factor. Use the doneness test from the recipe (toothpick with moist crumbs for brownies, clean for cake, 93 to 99 °C / 200 to 210 °F inside for bread).
+
+## Cooking (not baking)
+- Seasonings: add about three quarters of the scaled salt, chilli and strong spices, then taste. A bigger pot evaporates differently.
+- Liquids in braises and soups: evaporation depends on the pot&#x27;s surface, not the volume, so a doubled stew in a wider pot may need less extra liquid than 2x.
+- Searing and frying: do it in batches; a crowded pan steams instead of browning.
+- Time: a doubled pot takes longer to come to a boil and to cool, but simmering time is about the same once it is hot. Roasts depend on thickness, not weight: use a thermometer.
+- Food safety: cool large batches quickly (split into shallow containers) and reheat to 74 °C / 165 °F.
+
+## Rounding for real kitchens
+- US measures: cups in 1/4 and 1/3 steps, then tbsp in halves, tsp down to 1/8. Below 1/8 tsp = a pinch.
+- Metric: grams to 0.5 g below 10 g, 1 g below 100 g, 5 g below 1 kg.
+- Keep the original unit system unless the cook asks; offer grams for baking.
+- Check the result against the original ratios (for example flour to butter) after rounding; if rounding moved a key ingredient by more than 5 %, give the exact gram amount.
+FILE:templates/scaled-recipe.md
+# &lt;Recipe name&gt;, scaled &lt;from 8x8 pan to 9x13 pan / from 4 to 10 servings&gt;
+
+**Factor:** x&lt;1.83&gt;   **Makes:** &lt;24 brownies / 10 servings&gt;   **Units:** &lt;grams with US measures in brackets&gt;
+**Pan:** &lt;9x13 in (23x33 cm), lined&gt;   **Oven:** &lt;350°F / 180°C (fan 160°C)&gt;   **Bake:** &lt;start checking at 20 min; usually 20-25&gt;
+
+## Ingredients
+| Ingredient | Amount | US measure |
+|---|---|---|
+| &lt;unsalted butter, melted&gt; | &lt;205 g&gt; | &lt;3/4 cup + 2 1/2 tbsp&gt; |
+| &lt;large eggs&gt; | &lt;3 + 33 g beaten (about 2 tbsp)&gt; | |
+
+## Method changes from the original
+- &lt;Beat 4 eggs, weigh out 183 g, keep the rest for an egg wash&gt;
+- &lt;Mix in a bigger bowl; fold flour in two additions&gt;
+- &lt;Same bake time because the batter depth is the same; test at 20 min&gt;
+
+## Caveats
+- &lt;EGG_FRACTION: ...&gt;
+- &lt;Kosher salt brand: ...&gt;
+
+## Doneness check
+&lt;Toothpick 2 cm from the centre comes out with moist crumbs, not wet batter.&gt;
+FILE:examples/fudgy-brownies-8x8.csv
+quantity,unit,ingredient,note
+1/2,cup,unsalted butter,melted
+1,cup,granulated sugar,
+2,each,large eggs,room temperature
+1,tsp,vanilla extract,
+1/3,cup,cocoa powder,unsweetened
+1/2,cup,all-purpose flour,spoon and level
+1/4,tsp,salt,
+1/4,tsp,baking powder,
+3/4,cup,chocolate chips,semisweet
+FILE:scripts/scale_recipe.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Recipe scaling and unit converter (Python 3 standard library only).
+
+Scales a recipe by servings, by a factor, or from one pan size to another, converts
+between US volume, metric volume and weight (grams, using an ingredient density table),
+rounds to amounts you can measure, and flags baking caveats: fractional eggs, leavening
+at large factors, batter depth changes when the pan does not scale with the recipe,
+tiny amounts, seasoning and cooking time.
+
+Input CSV columns: quantity,unit,ingredient,note
+  quantity: 2 | 1.5 | 3/4 | 1 1/2 | ½   unit: tsp tbsp cup fl oz pint quart ml l g kg oz lb stick
+  each (or empty) for counted items such as eggs.
+Usage:
+  python3 scale_recipe.py recipe.csv --servings 4 10 [--to us|metric|weight|keep]
+  python3 scale_recipe.py recipe.csv --from-pan 8x8 --to-pan 9x13 --baking --oven 350F --time 20-25
+  python3 scale_recipe.py recipe.csv --factor 0.5 --to weight --json
+  python3 scale_recipe.py --self-test
+Pans: WxL (inches, add cm for centimetres: 20x30cm), round9 / round23cm, loaf9x5.
+Exit codes: 0 = no HIGH findings, 1 = HIGH findings, 2 = bad input.
+&quot;&quot;&quot;
+import argparse, csv, io, json, math, re, sys
+
+ML = {&quot;tsp&quot;: 4.92892, &quot;tbsp&quot;: 14.7868, &quot;cup&quot;: 236.588, &quot;fl oz&quot;: 29.5735, &quot;pint&quot;: 473.176,
+      &quot;quart&quot;: 946.353, &quot;ml&quot;: 1.0, &quot;l&quot;: 1000.0}
+G = {&quot;g&quot;: 1.0, &quot;kg&quot;: 1000.0, &quot;oz&quot;: 28.3495, &quot;lb&quot;: 453.592, &quot;stick&quot;: 113.4}
+UNIT_ALIASES = {&quot;teaspoon&quot;: &quot;tsp&quot;, &quot;teaspoons&quot;: &quot;tsp&quot;, &quot;t&quot;: &quot;tsp&quot;, &quot;tablespoon&quot;: &quot;tbsp&quot;, &quot;tablespoons&quot;: &quot;tbsp&quot;,
+                &quot;tbs&quot;: &quot;tbsp&quot;, &quot;tbl&quot;: &quot;tbsp&quot;, &quot;T&quot;: &quot;tbsp&quot;, &quot;cups&quot;: &quot;cup&quot;, &quot;c&quot;: &quot;cup&quot;, &quot;floz&quot;: &quot;fl oz&quot;,
+                &quot;fl. oz&quot;: &quot;fl oz&quot;, &quot;fluid ounce&quot;: &quot;fl oz&quot;, &quot;fluid ounces&quot;: &quot;fl oz&quot;, &quot;pints&quot;: &quot;pint&quot;, &quot;pt&quot;: &quot;pint&quot;,
+                &quot;quarts&quot;: &quot;quart&quot;, &quot;qt&quot;: &quot;quart&quot;, &quot;milliliter&quot;: &quot;ml&quot;, &quot;milliliters&quot;: &quot;ml&quot;, &quot;mL&quot;: &quot;ml&quot;,
+                &quot;liter&quot;: &quot;l&quot;, &quot;liters&quot;: &quot;l&quot;, &quot;litre&quot;: &quot;l&quot;, &quot;litres&quot;: &quot;l&quot;, &quot;L&quot;: &quot;l&quot;, &quot;gram&quot;: &quot;g&quot;, &quot;grams&quot;: &quot;g&quot;,
+                &quot;kilogram&quot;: &quot;kg&quot;, &quot;kilograms&quot;: &quot;kg&quot;, &quot;ounce&quot;: &quot;oz&quot;, &quot;ounces&quot;: &quot;oz&quot;, &quot;pound&quot;: &quot;lb&quot;, &quot;pounds&quot;: &quot;lb&quot;,
+                &quot;lbs&quot;: &quot;lb&quot;, &quot;sticks&quot;: &quot;stick&quot;, &quot;&quot;: &quot;each&quot;, &quot;x&quot;: &quot;each&quot;, &quot;whole&quot;: &quot;each&quot;, &quot;pc&quot;: &quot;each&quot;,
+                &quot;pcs&quot;: &quot;each&quot;, &quot;piece&quot;: &quot;each&quot;, &quot;pieces&quot;: &quot;each&quot;, &quot;clove&quot;: &quot;each&quot;, &quot;cloves&quot;: &quot;each&quot;,
+                &quot;large&quot;: &quot;each&quot;, &quot;medium&quot;: &quot;each&quot;, &quot;small&quot;: &quot;each&quot;, &quot;pinch&quot;: &quot;pinch&quot;, &quot;pinches&quot;: &quot;pinch&quot;,
+                &quot;dash&quot;: &quot;pinch&quot;}
+# grams per US cup (spoon-and-level). Longest matching name wins.
+DENSITY = {
+    &quot;all-purpose flour&quot;: 125, &quot;plain flour&quot;: 125, &quot;flour&quot;: 125, &quot;bread flour&quot;: 127, &quot;cake flour&quot;: 114,
+    &quot;whole wheat flour&quot;: 113, &quot;almond flour&quot;: 96, &quot;cornstarch&quot;: 112, &quot;cornflour&quot;: 112,
+    &quot;granulated sugar&quot;: 200, &quot;caster sugar&quot;: 200, &quot;sugar&quot;: 200, &quot;brown sugar&quot;: 213,
+    &quot;powdered sugar&quot;: 120, &quot;icing sugar&quot;: 120, &quot;confectioners sugar&quot;: 120,
+    &quot;butter&quot;: 227, &quot;water&quot;: 237, &quot;milk&quot;: 242, &quot;buttermilk&quot;: 242, &quot;heavy cream&quot;: 238, &quot;cream&quot;: 238,
+    &quot;sour cream&quot;: 242, &quot;yogurt&quot;: 245, &quot;vegetable oil&quot;: 218, &quot;canola oil&quot;: 218, &quot;olive oil&quot;: 216, &quot;oil&quot;: 218,
+    &quot;honey&quot;: 340, &quot;maple syrup&quot;: 322, &quot;golden syrup&quot;: 340, &quot;cocoa powder&quot;: 85, &quot;cocoa&quot;: 85,
+    &quot;rolled oats&quot;: 90, &quot;oats&quot;: 90, &quot;chocolate chips&quot;: 170, &quot;rice&quot;: 185, &quot;chopped nuts&quot;: 120,
+    &quot;walnuts&quot;: 120, &quot;pecans&quot;: 110, &quot;raisins&quot;: 150, &quot;peanut butter&quot;: 270,
+    &quot;table salt&quot;: 288, &quot;fine salt&quot;: 288, &quot;salt&quot;: 288, &quot;kosher salt&quot;: None,
+    &quot;baking soda&quot;: 230, &quot;bicarbonate of soda&quot;: 230, &quot;baking powder&quot;: 192, &quot;instant yeast&quot;: 149,
+    &quot;active dry yeast&quot;: 149, &quot;yeast&quot;: 149, &quot;vanilla extract&quot;: 202, &quot;vanilla&quot;: 202,
+    &quot;ground cinnamon&quot;: 125, &quot;cinnamon&quot;: 125,
+}
+LEAVENERS = (&quot;baking soda&quot;, &quot;bicarbonate&quot;, &quot;baking powder&quot;, &quot;yeast&quot;, &quot;cream of tartar&quot;)
+SEASONINGS = (&quot;salt&quot;, &quot;pepper&quot;, &quot;chili&quot;, &quot;chilli&quot;, &quot;cayenne&quot;, &quot;pepper flakes&quot;, &quot;garlic powder&quot;, &quot;curry&quot;, &quot;cumin&quot;, &quot;paprika&quot;)
+EGG_G = {&quot;egg&quot;: 50.0, &quot;yolk&quot;: 18.0, &quot;white&quot;: 32.0}  # US large egg out of shell
+UNICODE_FRAC = {&quot;½&quot;: .5, &quot;¼&quot;: .25, &quot;¾&quot;: .75, &quot;⅓&quot;: 1 / 3, &quot;⅔&quot;: 2 / 3, &quot;⅛&quot;: .125, &quot;⅜&quot;: .375, &quot;⅝&quot;: .625, &quot;⅞&quot;: .875}
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2, &quot;INFO&quot;: 3}
+
+
+def parse_qty(s):
+    s = s.strip()
+    for ch, v in UNICODE_FRAC.items():
+        if ch in s:
+            rest = s.replace(ch, &quot;&quot;).strip()
+            return (float(rest) if rest else 0.0) + v
+    m = re.fullmatch(r&quot;(\d+)\s+(\d+)/(\d+)&quot;, s)
+    if m:
+        return int(m[1]) + int(m[2]) / int(m[3])
+    m = re.fullmatch(r&quot;(\d+)/(\d+)&quot;, s)
+    if m:
+        return int(m[1]) / int(m[2])
+    m = re.fullmatch(r&quot;\d+(?:\.\d+)?|\.\d+&quot;, s)
+    if m:
+        return float(s)
+    raise ValueError(f&quot;cannot read quantity {s!r}&quot;)
+
+
+def norm_unit(u):
+    u = u.strip()
+    if u in UNIT_ALIASES:
+        return UNIT_ALIASES[u]
+    low = u.lower().rstrip(&quot;.&quot;)
+    if low in ML or low in G or low in (&quot;each&quot;, &quot;pinch&quot;):
+        return low
+    if low in UNIT_ALIASES:
+        return UNIT_ALIASES[low]
+    raise ValueError(f&quot;unknown unit {u!r}&quot;)
+
+
+def density_for(name):
+    low = name.lower()
+    best = None
+    for key in DENSITY:
+        if re.search(r&quot;\b&quot; + re.escape(key) + r&quot;\b&quot;, low) and (best is None or len(key) &gt; len(best)):
+            best = key
+    return (best, DENSITY[best]) if best else (None, None)
+
+
+def egg_kind(name):
+    low = name.lower()
+    if &quot;yolk&quot; in low:
+        return &quot;yolk&quot;
+    if &quot;white&quot; in low and &quot;egg&quot; in low:
+        return &quot;white&quot;
+    if re.search(r&quot;\beggs?\b&quot;, low):
+        return &quot;egg&quot;
+    return None
+
+
+def parse_pan(spec):
+    s = spec.strip().lower().replace(&quot; &quot;, &quot;&quot;).replace(&quot;inch&quot;, &quot;&quot;).replace(&quot;in&quot;, &quot;&quot;).replace(&#x27;&quot;&#x27;, &quot;&quot;)
+    cm = s.endswith(&quot;cm&quot;)
+    if cm:
+        s = s[:-2]
+    k = 1 / 2.54 if cm else 1.0
+    m = re.fullmatch(r&quot;(?:round)?(\d+(?:\.\d+)?)(?:round)?&quot;, s)
+    if m and &quot;round&quot; in s:
+        d = float(m[1]) * k
+        return math.pi * (d / 2) ** 2, f&quot;{spec} round ({d:.1f} in)&quot;
+    m = re.fullmatch(r&quot;(?:loaf|square|rect)?(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)&quot;, s)
+    if m:
+        a, b = float(m[1]) * k, float(m[2]) * k
+        return a * b, f&quot;{spec} ({a:.1f} x {b:.1f} in)&quot;
+    raise ValueError(f&quot;cannot read pan size {spec!r} (use 9x13, 20x30cm, round9, round23cm, loaf9x5)&quot;)
+
+
+def frac_str(x, denoms=(2, 3, 4, 8)):
+    whole = int(x)
+    rest = x - whole
+    best = (abs(rest), 0, 1)
+    for d in denoms:
+        n = round(rest * d)
+        if 0 &lt; n &lt; d and abs(rest - n / d) &lt; best[0] - 1e-9:
+            best = (abs(rest - n / d), n, d)
+    if abs(rest - 1) &lt; best[0]:
+        return str(whole + 1)
+    _, n, d = best
+    if n == 0:
+        return str(whole)
+    g = math.gcd(n, d)
+    return (f&quot;{whole} &quot; if whole else &quot;&quot;) + f&quot;{n // g}/{d // g}&quot;
+
+
+def frac_val(s):
+    return parse_qty(s)
+
+
+def cup_word(x):
+    return &quot;cups&quot; if x &gt; 1 + 1e-9 else &quot;cup&quot;
+
+
+def fmt_us_volume(ml):
+    cups = ml / ML[&quot;cup&quot;]
+    if cups &gt;= 0.25 - 1e-9:
+        s = frac_str(cups, (2, 3, 4))
+        err = abs(frac_val(s) - cups) * ML[&quot;cup&quot;]
+        if err &gt;= ML[&quot;tbsp&quot;] * 0.75:
+            base = math.floor(cups * 4) / 4
+            tb = (cups - base) * ML[&quot;cup&quot;] / ML[&quot;tbsp&quot;]
+            bs = frac_str(base, (4,))
+            return (f&quot;{bs} {cup_word(base)} + &quot; if base else &quot;&quot;) + f&quot;{frac_str(tb, (2,))} tbsp&quot;
+        return f&quot;{s} {cup_word(frac_val(s))}&quot;
+    tbsp = ml / ML[&quot;tbsp&quot;]
+    if tbsp &gt;= 1 - 1e-9:
+        return f&quot;{frac_str(tbsp, (2,))} tbsp&quot;
+    tsp = ml / ML[&quot;tsp&quot;]
+    if tsp &lt; 1 / 16:
+        return &quot;pinch&quot;
+    return f&quot;{frac_str(tsp, (2, 4, 8))} tsp&quot;
+
+
+def round_metric(x):
+    if x &lt; 10:
+        return round(x * 2) / 2
+    if x &lt; 100:
+        return round(x)
+    if x &lt; 1000:
+        return round(x / 5) * 5
+    return round(x / 10) * 10
+
+
+def fmt_num(x):
+    return f&quot;{x:g}&quot;
+
+
+def fmt_metric(amount, unit):
+    v = round_metric(amount)
+    if v &gt;= 2000:
+        return f&quot;{fmt_num(v / 1000)} {&#x27;kg&#x27; if unit == &#x27;g&#x27; else &#x27;l&#x27;}&quot;
+    return f&quot;{fmt_num(v)} {unit}&quot;
+
+
+def fmt_us_weight(g):
+    oz = g / G[&quot;oz&quot;]
+    if oz &gt;= 16:
+        lb = oz / 16
+        return f&quot;{frac_str(lb, (4,))} lb&quot;
+    return f&quot;{frac_str(oz, (2, 4))} oz&quot; if oz &gt;= 1 else f&quot;{fmt_num(round(oz, 2))} oz&quot;
+
+
+def convert(row, factor, target):
+    &quot;&quot;&quot;Return dict with scaled display and notes for one ingredient row.&quot;&quot;&quot;
+    qty, unit, name = row[&quot;qty&quot;] * factor, row[&quot;unit&quot;], row[&quot;ingredient&quot;]
+    key, dens = density_for(name)
+    egg = egg_kind(name)
+    out = {&quot;ingredient&quot;: name, &quot;original&quot;: row[&quot;original&quot;], &quot;scaled_qty&quot;: qty, &quot;unit&quot;: unit, &quot;notes&quot;: []}
+    if unit == &quot;each&quot;:
+        if egg:
+            g = qty * EGG_G[egg]
+            out[&quot;display&quot;] = f&quot;{fmt_num(round(qty, 2))} ({fmt_metric(g, &#x27;g&#x27;)} beaten)&quot;
+        else:
+            out[&quot;display&quot;] = fmt_num(round(qty, 2))
+        return out
+    if unit == &quot;pinch&quot;:
+        out[&quot;display&quot;] = f&quot;{fmt_num(round(qty, 2))} pinch&quot;
+        return out
+    if unit in ML:
+        ml = qty * ML[unit]
+        out[&quot;ml&quot;] = ml
+        if target == &quot;weight&quot;:
+            if dens:
+                out[&quot;display&quot;] = fmt_metric(ml / ML[&quot;cup&quot;] * dens, &quot;g&quot;)
+                out[&quot;also&quot;] = fmt_us_volume(ml)
+            else:
+                out[&quot;display&quot;] = fmt_metric(ml, &quot;ml&quot;)
+                out[&quot;also&quot;] = fmt_us_volume(ml)
+                out[&quot;notes&quot;].append(&quot;NO_DENSITY&quot;)
+        elif target == &quot;metric&quot; or (target == &quot;keep&quot; and unit in (&quot;ml&quot;, &quot;l&quot;)):
+            out[&quot;display&quot;] = fmt_metric(ml, &quot;ml&quot;)
+            out[&quot;also&quot;] = fmt_us_volume(ml)
+        else:
+            out[&quot;display&quot;] = fmt_us_volume(ml)
+            out[&quot;also&quot;] = fmt_metric(ml, &quot;ml&quot;) if not dens else fmt_metric(ml / ML[&quot;cup&quot;] * dens, &quot;g&quot;)
+        return out
+    g = qty * G[unit]
+    out[&quot;g&quot;] = g
+    if target == &quot;us&quot; or (target == &quot;keep&quot; and unit in (&quot;oz&quot;, &quot;lb&quot;, &quot;stick&quot;)):
+        if unit == &quot;stick&quot; and target == &quot;keep&quot;:
+            out[&quot;display&quot;] = f&quot;{frac_str(qty, (2, 4))} stick ({fmt_metric(g, &#x27;g&#x27;)})&quot;
+        else:
+            out[&quot;display&quot;] = fmt_us_weight(g)
+        out[&quot;also&quot;] = fmt_metric(g, &quot;g&quot;)
+    else:
+        out[&quot;display&quot;] = fmt_metric(g, &quot;g&quot;)
+        if dens:
+            out[&quot;also&quot;] = fmt_us_volume(g / dens * ML[&quot;cup&quot;])
+    return out
+
+
+def read_recipe(text):
+    rows = []
+    reader = csv.DictReader(io.StringIO(text.lstrip(&quot;\ufeff&quot;)))
+    need = {&quot;quantity&quot;, &quot;unit&quot;, &quot;ingredient&quot;}
+    if not reader.fieldnames or not need &lt;= {f.strip().lower() for f in reader.fieldnames}:
+        raise ValueError(&quot;CSV header must include quantity,unit,ingredient (note optional)&quot;)
+    for i, r in enumerate(reader, 2):
+        r = {k.strip().lower(): (v or &quot;&quot;).strip() for k, v in r.items() if k}
+        if not r.get(&quot;ingredient&quot;):
+            continue
+        try:
+            qty = parse_qty(r[&quot;quantity&quot;])
+            unit = norm_unit(r.get(&quot;unit&quot;, &quot;&quot;))
+        except ValueError as e:
+            raise ValueError(f&quot;line {i}: {e}&quot;)
+        orig = f&quot;{r[&#x27;quantity&#x27;]} {r.get(&#x27;unit&#x27;, &#x27;&#x27;)}&quot;.strip()
+        rows.append({&quot;qty&quot;: qty, &quot;unit&quot;: unit, &quot;ingredient&quot;: r[&quot;ingredient&quot;], &quot;note&quot;: r.get(&quot;note&quot;, &quot;&quot;), &quot;original&quot;: orig})
+    if not rows:
+        raise ValueError(&quot;no ingredient rows&quot;)
+    return rows
+
+
+def oven(temp):
+    m = re.fullmatch(r&quot;\s*(\d+(?:\.\d+)?)\s*°?\s*([CcFf])\s*&quot;, temp)
+    if not m:
+        raise ValueError(f&quot;cannot read oven temperature {temp!r} (use 350F or 180C)&quot;)
+    v, u = float(m[1]), m[2].upper()
+    if u == &quot;F&quot;:
+        c = (v - 32) * 5 / 9
+        return f&quot;{v:g}°F = {round(c / 10) * 10:g}°C (fan oven {round(c / 10) * 10 - 20:g}°C)&quot;
+    f = v * 9 / 5 + 32
+    return f&quot;{v:g}°C = {round(f / 25) * 25:g}°F&quot;
+
+
+def scale(rows, factor, target=&quot;keep&quot;, baking=False, depth_ratio=None, pan_change=None, bake_time=None):
+    items = [convert(r, factor, target) for r in rows]
+    findings = []
+    for it, r in zip(items, rows):
+        name = r[&quot;ingredient&quot;].lower()
+        egg = egg_kind(name)
+        if egg and r[&quot;unit&quot;] == &quot;each&quot;:
+            q = it[&quot;scaled_qty&quot;]
+            whole = math.floor(q + 1e-9)
+            if abs(q - round(q)) &gt; 0.15:
+                extra = (q - whole) * EGG_G[egg]
+                findings.append((&quot;MEDIUM&quot;, &quot;EGG_FRACTION&quot;, r[&quot;ingredient&quot;],
+                                 f&quot;scales to {q:.2f} {egg}s&quot;,
+                                 f&quot;Use {whole} whole {egg}{&#x27;s&#x27; if whole != 1 else &#x27;&#x27;} plus {round(extra):g} g beaten {egg} (a large {egg} is about {EGG_G[egg]:g} g out of the shell), or round to {round(q)} and expect a {&#x27;richer&#x27; if round(q) &gt; q else &#x27;drier&#x27;} result.&quot;))
+        if &quot;NO_DENSITY&quot; in it[&quot;notes&quot;]:
+            findings.append((&quot;LOW&quot;, &quot;NO_DENSITY&quot;, r[&quot;ingredient&quot;], &quot;no density in the table, so it stays in volume&quot;,
+                             &quot;Weigh it once, or look up grams per cup; for kosher salt the brand matters (Diamond Crystal about 136 g/cup, Morton about 240 g/cup).&quot;))
+        ml = it.get(&quot;ml&quot;)
+        if ml is not None and ml / ML[&quot;tsp&quot;] &lt; 1 / 8 and r[&quot;unit&quot;] in ML:
+            findings.append((&quot;LOW&quot;, &quot;TINY_AMOUNT&quot;, r[&quot;ingredient&quot;], f&quot;scales to {ml / ML[&#x27;tsp&#x27;]:.2f} tsp&quot;,
+                             &quot;Use a pinch or a 1/8 tsp measure; for leavening weigh on a 0.1 g scale.&quot;))
+        if baking and any(w in name for w in LEAVENERS) and (factor &gt; 2 or factor &lt; 0.5):
+            findings.append((&quot;LOW&quot;, &quot;LEAVENING&quot;, r[&quot;ingredient&quot;], f&quot;leavening scaled x{factor:.2f}&quot;,
+                             &quot;Linear scaling is the starting point; measure exactly (weigh), and for factors above 2 consider separate batches because mixing and oven heat do not scale.&quot;))
+        if not baking and factor &gt; 2 and any(w in name for w in SEASONINGS):
+            findings.append((&quot;INFO&quot;, &quot;SEASONING&quot;, r[&quot;ingredient&quot;], f&quot;seasoning scaled x{factor:.2f}&quot;,
+                             &quot;Add about three quarters, then taste and adjust; evaporation and pot size change how salty or hot it ends up.&quot;))
+    if baking and (factor &gt; 3 or factor &lt; 1 / 3):
+        findings.append((&quot;MEDIUM&quot;, &quot;BIG_FACTOR&quot;, &quot;-&quot;, f&quot;baking recipe scaled x{factor:.2f}&quot;,
+                         &quot;Bake in several batches of the original size, or check mixer bowl capacity; never multiply the bake time.&quot;))
+    if depth_ratio is not None:
+        sev = &quot;HIGH&quot; if (depth_ratio &gt; 1.5 or depth_ratio &lt; 0.67) else (&quot;MEDIUM&quot; if (depth_ratio &gt; 1.25 or depth_ratio &lt; 0.8) else None)
+        if sev and baking:
+            if depth_ratio &gt; 1:
+                fix = &quot;Batter will be deeper: lower the oven by 25°F/15°C, bake longer and test the centre, keep the pan at most 2/3 full, or use a bigger pan.&quot;
+            else:
+                fix = &quot;Batter will be thinner: start checking 25 to 40 % earlier, or use a smaller pan.&quot;
+            findings.append((sev, &quot;DEPTH_CHANGE&quot;, &quot;-&quot;, f&quot;batter depth changes x{depth_ratio:.2f} versus the original pan&quot;, fix))
+    if baking and pan_change:
+        if depth_ratio is None or 0.9 &lt;= depth_ratio &lt;= 1.1:
+            tip = &quot;Batter depth stays about the same, so the bake time stays about the same; start checking 5 minutes early. Glass or dark pans bake faster: lower 25°F/15°C.&quot;
+        elif 0.8 &lt;= depth_ratio &lt;= 1.25:
+            tip = f&quot;Batter depth changes slightly (x{depth_ratio:.2f}); {&#x27;bake a few minutes longer&#x27; if depth_ratio &gt; 1 else &#x27;start checking a few minutes early&#x27;} and test the centre.&quot;
+        else:
+            tip = &quot;See DEPTH_CHANGE for time and temperature.&quot;
+        if bake_time:
+            tip = f&quot;Original {bake_time} min. &quot; + tip
+        findings.append((&quot;INFO&quot;, &quot;PAN_TIME&quot;, &quot;-&quot;, pan_change, tip))
+    if not baking and factor &gt; 1.5:
+        findings.append((&quot;INFO&quot;, &quot;COOK_TIME&quot;, &quot;-&quot;, f&quot;scaled x{factor:.2f}&quot;,
+                         &quot;Cooking time does not scale with quantity: brown meat in batches, allow longer to come to a boil, and use a pot that keeps the depth similar.&quot;))
+    findings.sort(key=lambda f: SEV_ORDER[f[0]])
+    return items, [dict(zip((&quot;severity&quot;, &quot;code&quot;, &quot;ingredient&quot;, &quot;problem&quot;, &quot;fix&quot;), f)) for f in findings]
+
+
+def render(path, factor, how, target, items, findings, oven_line=None):
+    out = [f&quot;# Scaled recipe: {path}&quot;, &quot;&quot;, f&quot;Scale: {how} -&gt; factor x{factor:.3f}   Units: {target}&quot;, &quot;&quot;]
+    out += [&quot;| Ingredient | Original | Scaled | Also |&quot;, &quot;|---|---|---|---|&quot;]
+    for it in items:
+        out.append(f&quot;| {it[&#x27;ingredient&#x27;]} | {it[&#x27;original&#x27;]} | {it[&#x27;display&#x27;]} | {it.get(&#x27;also&#x27;, &#x27;&#x27;)} |&quot;)
+    if oven_line:
+        out += [&quot;&quot;, f&quot;Oven: {oven_line}&quot;]
+    out += [&quot;&quot;, &quot;## Notes&quot;, &quot;&quot;]
+    if findings:
+        out += [&quot;| Severity | Code | Ingredient | Problem | Advice |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in findings:
+            out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | {f[&#x27;ingredient&#x27;]} | {f[&#x27;problem&#x27;]} | {f[&#x27;fix&#x27;]} |&quot;)
+    else:
+        out.append(&quot;No caveats.&quot;)
+    out += [&quot;&quot;, &quot;Weights for volume ingredients use spoon-and-level densities; weigh flour if you can.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+    def t(name, cond):
+        cases.append((name, bool(cond)))
+    close = lambda a, b, tol=1e-6: abs(a - b) &lt;= tol
+    t(&quot;parse 1 1/2&quot;, close(parse_qty(&quot;1 1/2&quot;), 1.5))
+    t(&quot;parse 3/4 and .5 and ½&quot;, close(parse_qty(&quot;3/4&quot;), .75) and close(parse_qty(&quot;.5&quot;), .5) and close(parse_qty(&quot;1½&quot;), 1.5))
+    t(&quot;bad quantity rejected&quot;, raises(lambda: parse_qty(&quot;some&quot;)))
+    t(&quot;unit aliases&quot;, norm_unit(&quot;Tablespoons&quot;) == &quot;tbsp&quot; and norm_unit(&quot;T&quot;) == &quot;tbsp&quot; and norm_unit(&quot;t&quot;) == &quot;tsp&quot; and norm_unit(&quot;&quot;) == &quot;each&quot;)
+    t(&quot;unknown unit rejected&quot;, raises(lambda: norm_unit(&quot;handful&quot;)))
+    t(&quot;longest density match&quot;, density_for(&quot;light brown sugar&quot;)[0] == &quot;brown sugar&quot; and density_for(&quot;all-purpose flour&quot;)[1] == 125)
+    t(&quot;salt vs kosher salt&quot;, density_for(&quot;salt&quot;)[1] == 288 and density_for(&quot;kosher salt&quot;)[1] is None)
+    t(&quot;eggs detected&quot;, egg_kind(&quot;large eggs&quot;) == &quot;egg&quot; and egg_kind(&quot;egg yolks&quot;) == &quot;yolk&quot; and egg_kind(&quot;eggplant&quot;) is None)
+    a8 = parse_pan(&quot;8x8&quot;)[0]; a913 = parse_pan(&quot;9x13&quot;)[0]
+    t(&quot;rect pan area&quot;, close(a8, 64) and close(a913, 117))
+    t(&quot;round pan area&quot;, close(parse_pan(&quot;round9&quot;)[0], math.pi * 20.25))
+    t(&quot;cm pan&quot;, close(parse_pan(&quot;20x20cm&quot;)[0], (20 / 2.54) ** 2))
+    t(&quot;bad pan rejected&quot;, raises(lambda: parse_pan(&quot;big&quot;)))
+    t(&quot;us volume 1 cup&quot;, fmt_us_volume(236.588) == &quot;1 cup&quot;)
+    t(&quot;us volume 3/4 cup&quot;, fmt_us_volume(ML[&quot;cup&quot;] * .75) == &quot;3/4 cup&quot;)
+    t(&quot;us volume 2/3 cup&quot;, fmt_us_volume(ML[&quot;cup&quot;] * 2 / 3) == &quot;2/3 cup&quot;)
+    t(&quot;us volume cup + tbsp&quot;, fmt_us_volume(ML[&quot;cup&quot;] * 1.125) == &quot;1 cup + 2 tbsp&quot;)
+    t(&quot;fractions reduced, cups plural&quot;, fmt_us_volume(ML[&quot;cup&quot;] * 0.61) == &quot;1/2 cup + 2 tbsp&quot; and fmt_us_volume(ML[&quot;cup&quot;] * 2) == &quot;2 cups&quot;)
+    t(&quot;us volume tbsp&quot;, fmt_us_volume(ML[&quot;tbsp&quot;] * 1.5) == &quot;1 1/2 tbsp&quot;)
+    t(&quot;us volume tsp&quot;, fmt_us_volume(ML[&quot;tsp&quot;] * .5) == &quot;1/2 tsp&quot;)
+    t(&quot;us volume pinch&quot;, fmt_us_volume(ML[&quot;tsp&quot;] * .05) == &quot;pinch&quot;)
+    t(&quot;metric rounding&quot;, round_metric(7.3) == 7.5 and round_metric(57.4) == 57 and round_metric(228) == 230 and round_metric(1234) == 1230)
+    t(&quot;1 cup flour = 125 g&quot;, convert({&quot;qty&quot;: 1, &quot;unit&quot;: &quot;cup&quot;, &quot;ingredient&quot;: &quot;all-purpose flour&quot;, &quot;original&quot;: &quot;&quot;}, 1, &quot;weight&quot;)[&quot;display&quot;] == &quot;125 g&quot;)
+    t(&quot;1 stick butter in us/keep&quot;, &quot;1 stick&quot; in convert({&quot;qty&quot;: 1, &quot;unit&quot;: &quot;stick&quot;, &quot;ingredient&quot;: &quot;butter&quot;, &quot;original&quot;: &quot;&quot;}, 1, &quot;keep&quot;)[&quot;display&quot;])
+    t(&quot;8 oz to grams&quot;, convert({&quot;qty&quot;: 8, &quot;unit&quot;: &quot;oz&quot;, &quot;ingredient&quot;: &quot;cheese&quot;, &quot;original&quot;: &quot;&quot;}, 1, &quot;metric&quot;)[&quot;display&quot;] == &quot;225 g&quot;)
+    t(&quot;500 g to us lb&quot;, convert({&quot;qty&quot;: 500, &quot;unit&quot;: &quot;g&quot;, &quot;ingredient&quot;: &quot;pasta&quot;, &quot;original&quot;: &quot;&quot;}, 1, &quot;us&quot;)[&quot;display&quot;] == &quot;1 lb&quot;)
+    t(&quot;metric volume&quot;, convert({&quot;qty&quot;: 1, &quot;unit&quot;: &quot;cup&quot;, &quot;ingredient&quot;: &quot;milk&quot;, &quot;original&quot;: &quot;&quot;}, 2, &quot;metric&quot;)[&quot;display&quot;] == &quot;475 ml&quot;)
+    t(&quot;no density keeps ml&quot;, &quot;NO_DENSITY&quot; in convert({&quot;qty&quot;: 1, &quot;unit&quot;: &quot;tbsp&quot;, &quot;ingredient&quot;: &quot;fish sauce&quot;, &quot;original&quot;: &quot;&quot;}, 1, &quot;weight&quot;)[&quot;notes&quot;])
+    rows = read_recipe(&quot;quantity,unit,ingredient,note\n2,each,large eggs,\n1/4,tsp,baking soda,\n1,cup,sugar,\n&quot;)
+    t(&quot;csv read&quot;, len(rows) == 3 and rows[0][&quot;unit&quot;] == &quot;each&quot;)
+    t(&quot;csv bad header rejected&quot;, raises(lambda: read_recipe(&quot;a,b\n1,2\n&quot;)))
+    t(&quot;csv bad unit names line&quot;, &quot;line 2&quot; in err_of(lambda: read_recipe(&quot;quantity,unit,ingredient\n1,handful,x\n&quot;)))
+    _, f = scale(rows, 1.828, baking=True)
+    t(&quot;EGG_FRACTION at x1.83&quot;, any(x[&quot;code&quot;] == &quot;EGG_FRACTION&quot; and &quot;3 whole eggs plus 33 g&quot; in x[&quot;fix&quot;] for x in f))
+    _, f = scale(rows, 2.0, baking=True)
+    t(&quot;no EGG_FRACTION when whole&quot;, not any(x[&quot;code&quot;] == &quot;EGG_FRACTION&quot; for x in f))
+    _, f = scale(rows, 0.1, baking=True)
+    t(&quot;TINY_AMOUNT and BIG_FACTOR&quot;, {&quot;TINY_AMOUNT&quot;, &quot;BIG_FACTOR&quot;, &quot;LEAVENING&quot;} &lt;= {x[&quot;code&quot;] for x in f})
+    _, f = scale(rows, 1.0, baking=True, depth_ratio=1.83)
+    t(&quot;DEPTH_CHANGE HIGH&quot;, any(x[&quot;code&quot;] == &quot;DEPTH_CHANGE&quot; and x[&quot;severity&quot;] == &quot;HIGH&quot; for x in f))
+    _, f = scale(rows, 1.0, baking=True, depth_ratio=1.3)
+    t(&quot;DEPTH_CHANGE MEDIUM&quot;, any(x[&quot;code&quot;] == &quot;DEPTH_CHANGE&quot; and x[&quot;severity&quot;] == &quot;MEDIUM&quot; for x in f))
+    _, f = scale(read_recipe(&quot;quantity,unit,ingredient\n1,tsp,salt\n&quot;), 3, baking=False)
+    t(&quot;SEASONING and COOK_TIME for cooking&quot;, {&quot;SEASONING&quot;, &quot;COOK_TIME&quot;} &lt;= {x[&quot;code&quot;] for x in f})
+    t(&quot;oven F to C&quot;, oven(&quot;350F&quot;) == &quot;350°F = 180°C (fan oven 160°C)&quot; and oven(&quot;200C&quot;) == &quot;200°C = 400°F&quot;)
+    t(&quot;findings sorted HIGH first&quot;, scale(rows, 1.83, baking=True, depth_ratio=2)[1][0][&quot;severity&quot;] == &quot;HIGH&quot;)
+    passed = sum(ok for _, ok in cases)
+    for name, ok in cases:
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+
+def err_of(fn):
+    try:
+        fn()
+    except ValueError as e:
+        return str(e)
+    return &quot;&quot;
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(&quot;recipe&quot;, nargs=&quot;?&quot;)
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument(&quot;--servings&quot;, nargs=2, type=float, metavar=(&quot;FROM&quot;, &quot;TO&quot;))
+    g.add_argument(&quot;--factor&quot;, type=float)
+    ap.add_argument(&quot;--from-pan&quot;)
+    ap.add_argument(&quot;--to-pan&quot;)
+    ap.add_argument(&quot;--to&quot;, default=&quot;keep&quot;, choices=[&quot;keep&quot;, &quot;us&quot;, &quot;metric&quot;, &quot;weight&quot;])
+    ap.add_argument(&quot;--baking&quot;, action=&quot;store_true&quot;, help=&quot;apply baking caveats (eggs, leavening, pan depth)&quot;)
+    ap.add_argument(&quot;--oven&quot;, help=&quot;original oven temperature, e.g. 350F or 180C&quot;)
+    ap.add_argument(&quot;--time&quot;, help=&quot;original bake time in minutes, e.g. 20-25&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.recipe:
+        ap.print_usage(sys.stderr); return 2
+    try:
+        rows = read_recipe(open(a.recipe, encoding=&quot;utf-8&quot;).read())
+        depth_ratio = pan_change = None
+        if bool(a.from_pan) != bool(a.to_pan):
+            raise ValueError(&quot;give both --from-pan and --to-pan&quot;)
+        if a.from_pan:
+            fa, fd = parse_pan(a.from_pan)
+            ta, td = parse_pan(a.to_pan)
+            pan_change = f&quot;{fd} -&gt; {td}, area x{ta / fa:.2f}&quot;
+        if a.servings:
+            if a.servings[0] &lt;= 0 or a.servings[1] &lt;= 0:
+                raise ValueError(&quot;servings must be positive&quot;)
+            factor, how = a.servings[1] / a.servings[0], f&quot;{a.servings[0]:g} -&gt; {a.servings[1]:g} servings&quot;
+        elif a.factor is not None:
+            if a.factor &lt;= 0:
+                raise ValueError(&quot;factor must be positive&quot;)
+            factor, how = a.factor, f&quot;factor {a.factor:g}&quot;
+        elif a.from_pan:
+            factor, how = ta / fa, f&quot;pan {a.from_pan} -&gt; {a.to_pan}&quot;
+        else:
+            raise ValueError(&quot;give --servings FROM TO, --factor F or --from-pan/--to-pan&quot;)
+        if a.from_pan:
+            depth_ratio = factor * fa / ta
+            if abs(depth_ratio - 1) &lt; 0.01:
+                depth_ratio = None
+        items, findings = scale(rows, factor, a.to, a.baking, depth_ratio, pan_change, a.time)
+        oven_line = oven(a.oven) if a.oven else None
+    except (OSError, UnicodeDecodeError, ValueError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr); return 2
+    if a.json:
+        print(json.dumps({&quot;factor&quot;: factor, &quot;how&quot;: how, &quot;units&quot;: a.to, &quot;oven&quot;: oven_line,
+                          &quot;items&quot;: [{k: v for k, v in it.items() if k != &quot;notes&quot;} for it in items],
+                          &quot;findings&quot;: findings}, indent=2, ensure_ascii=False))
+    else:
+        print(render(a.recipe, factor, how, a.to, items, findings, oven_line))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in findings) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/recipe-scaling-and-unit-converter',TI="Recipe Scaling and Unit Converter";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

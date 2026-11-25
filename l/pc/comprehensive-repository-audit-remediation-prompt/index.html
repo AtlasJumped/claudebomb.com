@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comprehensive Repository Audit &amp; Remediation Prompt | Open library | claudebomb.com</title>
+<meta name="description" content="## Objective Conduct a thorough analysis of the entire repository to identify, prioritize, fix, and document ALL verifiable bugs, security vulnerabili">
+<meta property="og:title" content="Comprehensive Repository Audit &amp; Remediation Prompt | Open library | claudebomb.com">
+<meta property="og:description" content="## Objective Conduct a thorough analysis of the entire repository to identify, prioritize, fix, and document ALL verifiable bugs, security vulnerabili">
+<meta property="og:url" content="https://claudebomb.com/l/pc/comprehensive-repository-audit-remediation-prompt/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/comprehensive-repository-audit-remediation-prompt/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Comprehensive Repository Audit &amp; Remediation Prompt</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by ykarateke. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">## Objective
+Conduct a thorough analysis of the entire repository to identify, prioritize, fix, and document ALL verifiable bugs, security vulnerabilities, and critical issues across any programming language, framework, or technology stack.
+
+## Phase 1: Initial Repository Assessment
+
+### 1.1 Architecture Mapping
+- Map complete project structure (src/, lib/, tests/, docs/, config/, scripts/, etc.)
+- Identify technology stack and dependencies (package.json, requirements.txt, go.mod, pom.xml, Gemfile, etc.)
+- Document main entry points, critical paths, and system boundaries
+- Analyze build configurations and CI/CD pipelines
+- Review existing documentation (README, API docs, architecture diagrams)
+
+### 1.2 Development Environment Analysis
+- Identify testing frameworks (Jest, pytest, PHPUnit, Go test, JUnit, RSpec, etc.)
+- Review linting/formatting configurations (ESLint, Prettier, Black, RuboCop, etc.)
+- Check for existing issue tracking (GitHub Issues, TODO/FIXME/HACK/XXX comments)
+- Analyze commit history for recent problematic areas
+- Review existing test coverage reports if available
+
+## Phase 2: Systematic Bug Discovery
+
+### 2.1 Bug Categories to Identify
+**Critical Bugs:**
+- Security vulnerabilities (SQL injection, XSS, CSRF, auth bypass, etc.)
+- Data corruption or loss risks
+- System crashes or deadlocks
+- Memory leaks or resource exhaustion
+
+**Functional Bugs:**
+- Logic errors (incorrect conditions, wrong calculations, off-by-one errors)
+- State management issues (race conditions, inconsistent state, improper mutations)
+- Incorrect API contracts or data mappings
+- Missing or incorrect validations
+- Broken business rules or workflows
+
+**Integration Bugs:**
+- Incorrect external API usage
+- Database query errors or inefficiencies
+- Message queue handling issues
+- File system operation problems
+- Network communication errors
+
+**Edge Cases &amp; Error Handling:**
+- Null/undefined/nil handling
+- Empty collections or zero-value edge cases
+- Boundary conditions and limit violations
+- Missing error propagation or swallowing exceptions
+- Timeout and retry logic issues
+
+**Code Quality Issues:**
+- Type mismatches or unsafe casts
+- Deprecated API usage
+- Dead code or unreachable branches
+- Circular dependencies
+- Performance bottlenecks (N+1 queries, inefficient algorithms)
+
+### 2.2 Discovery Methods
+- Static code analysis using language-specific tools
+- Pattern matching for common anti-patterns
+- Dependency vulnerability scanning
+- Code path analysis for unreachable or untested code
+- Configuration validation
+- Cross-reference documentation with implementation
+
+## Phase 3: Bug Documentation &amp; Prioritization
+
+### 3.1 Bug Report Template
+For each identified bug, document:
+```
+BUG-ID: [Sequential identifier]
+Severity: [CRITICAL | HIGH | MEDIUM | LOW]
+Category: [Security | Functional | Performance | Integration | Code Quality]
+File(s): [Complete file path(s) and line numbers]
+Component: [Module/Service/Feature affected]
+
+Description:
+- Current behavior (what&#x27;s wrong)
+- Expected behavior (what should happen)
+- Root cause analysis
+
+Impact Assessment:
+- User impact (UX degradation, data loss, security exposure)
+- System impact (performance, stability, scalability)
+- Business impact (compliance, revenue, reputation)
+
+Reproduction Steps:
+1. [Step-by-step instructions]
+2. [Include test data/conditions if needed]
+3. [Expected vs actual results]
+
+Verification Method:
+- [Code snippet or test that demonstrates the bug]
+- [Metrics or logs showing the issue]
+
+Dependencies:
+- Related bugs: [List of related BUG-IDs]
+- Blocking issues: [What needs to be fixed first]
+```
+
+### 3.2 Prioritization Matrix
+Rank bugs using:
+- **Severity**: Critical &gt; High &gt; Medium &gt; Low
+- **User Impact**: Number of affected users/features
+- **Fix Complexity**: Simple &lt; Medium &lt; Complex
+- **Risk of Regression**: Low &lt; Medium &lt; High
+
+## Phase 4: Fix Implementation
+
+### 4.1 Fix Strategy
+**For each bug:**
+1. Create isolated fix branch (if using version control)
+2. Write failing test FIRST (TDD approach)
+3. Implement minimal, focused fix
+4. Verify test passes
+5. Run regression tests
+6. Update documentation if needed
+
+### 4.2 Fix Guidelines
+- **Minimal Change Principle**: Make the smallest change that correctly fixes the issue
+- **No Scope Creep**: Avoid unrelated refactoring or improvements
+- **Preserve Backwards Compatibility**: Unless the bug itself is a breaking API
+- **Follow Project Standards**: Use existing code style and patterns
+- **Add Defensive Programming**: Prevent similar bugs in the future
+
+### 4.3 Code Review Checklist
+- [ ] Fix addresses the root cause, not just symptoms
+- [ ] All edge cases are handled
+- [ ] Error messages are clear and actionable
+- [ ] Performance impact is acceptable
+- [ ] Security implications considered
+- [ ] No new warnings or linting errors introduced
+
+## Phase 5: Testing &amp; Validation
+
+### 5.1 Test Requirements
+**For EVERY fixed bug, provide:**
+1. **Unit Test**: Isolated test for the specific fix
+2. **Integration Test**: If bug involves multiple components
+3. **Regression Test**: Ensure fix doesn&#x27;t break existing functionality
+4. **Edge Case Tests**: Cover related boundary conditions
+
+### 5.2 Test Structure
+```[language-specific]
+describe(&#x27;BUG-[ID]: [Bug description]&#x27;, () =&gt; {
+  test(&#x27;should fail with original bug&#x27;, () =&gt; {
+    // This test would fail before the fix
+    // Demonstrates the bug
+  });
+  
+  test(&#x27;should pass after fix&#x27;, () =&gt; {
+    // This test passes after the fix
+    // Verifies correct behavior
+  });
+  
+  test(&#x27;should handle edge cases&#x27;, () =&gt; {
+    // Additional edge case coverage
+  });
+});
+```
+
+### 5.3 Validation Steps
+1. Run full test suite: `[npm test | pytest | go test ./... | mvn test | etc.]`
+2. Check code coverage changes
+3. Run static analysis tools
+4. Verify performance benchmarks (if applicable)
+5. Test in different environments (if possible)
+
+## Phase 6: Documentation &amp; Reporting
+
+### 6.1 Fix Documentation
+For each fixed bug:
+- Update inline code comments explaining the fix
+- Add/update API documentation if behavior changed
+- Create/update troubleshooting guides
+- Document any workarounds for unfixed issues
+
+### 6.2 Executive Summary Report
+```markdown
+# Bug Fix Report - [Repository Name]
+Date: [YYYY-MM-DD]
+Analyzer: [Tool/Person Name]
+
+## Overview
+- Total Bugs Found: [X]
+- Total Bugs Fixed: [Y]
+- Unfixed/Deferred: [Z]
+- Test Coverage Change: [Before]% → [After]%
+
+## Critical Findings
+[List top 3-5 most critical bugs found and fixed]
+
+## Fix Summary by Category
+- Security: [X bugs fixed]
+- Functional: [Y bugs fixed]
+- Performance: [Z bugs fixed]
+- Integration: [W bugs fixed]
+- Code Quality: [V bugs fixed]
+
+## Detailed Fix List
+[Organized table with columns: BUG-ID | File | Description | Status | Test Added]
+
+## Risk Assessment
+- Remaining High-Priority Issues: [List]
+- Recommended Next Steps: [Actions]
+- Technical Debt Identified: [Summary]
+
+## Testing Results
+- Test Command: [exact command used]
+- Tests Passed: [X/Y]
+- New Tests Added: [Count]
+- Coverage Impact: [Details]
+```
+
+### 6.3 Deliverables Checklist
+- [ ] All bugs documented in standard format
+- [ ] Fixes implemented and tested
+- [ ] Test suite updated and passing
+- [ ] Documentation updated
+- [ ] Code review completed
+- [ ] Performance impact assessed
+- [ ] Security review conducted (for security-related fixes)
+- [ ] Deployment notes prepared
+
+## Phase 7: Continuous Improvement
+
+### 7.1 Pattern Analysis
+- Identify common bug patterns
+- Suggest preventive measures
+- Recommend tooling improvements
+- Propose architectural changes to prevent similar issues
+
+### 7.2 Monitoring Recommendations
+- Suggest metrics to track
+- Recommend alerting rules
+- Propose logging improvements
+- Identify areas needing better test coverage
+
+## Constraints &amp; Best Practices
+
+1. **Never compromise security** for simplicity
+2. **Maintain audit trail** of all changes
+3. **Follow semantic versioning** if fixes change API
+4. **Respect rate limits** when testing external services
+5. **Use feature flags** for high-risk fixes (if applicable)
+6. **Consider rollback strategy** for each fix
+7. **Document assumptions** made during analysis
+
+## Output Format
+Provide results in both:
+- Markdown for human readability
+- JSON/YAML for automated processing
+- CSV for bug tracking systems import
+
+## Special Considerations
+- For monorepos: Analyze each package separately
+- For microservices: Consider inter-service dependencies
+- For legacy code: Balance fix risk vs benefit
+- For third-party dependencies: Report upstream if needed</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/comprehensive-repository-audit-remediation-prompt',TI="Comprehensive Repository Audit & Remediation Prompt";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

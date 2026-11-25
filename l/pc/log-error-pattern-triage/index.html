@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log Error Pattern Triage | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: log-error-pattern-triage description: Triages large or noisy application, server, and access logs - groups thousands of lines into a ranked ">
+<meta property="og:title" content="Log Error Pattern Triage | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: log-error-pattern-triage description: Triages large or noisy application, server, and access logs - groups thousands of lines into a ranked ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/log-error-pattern-triage/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/log-error-pattern-triage/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Log Error Pattern Triage</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: log-error-pattern-triage
+description: Triages large or noisy application, server, and access logs - groups thousands of lines into a ranked list of error patterns with counts, first and last seen, spikes, and patterns that are new compared with a known-good baseline, then separates root causes from downstream symptoms and writes a short incident triage report with next checks. Use when a user pastes or uploads logs, asks &quot;what is going wrong in these logs?&quot;, &quot;why did errors spike at 10:09?&quot;, or needs a first-pass incident summary.
+---
+
+# Log Error Pattern Triage
+
+You turn a wall of log lines into a short, ranked list of problems and a clear next step. You never paste the whole log back; you count, group, compare, and explain.
+
+## Files in this skill
+
+- `scripts/cluster_logs.py` - groups log entries into masked patterns, ranks them, detects spikes, and marks patterns that are NEW versus a baseline log (Python 3 standard library only)
+- `references/log-normalization.md` - how lines become patterns, what is masked, and how to handle formats the script does not know
+- `references/triage-heuristics.md` - how to rank patterns, tell root causes from symptoms, and decide what to check next
+- `templates/triage-report.md` - the report format
+- `examples/example-checkout-incident.md` - a worked triage of a payment timeout spike
+
+## Workflow
+
+### 1. Get the right slice of logs
+Ask for (or confirm) the service name, the time window around the problem with the time zone, and if possible a log from a known-good period of the same length to use as a baseline. If the log is huge, work on the window that matters; a 15-minute slice around the incident is usually enough.
+
+Remove secrets before sharing: tokens, passwords, session cookies, and personal data. If you see any in the input, say so and do not repeat them.
+
+### 2. Run the clusterer
+```bash
+python3 scripts/cluster_logs.py app.log
+python3 scripts/cluster_logs.py app.log --baseline yesterday.log --top 20
+python3 scripts/cluster_logs.py access.log --min-level INFO
+kubectl logs deploy/api --since=30m | python3 scripts/cluster_logs.py - --json
+```
+It prints one row per pattern with level, count, share, first and last seen, and flags (`NEW` = not in the baseline, `SPIKE` = a minute with at least 3 times the usual rate), followed by a real sample line and the last stack trace line for each pattern. Exit code 1 means at least one ERROR or FATAL pattern was found.
+
+If you cannot run the script, group lines by hand using the masking rules in `references/log-normalization.md` and say that counts are approximate.
+
+### 3. Triage
+Apply `references/triage-heuristics.md`:
+1. Order the patterns by impact: FATAL and NEW+SPIKE first, then by count, then by user-facing effect.
+2. Build a short timeline from first-seen times. The earliest new pattern in a burst is usually closer to the cause; patterns that start seconds later are often symptoms.
+3. Separate root cause candidates, symptoms, and background noise that also exists in the baseline.
+4. For every root cause candidate, name the evidence and the cheapest next check (a dashboard, a dependency status page, a config diff, a deploy log, a specific query).
+
+### 4. Report
+Fill in `templates/triage-report.md`, as in `examples/example-checkout-incident.md`. Keep the summary to three sentences a manager can read.
+
+## Rules
+- Quote real sample lines; never invent log lines, counts, or times.
+- State the time zone of the log and keep it consistent.
+- Do not claim a root cause from logs alone; say &quot;most likely&quot; and list what would confirm it.
+- Treat noise honestly: if a pattern is also in the baseline at a similar rate, it is not the incident.
+- Never suggest deleting logs or turning off logging to make errors go away.
+FILE:references/log-normalization.md
+# Log normalization: from lines to patterns
+
+Grouping works by turning every message into a template: the fixed words stay, the variable parts become placeholders. Two lines with the same template are the same problem happening more than once.
+
+## What the script masks
+
+| Variable part | Example | Placeholder |
+| --- | --- | --- |
+| UUID | `0288ddd8-5e8c-45f9-a0e7-486d8fa66b03` | `&lt;uuid&gt;` |
+| Email address | `li@example.com` | `&lt;email&gt;` |
+| IPv4 address with optional port | `192.0.2.44:5432` | `&lt;ip&gt;` |
+| Hex values and long hex ids | `0x7f3a`, `9f1c2e7a4b3d` | `&lt;hex&gt;` |
+| URL query string | `?page=2&amp;sort=price` | `?&lt;query&gt;` |
+| Quoted values | `&#x27;cart:42&#x27;`, `&quot;Bob&quot;` | `&lt;str&gt;` |
+| Numbers with optional unit | `5000ms`, `89%`, `17` | `&lt;n&gt;` |
+| Bracketed ids that contain a digit | `[http-nio-8080-exec-9]`, `[req-ab12]` | `[&lt;id&gt;]` |
+
+Timestamps and levels are parsed first and removed from the message. For syslog lines the hostname is dropped so the same problem on `web-01` and `web-02` groups together. For access logs the template is `METHOD /path -&gt; HTTPstatus`, with numeric path segments masked, so `/api/orders/123` and `/api/orders/456` group.
+
+## Formats understood
+
+- Plain lines with ISO-8601 timestamps: `2026-10-09T10:09:00.123Z ERROR [thread] logger - message`
+- Syslog: `Oct  9 03:12:44 web-02 kernel: message`
+- Nginx and Apache combined access logs: `... [09/Oct/2026:09:58:02 +0300] &quot;POST /api/checkout HTTP/1.1&quot; 502 ...`
+- JSON lines with `level` or `severity`, `msg` or `message`, `time` or `timestamp`, and optional `error`
+
+## Multi-line entries
+
+Stack traces belong to the line above them. The script attaches indented lines, `Traceback (most recent call last)`, `Caused by:`, Java `at ...(File.java:12)` frames, `... 12 more`, and bare exception lines such as `java.net.SocketTimeoutException: Read timed out`. The last attached line is shown as &quot;trace ends&quot; because it often names the deepest frame or the real exception.
+
+## Levels
+
+Explicit levels win (`TRACE/DEBUG`, `INFO/NOTICE`, `WARN/WARNING`, `ERROR/ERR/SEVERE`, `CRITICAL/FATAL/PANIC`). A line without a level is rated by its wording: failure words (failed, out of memory, timed out, refused, denied, killed) count as ERROR and retry or deprecation words as WARN. Access log status 5xx is ERROR, 4xx other than 404 is WARN.
+
+## When grouping goes wrong
+
+- **Too many tiny patterns**: a variable word is not masked (usernames, hostnames inside the message, file names). Mention it, and group those rows yourself in the report, for example &quot;2 patterns: SSH brute force from 2 IPs with different usernames&quot;.
+- **One giant pattern hides two problems**: the message is generic (&quot;request failed&quot;). Look at the samples and trace tails, or rerun on a narrower time window.
+- **Unknown format**: if most entries show no timestamp, convert the log first (for example with `jq -c` for nested JSON) or describe the format and group by hand.
+- **Truncated lines**: templates are cut at 160 characters; samples at 200.
+FILE:references/triage-heuristics.md
+# Triage heuristics
+
+## Rank patterns by impact, not by volume
+
+1. **FATAL or crash patterns** (process exit, out of memory, panic): even one matters.
+2. **NEW and SPIKE together**: something changed. This is usually the incident.
+3. **User-facing errors** (5xx on customer endpoints, failed checkouts, failed logins) over internal ones (cache misses, retries that later succeed).
+4. **Count and share**: within the same tier, bigger first.
+5. **Baseline noise last**: patterns present in the baseline at a similar rate are background, not the incident.
+
+## Root cause or symptom?
+
+| Clue | Leans root cause | Leans symptom |
+| --- | --- | --- |
+| Timing | first new pattern in the burst | starts seconds after another pattern |
+| Location | names a dependency, config, resource limit, or deploy | generic wrapper (&quot;request failed&quot;, &quot;checkout failed&quot;) |
+| Stack trace | deepest frame is in a client library or resource call | trace ends in your own controller code that called something else |
+| Ratio | count matches the number of failed upstream calls | count equals the sum of several other patterns |
+| Baseline | absent before | present before at a lower rate |
+
+A common chain: dependency timeout (cause) -&gt; request handler fails (symptom) -&gt; retries raise load (amplifier) -&gt; connection pool saturates (secondary symptom).
+
+## Typical causes behind common patterns
+
+- **Timeouts to one dependency**: dependency outage or slowness, network change, too-low timeout after a deploy, connection pool exhaustion on the caller.
+- **Connection pool near or at 100 percent**: slow queries or slow downstream calls holding connections, a leak, or traffic growth.
+- **Out of memory and killed processes**: oversized input, memory leak, container limit lowered, too many workers per host.
+- **Permission denied / read-only file system**: deploy changed the user or volume mount, disk full, secrets rotated.
+- **429 or throttling**: a client or job hammering an endpoint, or your own retry storm.
+- **SMTP or email failures**: usually the provider&#x27;s rate limit or outage; rarely the incident unless emails are the product.
+
+## Cheapest next checks
+
+- Deploys and config changes in the 30 minutes before the first new pattern.
+- The dependency&#x27;s status page and its latency and error dashboards.
+- Host metrics at the spike minute: CPU, memory, disk, open connections.
+- One full sample request traced end to end (trace id or request id).
+- Whether the pattern stopped on its own, and what changed at that minute.
+
+## Words to use in reports
+
+- &quot;Most likely cause&quot; when logs plus timing point one way but nothing confirms it yet.
+- &quot;Confirmed&quot; only with independent evidence (provider incident, rollback fixed it, metric proof).
+- Give numbers: &quot;30 payment timeouts in 2 minutes, 0 in the baseline&quot;.
+FILE:templates/triage-report.md
+# Log Triage Report: &lt;service&gt; &lt;date&gt;
+
+**Window:** &lt;start&gt; to &lt;end&gt; (&lt;time zone&gt;) | **Entries read:** &lt;n&gt; | **At WARN or above:** &lt;n&gt; in &lt;n&gt; patterns
+**Baseline:** &lt;file and window, or &quot;none&quot;&gt;
+
+## Summary (3 sentences)
+&lt;What broke, for whom, since when, and the most likely cause, in plain words.&gt;
+
+## Ranked patterns
+
+| # | Level | Count | Flags | Pattern (short) | Role |
+| --- | --- | --- | --- | --- | --- |
+| 1 | ERROR | &lt;n&gt; | NEW, SPIKE | &lt;pattern&gt; | root cause candidate / symptom / noise |
+
+## Timeline
+- &lt;hh:mm:ss&gt; &lt;first new pattern&gt;
+- &lt;hh:mm:ss&gt; &lt;next event&gt;
+- &lt;hh:mm:ss&gt; &lt;recovery, or &quot;still ongoing at end of log&quot;&gt;
+
+## Root cause candidates
+1. **&lt;candidate&gt;** - evidence: &lt;sample line, counts, timing&gt;. Confidence: &lt;low/medium/high&gt;.
+   Next check: &lt;one concrete check&gt;.
+
+## Symptoms and side effects
+- &lt;pattern&gt; is caused by &lt;candidate&gt; because &lt;reason&gt;.
+
+## Background noise (also in baseline)
+- &lt;pattern&gt; at &lt;rate&gt; per minute, same as baseline.
+
+## Recommended next steps
+1. &lt;immediate mitigation, if any&gt;
+2. &lt;check that confirms or rules out the main candidate&gt;
+3. &lt;follow-up: alert, timeout, retry, or logging improvement&gt;
+
+## Gaps
+- &lt;missing logs, unknown time zone, lines that could not be parsed&gt;
+FILE:examples/example-checkout-incident.md
+# Example: checkout payment timeout spike
+
+**User:** Checkout errors jumped around 10:09 this morning (UTC). Here is a 15-minute slice of the API log and yesterday&#x27;s log for the same window. What happened?
+
+**Command:**
+```bash
+python3 scripts/cluster_logs.py app.log --baseline baseline.log
+```
+
+**Script output (abridged):**
+```
+Read 138 entries (0 without a timestamp); 60 at WARN or above in 5 patterns.
+Time range: 10-09 10:00:00 -&gt; 10-09 10:14:48
+
+ #  LEVEL COUNT  SHARE  FIRST          LAST           FLAGS      TEMPLATE
+ 1  ERROR    30  50.0%  10-09 10:09:00 10-09 10:10:56 NEW,SPIKE  [&lt;id&gt;] c.s.payments.PaymentClient - payment authorization timed out after &lt;n&gt; for order &lt;n&gt; (provider=psp-eu, attempt=&lt;n&gt;)
+ 2  ERROR    10  16.7%  10-09 10:09:00 10-09 10:10:48 NEW,SPIKE  [&lt;id&gt;] c.s.checkout.OrderController - checkout failed for session &lt;uuid&gt;
+ 3  ERROR     3   5.0%  10-09 10:03:30 10-09 10:12:30 -          [&lt;id&gt;] c.s.mail.ReceiptMailer - failed to send receipt to &lt;email&gt;: SMTP &lt;n&gt; try again later
+ 4  WARN     14  23.3%  10-09 10:00:42 10-09 10:14:42 -          [&lt;id&gt;] c.s.cache.RedisCache - cache miss for key &lt;str&gt; took &lt;n&gt;
+ 5  WARN      3   5.0%  10-09 10:02:45 10-09 10:11:45 -          [&lt;id&gt;] c.s.db.Hikari - connection pool at &lt;n&gt; (&lt;n&gt;/&lt;n&gt; active)
+
+Details:
+ 2. ... trace ends: at com.shop.checkout.OrderController.submit(OrderController.java:77)
+    spike: 5/min at 10:09 (median 0/min)
+```
+
+---
+
+# Log Triage Report: checkout API 2026-10-09
+
+**Window:** 10:00:00 to 10:14:48 (UTC) | **Entries read:** 138 | **At WARN or above:** 60 in 5 patterns
+**Baseline:** baseline.log, 2026-10-08 10:00 to 10:10 UTC
+
+## Summary (3 sentences)
+From 10:09:00 to about 10:11 UTC, card payments timed out at the payment provider psp-eu and customers saw failed checkouts. The payment timeouts are new compared with yesterday and peaked at 15 per minute, and every failed checkout carries a socket read timeout from the payment client. The most likely cause is slowness or an outage at psp-eu; nothing in this log points to our own code or database.
+
+## Ranked patterns
+
+| # | Level | Count | Flags | Pattern (short) | Role |
+| --- | --- | --- | --- | --- | --- |
+| 1 | ERROR | 30 | NEW, SPIKE | payment authorization timed out after 5000ms (provider=psp-eu) | root cause candidate |
+| 2 | ERROR | 10 | NEW, SPIKE | checkout failed for session ... (SocketTimeoutException) | symptom of 1 |
+| 3 | ERROR | 3 | - | failed to send receipt ... SMTP 421 | noise (also in baseline) |
+| 4 | WARN | 14 | - | cache miss for key &#x27;cart:...&#x27; | noise (also in baseline) |
+| 5 | WARN | 3 | - | connection pool at 85 to 97 percent | watch (also in baseline) |
+
+## Timeline
+- 10:09:00 first payment authorization timeout and first failed checkout, in the same second
+- 10:09 peak minute: 15 timeouts per minute
+- 10:10:56 last payment timeout; no further payment errors until the end of the log at 10:14:48
+
+## Root cause candidates
+1. **Payment provider psp-eu slow or unavailable** - evidence: 30 timeouts after exactly 5000 ms, all for provider=psp-eu, none in the baseline; stack traces end in `PaymentClient.authorize`. Confidence: medium.
+   Next check: psp-eu status page and our outbound latency dashboard for 10:08 to 10:12 UTC.
+
+## Symptoms and side effects
+- &quot;checkout failed for session&quot; is caused by candidate 1: same start second, and its trace ends in `PaymentClient.authorize` via `OrderController.submit`.
+- Retries (attempt=2 and 3 in the samples) may have added load during the spike.
+
+## Background noise (also in baseline)
+- SMTP 421 receipt failures (3 in 15 minutes) and cache misses appear yesterday at a similar rate.
+- Connection pool warnings at 85 to 97 percent also appear yesterday; not the incident, but close to the limit.
+
+## Recommended next steps
+1. Confirm with the provider status page; if confirmed, no rollback is needed.
+2. Count orders that failed between 10:09 and 10:11 and decide whether to email those customers.
+3. Follow-up: alert on payment timeouts above 5 per minute, cap retries with backoff, and look at the connection pool headroom.
+
+## Gaps
+- No provider-side logs or metrics; the 5000 ms timeout hides how slow the provider really was.
+FILE:scripts/cluster_logs.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Group log lines into error patterns (templates) and rank them for triage.
+
+Usage:
+  python3 cluster_logs.py app.log [more.log ...] [options]
+  cat app.log | python3 cluster_logs.py - [options]
+
+Options:
+  --min-level LEVEL   lowest level to include: DEBUG, INFO, WARN, ERROR (default WARN)
+  --top N             show the N largest patterns (default 15)
+  --baseline FILE     log from a known-good period; patterns not seen there are marked NEW
+  --json              print machine-readable JSON instead of a table
+
+Understands plain lines with an ISO-8601, syslog (&quot;Oct 09 10:01:02&quot;) or
+nginx (&quot;[09/Oct/2026:10:01:02 +0300]&quot;) timestamp, and JSON lines with
+level/msg/message/time/timestamp keys, and web server access logs (method,
+path and status are kept; 5xx counts as ERROR, 4xx other than 404 as WARN).
+Indented lines, &quot;Traceback&quot;, &quot;at ...&quot;, &quot;Caused by&quot; and bare
+&quot;pkg.SomeException: ...&quot; lines are attached to the entry above them.
+Lines without an explicit level are rated by wording (&quot;failed&quot;, &quot;out of
+memory&quot;, &quot;timed out&quot; -&gt; ERROR; &quot;retrying&quot;, &quot;deprecated&quot; -&gt; WARN).
+Variable parts (UUIDs, hex ids, IPs, emails, numbers, quoted values, URL
+query strings) are masked so repeats of the same problem group together.
+Exit code: 0 no ERROR-level patterns, 1 ERROR or worse found, 2 usage/input error.
+Standard library only.
+&quot;&quot;&quot;
+import json
+import re
+import statistics
+import sys
+from collections import OrderedDict
+from datetime import datetime
+
+LEVELS = {&quot;TRACE&quot;: 0, &quot;DEBUG&quot;: 0, &quot;INFO&quot;: 1, &quot;NOTICE&quot;: 1, &quot;WARN&quot;: 2, &quot;WARNING&quot;: 2,
+          &quot;ERROR&quot;: 3, &quot;ERR&quot;: 3, &quot;SEVERE&quot;: 3, &quot;CRITICAL&quot;: 4, &quot;CRIT&quot;: 4, &quot;FATAL&quot;: 4, &quot;PANIC&quot;: 4, &quot;ALERT&quot;: 4, &quot;EMERG&quot;: 4}
+CANON = {0: &quot;DEBUG&quot;, 1: &quot;INFO&quot;, 2: &quot;WARN&quot;, 3: &quot;ERROR&quot;, 4: &quot;FATAL&quot;}
+MONTHS = {m: i for i, m in enumerate([&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Apr&quot;, &quot;May&quot;, &quot;Jun&quot;, &quot;Jul&quot;, &quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;], 1)}
+
+TS_ISO = re.compile(r&quot;(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(?:[.,]\d+)?(?:Z|[+-]\d{2}:?\d{2})?&quot;)
+TS_SYSLOG = re.compile(r&quot;\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}) (\d{2}:\d{2}:\d{2})&quot;)
+TS_NGINX = re.compile(r&quot;\[(\d{2})/(\w{3})/(\d{4}):(\d{2}:\d{2}:\d{2})[^\]]*\]&quot;)
+LEVEL_RE = re.compile(r&quot;(?&lt;![\w-])(TRACE|DEBUG|INFO|NOTICE|WARNING|WARN|ERROR|ERR|SEVERE|CRITICAL|CRIT|FATAL|PANIC)(?![\w-])&quot;, re.I)
+ERROR_HINT = re.compile(r&quot;\b(out of memory|oom-?kill\w*|killed process|segfault|panic|fatal|failed|failure|&quot;
+                        r&quot;exception|refused|timed out|timeout|denied|unreachable|code=killed)\b&quot;, re.I)
+WARN_HINT = re.compile(r&quot;\b(deprecated|retrying|retry|slow|degraded|throttl\w*)\b&quot;, re.I)
+ACCESS_RE = re.compile(r&#x27;&quot;(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) (\S+) HTTP/[\d.]+&quot; (\d{3}) &#x27;)
+CONT_RE = re.compile(r&quot;^(\s+\S|Traceback \(most recent call last\)|Caused by:|\s*at [\w$.&lt;&gt;]+\(|\s*\.\.\. \d+ more|[\w$]+(?:\.[\w$]+)+(?:Exception|Error)(?::|$))&quot;)
+
+MASKS = [
+    (re.compile(r&quot;\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b&quot;, re.I), &quot;&lt;uuid&gt;&quot;),
+    (re.compile(r&quot;\b[\w.+-]+@[\w-]+\.[\w.-]+\b&quot;), &quot;&lt;email&gt;&quot;),
+    (re.compile(r&quot;\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b&quot;), &quot;&lt;ip&gt;&quot;),
+    (re.compile(r&quot;\b0x[0-9a-f]+\b&quot;, re.I), &quot;&lt;hex&gt;&quot;),
+    (re.compile(r&quot;\b(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{12,}\b&quot;, re.I), &quot;&lt;hex&gt;&quot;),
+    (re.compile(r&quot;\?[^\s\&quot;&#x27;]+&quot;), &quot;?&lt;query&gt;&quot;),
+    (re.compile(r&quot;\&quot;[^\&quot;]{0,200}\&quot;|&#x27;[^&#x27;]{0,200}&#x27;&quot;), &quot;&lt;str&gt;&quot;),
+    (re.compile(r&quot;(?&lt;![\w&lt;])[-+]?\d+(?:\.\d+)?(?:ms|s|kb|mb|gb|%)?(?![\w&gt;])&quot;, re.I), &quot;&lt;n&gt;&quot;),
+]
+
+
+def usage(msg):
+    print(f&quot;error: {msg}\n&quot;, file=sys.stderr)
+    print(__doc__.strip().split(&quot;\n\n&quot;)[1], file=sys.stderr)
+    sys.exit(2)
+
+
+def parse_time(line):
+    m = TS_ISO.search(line)
+    if m:
+        return datetime.strptime(f&quot;{m.group(1)} {m.group(2)}&quot;, &quot;%Y-%m-%d %H:%M:%S&quot;), m.span()
+    m = TS_NGINX.search(line)
+    if m and m.group(2) in MONTHS:
+        d = datetime(int(m.group(3)), MONTHS[m.group(2)], int(m.group(1)))
+        h, mi, s = map(int, m.group(4).split(&quot;:&quot;))
+        return d.replace(hour=h, minute=mi, second=s), m.span()
+    m = TS_SYSLOG.search(line)
+    if m:
+        h, mi, s = map(int, m.group(3).split(&quot;:&quot;))
+        return datetime(1900, MONTHS[m.group(1)], int(m.group(2)), h, mi, s), m.span()
+    return None, None
+
+
+def parse_line(line):
+    &quot;&quot;&quot;Return (time, level_num, message) for the first line of an entry.&quot;&quot;&quot;
+    s = line.strip()
+    if s.startswith(&quot;{&quot;):
+        try:
+            obj = json.loads(s)
+        except ValueError:
+            obj = None
+        if isinstance(obj, dict):
+            lvl = str(obj.get(&quot;level&quot;) or obj.get(&quot;severity&quot;) or obj.get(&quot;lvl&quot;) or &quot;INFO&quot;).upper()
+            msg = str(obj.get(&quot;msg&quot;) or obj.get(&quot;message&quot;) or obj.get(&quot;error&quot;) or s)
+            if obj.get(&quot;error&quot;) and obj.get(&quot;error&quot;) != msg:
+                msg += f&quot; error={obj[&#x27;error&#x27;]}&quot;
+            ts = str(obj.get(&quot;time&quot;) or obj.get(&quot;timestamp&quot;) or obj.get(&quot;ts&quot;) or &quot;&quot;)
+            t, _ = parse_time(ts)
+            return t, LEVELS.get(lvl, 1), msg
+    t, span = parse_time(s)
+    rest = s[span[1]:] if span else s
+    acc = ACCESS_RE.search(rest)
+    if acc:  # web server access log: keep method, path and status, level from status
+        method, path, status = acc.group(1), acc.group(2).split(&quot;?&quot;)[0], acc.group(3)
+        lvl = 3 if status.startswith(&quot;5&quot;) else 2 if status.startswith(&quot;4&quot;) and status != &quot;404&quot; else 1
+        return t, lvl, f&quot;{method} {path} -&gt; HTTP{status}&quot;
+    if span and TS_SYSLOG.match(s[span[0]:span[1]]):
+        rest = rest.split(None, 1)[1] if len(rest.split(None, 1)) == 2 else rest  # drop syslog hostname
+    m = LEVEL_RE.search(rest[:80])
+    if m:
+        lvl = LEVELS[m.group(1).upper()]
+        rest = rest[:m.start()] + rest[m.end():]
+    elif ERROR_HINT.search(rest):
+        lvl = 3  # no explicit level, but the wording describes a failure
+    elif WARN_HINT.search(rest):
+        lvl = 2
+    else:
+        lvl = 1
+    rest = re.sub(r&quot;:\s*:&quot;, &quot;:&quot;, re.sub(r&quot;^[\s:|-]+&quot;, &quot;&quot;, rest))
+    return t, lvl, rest
+
+
+def template(msg):
+    first = msg.split(&quot;\n&quot;, 1)[0]
+    first = re.sub(r&quot;\[[\w.:/-]*\d[\w.:/-]*\]&quot;, &quot;[&lt;id&gt;]&quot;, first)  # [thread-12], [req-ab12]
+    for rx, repl in MASKS:
+        first = rx.sub(repl, first)
+    return re.sub(r&quot;\s+&quot;, &quot; &quot;, first).strip()[:160]
+
+
+def read_entries(paths):
+    entries = []
+    for p in paths:
+        try:
+            fh = sys.stdin if p == &quot;-&quot; else open(p, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;)
+        except OSError as e:
+            usage(str(e))
+        with fh:
+            for raw in fh:
+                line = raw.rstrip(&quot;\n&quot;)
+                if not line.strip():
+                    continue
+                if entries and CONT_RE.match(line):
+                    entries[-1][&quot;extra&quot;] += 1
+                    entries[-1][&quot;trace_tail&quot;] = line.strip()
+                    continue
+                t, lvl, msg = parse_line(line)
+                entries.append({&quot;time&quot;: t, &quot;level&quot;: lvl, &quot;msg&quot;: msg, &quot;extra&quot;: 0, &quot;trace_tail&quot;: &quot;&quot;})
+    return entries
+
+
+def cluster(entries, min_level):
+    groups = OrderedDict()
+    for e in entries:
+        if e[&quot;level&quot;] &lt; min_level:
+            continue
+        key = template(e[&quot;msg&quot;])
+        g = groups.setdefault(key, {&quot;template&quot;: key, &quot;count&quot;: 0, &quot;level&quot;: 0, &quot;first&quot;: None, &quot;last&quot;: None,
+                                    &quot;sample&quot;: e[&quot;msg&quot;].split(&quot;\n&quot;, 1)[0][:200], &quot;trace_tail&quot;: &quot;&quot;, &quot;minutes&quot;: {}})
+        g[&quot;count&quot;] += 1
+        g[&quot;level&quot;] = max(g[&quot;level&quot;], e[&quot;level&quot;])
+        if e[&quot;trace_tail&quot;] and not g[&quot;trace_tail&quot;]:
+            g[&quot;trace_tail&quot;] = e[&quot;trace_tail&quot;][:160]
+        if e[&quot;time&quot;]:
+            g[&quot;first&quot;] = min(g[&quot;first&quot;] or e[&quot;time&quot;], e[&quot;time&quot;])
+            g[&quot;last&quot;] = max(g[&quot;last&quot;] or e[&quot;time&quot;], e[&quot;time&quot;])
+            k = e[&quot;time&quot;].strftime(&quot;%Y-%m-%d %H:%M&quot;)
+            g[&quot;minutes&quot;][k] = g[&quot;minutes&quot;].get(k, 0) + 1
+    return list(groups.values())
+
+
+def spike(g, all_minutes):
+    &quot;&quot;&quot;Peak minute vs median of this pattern&#x27;s per-minute counts over the whole time range.&quot;&quot;&quot;
+    if g[&quot;count&quot;] &lt; 5 or len(all_minutes) &lt; 3:
+        return None
+    series = [g[&quot;minutes&quot;].get(m, 0) for m in all_minutes]
+    peak = max(series)
+    med = statistics.median(series)
+    if peak &gt;= 5 and peak &gt;= 3 * max(med, 1):
+        at = all_minutes[series.index(peak)]
+        return f&quot;{peak}/min at {at[11:]} (median {med:g}/min)&quot;
+    return None
+
+
+def fmt(t):
+    return t.strftime(&quot;%m-%d %H:%M:%S&quot;) if t and t.year != 1900 else (t.strftime(&quot;%b %d %H:%M:%S&quot;) if t else &quot;-&quot;)
+
+
+def main(argv):
+    args, paths = {&quot;min&quot;: &quot;WARN&quot;, &quot;top&quot;: 15, &quot;baseline&quot;: None, &quot;json&quot;: False}, []
+    it = iter(argv)
+    for a in it:
+        if a == &quot;--min-level&quot;:
+            args[&quot;min&quot;] = next(it, &quot;&quot;).upper()
+        elif a == &quot;--top&quot;:
+            v = next(it, &quot;&quot;)
+            if not v.isdigit():
+                usage(&quot;--top needs a number&quot;)
+            args[&quot;top&quot;] = int(v)
+        elif a == &quot;--baseline&quot;:
+            args[&quot;baseline&quot;] = next(it, None)
+        elif a == &quot;--json&quot;:
+            args[&quot;json&quot;] = True
+        elif a.startswith(&quot;--&quot;):
+            usage(f&quot;unknown option {a}&quot;)
+        else:
+            paths.append(a)
+    if not paths:
+        usage(&quot;give at least one log file, or - for stdin&quot;)
+    if args[&quot;min&quot;] not in LEVELS:
+        usage(f&quot;unknown level {args[&#x27;min&#x27;]}&quot;)
+    min_level = LEVELS[args[&quot;min&quot;]]
+
+    entries = read_entries(paths)
+    if not entries:
+        print(&quot;error: no log lines found&quot;, file=sys.stderr)
+        return 2
+    groups = cluster(entries, min_level)
+    known = None
+    if args[&quot;baseline&quot;]:
+        known = {g[&quot;template&quot;] for g in cluster(read_entries([args[&quot;baseline&quot;]]), 0)}
+    times = sorted(e[&quot;time&quot;] for e in entries if e[&quot;time&quot;])
+    all_minutes = []
+    if times:
+        cur = times[0].replace(second=0)
+        while cur &lt;= times[-1] and len(all_minutes) &lt; 10000:
+            all_minutes.append(cur.strftime(&quot;%Y-%m-%d %H:%M&quot;))
+            cur = cur.fromtimestamp(cur.timestamp() + 60)
+    for g in groups:
+        g[&quot;new&quot;] = known is not None and g[&quot;template&quot;] not in known
+        g[&quot;spike&quot;] = spike(g, all_minutes)
+    groups.sort(key=lambda g: (-g[&quot;level&quot;], -g[&quot;count&quot;]))
+    shown = groups[: args[&quot;top&quot;]]
+    total = sum(g[&quot;count&quot;] for g in groups)
+    worst = max((g[&quot;level&quot;] for g in groups), default=0)
+
+    if args[&quot;json&quot;]:
+        out = {&quot;entries_read&quot;: len(entries), &quot;entries_at_or_above_min_level&quot;: total, &quot;patterns&quot;: len(groups),
+               &quot;time_range&quot;: [fmt(times[0]), fmt(times[-1])] if times else None,
+               &quot;patterns_top&quot;: [{&quot;level&quot;: CANON[g[&quot;level&quot;]], &quot;count&quot;: g[&quot;count&quot;], &quot;share_pct&quot;: round(100 * g[&quot;count&quot;] / total, 1),
+                                 &quot;first&quot;: fmt(g[&quot;first&quot;]), &quot;last&quot;: fmt(g[&quot;last&quot;]), &quot;new&quot;: g[&quot;new&quot;], &quot;spike&quot;: g[&quot;spike&quot;],
+                                 &quot;template&quot;: g[&quot;template&quot;], &quot;sample&quot;: g[&quot;sample&quot;], &quot;trace_tail&quot;: g[&quot;trace_tail&quot;]} for g in shown]}
+        print(json.dumps(out, indent=2))
+        return 1 if worst &gt;= 3 else 0
+
+    unparsed = sum(1 for e in entries if e[&quot;time&quot;] is None)
+    print(f&quot;Read {len(entries)} entries ({unparsed} without a timestamp); &quot;
+          f&quot;{total} at {args[&#x27;min&#x27;]} or above in {len(groups)} patterns.&quot;)
+    if times:
+        print(f&quot;Time range: {fmt(times[0])} -&gt; {fmt(times[-1])}&quot;)
+    if not groups:
+        print(&quot;No entries at or above the minimum level.&quot;)
+        return 0
+    print()
+    print(f&quot;{&#x27;#&#x27;:&gt;2}  {&#x27;LEVEL&#x27;:&lt;5} {&#x27;COUNT&#x27;:&gt;5} {&#x27;SHARE&#x27;:&gt;6}  {&#x27;FIRST&#x27;:&lt;14} {&#x27;LAST&#x27;:&lt;14} FLAGS      TEMPLATE&quot;)
+    for i, g in enumerate(shown, 1):
+        flags = &quot;,&quot;.join(f for f in (&quot;NEW&quot; if g[&quot;new&quot;] else &quot;&quot;, &quot;SPIKE&quot; if g[&quot;spike&quot;] else &quot;&quot;) if f) or &quot;-&quot;
+        print(f&quot;{i:&gt;2}  {CANON[g[&#x27;level&#x27;]]:&lt;5} {g[&#x27;count&#x27;]:&gt;5} {100 * g[&#x27;count&#x27;] / total:&gt;5.1f}%  &quot;
+              f&quot;{fmt(g[&#x27;first&#x27;]):&lt;14} {fmt(g[&#x27;last&#x27;]):&lt;14} {flags:&lt;10} {g[&#x27;template&#x27;]}&quot;)
+    print(&quot;\nDetails:&quot;)
+    for i, g in enumerate(shown, 1):
+        print(f&quot;{i:&gt;2}. sample: {g[&#x27;sample&#x27;]}&quot;)
+        if g[&quot;trace_tail&quot;]:
+            print(f&quot;    trace ends: {g[&#x27;trace_tail&#x27;]}&quot;)
+        if g[&quot;spike&quot;]:
+            print(f&quot;    spike: {g[&#x27;spike&#x27;]}&quot;)
+    if len(groups) &gt; len(shown):
+        print(f&quot;\n({len(groups) - len(shown)} smaller patterns not shown; use --top)&quot;)
+    return 1 if worst &gt;= 3 else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/log-error-pattern-triage',TI="Log Error Pattern Triage";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

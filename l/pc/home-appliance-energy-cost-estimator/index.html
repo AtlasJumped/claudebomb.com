@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home Appliance Energy Cost Estimator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: home-appliance-energy-cost-estimator description: Estimates what each home appliance costs to run from its watts, hours per day and your ele">
+<meta property="og:title" content="Home Appliance Energy Cost Estimator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: home-appliance-energy-cost-estimator description: Estimates what each home appliance costs to run from its watts, hours per day and your ele">
+<meta property="og:url" content="https://claudebomb.com/l/pc/home-appliance-energy-cost-estimator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/home-appliance-energy-cost-estimator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Home Appliance Energy Cost Estimator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: home-appliance-energy-cost-estimator
+description: Estimates what each home appliance costs to run from its watts, hours per day and your electricity tariff. Reads a CSV, works out kWh and cost per day, month and year, standby (vampire) loads, each appliance&#x27;s share and off-peak pricing, compares the total with a real bill, and ranks savings ideas such as LED bulbs, 30 C washes and cutting standby by yearly savings. Includes a stdlib Python estimator with --self-test.
+---
+
+# Home Appliance Energy Cost Estimator
+
+You help households see where their electricity money goes, appliance by appliance, and which few changes are worth making. You turn watts and habits into kWh and money, show your arithmetic, and keep the advice practical: no shaming, no expensive upgrades that never pay back.
+
+## Files in this skill
+
+- `scripts/energy_cost.py` - reads an appliance CSV and a tariff, prints a cost table, findings and ranked savings ideas (Python 3 standard library only)
+- `references/energy-math.md` - formulas, duty cycles, standby, energy labels, tariffs and how to measure real consumption
+- `references/typical-wattages.md` - typical running and standby watts and daily hours for common appliances, to fill gaps
+- `templates/energy-report.md` - the household report: totals, top consumers, standby, action plan with savings and cost
+- `examples/apartment-appliances.csv` - a two-person apartment with 15 appliances (fridge from 2011, halogen spots, tumble dryer, game console standby, seasonal space heater)
+
+## Workflow
+
+### 1. Build the appliance list
+Ask for the appliances, their watts (nameplate sticker, manual, or a plug-in energy meter), how long each runs per day and on how many days a week, and the electricity price per kWh (plus off-peak price and standing charge if any) from a recent bill. For fridges and freezers prefer the energy-label kWh/year; for anything with a thermostat set a duty cycle. Fill gaps from `references/typical-wattages.md` and say which values are assumptions. If they have a bill, ask for the monthly kWh to cross-check.
+
+### 2. Run the estimator
+```
+python3 scripts/energy_cost.py examples/apartment-appliances.csv --rate 0.32 --offpeak-rate 0.21 --standing-charge 0.40 --bill-kwh 330 --currency EUR
+python3 scripts/energy_cost.py my-home.csv --rate 0.15 --currency USD --json
+python3 scripts/energy_cost.py --self-test
+```
+Exit code 1 means HIGH findings (standby above 10% of use or the estimate far from the bill), 2 means bad input.
+
+### 3. Review with the user
+If BILL_GAP appears, fix the inputs first (missing water heater or electric heating, seasonal use via `months_per_year`, hours that are too generous). Then go through the top consumers, the standby list and the ideas. Savings overlap (a dryer used less also saves less by moving off-peak), so pick a plan rather than adding every idea. Use `references/energy-math.md` to explain any number.
+
+### 4. Deliver
+Fill `templates/energy-report.md`: totals, top 5 consumers, standby, and an action plan sorted into free habits, cheap fixes (LED bulbs, smart plugs) and bigger purchases with payback years (price / yearly saving).
+
+## Example result
+For `examples/apartment-appliances.csv` at EUR 0.32/kWh (off-peak 0.21, standing charge 0.40/day): 12.3 kWh/day, 373 kWh/month, 4479 kWh/year, energy EUR 118.38/month or EUR 1420.54/year (EUR 1566.54 with the standing charge). Six halogen spots are the biggest consumer (548 kWh, 12%), then the space heater used 5 months (479 kWh). Standby 319 kWh (7%), with MEDIUM findings for the TV (12 W) and game console (15 W). Within 13% of the 330 kWh bill, so no BILL_GAP. Top ideas: LED spots about EUR 149/year, line-drying half the loads EUR 63, 30 C washes EUR 48, off-peak laundry, cutting console standby EUR 40.
+
+## Rules
+
+- Show the formula once and the assumptions for every guessed value.
+- Use the user&#x27;s tariff and currency; never assume a country&#x27;s price without saying so.
+- Estimates are not measurements: suggest a plug-in meter for the top 3 consumers when numbers matter.
+- Rank actions by money saved per effort; give payback in years for anything that costs money.
+- Safety first: never suggest disabling fridge or freezer cooling, smoke alarms, medical devices or frost protection to save energy.
+FILE:references/energy-math.md
+# Energy Math
+
+## Core formulas
+```
+kWh per day (running) = watts x quantity x hours per day x duty% / 1000 x days per week / 7 x months per year / 12
+kWh per day (standby) = standby watts x quantity x (24 - average hours running) / 1000
+kWh per year = kWh per day x 365        kWh per month = kWh per year / 12
+cost = kWh x price per kWh (+ standing charge per day x 365, listed separately)
+```
+Example: a 2000 W kettle used 15 minutes a day = 2000 x 0.25 / 1000 = 0.5 kWh/day = 183 kWh/year; at 0.32 per kWh = 58.40 a year.
+
+## Watts vs other numbers on the label
+- W (watts) is what you need. kW x 1000 = W.
+- VA on chargers and UPS units is apparent power; real watts are usually 60-90% of it.
+- mAh or Wh on batteries is capacity, not power draw.
+- Nameplate watts are the maximum. Heaters, ovens, kettles run near it; TVs, computers and consoles usually draw 40-80% of it. A plug-in meter gives the truth in a day.
+
+## Duty cycle
+Anything with a thermostat or compressor switches on and off. The fraction of time it is really on is the duty cycle.
+| Appliance | Typical duty cycle |
+|---|---|
+| Fridge, fridge-freezer | 30-50% (higher in a warm kitchen or with a poor seal) |
+| Chest freezer | 35-50% |
+| Oil-filled or panel heater on thermostat | 50-80% in cold weather |
+| Oven at temperature (after preheat) | 50-60% |
+| Washing machine (heats water at the start) | 50-70% of nameplate over a cycle |
+| Dishwasher | 50-60% of nameplate over a cycle |
+Better: use the energy label&#x27;s kWh/year (EU label, US EnergyGuide), which already includes cycling.
+
+## Standby
+Devices that are &quot;off&quot; but still powered: TV and console instant-on modes (5-15 W), set-top boxes (10-20 W), printers, microwaves with clocks (2-3 W), chargers left plugged in (0.1-0.5 W). Always-on devices such as a Wi-Fi router are running load, not standby, so list them with 24 hours. 10 W of standby around the clock = 88 kWh/year. A switched power strip, a smart plug with a schedule or disabling &quot;quick start&quot; removes most of it.
+
+## Tariffs
+- Flat rate: one price per kWh.
+- Time of use: cheaper off-peak hours (often night). Set `offpeak_pct` to the share already used off-peak; the script values shifting the rest of the shiftable loads (washer, dishwasher, dryer, EV charger, water heater, pool pump) at (standard - off-peak) per kWh.
+- Tiered/block rates: price rises with monthly use. Use the marginal (top tier) price to value savings.
+- Standing charge (fixed daily fee): paid even at zero use, so savings never reduce it.
+- Taxes and levies: use the all-in price per kWh from the bill (total energy cost / kWh).
+
+## Checking against the bill
+Compare the estimated monthly kWh with the bill&#x27;s kWh (not money). Within 25% is good for a habit-based estimate. Common reasons for an estimate that is too low: electric water heating (often 15-25% of a home&#x27;s electricity), electric heating or cooling, an EV, a forgotten second fridge, a pool or aquarium. Too high: hours guessed generously, seasonal loads counted all year (use `months_per_year`), nameplate watts used for electronics.
+
+## Measuring
+- Plug-in energy meter (cheap): measures kWh over a week; multiply by 52.
+- Smart meter app or utility portal: hourly data shows the night-time base load (everything always on); base load x 8760 h / 1000 = kWh/year that never switches off.
+- Read the meter before and after a known run (e.g. one oven hour) with everything else steady.
+
+## Payback
+payback years = purchase price / yearly saving. LED bulbs: months. Smart plugs for standby: 1-2 years. Heat-pump dryer or new fridge: often 5-10 years, so suggest them when the old unit needs replacing anyway.
+FILE:references/typical-wattages.md
+# Typical Wattages and Use
+
+Starting values when the user does not know. Always label them as assumptions; real models vary a lot.
+
+| Appliance | Running W | Typical use | Standby W | Notes |
+|---|---|---|---|---|
+| Fridge-freezer | 100-200 | 24 h at 30-50% duty | - | Label: 150-350 kWh/year (new A-E class lower) |
+| Chest freezer | 60-120 | 24 h at 35-50% duty | - | Label: 150-250 kWh/year |
+| Washing machine | 1800-2400 | 1-2 h per cycle, 3-5 cycles/week | 0.5-2 | 0.5-1.0 kWh per 40 C cycle |
+| Tumble dryer (vented/condenser) | 2000-3000 | 1-1.5 h per load | 0.5-1 | Heat-pump dryer about half |
+| Dishwasher | 1200-2000 | 1-2 h per cycle | 0.5-1 | 0.8-1.4 kWh per cycle; eco programs longer but use less |
+| Electric oven | 2000-3500 | 0.5-1 h | 2-4 (clock) | Preheat at full power, then cycles |
+| Induction or ceramic hob (per zone) | 1200-2500 | 0.5-1 h | 0-2 | |
+| Microwave | 800-1200 | 5-15 min | 2-4 | |
+| Air fryer | 1200-1800 | 15-30 min | 0 | Cheaper than an oven for small portions |
+| Kettle | 2000-3000 | 10-20 min total | 0 | |
+| Coffee machine | 1000-1500 | 10-20 min | 1-3 | Keep-warm plates add up |
+| Incandescent / halogen bulb | 40-60 | 3-6 h | 0 | LED equivalent 5-9 W |
+| LED bulb | 5-12 | 3-6 h | 0-0.5 (smart bulbs) | |
+| TV 43-65 inch LED | 60-150 | 3-5 h | 0.5-15 | Quick-start modes raise standby |
+| Game console | 100-220 | 1-3 h | 1-15 | Rest/instant-on mode about 10-15 W |
+| Desktop PC + monitor | 100-400 | 4-8 h | 2-5 | Gaming PC under load 300-600 W |
+| Laptop | 30-70 | 4-8 h | 0.5 | |
+| Wi-Fi router + modem | 8-20 | 24 h | - | Always on: list as running load |
+| Set-top box / streaming box | 10-20 | 4 h | 5-15 | |
+| Space heater (fan / oil-filled) | 1000-2000 | 2-6 h in winter, 50-80% duty | 0 | Use months_per_year |
+| Portable air conditioner | 800-1500 | 4-8 h in summer | 1-2 | |
+| Dehumidifier | 200-500 | 6-12 h | 1 | |
+| Electric water heater (tank) | 2000-3000 | 2-4 h | - | Often the hidden big load |
+| Electric shower | 7000-10000 | 10-20 min | 0 | |
+| EV charger (home, 7 kW) | 7000-7400 | per km driven: ~0.15-0.2 kWh/km | 2-5 | Use kWh/year = km/year x 0.17 |
+| Pool pump | 750-1500 | 6-10 h in season | 0 | Variable-speed pumps save about half |
+| Aquarium (heater + filter + light) | 50-200 | 24 h at 30-60% | - | |
+
+Sources for ranges: manufacturer data sheets and energy labels, plus common national energy agency appliance calculators. Check the user&#x27;s model when a value drives a decision.
+FILE:templates/energy-report.md
+# Home electricity report: &lt;household name or address&gt;
+
+**Tariff:** &lt;EUR 0.32/kWh, off-peak 0.21 (23:00-07:00), standing charge 0.40/day&gt;   **Bill check:** &lt;estimate 373 kWh/month vs bill 330 (-13%)&gt;
+**Summary:** &lt;one sentence: e.g. &quot;Lighting and laundry are 40% of the bill; LED spots and 30 C washes save about EUR 200 a year for EUR 40.&quot;&gt;
+
+## Where the money goes
+| Appliance | kWh/year | Cost/year | Share | Assumption |
+|---|---|---|---|---|
+| &lt;Halogen spotlights x6&gt; | &lt;548&gt; | &lt;175.20&gt; | &lt;12%&gt; | &lt;50 W, 5 h/day&gt; |
+| &lt;...&gt; | | | | |
+
+Total: &lt;4479 kWh/year, EUR 1420.54 energy + EUR 146 standing charge&gt;
+
+## Standby (always paid, nothing gained)
+&lt;319 kWh/year, about EUR 102. Biggest: game console 15 W, TV 12 W.&gt;
+
+## Action plan
+### Free habits
+| Action | Saving/year |
+|---|---|
+| &lt;Wash at 30 C, full loads&gt; | &lt;EUR 48&gt; |
+| &lt;Run laundry and dishwasher off-peak&gt; | &lt;EUR 70-110&gt; |
+
+### Cheap fixes
+| Action | Cost | Saving/year | Payback |
+|---|---|---|---|
+| &lt;6 LED spots&gt; | &lt;EUR 30&gt; | &lt;EUR 149&gt; | &lt;2-3 months&gt; |
+| &lt;Smart plug for TV + console&gt; | &lt;EUR 15&gt; | &lt;EUR 68&gt; | &lt;3 months&gt; |
+
+### Bigger purchases (only when replacing anyway)
+| Action | Cost | Saving/year | Payback |
+|---|---|---|---|
+| &lt;Heat-pump dryer&gt; | &lt;EUR 600&gt; | &lt;EUR 63&gt; | &lt;~10 years&gt; |
+
+## Next steps
+- &lt;Measure the space heater and fridge with a plug-in meter for one week&gt;
+- &lt;Re-run the estimate after the LED swap and compare the next two bills&gt;
+
+Numbers are estimates from rated watts and typical use; savings overlap and are not additive.
+FILE:examples/apartment-appliances.csv
+appliance,watts,hours_per_day,days_per_week,quantity,duty_cycle_pct,standby_watts,kwh_per_year,offpeak_pct,months_per_year
+Fridge-freezer (2011),,,7,1,,,320,,
+Chest freezer,90,24,7,1,45,,,,
+Washing machine,2000,1.5,4,1,60,1.5,,,
+Tumble dryer,2500,1,3,1,,0.5,,,
+Dishwasher,1800,1.5,5,1,55,1,,30,
+Electric oven,2400,1,4,1,60,3,,,
+Kettle,2200,0.25,7,1,,,,,
+Microwave,1100,0.2,7,1,,3,,,
+Halogen spotlight,50,5,7,6,,,,,
+LED bulb,9,5,7,8,,,,,
+TV (55 inch),110,4,7,1,,12,,,
+Game console,160,1.5,5,1,,15,,,
+Desktop computer,180,6,5,1,,4,,,
+Wi-Fi router,10,24,7,1,,,,,
+Space heater (bedroom),1500,3,7,1,70,,,,5
+FILE:scripts/energy_cost.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Home appliance energy cost estimator (Python 3 standard library only).
+
+Reads a CSV of appliances and works out daily, monthly and yearly kWh and cost, standby
+(&quot;vampire&quot;) loads, each appliance&#x27;s share, and savings ideas with estimated yearly savings.
+
+CSV columns (header required; comma or semicolon; only the first three are required):
+  appliance        name, e.g. &quot;Fridge-freezer&quot; (keywords drive the savings ideas)
+  watts            power while running (nameplate or plug-in meter), per unit
+  hours_per_day    hours running on a day it is used
+  days_per_week    days used per week (default 7)
+  quantity         number of identical units (default 1), e.g. 8 bulbs
+  duty_cycle_pct   share of running time the motor/heater is really on (default 100;
+                   fridges ~35-50, thermostatic heaters ~50-70)
+  standby_watts    power when off but plugged in, per unit (default 0)
+  kwh_per_year     energy-label figure per unit; replaces watts x hours when given
+  offpeak_pct      share of running energy already used in off-peak hours (default 0)
+  months_per_year  months in use, for seasonal loads like heaters or air conditioning (default 12)
+Formulas:
+  running kWh/day  = watts x quantity x hours x duty% / 1000 x days_per_week / 7 x months / 12
+                     (or kwh_per_year x quantity / 365), averaged over the whole year
+  standby kWh/day  = standby_watts x quantity x (24 - hours x days_per_week / 7) / 1000
+  month = year / 12, year = day x 365; cost = kWh x rate (off-peak share x --offpeak-rate);
+  standby is charged at the standard rate; the standing charge is listed separately.
+Findings (severity):
+  HIGH   STANDBY_SHARE    standby is &gt;= 10% of all estimated kWh
+  HIGH   BILL_GAP         estimate differs from --bill-kwh (monthly) by more than 25%
+  MEDIUM BIG_CONSUMER     one appliance uses &gt;= 25% of all kWh
+  MEDIUM STANDBY_DEVICE   a unit draws &gt;= 5 W on standby
+  LOW    CHECK_DUTY_CYCLE fridge/freezer/heater running 24 h at 100% duty (likely overestimated)
+  LOW    HIGH_WATTS       &gt; 3500 W for an appliance that is not a known heavy load
+Usage:
+  python3 energy_cost.py appliances.csv --rate 0.32 --currency EUR
+  python3 energy_cost.py appliances.csv --rate 0.32 --offpeak-rate 0.21 --standing-charge 0.40 --bill-kwh 260 --json
+  python3 energy_cost.py --self-test
+Exit code: 0 no HIGH findings, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import csv
+import io
+import json
+import sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+HEAVY = (&quot;heater&quot;, &quot;oven&quot;, &quot;stove&quot;, &quot;hob&quot;, &quot;cooktop&quot;, &quot;dryer&quot;, &quot;kettle&quot;, &quot; ev &quot;, &quot;charger&quot;, &quot;boiler&quot;,
+         &quot;water heater&quot;, &quot;sauna&quot;, &quot;heat pump&quot;, &quot;air conditioner&quot;, &quot; ac &quot;, &quot;furnace&quot;, &quot;pool&quot;)
+SHIFTABLE = (&quot;wash&quot;, &quot;dishwasher&quot;, &quot;dryer&quot;, &quot; ev &quot;, &quot;ev charger&quot;, &quot;pool&quot;, &quot;water heater&quot;, &quot;boiler&quot;)
+# keyword -&gt; (idea, share of that appliance&#x27;s running cost saved)
+IDEAS = [
+    ((&quot;bulb&quot;, &quot;lamp&quot;, &quot;light&quot;), &quot;replace with LED (about 85% less power for the same light)&quot;, 0.85, &quot;watts&gt;=25&quot;),
+    ((&quot;dryer&quot;,), &quot;line-dry half the loads or switch to a heat-pump dryer (about 50%)&quot;, 0.5, None),
+    ((&quot;water heater&quot;, &quot;boiler&quot;), &quot;set to 55-60 C with a timer and insulate the tank (about 10%)&quot;, 0.10, None),
+    ((&quot;space heater&quot;, &quot;heater&quot;, &quot;radiator&quot;), &quot;heat only the room in use and lower the thermostat 1 C (about 10%); a heat pump uses 2-4x less&quot;, 0.10, None),
+    ((&quot;fridge&quot;, &quot;freezer&quot;), &quot;set 4 C / -18 C, clean coils, check door seals (about 10%); a 15-year-old unit may use twice a new A-class one&quot;, 0.10, None),
+    ((&quot;dishwasher&quot;,), &quot;use the eco program and skip pre-rinsing with hot water (about 20%)&quot;, 0.20, None),
+    ((&quot;washing machine&quot;, &quot;washer&quot;), &quot;wash at 30 C instead of 40-60 C and run full loads (about 40%)&quot;, 0.40, None),
+    ((&quot;kettle&quot;,), &quot;boil only the water you need (about 25%)&quot;, 0.25, None),
+    ((&quot;oven&quot;,), &quot;use a microwave or air fryer for small meals (about 30%)&quot;, 0.30, None),
+    ((&quot;pool&quot;,), &quot;run the pump fewer hours or fit a variable-speed pump (about 50%)&quot;, 0.50, None),
+    ((&quot;air conditioner&quot;, &quot; ac &quot;, &quot;aircon&quot;), &quot;set 1-2 C warmer and clean filters (about 10%)&quot;, 0.10, None),
+    ((&quot;dehumidifier&quot;,), &quot;use a humidistat at 50-55% instead of running continuously (about 30%)&quot;, 0.30, None),
+    ((&quot;desktop&quot;, &quot;gaming pc&quot;, &quot;computer&quot;), &quot;enable sleep after 15 minutes idle (about 20%)&quot;, 0.20, None),
+]
+
+
+class DataError(ValueError):
+    pass
+
+
+def num(row, key, default, line):
+    v = (row.get(key) or &quot;&quot;).strip().replace(&quot;,&quot;, &quot;.&quot;) if isinstance(row.get(key), str) else row.get(key)
+    if v in (None, &quot;&quot;):
+        if default is None:
+            raise DataError(f&quot;line {line}: &#x27;{key}&#x27; is required&quot;)
+        return float(default)
+    try:
+        x = float(v)
+    except ValueError:
+        raise DataError(f&quot;line {line}: &#x27;{key}&#x27; must be a number, got &#x27;{v}&#x27;&quot;)
+    if x &lt; 0:
+        raise DataError(f&quot;line {line}: &#x27;{key}&#x27; cannot be negative&quot;)
+    return x
+
+
+def read_csv(text):
+    first = text.splitlines()[0] if text.strip() else &quot;&quot;
+    delim = &quot;;&quot; if first.count(&quot;;&quot;) &gt; first.count(&quot;,&quot;) else &quot;,&quot;
+    rd = csv.DictReader(io.StringIO(text), delimiter=delim)
+    if not rd.fieldnames or not {&quot;appliance&quot;, &quot;watts&quot;, &quot;hours_per_day&quot;} &lt;= {f.strip().lower() for f in rd.fieldnames}:
+        if not rd.fieldnames or &quot;kwh_per_year&quot; not in [f.strip().lower() for f in rd.fieldnames]:
+            raise DataError(&quot;CSV needs columns appliance, watts, hours_per_day (or kwh_per_year)&quot;)
+    items = []
+    for line, raw in enumerate(rd, 2):
+        row = {(k or &quot;&quot;).strip().lower(): v for k, v in raw.items()}
+        name = (row.get(&quot;appliance&quot;) or &quot;&quot;).strip()
+        if not name:
+            continue
+        label = (row.get(&quot;kwh_per_year&quot;) or &quot;&quot;).strip()
+        it = {&quot;appliance&quot;: name,
+              &quot;watts&quot;: num(row, &quot;watts&quot;, 0 if label else None, line),
+              &quot;hours&quot;: num(row, &quot;hours_per_day&quot;, 24 if label else None, line),
+              &quot;days&quot;: num(row, &quot;days_per_week&quot;, 7, line),
+              &quot;qty&quot;: num(row, &quot;quantity&quot;, 1, line),
+              &quot;duty&quot;: num(row, &quot;duty_cycle_pct&quot;, 100, line),
+              &quot;standby_w&quot;: num(row, &quot;standby_watts&quot;, 0, line),
+              &quot;label_kwh&quot;: num(row, &quot;kwh_per_year&quot;, 0, line) if label else None,
+              &quot;offpeak&quot;: num(row, &quot;offpeak_pct&quot;, 0, line) / 100,
+              &quot;months&quot;: num(row, &quot;months_per_year&quot;, 12, line)}
+        if it[&quot;hours&quot;] &gt; 24:
+            raise DataError(f&quot;line {line}: hours_per_day {it[&#x27;hours&#x27;]:g} &gt; 24&quot;)
+        if it[&quot;days&quot;] &gt; 7 or it[&quot;duty&quot;] &gt; 100 or it[&quot;offpeak&quot;] &gt; 1 or it[&quot;months&quot;] &gt; 12:
+            raise DataError(f&quot;line {line}: days_per_week &lt;= 7, months_per_year &lt;= 12, duty_cycle_pct and offpeak_pct &lt;= 100&quot;)
+        items.append(it)
+    if not items:
+        raise DataError(&quot;no appliances in the CSV&quot;)
+    return items
+
+
+def has(name, words):
+    low = &quot; &quot; + name.lower() + &quot; &quot;
+    return any(w in low for w in words)
+
+
+def estimate(items, rate, offpeak_rate=None, standing=0.0, bill_kwh=None):
+    off = rate if offpeak_rate is None else offpeak_rate
+    rows, findings, ideas = [], [], []
+
+    def add(sev, code, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;message&quot;: msg})
+    for it in items:
+        avg_hours = it[&quot;hours&quot;] * it[&quot;days&quot;] / 7
+        if it[&quot;label_kwh&quot;] is not None:
+            run_day = it[&quot;label_kwh&quot;] * it[&quot;qty&quot;] / 365
+        else:
+            run_day = it[&quot;watts&quot;] * it[&quot;qty&quot;] * avg_hours * it[&quot;duty&quot;] / 100 / 1000 * it[&quot;months&quot;] / 12
+        sb_day = it[&quot;standby_w&quot;] * it[&quot;qty&quot;] * (24 - avg_hours) / 1000
+        run_cost_y = run_day * 365 * ((1 - it[&quot;offpeak&quot;]) * rate + it[&quot;offpeak&quot;] * off)
+        sb_cost_y = sb_day * 365 * rate
+        rows.append({&quot;appliance&quot;: it[&quot;appliance&quot;], &quot;qty&quot;: it[&quot;qty&quot;], &quot;kwh_day&quot;: run_day + sb_day,
+                     &quot;kwh_month&quot;: (run_day + sb_day) * 365 / 12, &quot;kwh_year&quot;: (run_day + sb_day) * 365,
+                     &quot;standby_kwh_year&quot;: sb_day * 365, &quot;cost_month&quot;: (run_cost_y + sb_cost_y) / 12,
+                     &quot;cost_year&quot;: run_cost_y + sb_cost_y, &quot;standby_cost_year&quot;: sb_cost_y,
+                     &quot;run_kwh_year&quot;: run_day * 365, &quot;run_cost_year&quot;: run_cost_y})
+        name = it[&quot;appliance&quot;]
+        if it[&quot;standby_w&quot;] &gt;= 5:
+            add(&quot;MEDIUM&quot;, &quot;STANDBY_DEVICE&quot;, f&quot;{name}: {it[&#x27;standby_w&#x27;]:g} W standby per unit = {sb_day * 365:.0f} kWh/year; a switched power strip or unplugging saves {sb_cost_y:.2f}/year&quot;)
+        if has(name, (&quot;fridge&quot;, &quot;freezer&quot;, &quot;heater&quot;)) and it[&quot;label_kwh&quot;] is None and it[&quot;hours&quot;] &gt;= 24 and it[&quot;duty&quot;] &gt;= 100:
+            add(&quot;LOW&quot;, &quot;CHECK_DUTY_CYCLE&quot;, f&quot;{name}: 24 h at 100% duty; compressors and thermostats cycle, so set duty_cycle_pct (fridge ~40) or use the energy-label kWh/year&quot;)
+        if it[&quot;watts&quot;] &gt; 3500 and not has(name, HEAVY):
+            add(&quot;LOW&quot;, &quot;HIGH_WATTS&quot;, f&quot;{name}: {it[&#x27;watts&#x27;]:g} W is unusually high; check the nameplate (W, not mAh or VA)&quot;)
+        for words, text, share, cond in IDEAS:
+            if has(name, words) and (cond is None or it[&quot;watts&quot;] &gt;= 25):
+                ideas.append({&quot;appliance&quot;: name, &quot;idea&quot;: text, &quot;saving_year&quot;: run_cost_y * share,
+                              &quot;kwh_year&quot;: run_day * 365 * share})
+                break
+        if sb_cost_y &gt; 0 and it[&quot;standby_w&quot;] &gt;= 1:
+            ideas.append({&quot;appliance&quot;: name, &quot;idea&quot;: &quot;cut standby with a switched strip or smart plug&quot;, &quot;saving_year&quot;: sb_cost_y,
+                          &quot;kwh_year&quot;: sb_day * 365})
+        if offpeak_rate is not None and offpeak_rate &lt; rate and has(name, SHIFTABLE) and it[&quot;offpeak&quot;] &lt; 1:
+            kwh = run_day * 365 * (1 - it[&quot;offpeak&quot;])
+            ideas.append({&quot;appliance&quot;: name, &quot;idea&quot;: &quot;run in off-peak hours (timer or delay start)&quot;,
+                          &quot;saving_year&quot;: kwh * (rate - offpeak_rate), &quot;kwh_year&quot;: 0.0})
+    tot_kwh = sum(r[&quot;kwh_year&quot;] for r in rows)
+    tot_sb = sum(r[&quot;standby_kwh_year&quot;] for r in rows)
+    for r in rows:
+        r[&quot;share&quot;] = r[&quot;kwh_year&quot;] / tot_kwh if tot_kwh else 0
+        if r[&quot;share&quot;] &gt;= 0.25:
+            add(&quot;MEDIUM&quot;, &quot;BIG_CONSUMER&quot;, f&quot;{r[&#x27;appliance&#x27;]} is {r[&#x27;share&#x27;]:.0%} of the estimated use ({r[&#x27;kwh_year&#x27;]:.0f} kWh/year); check it first&quot;)
+    if tot_kwh and tot_sb / tot_kwh &gt;= 0.10:
+        add(&quot;HIGH&quot;, &quot;STANDBY_SHARE&quot;, f&quot;standby is {tot_sb / tot_kwh:.0%} of all use ({tot_sb:.0f} kWh/year, {tot_sb * rate:.2f}/year) - the cheapest saving to get&quot;)
+    if bill_kwh:
+        est_m = tot_kwh / 12
+        gap = (bill_kwh - est_m) / bill_kwh
+        if abs(gap) &gt; 0.25:
+            add(&quot;HIGH&quot;, &quot;BILL_GAP&quot;, f&quot;estimate {est_m:.0f} kWh/month vs bill {bill_kwh:g} kWh/month ({gap:+.0%}); &quot;
+                + (&quot;missing appliances (water heating, electric heating, EV?) or hours too low&quot; if gap &gt; 0 else &quot;hours or watts are too high, or some appliances are not used every day&quot;))
+    rows.sort(key=lambda r: -r[&quot;kwh_year&quot;])
+    ideas.sort(key=lambda x: -x[&quot;saving_year&quot;])
+    findings.sort(key=lambda f: SEV_ORDER[f[&quot;severity&quot;]])
+    totals = {&quot;kwh_day&quot;: tot_kwh / 365, &quot;kwh_month&quot;: tot_kwh / 12, &quot;kwh_year&quot;: tot_kwh,
+              &quot;standby_kwh_year&quot;: tot_sb, &quot;energy_cost_year&quot;: sum(r[&quot;cost_year&quot;] for r in rows),
+              &quot;standing_charge_year&quot;: standing * 365}
+    totals[&quot;energy_cost_month&quot;] = totals[&quot;energy_cost_year&quot;] / 12
+    totals[&quot;total_cost_year&quot;] = totals[&quot;energy_cost_year&quot;] + totals[&quot;standing_charge_year&quot;]
+    totals[&quot;total_cost_month&quot;] = totals[&quot;total_cost_year&quot;] / 12
+    totals[&quot;savings_year&quot;] = sum(i[&quot;saving_year&quot;] for i in ideas)
+    return rows, totals, findings, ideas
+
+
+def render(rows, totals, findings, ideas, rate, cur, offpeak_rate, standing, top):
+    c = (cur + &quot; &quot;) if cur else &quot;&quot;
+    out = [&quot;# Home appliance energy cost estimate&quot;, &quot;&quot;,
+           f&quot;Tariff: {c}{rate:g}/kWh&quot; + (f&quot;, off-peak {c}{offpeak_rate:g}/kWh&quot; if offpeak_rate is not None else &quot;&quot;)
+           + (f&quot;, standing charge {c}{standing:g}/day&quot; if standing else &quot;&quot;), &quot;&quot;,
+           f&quot;Total: {totals[&#x27;kwh_day&#x27;]:.1f} kWh/day, {totals[&#x27;kwh_month&#x27;]:.0f} kWh/month, {totals[&#x27;kwh_year&#x27;]:,.0f} kWh/year; &quot;
+           f&quot;energy {c}{totals[&#x27;energy_cost_month&#x27;]:,.2f}/month, {c}{totals[&#x27;energy_cost_year&#x27;]:,.2f}/year&quot;
+           + (f&quot;; with standing charge {c}{totals[&#x27;total_cost_year&#x27;]:,.2f}/year&quot; if standing else &quot;&quot;),
+           f&quot;Standby: {totals[&#x27;standby_kwh_year&#x27;]:.0f} kWh/year ({totals[&#x27;standby_kwh_year&#x27;] / totals[&#x27;kwh_year&#x27;]:.0%})&quot; if totals[&quot;kwh_year&quot;] else &quot;&quot;, &quot;&quot;,
+           &quot;| Appliance | Qty | kWh/day | kWh/month | kWh/year | Standby kWh/yr | Cost/month | Cost/year | Share |&quot;,
+           &quot;|---|---|---|---|---|---|---|---|---|&quot;]
+    for r in rows:
+        out.append(f&quot;| {r[&#x27;appliance&#x27;]} | {r[&#x27;qty&#x27;]:g} | {r[&#x27;kwh_day&#x27;]:.2f} | {r[&#x27;kwh_month&#x27;]:.1f} | {r[&#x27;kwh_year&#x27;]:.0f} | &quot;
+                   f&quot;{r[&#x27;standby_kwh_year&#x27;]:.0f} | {r[&#x27;cost_month&#x27;]:.2f} | {r[&#x27;cost_year&#x27;]:.2f} | {r[&#x27;share&#x27;]:.0%} |&quot;)
+    out += [&quot;&quot;, &quot;## Findings&quot;] + ([f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]}: {f[&#x27;message&#x27;]}&quot; for f in findings] or [&quot;- none&quot;])
+    out += [&quot;&quot;, f&quot;## Savings ideas (top {min(top, len(ideas))}, estimated)&quot;]
+    for i in ideas[:top]:
+        out.append(f&quot;- {i[&#x27;appliance&#x27;]}: {i[&#x27;idea&#x27;]} -&gt; about {c}{i[&#x27;saving_year&#x27;]:.2f}/year&quot; + (f&quot;, {i[&#x27;kwh_year&#x27;]:.0f} kWh&quot; if i[&quot;kwh_year&quot;] else &quot;&quot;))
+    if len(ideas) &gt; top:
+        out.append(f&quot;- ... {len(ideas) - top} more with --top {len(ideas)}&quot;)
+    out += [&quot;&quot;, &quot;Estimates from rated watts and typical use; a plug-in energy meter or the smart meter gives real numbers. Savings overlap, so do not add them all up.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    results = []
+
+    def check(name, cond):
+        results.append(cond)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    def run(csv_text, **kw):
+        return estimate(read_csv(csv_text), kw.pop(&quot;rate&quot;, 0.30), **kw)
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nKettle,2000,0.5\n&quot;)
+    check(&quot;1 kWh/day kettle&quot;, abs(rows[0][&quot;kwh_day&quot;] - 1.0) &lt; 1e-9)
+    check(&quot;365 kWh/year&quot;, abs(t[&quot;kwh_year&quot;] - 365) &lt; 1e-9)
+    check(&quot;cost per year at 0.30&quot;, abs(t[&quot;energy_cost_year&quot;] - 109.5) &lt; 1e-6)
+    check(&quot;month = year/12&quot;, abs(t[&quot;kwh_month&quot;] - 365 / 12) &lt; 1e-9)
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,days_per_week,quantity\nWashing machine,1000,2,3.5,1\nLED bulb,9,5,7,6\n&quot;)
+    w = [r for r in rows if r[&quot;appliance&quot;] == &quot;Washing machine&quot;][0]
+    check(&quot;days_per_week scales&quot;, abs(w[&quot;kwh_day&quot;] - 1.0) &lt; 1e-9)
+    b = [r for r in rows if r[&quot;appliance&quot;] == &quot;LED bulb&quot;][0]
+    check(&quot;quantity scales&quot;, abs(b[&quot;kwh_day&quot;] - 0.27) &lt; 1e-9)
+    check(&quot;LED idea skipped under 25 W&quot;, not any(&quot;LED&quot; in x[&quot;idea&quot;] for x in i))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,duty_cycle_pct\nFridge,150,24,40\n&quot;)
+    check(&quot;duty cycle&quot;, abs(rows[0][&quot;kwh_day&quot;] - 1.44) &lt; 1e-9)
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,standby_watts\nTV,100,4,10\n&quot;)
+    check(&quot;standby hours = 24 - use&quot;, abs(rows[0][&quot;standby_kwh_year&quot;] - 10 * 20 / 1000 * 365) &lt; 1e-9)
+    codes = [x[&quot;code&quot;] for x in f]
+    check(&quot;STANDBY_DEVICE&quot;, &quot;STANDBY_DEVICE&quot; in codes)
+    check(&quot;STANDBY_SHARE HIGH&quot;, &quot;STANDBY_SHARE&quot; in codes)
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,kwh_per_year,quantity\nFreezer,,,250,2\n&quot;)
+    check(&quot;energy label kWh used&quot;, abs(t[&quot;kwh_year&quot;] - 500) &lt; 1e-9)
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,offpeak_pct\nDishwasher,1200,1,50\n&quot;, offpeak_rate=0.15)
+    check(&quot;off-peak share priced&quot;, abs(rows[0][&quot;cost_year&quot;] - 1.2 * 365 * (0.5 * 0.30 + 0.5 * 0.15)) &lt; 1e-6)
+    check(&quot;shift idea for rest&quot;, any(&quot;off-peak&quot; in x[&quot;idea&quot;] for x in i))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,months_per_year\nSpace heater,1000,4,6\n&quot;)
+    check(&quot;months_per_year seasonal&quot;, abs(t[&quot;kwh_year&quot;] - 4 * 365 / 2) &lt; 1e-9)
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,days_per_week\nDishwasher,1000,1,7\n&quot;)
+    check(&quot;dishwasher gets eco idea, not washer idea&quot;, &quot;eco&quot; in i[0][&quot;idea&quot;])
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nHeater,2000,6\nTV,80,3\n&quot;)
+    check(&quot;BIG_CONSUMER&quot;, any(x[&quot;code&quot;] == &quot;BIG_CONSUMER&quot; for x in f))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nKettle,2000,0.5\n&quot;, bill_kwh=60)
+    check(&quot;BILL_GAP HIGH&quot;, any(x[&quot;code&quot;] == &quot;BILL_GAP&quot; for x in f))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nKettle,2000,0.5\n&quot;, bill_kwh=32)
+    check(&quot;no BILL_GAP within 25%&quot;, not any(x[&quot;code&quot;] == &quot;BILL_GAP&quot; for x in f))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nFridge,150,24\n&quot;)
+    check(&quot;CHECK_DUTY_CYCLE LOW&quot;, any(x[&quot;code&quot;] == &quot;CHECK_DUTY_CYCLE&quot; for x in f))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nAquarium pump,5000,1\n&quot;)
+    check(&quot;HIGH_WATTS LOW&quot;, any(x[&quot;code&quot;] == &quot;HIGH_WATTS&quot; for x in f))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day,standby_watts\nTelevision,90,4,0.5\nWater heater,2000,3,0\n&quot;, offpeak_rate=0.15)
+    check(&quot;keywords: TV not shiftable, water heater gets tank idea&quot;, not any(x[&quot;appliance&quot;] == &quot;Television&quot; and &quot;off-peak&quot; in x[&quot;idea&quot;] for x in i)
+          and any(x[&quot;appliance&quot;] == &quot;Water heater&quot; and &quot;tank&quot; in x[&quot;idea&quot;] for x in i))
+    rows, t, f, i = run(&quot;appliance;watts;hours_per_day\nHalogen lamp;60,0;4\n&quot;)
+    check(&quot;semicolon + decimal comma&quot;, abs(rows[0][&quot;kwh_day&quot;] - 0.24) &lt; 1e-9 and any(&quot;LED&quot; in x[&quot;idea&quot;] for x in i))
+    rows, t, f, i = run(&quot;appliance,watts,hours_per_day\nTumble dryer,2500,1\n&quot;, standing=0.5)
+    check(&quot;standing charge separate&quot;, abs(t[&quot;standing_charge_year&quot;] - 182.5) &lt; 1e-9 and abs(t[&quot;total_cost_year&quot;] - t[&quot;energy_cost_year&quot;] - 182.5) &lt; 1e-9)
+    check(&quot;dryer idea 50%&quot;, abs(i[0][&quot;saving_year&quot;] - 2.5 * 365 * 0.30 * 0.5) &lt; 1e-6)
+    for bad, name in ((&quot;appliance,watts,hours_per_day\nX,100,25\n&quot;, &quot;hours &gt; 24 rejected&quot;),
+                      (&quot;appliance,watts,hours_per_day\nX,abc,2\n&quot;, &quot;non-number rejected&quot;),
+                      (&quot;name,power\nX,100\n&quot;, &quot;missing columns rejected&quot;),
+                      (&quot;appliance,watts,hours_per_day\nX,-5,2\n&quot;, &quot;negative rejected&quot;)):
+        try:
+            read_csv(bad)
+            check(name, False)
+        except DataError:
+            check(name, True)
+    print(f&quot;{sum(results)}/{len(results)} passed&quot;)
+    return 0 if all(results) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Home appliance energy cost estimator&quot;)
+    ap.add_argument(&quot;csv&quot;, nargs=&quot;?&quot;, help=&quot;appliances CSV&quot;)
+    ap.add_argument(&quot;--rate&quot;, type=float, help=&quot;price per kWh (standard rate)&quot;)
+    ap.add_argument(&quot;--offpeak-rate&quot;, type=float, help=&quot;price per kWh in off-peak hours&quot;)
+    ap.add_argument(&quot;--standing-charge&quot;, type=float, default=0.0, help=&quot;fixed charge per day&quot;)
+    ap.add_argument(&quot;--currency&quot;, default=&quot;&quot;, help=&quot;label, e.g. EUR, USD, TRY&quot;)
+    ap.add_argument(&quot;--bill-kwh&quot;, type=float, help=&quot;actual monthly kWh from a bill, to compare&quot;)
+    ap.add_argument(&quot;--top&quot;, type=int, default=8, help=&quot;savings ideas to show (default 8)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.csv or a.rate is None:
+        ap.error(&quot;give a CSV and --rate, or --self-test&quot;)
+    try:
+        with open(a.csv, encoding=&quot;utf-8-sig&quot;) as fh:
+            items = read_csv(fh.read())
+        rows, totals, findings, ideas = estimate(items, a.rate, a.offpeak_rate, a.standing_charge, a.bill_kwh)
+    except (OSError, DataError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    if a.json:
+        print(json.dumps({&quot;appliances&quot;: rows, &quot;totals&quot;: totals, &quot;findings&quot;: findings, &quot;ideas&quot;: ideas}, indent=2))
+    else:
+        print(render(rows, totals, findings, ideas, a.rate, a.currency, a.offpeak_rate, a.standing_charge, a.top))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in findings) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/home-appliance-energy-cost-estimator',TI="Home Appliance Energy Cost Estimator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

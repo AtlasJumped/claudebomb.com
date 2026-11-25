@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL Index Recommendation Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: sql-index-recommendation-reviewer description: Reviews a schema and slow SQL queries, proposes composite indexes in the right column order (">
+<meta property="og:title" content="SQL Index Recommendation Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: sql-index-recommendation-reviewer description: Reviews a schema and slow SQL queries, proposes composite indexes in the right column order (">
+<meta property="og:url" content="https://claudebomb.com/l/pc/sql-index-recommendation-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/sql-index-recommendation-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">SQL Index Recommendation Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: sql-index-recommendation-reviewer
+description: Reviews a schema and slow SQL queries, proposes composite indexes in the right column order (equality, sort, range) with covering columns and tradeoffs, flags non-sargable filters like functions on columns and leading-wildcard LIKE, and warns about duplicate, redundant, and low-selectivity indexes. Use when a user shares a slow query, EXPLAIN output, or schema and asks &quot;what index do I need?&quot; or &quot;too many indexes?&quot;. Includes a tested stdlib Python helper.
+---
+
+# SQL Index Recommendation Reviewer
+
+You help developers make slow queries fast without burying their tables in indexes. You read the schema and the query the way a database engineer would: which columns are compared with equality, which with ranges, what the query sorts by, what it joins on, and which indexes already exist. You propose the smallest set of indexes that serves the workload, in the right column order, and you are honest that only EXPLAIN on real data can confirm it.
+
+## Files in this skill
+
+- `scripts/suggest_indexes.py` - parses CREATE TABLE / CREATE INDEX statements and SELECT, UPDATE, and DELETE queries (subqueries and CTE bodies separately), then prints candidate indexes with DDL, the queries each one serves, covering columns, overlaps, and schema findings (Python 3 standard library only; no database connection)
+- `references/indexing-rules.md` - column order, covering indexes, partial and expression indexes, sargability, and over-indexing rules
+- `references/explain-reading-guide.md` - how to read EXPLAIN in PostgreSQL, MySQL, and SQLite to confirm or reject a suggestion
+- `templates/index-review.md` - the review report to return
+- `examples/example-shop-orders-review.md` - a worked review of an online shop&#x27;s slow queries
+
+## Workflow
+
+### 1. Collect the facts
+Ask, or assume and say so:
+- The engine and version (PostgreSQL, MySQL/MariaDB, SQLite, SQL Server), and the schema with existing indexes (`\d table`, `SHOW CREATE TABLE`, or the migration files).
+- The slow queries exactly as the app sends them, with typical parameter values, how often each runs, and how slow it is.
+- Table sizes (rows), how write-heavy each table is, and any EXPLAIN or EXPLAIN ANALYZE output.
+- Constraints: can the team build indexes online, disk space, and replication lag concerns.
+
+### 2. Run the helper
+```bash
+python3 scripts/suggest_indexes.py --schema schema.sql slow-queries.sql
+python3 scripts/suggest_indexes.py all-in-one.sql --dialect mysql
+python3 scripts/suggest_indexes.py --schema schema.sql - --json &lt; query.sql
+python3 scripts/suggest_indexes.py --schema schema.sql queries.sql --strict   # exit 1 on non-sargable filters or duplicate indexes
+```
+The helper is a heuristic parser, not a planner: it does not know row counts, data distribution, or which plan the database will choose. It can miss predicates in complex SQL (it lists them as &quot;not understood&quot;). Read every query yourself and treat each suggestion as a candidate to test. If you cannot run the script, apply `references/indexing-rules.md` by hand in the same order.
+
+### 3. Decide
+1. Fix the query before adding an index: rewrite non-sargable filters (functions on columns, arithmetic, leading-wildcard LIKE, OR across columns) so an index can be used at all.
+2. For each query, choose column order: equality columns (most selective first when you know it), then ORDER BY or GROUP BY columns if the query sorts with LIMIT, then one range column.
+3. Merge: one composite index can serve several queries when they share its leftmost columns. Prefer extending an existing index over adding a new one.
+4. Add covering (INCLUDE) columns only for hot, read-heavy queries, and keep them few.
+5. Remove before adding: drop duplicate and redundant-prefix indexes after checking usage statistics (`pg_stat_user_indexes`, `sys.schema_unused_indexes`).
+6. Count the cost: every index slows inserts and updates of its columns and uses disk and memory. Write-heavy tables deserve fewer, broader indexes.
+
+### 4. Deliver
+Fill in `templates/index-review.md`: per-query diagnosis, the recommended DDL in build order with the queries each serves, indexes to drop, query rewrites, tradeoffs, and how to verify with EXPLAIN before and after (see `references/explain-reading-guide.md`). Follow the style of `examples/example-shop-orders-review.md`.
+
+## Rules
+- Never claim a speed-up without saying how to measure it; give expected plan changes (&quot;index scan instead of sequential scan and sort&quot;), not invented timings.
+- Use safe build commands for production: `CREATE INDEX CONCURRENTLY` in PostgreSQL, online DDL (`ALGORITHM=INPLACE, LOCK=NONE`) in MySQL, and a maintenance window for SQLite.
+- Do not recommend an index on a low-selectivity column alone (status, booleans); use it inside a composite or as a partial index condition.
+- Keep primary keys and unique constraints; never suggest dropping them to remove &quot;redundancy&quot;.
+- Tell the user to build one index at a time and compare plans, and to remove indexes that EXPLAIN never uses.
+FILE:references/indexing-rules.md
+# Indexing rules
+
+The rules the helper applies, plus the judgment it cannot make. Examples use PostgreSQL syntax unless noted.
+
+## 1. Column order in a composite index
+
+A B-tree index is sorted by its first column, then the second, and so on. A query can seek on a leftmost run of columns compared with equality, then use one more column for a range or for sorting.
+
+Order: **equality columns, then sort columns, then one range column**.
+```sql
+-- WHERE customer_id = ? AND status = &#x27;paid&#x27; ORDER BY created_at DESC LIMIT 20
+CREATE INDEX ON orders (customer_id, status, created_at);
+```
+- Among equality columns, put the one used by the most queries first so the index serves them all; selectivity matters less than reuse once all of them are equalities.
+- After a range column (`&gt;`, `&lt;`, `BETWEEN`, `LIKE &#x27;abc%&#x27;`), later columns cannot be used for seeking, only for filtering inside the index.
+- A sort can use the index only if every ORDER BY column comes from the index in the same order and directions are all the same (or all reversed). Mixed directions need a matching index definition (`created_at DESC, id ASC`).
+- With a range and an ORDER BY on a different column, the database must choose: seek with the range and sort, or walk the sort order and filter. With LIMIT, walking the sort order often wins.
+
+## 2. Leftmost prefix and merging
+
+An index on `(a, b, c)` serves queries on `a`, on `a, b`, and on `a, b, c`, but not on `b` or `c` alone. Two candidates where one is a leftmost prefix of the other become one index. An existing index `(a)` is redundant once `(a, b)` exists, unless it is unique, partial, or much smaller and very hot.
+
+## 3. Joins and foreign keys
+
+- Index the column on the side that is looked up: usually the foreign key (`orders.customer_id`). The primary key side is already indexed.
+- PostgreSQL does not index foreign keys automatically (MySQL InnoDB does). Missing FK indexes also make deletes on the parent table slow.
+- A join column plus that table&#x27;s own filters can form one composite: `(customer_id, created_at)`.
+
+## 4. Covering indexes
+
+If the index holds every column the query reads, the database can skip the table (index-only scan).
+- PostgreSQL 11+ and SQL Server: `INCLUDE (col, ...)` stores extra columns without sorting by them.
+- MySQL and SQLite: append the columns to the key; InnoDB secondary indexes already carry the primary key.
+- Use it for hot, read-mostly queries with few selected columns. Wide covering indexes are big and slow to write.
+- PostgreSQL index-only scans also need a well-vacuumed table (visibility map).
+
+## 5. Partial and expression indexes
+
+- Partial (PostgreSQL, SQLite; filtered index in SQL Server): `CREATE INDEX ON orders (created_at) WHERE status = &#x27;paid&#x27; AND shipped_at IS NULL;` Tiny and fast when the condition matches few rows. The query must repeat the same condition.
+- Expression: `CREATE INDEX ON users (lower(email));` serves `WHERE lower(email) = ?`. MySQL 8 supports functional indexes `((lower(email)))` or a generated column with an index.
+
+## 6. Sargability: filters an index cannot use
+
+| Pattern | Problem | Fix |
+|---|---|---|
+| `WHERE date(created_at) = &#x27;2026-10-12&#x27;` | function on the column | `created_at &gt;= &#x27;2026-10-12&#x27; AND created_at &lt; &#x27;2026-10-13&#x27;` |
+| `WHERE YEAR(updated_at) = 2026` | function on the column | range on the column |
+| `WHERE price * 1.2 &gt; 100` | arithmetic on the column | `price &gt; 100 / 1.2` |
+| `WHERE name LIKE &#x27;%lamp%&#x27;` | leading wildcard | full-text search, or `pg_trgm` GIN index |
+| `WHERE lower(name) = ?` | function | expression index on `lower(name)` or a case-insensitive collation |
+| `WHERE a = 1 OR b = 2` | OR across columns | `UNION` of two indexed queries, or one index per column (bitmap OR in PostgreSQL) |
+| `WHERE status &lt;&gt; &#x27;done&#x27;`, `NOT IN` | negative filter | positive list `IN (...)` or a partial index |
+| `WHERE id = &#x27;42&#x27;` on an integer column | implicit cast (MySQL may skip the index on string columns compared to numbers) | compare with the right type |
+
+## 7. Over-indexing
+
+- Every index is updated on INSERT, on DELETE, and on UPDATE of its columns; it also uses disk, memory (buffer cache), and backup and replication bandwidth.
+- Duplicates (same columns, same condition) are pure cost: drop one.
+- Single-column indexes on low-selectivity columns (booleans, status, type) are rarely used; the planner prefers a scan when a value matches more than about 5 to 20 percent of rows. Use them inside composites or as partial-index conditions.
+- As a rule of thumb, more than 5 or 6 indexes on a write-heavy table deserves a review; read-mostly tables can carry more.
+- Find unused indexes before dropping: PostgreSQL `pg_stat_user_indexes.idx_scan = 0` (since the last stats reset, on every replica), MySQL `sys.schema_unused_indexes`. Drop with `DROP INDEX CONCURRENTLY` in PostgreSQL.
+
+## 8. Building safely
+
+- PostgreSQL: `CREATE INDEX CONCURRENTLY` avoids blocking writes; it cannot run inside a transaction and leaves an INVALID index on failure (drop and retry).
+- MySQL 8: `ALTER TABLE ... ADD INDEX ..., ALGORITHM=INPLACE, LOCK=NONE`; watch replication lag on large tables.
+- SQLite: index builds lock the database; run during low traffic.
+- Build one index at a time, check the plan, then the next.
+FILE:references/explain-reading-guide.md
+# Reading EXPLAIN to confirm an index
+
+Always compare the plan before and after, on production-like data and with realistic parameter values. Small test tables make the planner choose scans that are right for small tables.
+
+## PostgreSQL
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS) SELECT ...;   -- runs the query; wrap writes in BEGIN ... ROLLBACK
+```
+| Plan node | Meaning |
+|---|---|
+| Seq Scan | reads the whole table; fine for small tables or when most rows match |
+| Index Scan | seeks the index, then reads matching table rows |
+| Index Only Scan | answered from the index; check &quot;Heap Fetches&quot; is low (vacuum if not) |
+| Bitmap Index Scan + Bitmap Heap Scan | collects many matches, then reads pages in order; common for medium selectivity and OR |
+| Sort (with &quot;external merge&quot;) | sorting spilled to disk; an index in ORDER BY order can remove it |
+| Rows Removed by Filter | rows read and thrown away; high numbers mean the index does not cover the filter |
+
+Look at: actual time of the top node, rows estimated versus actual (a 10x gap means stale statistics: run `ANALYZE table`), and shared hit/read buffers. Confirm a new index is used with `pg_stat_user_indexes.idx_scan` after a day of traffic.
+
+## MySQL 8
+
+```sql
+EXPLAIN FORMAT=TREE SELECT ...;
+EXPLAIN ANALYZE SELECT ...;               -- 8.0.18+, runs the query
+```
+In classic `EXPLAIN` output check: `type` (ALL = full scan, ref/eq_ref/range = index use, index = full index scan), `key` (the index chosen), `rows` (estimate), and `Extra` (&quot;Using index&quot; = covering, &quot;Using filesort&quot; = extra sort, &quot;Using temporary&quot; = temporary table for GROUP BY or DISTINCT). Refresh statistics with `ANALYZE TABLE t`.
+
+## SQLite
+
+```sql
+EXPLAIN QUERY PLAN SELECT ...;
+```
+&quot;SCAN t&quot; is a full scan; &quot;SEARCH t USING INDEX idx (a=? AND b&gt;?)&quot; shows which columns seek; &quot;USING COVERING INDEX&quot; means no table access; &quot;USE TEMP B-TREE FOR ORDER BY&quot; means an extra sort. Run `ANALYZE;` so the planner has statistics.
+
+## What success looks like
+
+- The slow query&#x27;s plan switches from a full scan plus sort to an index (only) scan with no sort, and the rows read drop close to the rows returned.
+- Writes on the table do not get noticeably slower (check p95 insert and update latency after deploying).
+- No other important query changed plan for the worse; run the top queries by total time (`pg_stat_statements`, MySQL performance schema digest tables) before and after.
+
+## When the index is not used
+
+1. Statistics are stale: run ANALYZE.
+2. The filter is not sargable (see indexing-rules.md section 6).
+3. The value matches too many rows; the planner is right to scan.
+4. Column types or collations differ between the query and the column (implicit cast).
+5. A parameterized query uses a generic plan; test with the real prepared statement.
+6. The index columns are in the wrong order for the query.
+FILE:templates/index-review.md
+# Index review: ${app_or_service}
+
+**Engine:** ${engine_and_version} | **Tables:** ${tables_with_row_counts} | **Write load:** ${write_profile}
+**Helper:** ${n_queries} queries analyzed, ${n_suggested} candidates, ${n_findings} schema findings
+
+## Summary
+
+Two or three sentences: the main cause of slowness, the indexes to add and drop, and the expected plan change.
+
+## Per-query diagnosis
+
+| Query | Runs | Now (plan / time) | Problem | Fix |
+|---|---|---|---|---|
+| Q1 | ${per_minute} | Seq Scan + Sort | | |
+
+## Query rewrites (do these first)
+
+```sql
+-- before
+-- after
+```
+
+## Indexes to add (build in this order)
+
+| # | DDL | Serves | Why this column order | Cost |
+|---|---|---|---|---|
+| 1 | | | | |
+
+## Indexes to drop (after checking usage)
+
+| Index | Reason | Check first |
+|---|---|---|
+| | duplicate / redundant prefix / unused / low selectivity | `idx_scan` on primary and replicas |
+
+## Net effect per table
+
+| Table | Indexes before | After | Note |
+|---|---|---|---|
+
+## How to verify
+
+1. Capture `EXPLAIN (ANALYZE, BUFFERS)` for each query before.
+2. Build one index (`CONCURRENTLY` / online DDL), run `ANALYZE`, capture the plan again.
+3. Expect: (plan change per query).
+4. Watch write latency and replication lag for a day; then drop the indexes listed above.
+
+## Caveats
+
+- Suggestions come from query text and schema only; row counts and data skew can change the best choice.
+FILE:examples/example-shop-orders-review.md
+# Example: index review for an online shop
+
+## User request
+
+&quot;Our PostgreSQL 16 shop database is getting slow. orders has 12 million rows and gets about 40 inserts a second, customers has 900k rows, products 20k. Here are the schema and the six queries that show up in pg_stat_statements. What indexes should we add, and do we have too many already?&quot;
+
+## Helper run
+
+```
+$ python3 scripts/suggest_indexes.py --schema shop-schema.sql slow-queries.sql
+Schema: 4 table(s), 12 existing index(es) incl. keys | dialect: postgres
+Queries analyzed: 7
+
+Q1 SELECT: SELECT o.id, o.total, o.created_at FROM orders o WHERE o.customer_id = $1 AND o.status = &#x27;paid&#x27; ORDER BY o.cre...
+  equality: orders.customer_id (=), orders.status (=)
+  order by: orders.created_at DESC  (LIMIT)
+Q2 SELECT: SELECT c.email, count(*) AS orders FROM customers c JOIN orders o ON o.customer_id = c.id WHERE c.country = &#x27;D...
+  equality: customers.country (=)
+  range: orders.created_at (range)
+  joins: orders.customer_id = customers.id
+  group by: customers.email
+Q3 SELECT: SELECT * FROM products WHERE lower(name) LIKE &#x27;%lamp%&#x27;
+  WARN non-sargable: lower(name) in the WHERE clause hides the column from a normal index; ... the LIKE pattern &#x27;%lamp%&#x27; also starts with a wildcard, so only full-text search or a trigram index can help
+Q4 SELECT: ... WHERE oi.order_id IN (SELECT id FROM orders WHERE customer_id = 42 AND created_at &gt; now() - interval &#x27;30 days&#x27;)
+  note: subquery analyzed as Q5
+Q6 UPDATE: UPDATE orders SET status = &#x27;shipped&#x27;, shipped_at = now() WHERE status = &#x27;paid&#x27; AND shipped_at IS NULL AND crea...
+Q7 SELECT: SELECT id FROM customers WHERE email = &#x27;ann@example.com&#x27; OR phone = &#x27;+491701234567&#x27;
+  WARN OR across different columns (...): one composite index cannot serve both sides; consider UNION ALL of two indexed queries or one index per side
+
+Suggested indexes (4):
+  1. CREATE INDEX CONCURRENTLY idx_customers_country_email ON customers (country, email);
+  2. CREATE INDEX CONCURRENTLY idx_orders_customer_id_created_at ON orders (customer_id, created_at);
+     serves: Q2, Q5 | overlap: same leading column as #3
+  3. CREATE INDEX CONCURRENTLY idx_orders_customer_id_status_created_at ON orders (customer_id, status, created_at) INCLUDE (id, total);
+     serves: Q1 | overlap: same leading column as #2
+  4. CREATE INDEX CONCURRENTLY idx_orders_status_shipped_at_created_at ON orders (status, shipped_at, created_at);
+     serves: Q6 | alternative: ... ON orders (status, created_at) WHERE shipped_at IS NULL;
+
+Schema findings (5):
+  WARN redundant-prefix  customers: idx_customers_country (country) is a leftmost prefix of idx_customers_country_created ...
+  WARN low-selectivity   customers: idx_customers_active indexes only &#x27;is_active&#x27; ...
+  HIGH duplicate-index   orders: idx_orders_created and orders_created_at_idx have the same columns (created_at); drop one
+  WARN low-selectivity   orders: idx_orders_status indexes only &#x27;status&#x27; ...
+  WARN many-indexes      orders: 4 existing + 3 suggested = 7 indexes (limit 6) ...
+```
+
+## Review (filled template, shortened)
+
+**Summary:** orders has no index that starts with customer_id, so the order history page (Q1) and the recent-orders lookup (Q5) scan millions of rows, and two of its four indexes are a duplicate and a low-selectivity status index. Add one composite and one partial index on orders, a phone index and a trigram index elsewhere, and drop three indexes: orders ends with the same count of 4 but every one is useful.
+
+| Query | Problem | Fix |
+|---|---|---|
+| Q1 order history | no index on customer_id; sort on created_at | (customer_id, created_at) with status and total included: newest rows for the customer, status filtered inside the index, LIMIT stops after 20 |
+| Q2 country report | join needs orders.customer_id; customers.country is already served by idx_customers_country_created | same orders index; no new customers index (the helper&#x27;s #1 only helps the GROUP BY, and the report runs once a night) |
+| Q3 product search | `lower(name) LIKE &#x27;%lamp%&#x27;` cannot use a B-tree | pg_trgm GIN index on lower(name) |
+| Q4/Q5 recent items | subquery needs (customer_id, created_at); order_items PK (order_id, product_id) serves the IN | same orders index |
+| Q6 shipping job | scans by status | partial index on created_at for paid, unshipped orders only |
+| Q7 support lookup | OR across email and phone | UNION of two lookups; email is unique already, add a phone index |
+
+Why not the helper&#x27;s #3 as well: #2 and #3 share customer_id, and on a table with 40 inserts a second one index is better than two. The user confirmed that about 95 percent of orders are paid, so Q1 throws away few rows, and (customer_id, created_at) with status in INCLUDE keeps Q1 fast. If the share of non-paid orders grows, switch to #3&#x27;s column order.
+
+**Indexes to add (in this order):**
+
+```sql
+CREATE INDEX CONCURRENTLY idx_orders_customer_created
+    ON orders (customer_id, created_at) INCLUDE (id, status, total);        -- Q1, Q2, Q5
+CREATE INDEX CONCURRENTLY idx_orders_paid_unshipped
+    ON orders (created_at) WHERE status = &#x27;paid&#x27; AND shipped_at IS NULL;    -- Q6, holds only paid, unshipped orders
+CREATE INDEX CONCURRENTLY idx_customers_phone ON customers (phone);       -- Q7 after the rewrite
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX CONCURRENTLY idx_products_name_trgm
+    ON products USING gin (lower(name) gin_trgm_ops);                      -- Q3, query unchanged
+```
+
+**Query rewrite (Q7):**
+
+```sql
+SELECT id FROM customers WHERE email = &#x27;ann@example.com&#x27;
+UNION
+SELECT id FROM customers WHERE phone = &#x27;+491701234567&#x27;;
+```
+
+**Indexes to drop (after checking `pg_stat_user_indexes.idx_scan` on the primary and both replicas):**
+
+| Index | Reason |
+|---|---|
+| orders_created_at_idx | duplicate of idx_orders_created |
+| idx_orders_status | low selectivity; Q6 now uses the partial index |
+| idx_customers_country | leftmost prefix of idx_customers_country_created |
+| idx_customers_active (check) | boolean; keep only if idx_scan shows real use |
+
+**Net effect:** orders 4 -&gt; 4 indexes (two replaced by better ones), customers 5 -&gt; 5 (one dropped, phone added; 4 if is_active goes too), products 2 -&gt; 3.
+
+**Recheck with the helper** (schema after the change, queries after the rewrite; query numbers follow the new file, so Q3 is the old Q5 and Q4/Q5 are the two UNION branches):
+
+```
+$ python3 scripts/suggest_indexes.py --schema shop-schema-after.sql shop-queries-after.sql --no-covering
+Already served by existing indexes (5):
+  customers (email) -&gt; customers_email_key (Q4)
+  customers (id, country) -&gt; customers_pkey (Q2)
+  customers (phone) -&gt; idx_customers_phone (Q5)
+  orders (created_at) -&gt; idx_orders_created (Q2)
+  orders (customer_id, created_at) -&gt; idx_orders_customer_created (Q2, Q3)
+```
+The helper still lists (customer_id, status, created_at) for Q1 and (country, email) for Q2; both were rejected on purpose for the reasons above. There are no duplicate or redundant-prefix findings left.
+
+**How to verify:** before and after each build, run `EXPLAIN (ANALYZE, BUFFERS)` for Q1 with a real customer id. Expect &quot;Index Scan using idx_orders_customer_created&quot; (or Index Only Scan) with no Sort node and about 20 rows read instead of a Bitmap Heap Scan over thousands. Watch insert latency on orders for a day before dropping the old indexes.
+FILE:scripts/suggest_indexes.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Suggest candidate indexes for slow SQL queries from a schema and the query text (no database needed).
+
+Usage:
+  python3 suggest_indexes.py --schema schema.sql queries.sql [options]
+  python3 suggest_indexes.py all-in-one.sql                 (CREATE statements and queries in one file)
+  python3 suggest_indexes.py --schema schema.sql - &lt; slow.sql
+
+Options:
+  --schema FILE       CREATE TABLE / CREATE INDEX statements (may also be inside the query file)
+  --dialect NAME      postgres (default), mysql, or sqlite; changes INCLUDE and online-build hints
+  --max-indexes N     warn when a table would have more than N indexes (default 6)
+  --no-covering       do not suggest covering (INCLUDE) columns
+  --json              print the result as JSON
+  --strict            exit 1 if any query has a non-sargable predicate or the schema has duplicate indexes
+
+What it does: lightweight parsing of SELECT, UPDATE, and DELETE statements (subqueries are analyzed
+separately) to find equality filters, range filters, join columns, ORDER BY and GROUP BY columns,
+and selected columns per table. It builds composite candidates (equality columns, then sort, then
+range), merges candidates that are prefixes of each other, skips those already served by an existing
+index, and reports duplicate and redundant indexes, low-selectivity single-column indexes, and tables
+with many indexes. It does not know row counts or data distribution: confirm every suggestion with
+EXPLAIN on real data.
+Exit codes: 0 ok, 1 --strict findings, 2 usage or read error.
+Python 3 standard library only.
+&quot;&quot;&quot;
+import json
+import re
+import signal
+import sys
+
+if hasattr(signal, &quot;SIGPIPE&quot;):
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # quiet exit when piped into head
+
+KEYWORDS = set(&quot;&quot;&quot;select from where and or not in is null like ilike between join inner left right full outer cross on
+using group by order having limit offset as asc desc distinct union all exists case when then else end update set
+delete insert into values returning with true false interval current_date current_timestamp now lateral natural
+fetch first rows only for share nowait skip locked&quot;&quot;&quot;.split())
+LOW_CARD = re.compile(r&quot;^(is_|has_|can_|should_)|^(status|state|type|kind|flag|active|enabled|deleted|archived|gender|&quot;
+                      r&quot;visible|published|verified|priority|level|tier|role)$&quot;, re.I)
+CLAUSE_END = r&quot;(?=\b(?:where|group\s+by|order\s+by|having|limit|offset|union|returning|for\s+update|window)\b|$)&quot;
+
+
+class UsageError(Exception):
+    pass
+
+
+# ---------------------------------------------------------------- text helpers
+
+def strip_comments(sql):
+    sql = re.sub(r&quot;/\*.*?\*/&quot;, &quot; &quot;, sql, flags=re.S)
+    return re.sub(r&quot;--[^\n]*&quot;, &quot; &quot;, sql)
+
+
+def split_statements(sql):
+    out, buf, quote = [], [], None
+    for ch in sql:
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = None
+            continue
+        if ch in &quot;&#x27;\&quot;`&quot;:
+            quote = ch
+        if ch == &quot;;&quot;:
+            out.append(&quot;&quot;.join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    out.append(&quot;&quot;.join(buf))
+    return [s.strip() for s in out if s.strip()]
+
+
+def unquote_idents(sql):
+    sql = re.sub(r&#x27;&quot;([A-Za-z_][\w$]*)&quot;&#x27;, r&quot;\1&quot;, sql)
+    sql = re.sub(r&quot;`([A-Za-z_][\w$]*)`&quot;, r&quot;\1&quot;, sql)
+    return re.sub(r&quot;\[([A-Za-z_][\w$]*)\]&quot;, r&quot;\1&quot;, sql)
+
+
+def mask_strings(sql):
+    &quot;&quot;&quot;Replace string literals with placeholders, remembering LIKE patterns.&quot;&quot;&quot;
+    lits = []
+    def rep(m):
+        lits.append(m.group(0)[1:-1])
+        return f&quot; __lit{len(lits) - 1}__ &quot;
+    return re.sub(r&quot;&#x27;(?:[^&#x27;]|&#x27;&#x27;)*&#x27;&quot;, rep, sql), lits
+
+
+def split_top(text, sep_regex):
+    &quot;&quot;&quot;Split on a keyword at parenthesis depth 0.&quot;&quot;&quot;
+    parts, depth, last = [], 0, 0
+    for m in re.finditer(r&quot;\(|\)|&quot; + sep_regex, text, flags=re.I):
+        tok = m.group(0)
+        if tok == &quot;(&quot;:
+            depth += 1
+        elif tok == &quot;)&quot;:
+            depth -= 1
+        elif depth == 0:
+            parts.append(text[last:m.start()])
+            last = m.end()
+    parts.append(text[last:])
+    return [p.strip() for p in parts if p.strip()]
+
+
+def split_and(text):
+    &quot;&quot;&quot;Split on top-level AND, keeping &#x27;x BETWEEN a AND b&#x27; together.&quot;&quot;&quot;
+    parts = split_top(text, r&quot;\band\b&quot;)
+    out = []
+    for part in parts:
+        if out and re.search(r&quot;\bbetween\s+[^\s]+$&quot;, out[-1], re.I):
+            out[-1] = f&quot;{out[-1]} AND {part}&quot;
+        else:
+            out.append(part)
+    return out
+
+
+def extract_subqueries(sql):
+    &quot;&quot;&quot;Pull out innermost (SELECT ...) blocks; return (outer_sql, [subqueries]).&quot;&quot;&quot;
+    subs = []
+    pattern = re.compile(r&quot;\(\s*(select\b[^()]*(?:\([^()]*\)[^()]*)*)\)&quot;, re.I)
+    while True:
+        m = pattern.search(sql)
+        if not m:
+            break
+        subs.append(m.group(1))
+        sql = sql[:m.start()] + &quot; __subq__ &quot; + sql[m.end():]
+    return sql, subs
+
+
+# ---------------------------------------------------------------- schema
+
+def parse_columns_list(text):
+    return [re.sub(r&quot;\s+(asc|desc)\b.*$&quot;, &quot;&quot;, c.strip(), flags=re.I).strip().lower()
+            for c in split_top(text, r&quot;,&quot;)]
+
+
+def parse_schema(statements):
+    tables, indexes = {}, []
+    for st in statements:
+        s = unquote_idents(strip_comments(st)).strip()
+        m = re.match(r&quot;create\s+table\s+(?:if\s+not\s+exists\s+)?([\w.]+)\s*\((.*)\)\s*[^)]*$&quot;, s, re.I | re.S)
+        if m:
+            name = m.group(1).split(&quot;.&quot;)[-1].lower()
+            cols, pk = [], None
+            for part in split_top(m.group(2), r&quot;,&quot;):
+                p = part.strip()
+                low = p.lower()
+                c = re.match(r&quot;(?:constraint\s+\w+\s+)?primary\s+key\s*\(([^)]*)\)&quot;, low)
+                if c:
+                    pk = parse_columns_list(c.group(1))
+                    continue
+                c = re.match(r&quot;(?:constraint\s+(\w+)\s+)?unique\s*(?:key\s+\w+\s*)?\(([^)]*)\)&quot;, low)
+                if c:
+                    indexes.append({&quot;name&quot;: c.group(1) or f&quot;{name}_unique&quot;, &quot;table&quot;: name,
+                                    &quot;columns&quot;: parse_columns_list(c.group(2)), &quot;unique&quot;: True, &quot;kind&quot;: &quot;unique&quot;})
+                    continue
+                c = re.match(r&quot;(?:key|index)\s+(\w+)\s*\(([^)]*)\)&quot;, low)
+                if c:
+                    indexes.append({&quot;name&quot;: c.group(1), &quot;table&quot;: name, &quot;columns&quot;: parse_columns_list(c.group(2)),
+                                    &quot;unique&quot;: False, &quot;kind&quot;: &quot;index&quot;})
+                    continue
+                if re.match(r&quot;(constraint|foreign\s+key|check|exclude)\b&quot;, low):
+                    continue
+                col = re.match(r&quot;([a-z_][\w$]*)\s+&quot;, low + &quot; &quot;)
+                if col:
+                    cols.append(col.group(1))
+                    if re.search(r&quot;\bprimary\s+key\b&quot;, low):
+                        pk = [col.group(1)]
+                    elif re.search(r&quot;\bunique\b&quot;, low):
+                        indexes.append({&quot;name&quot;: f&quot;{name}_{col.group(1)}_key&quot;, &quot;table&quot;: name,
+                                        &quot;columns&quot;: [col.group(1)], &quot;unique&quot;: True, &quot;kind&quot;: &quot;unique&quot;})
+            tables[name] = {&quot;columns&quot;: cols}
+            if pk:
+                indexes.append({&quot;name&quot;: f&quot;{name}_pkey&quot;, &quot;table&quot;: name, &quot;columns&quot;: pk, &quot;unique&quot;: True,
+                                &quot;kind&quot;: &quot;primary&quot;})
+            continue
+        m = re.match(r&quot;create\s+(unique\s+)?index\s+(?:concurrently\s+)?(?:if\s+not\s+exists\s+)?(\w+)\s+on\s+&quot;
+                     r&quot;([\w.]+)\s*(?:using\s+\w+\s*)?\(([^;]*?)\)\s*(include\s*\(([^)]*)\))?\s*(where\s+.*)?$&quot;,
+                     s, re.I | re.S)
+        if m:
+            cols = parse_columns_list(m.group(4))
+            indexes.append({&quot;name&quot;: m.group(2), &quot;table&quot;: m.group(3).split(&quot;.&quot;)[-1].lower(), &quot;columns&quot;: cols,
+                            &quot;unique&quot;: bool(m.group(1)), &quot;kind&quot;: &quot;index&quot;,
+                            &quot;include&quot;: parse_columns_list(m.group(6)) if m.group(6) else [],
+                            &quot;partial&quot;: (m.group(7) or &quot;&quot;).strip() or None})
+    return tables, indexes
+
+
+# ---------------------------------------------------------------- queries
+
+def parse_from(from_text):
+    &quot;&quot;&quot;Return (tables {alias: table}, order list, join predicates text list).&quot;&quot;&quot;
+    aliases, order, ons = {}, [], []
+    pieces = re.split(r&quot;\b((?:natural\s+)?(?:inner\s+|left\s+(?:outer\s+)?|right\s+(?:outer\s+)?|full\s+(?:outer\s+)?|&quot;
+                      r&quot;cross\s+)?join)\b&quot;, from_text, flags=re.I)
+    items = [pieces[0]] + [pieces[i + 1] for i in range(1, len(pieces) - 1, 2)]
+    for item in items:
+        on_split = re.split(r&quot;\bon\b&quot;, item, maxsplit=1, flags=re.I)
+        using = re.search(r&quot;\busing\s*\(([^)]*)\)&quot;, on_split[0], re.I)
+        head = re.sub(r&quot;\busing\s*\([^)]*\)&quot;, &quot;&quot;, on_split[0], flags=re.I)
+        for ref in head.split(&quot;,&quot;):
+            toks = [t for t in re.split(r&quot;\s+&quot;, ref.strip()) if t and t.lower() not in (&quot;as&quot;, &quot;lateral&quot;, &quot;only&quot;)]
+            if not toks or toks[0] == &quot;__subq__&quot;:
+                continue
+            table = toks[0].split(&quot;.&quot;)[-1].lower()
+            alias = toks[1].lower() if len(toks) &gt; 1 else table
+            aliases[alias] = table
+            order.append(alias)
+        if len(on_split) &gt; 1:
+            ons.append(on_split[1])
+        if using and len(order) &gt;= 2:
+            for col in parse_columns_list(using.group(1)):
+                ons.append(f&quot;{order[-2]}.{col} = {order[-1]}.{col}&quot;)
+    return aliases, order, ons
+
+
+COL = r&quot;((?:[a-z_][\w$]*\.)?[a-z_][\w$]*)&quot;
+VALUE = r&quot;(?:__lit\d+__|\?|:\w+|\$\d+|@\w+|%s|-?\d+(?:\.\d+)?|true|false|null|__subq__|current_date|current_timestamp|now\(\))&quot;
+
+
+def resolve(ref, aliases, tables):
+    ref = ref.lower()
+    if &quot;.&quot; in ref:
+        a, c = ref.split(&quot;.&quot;, 1)
+        return (aliases.get(a, a), c)
+    if len(set(aliases.values())) == 1:
+        return (next(iter(aliases.values())), ref)
+    owners = [t for t in set(aliases.values()) if ref in tables.get(t, {}).get(&quot;columns&quot;, [])]
+    return (owners[0], ref) if len(owners) == 1 else (None, ref)
+
+
+def analyze_predicate(pred, lits, aliases, tables, q):
+    p = pred.strip()
+    while p.startswith(&quot;(&quot;) and p.endswith(&quot;)&quot;) and len(split_top(p[1:-1], r&quot;\band\b&quot;)) &gt;= 1 and \
+            p.count(&quot;(&quot;) == p.count(&quot;)&quot;) and _balanced_wrap(p):
+        p = p[1:-1].strip()
+    if len(split_and(p)) &gt; 1:
+        for sub in split_and(p):
+            analyze_predicate(sub, lits, aliases, tables, q)
+        return
+    ors = split_top(p, r&quot;\bor\b&quot;)
+    if len(ors) &gt; 1:
+        cols = set()
+        for o in ors:
+            m = re.match(rf&quot;^\(?\s*{COL}\s*(=|in\b)&quot;, o.strip(), re.I)
+            cols.add(m.group(1).lower() if m else None)
+        if len(cols) == 1 and None not in cols:
+            t, c = resolve(cols.pop(), aliases, tables)
+            q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;eq&quot;, &quot;op&quot;: &quot;OR of equalities (same as IN)&quot;})
+        else:
+            shown = re.sub(r&quot;__lit(\d+)__&quot;, lambda m: &quot;&#x27;&quot; + lits[int(m.group(1))] + &quot;&#x27;&quot;, p)
+            shown = shown if len(shown) &lt;= 70 else shown[:67] + &quot;...&quot;
+            q[&quot;warnings&quot;].append(f&quot;OR across different columns ({shown}): one composite index cannot serve &quot;
+                                 &quot;both sides; consider UNION ALL of two indexed queries or one index per side&quot;)
+        return
+    if re.match(r&quot;^not\b&quot;, p, re.I) or re.search(r&quot;(&lt;&gt;|!=|\bnot\s+in\b|\bnot\s+like\b)&quot;, p, re.I):
+        m = re.match(rf&quot;^(?:not\s+)?{COL}&quot;, p, re.I)
+        shown = re.sub(r&quot;__lit(\d+)__&quot;, lambda m: &quot;&#x27;&quot; + lits[int(m.group(1))] + &quot;&#x27;&quot;, p)[:50]
+        q[&quot;notes&quot;].append(f&quot;negative predicate &#x27;{shown}&#x27; rarely uses an index; it is applied as a filter&quot;)
+        return
+    m = re.match(rf&quot;^{COL}\s*(=|&lt;=&gt;)\s*{COL}$&quot;, p, re.I)
+    if m and not re.fullmatch(VALUE, m.group(3), re.I) and m.group(3).lower() not in KEYWORDS:
+        left, right = resolve(m.group(1), aliases, tables), resolve(m.group(3), aliases, tables)
+        if left[0] and right[0] and left[0] != right[0]:
+            q[&quot;joins&quot;].append((left, right))
+            return
+    m = re.match(rf&quot;^{VALUE}\s*(=|&lt;|&gt;|&lt;=|&gt;=)\s*{COL}$&quot;, p, re.I)
+    if m:
+        flip = {&quot;&lt;&quot;: &quot;&gt;&quot;, &quot;&gt;&quot;: &quot;&lt;&quot;, &quot;&lt;=&quot;: &quot;&gt;=&quot;, &quot;&gt;=&quot;: &quot;&lt;=&quot;, &quot;=&quot;: &quot;=&quot;}
+        p = f&quot;{m.group(2)} {flip[m.group(1)]} __v__&quot;
+    m = re.match(rf&quot;^{COL}\s*(=|&lt;=&gt;)\s*(.+)$&quot;, p, re.I)
+    if m and m.group(1).lower() not in KEYWORDS:
+        t, c = resolve(m.group(1), aliases, tables)
+        q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;eq&quot;, &quot;op&quot;: &quot;=&quot;})
+        return
+    m = re.match(rf&quot;^{COL}\s+in\s+__subq__$&quot;, p, re.I)
+    if m:
+        t, c = resolve(m.group(1), aliases, tables)
+        q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;eq&quot;, &quot;op&quot;: &quot;IN (subquery)&quot;})
+        return
+    m = re.match(rf&quot;^{COL}\s+in\s*\((.*)\)$&quot;, p, re.I | re.S)
+    if m:
+        t, c = resolve(m.group(1), aliases, tables)
+        q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;eq&quot;, &quot;op&quot;: &quot;IN&quot;})
+        return
+    m = re.match(rf&quot;^{COL}\s+is\s+(not\s+)?null$&quot;, p, re.I)
+    if m:
+        t, c = resolve(m.group(1), aliases, tables)
+        if m.group(2):
+            q[&quot;notes&quot;].append(f&quot;&#x27;{c} IS NOT NULL&#x27; is usually not selective; a partial index can help if most rows are NULL&quot;)
+        else:
+            q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;eq&quot;, &quot;op&quot;: &quot;IS NULL&quot;})
+        return
+    m = re.match(rf&quot;^{COL}\s*(&lt;|&gt;|&lt;=|&gt;=)\s*(.+)$&quot;, p, re.I) or re.match(rf&quot;^{COL}\s+between\s+(.+)\s+and\s+(.+)$&quot;, p, re.I)
+    if m and m.group(1).lower() not in KEYWORDS:
+        t, c = resolve(m.group(1), aliases, tables)
+        q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;range&quot;, &quot;op&quot;: &quot;range&quot;})
+        return
+    m = re.match(rf&quot;^{COL}\s+(i?like)\s+__lit(\d+)__&quot;, p, re.I)
+    if m:
+        t, c = resolve(m.group(1), aliases, tables)
+        pattern = lits[int(m.group(3))]
+        if pattern.startswith((&quot;%&quot;, &quot;_&quot;)):
+            q[&quot;warnings&quot;].append(f&quot;non-sargable: {c} {m.group(2).upper()} &#x27;{pattern}&#x27; starts with a wildcard, so a &quot;
+                                 &quot;B-tree index cannot seek; use full-text search or a trigram index (PostgreSQL pg_trgm)&quot;)
+            q[&quot;non_sargable&quot;] = True
+        else:
+            q[&quot;filters&quot;].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;kind&quot;: &quot;range&quot;, &quot;op&quot;: f&quot;LIKE &#x27;{pattern}&#x27;&quot;})
+            if m.group(2).lower() == &quot;ilike&quot;:
+                q[&quot;notes&quot;].append(f&quot;ILIKE on {c}: a plain B-tree index is case-sensitive; index lower({c}) instead&quot;)
+        return
+    m = re.match(rf&quot;^([a-z_]+)\s*\(\s*{COL}[^)]*\)\s*(=|&lt;|&gt;|&lt;=|&gt;=|like|between)&quot;, p, re.I)
+    if m and m.group(1).lower() not in KEYWORDS:
+        func, col = m.group(1).lower(), m.group(2)
+        t, c = resolve(col, aliases, tables)
+        wild = re.search(r&quot;like\s+__lit(\d+)__&quot;, p, re.I)
+        extra = &quot;&quot;
+        if wild and lits[int(wild.group(1))].startswith((&quot;%&quot;, &quot;_&quot;)):
+            extra = (f&quot;; the LIKE pattern &#x27;{lits[int(wild.group(1))]}&#x27; also starts with a wildcard, so only full-text &quot;
+                     &quot;search or a trigram index can help&quot;)
+        q[&quot;warnings&quot;].append(f&quot;non-sargable: {func}({c}) in the WHERE clause hides the column from a normal index; &quot;
+                             f&quot;rewrite as a range on {c} or add an expression index on {func}({c}){extra}&quot;)
+        q[&quot;non_sargable&quot;] = True
+        return
+    m = re.match(rf&quot;^{COL}\s*[-+*/]\s*\S+\s*(=|&lt;|&gt;|&lt;=|&gt;=)&quot;, p, re.I)
+    if m:
+        t, c = resolve(m.group(1), aliases, tables)
+        q[&quot;warnings&quot;].append(f&quot;non-sargable: arithmetic on {c} (&#x27;{p[:40]}&#x27;); move the arithmetic to the other side&quot;)
+        q[&quot;non_sargable&quot;] = True
+        return
+    if &quot;__subq__&quot; in p and re.search(r&quot;\bexists\b&quot;, p, re.I):
+        return
+    q[&quot;notes&quot;].append(f&quot;predicate not understood, check by hand: {p[:60]}&quot;)
+
+
+def _balanced_wrap(p):
+    depth = 0
+    for i, ch in enumerate(p):
+        depth += ch == &quot;(&quot;
+        depth -= ch == &quot;)&quot;
+        if depth == 0 and i &lt; len(p) - 1:
+            return False
+    return True
+
+
+def parse_query(raw, tables, number, lits=None, outer_aliases=None):
+    if lits is None:
+        sql, lits = mask_strings(unquote_idents(strip_comments(raw)))
+    else:
+        sql = raw
+    sql = re.sub(r&quot;\s+&quot;, &quot; &quot;, sql).strip()
+    outer, subs = extract_subqueries(sql)
+    shown = re.sub(r&quot;__lit(\d+)__&quot;, lambda m: &quot;&#x27;&quot; + lits[int(m.group(1))] + &quot;&#x27;&quot;, re.sub(r&quot;\s+&quot;, &quot; &quot;, raw.strip()))
+    shown = re.sub(r&quot;\s+&quot;, &quot; &quot;, shown)
+    q = {&quot;n&quot;: number, &quot;text&quot;: shown[:110] + (&quot;...&quot; if len(shown) &gt; 110 else &quot;&quot;), &quot;kind&quot;: None, &quot;aliases&quot;: {},
+         &quot;filters&quot;: [], &quot;joins&quot;: [], &quot;order_by&quot;: [], &quot;group_by&quot;: [], &quot;selected&quot;: {}, &quot;select_star&quot;: False,
+         &quot;limit&quot;: False, &quot;warnings&quot;: [], &quot;notes&quot;: [], &quot;non_sargable&quot;: False, &quot;subqueries&quot;: subs, &quot;lits&quot;: lits}
+    low = outer.lower()
+    cte_names = set()
+    if low.startswith(&quot;with &quot;):
+        cte_names = {n.lower() for n in re.findall(r&quot;(?:with|,)\s*(?:recursive\s+)?(\w+)\s+as\b&quot;, outer, re.I)}
+        q[&quot;notes&quot;].append(f&quot;CTE {&#x27;, &#x27;.join(sorted(cte_names))} analyzed as separate queries; the final SELECT reads from it&quot;)
+        m = re.search(r&quot;(?:\)|__subq__)\s*((?:select|update|delete)\b.*)$&quot;, outer, re.I)
+        outer = m.group(1) if m else outer
+        low = outer.lower()
+    if low.startswith(&quot;select&quot;):
+        q[&quot;kind&quot;] = &quot;SELECT&quot;
+        m = re.match(r&quot;select\s+(?:distinct\s+)?(.*?)\s+from\s+(.*?)&quot; + CLAUSE_END, outer, re.I)
+        if not m:
+            q[&quot;notes&quot;].append(&quot;no FROM clause found&quot;)
+            return q
+        select_list, from_text = m.group(1), m.group(2)
+    elif low.startswith(&quot;update&quot;):
+        q[&quot;kind&quot;] = &quot;UPDATE&quot;
+        m = re.match(r&quot;update\s+(.*?)\s+set\s+&quot;, outer, re.I)
+        select_list, from_text = &quot;&quot;, m.group(1) if m else &quot;&quot;
+    elif low.startswith(&quot;delete&quot;):
+        q[&quot;kind&quot;] = &quot;DELETE&quot;
+        m = re.match(r&quot;delete\s+from\s+(.*?)&quot; + CLAUSE_END, outer, re.I)
+        select_list, from_text = &quot;&quot;, m.group(1) if m else &quot;&quot;
+    else:
+        return None
+    own, _order, ons = parse_from(from_text)
+    own = {a: t for a, t in own.items() if t not in cte_names}
+    q[&quot;aliases&quot;] = own
+    aliases = {**(outer_aliases or {}), **own}  # outer aliases resolve correlated references
+    unknown = [t for t in set(own.values()) if tables and t not in tables]
+    if unknown:
+        q[&quot;notes&quot;].append(f&quot;table(s) not in the schema: {&#x27;, &#x27;.join(sorted(unknown))}; existing indexes unknown&quot;)
+    for on in ons:
+        for pred in split_and(on):
+            analyze_predicate(pred, lits, aliases, tables, q)
+    w = re.search(r&quot;\bwhere\b(.*?)(?=\b(?:group\s+by|order\s+by|having|limit|offset|returning|for\s+update)\b|$)&quot;, outer, re.I)
+    if w:
+        for pred in split_and(w.group(1)):
+            analyze_predicate(pred, lits, aliases, tables, q)
+    for clause, key in ((&quot;group\\s+by&quot;, &quot;group_by&quot;), (&quot;order\\s+by&quot;, &quot;order_by&quot;)):
+        m = re.search(rf&quot;\b{clause}\b(.*?)(?=\b(?:having|order\s+by|limit|offset|for\s+update)\b|$)&quot;, outer, re.I)
+        if m:
+            for item in split_top(m.group(1), r&quot;,&quot;):
+                mm = re.match(rf&quot;^{COL}\s*(asc|desc)?(?:\s+nulls\s+(?:first|last))?$&quot;, item.strip(), re.I)
+                if mm:
+                    t, c = resolve(mm.group(1), aliases, tables)
+                    q[key].append({&quot;table&quot;: t, &quot;column&quot;: c, &quot;dir&quot;: (mm.group(2) or &quot;asc&quot;).lower()})
+                else:
+                    q[&quot;notes&quot;].append(f&quot;{key.replace(&#x27;_&#x27;, &#x27; &#x27;)} expression &#x27;{item.strip()[:40]}&#x27; cannot use a plain column index&quot;)
+    q[&quot;limit&quot;] = bool(re.search(r&quot;\b(limit|fetch\s+first)\b&quot;, outer, re.I))
+    if select_list:
+        if re.search(r&quot;(^|,)\s*(\w+\.)?\*\s*(,|$)&quot;, select_list):
+            q[&quot;select_star&quot;] = True
+        for ref in re.findall(rf&quot;\b{COL}\b(?!\s*\()&quot;, select_list, re.I):
+            if ref.lower() in KEYWORDS or ref.startswith(&quot;__&quot;) or re.fullmatch(r&quot;\d+&quot;, ref):
+                continue
+            t, c = resolve(ref, aliases, tables)
+            if t and (not tables or c in tables.get(t, {}).get(&quot;columns&quot;, [c])):
+                q[&quot;selected&quot;].setdefault(t, [])
+                if c not in q[&quot;selected&quot;][t]:
+                    q[&quot;selected&quot;][t].append(c)
+    for f in q[&quot;filters&quot;]:
+        if f[&quot;table&quot;] is None:
+            q[&quot;notes&quot;].append(f&quot;column &#x27;{f[&#x27;column&#x27;]}&#x27; could belong to several tables; qualify it with an alias&quot;)
+    return q
+
+
+# ---------------------------------------------------------------- candidates
+
+def candidates_for(q, dialect, covering, pk_cols=None):
+    out = []
+    by_table = {}
+    for f in q[&quot;filters&quot;]:
+        if f[&quot;table&quot;]:
+            by_table.setdefault(f[&quot;table&quot;], {&quot;eq&quot;: [], &quot;range&quot;: []})
+            lst = by_table[f[&quot;table&quot;]][f[&quot;kind&quot;]]
+            if f[&quot;column&quot;] not in lst:
+                lst.append(f[&quot;column&quot;])
+    tables_in_q = set(q[&quot;aliases&quot;].values())
+    correlated = set()
+    for left, right in q[&quot;joins&quot;]:
+        if left[0] in tables_in_q and right[0] not in tables_in_q:
+            correlated.add(left[0])
+        if right[0] in tables_in_q and left[0] not in tables_in_q:
+            correlated.add(right[0])
+    order_tables = {o[&quot;table&quot;] for o in q[&quot;order_by&quot;]}
+    for t in tables_in_q:
+        if t in correlated:
+            continue  # reached through the correlated join below
+        eq = by_table.get(t, {}).get(&quot;eq&quot;, [])
+        rng = [c for c in by_table.get(t, {}).get(&quot;range&quot;, []) if c not in eq]
+        sort = []
+        if q[&quot;order_by&quot;] and order_tables == {t} and len({o[&quot;dir&quot;] for o in q[&quot;order_by&quot;]}) == 1:
+            sort = [o[&quot;column&quot;] for o in q[&quot;order_by&quot;] if o[&quot;column&quot;] not in eq]
+        elif q[&quot;group_by&quot;] and {g[&quot;table&quot;] for g in q[&quot;group_by&quot;]} == {t}:
+            sort = [g[&quot;column&quot;] for g in q[&quot;group_by&quot;] if g[&quot;column&quot;] not in eq]
+        key, why = list(eq), []
+        if eq:
+            why.append(f&quot;equality on {&#x27;, &#x27;.join(eq)} first&quot;)
+        if sort and (not rng or q[&quot;limit&quot;]):
+            key += [c for c in sort if c not in key]
+            purpose = &quot;already sorted&quot; if q[&quot;order_by&quot;] else &quot;already grouped&quot;
+            why.append(f&quot;then {&#x27;, &#x27;.join(sort)} so rows come out {purpose}&quot; + (&quot; (stops early with LIMIT)&quot; if q[&quot;limit&quot;] else &quot;&quot;))
+            if rng and rng[0] not in key:
+                key.append(rng[0])
+                why.append(f&quot;{rng[0]} last as an in-index filter&quot;)
+        elif rng:
+            key.append(rng[0])
+            why.append(f&quot;then the range on {rng[0]}&quot; if eq else f&quot;range on {rng[0]}&quot;)
+            if len(rng) &gt; 1:
+                q[&quot;notes&quot;].append(f&quot;several range filters on {t} ({&#x27;, &#x27;.join(rng)}): only the first can seek; the rest filter&quot;)
+            if sort:
+                q[&quot;notes&quot;].append(f&quot;ORDER BY on {t} cannot use the same index as the range on {rng[0]}; expect a sort step&quot;)
+        if not key:
+            continue
+        include = []
+        if covering and not q[&quot;select_star&quot;] and q[&quot;kind&quot;] == &quot;SELECT&quot;:
+            extra = [c for c in q[&quot;selected&quot;].get(t, []) if c not in key
+                     and not (dialect == &quot;mysql&quot; and c in (pk_cols or {}).get(t, []))]
+            if 0 &lt; len(extra) &lt;= 3:
+                include = extra
+        out.append({&quot;table&quot;: t, &quot;columns&quot;: key, &quot;include&quot;: include, &quot;why&quot;: &quot;; &quot;.join(why), &quot;queries&quot;: [q[&quot;n&quot;]],
+                    &quot;source&quot;: &quot;filter&quot;, &quot;eq&quot;: list(eq),
+                    &quot;null_filter&quot;: [f[&quot;column&quot;] for f in q[&quot;filters&quot;] if f[&quot;table&quot;] == t and f[&quot;op&quot;] == &quot;IS NULL&quot;]})
+    for left, right in q[&quot;joins&quot;]:
+        for (t, c), (ot, oc) in ((left, right), (right, left)):
+            if t not in tables_in_q:
+                continue  # outer table of a correlated subquery
+            eq = [e for e in by_table.get(t, {}).get(&quot;eq&quot;, []) if e != c]
+            rng = [r for r in by_table.get(t, {}).get(&quot;range&quot;, []) if r != c and r not in eq][:1]
+            why = f&quot;join column {t}.{c} = {ot}.{oc} first (lets the planner look up matching rows)&quot;
+            if eq or rng:
+                why += f&quot;, then {&#x27;, &#x27;.join(eq + rng)} to filter inside the index&quot;
+            if t in correlated:
+                why = f&quot;correlated lookup {t}.{c} = outer {ot}.{oc} first&quot; + (f&quot;, then {&#x27;, &#x27;.join(eq + rng)}&quot; if eq or rng else &quot;&quot;)
+            out.append({&quot;table&quot;: t, &quot;columns&quot;: [c] + eq + rng, &quot;include&quot;: [], &quot;queries&quot;: [q[&quot;n&quot;]], &quot;source&quot;: &quot;join&quot;,
+                        &quot;eq&quot;: [c] + eq, &quot;why&quot;: why})
+    return out
+
+
+def served_by(cand, indexes):
+    for ix in indexes:
+        if ix[&quot;table&quot;] != cand[&quot;table&quot;]:
+            continue
+        cols = ix[&quot;columns&quot;]
+        if cand[&quot;source&quot;] == &quot;join&quot; and ix[&quot;unique&quot;] and cols == cand[&quot;columns&quot;][:1] and not ix.get(&quot;partial&quot;):
+            return ix  # joining on a unique key: one row per lookup, extra columns add little
+        if cols[:len(cand[&quot;columns&quot;])] == cand[&quot;columns&quot;]:
+            return ix
+        n_eq = len(cand.get(&quot;eq&quot;, []))
+        if n_eq &gt; 1 and len(cols) &gt;= len(cand[&quot;columns&quot;]) and set(cols[:n_eq]) == set(cand[&quot;columns&quot;][:n_eq]) \
+                and cols[n_eq:len(cand[&quot;columns&quot;])] == cand[&quot;columns&quot;][n_eq:]:
+            return ix  # same equality columns in another order serve the query equally well
+    return None
+
+
+def served_by_named(c, indexes):
+    ix = served_by(c, indexes)
+    return {&quot;existing&quot;: ix[&quot;name&quot;] if ix else &quot;?&quot;}
+
+
+def merge(cands):
+    merged = []
+    for c in sorted(cands, key=lambda c: -len(c[&quot;columns&quot;])):
+        for m in merged:
+            if m[&quot;table&quot;] == c[&quot;table&quot;] and m[&quot;columns&quot;][:len(c[&quot;columns&quot;])] == c[&quot;columns&quot;]:
+                m[&quot;queries&quot;] = sorted(set(m[&quot;queries&quot;]) | set(c[&quot;queries&quot;]))
+                m[&quot;include&quot;] = m[&quot;include&quot;] or []
+                break
+        else:
+            merged.append(dict(c))
+    return sorted(merged, key=lambda c: (c[&quot;table&quot;], c[&quot;columns&quot;]))
+
+
+def schema_findings(indexes, max_indexes, new_by_table):
+    out = []
+    by_table = {}
+    for ix in indexes:
+        by_table.setdefault(ix[&quot;table&quot;], []).append(ix)
+    for t, ixs in by_table.items():
+        for i, a in enumerate(ixs):
+            for b in ixs[i + 1:]:
+                if a[&quot;columns&quot;] == b[&quot;columns&quot;] and (a.get(&quot;partial&quot;) == b.get(&quot;partial&quot;)):
+                    out.append({&quot;level&quot;: &quot;high&quot;, &quot;rule&quot;: &quot;duplicate-index&quot;,
+                                &quot;message&quot;: f&quot;{t}: {a[&#x27;name&#x27;]} and {b[&#x27;name&#x27;]} have the same columns ({&#x27;, &#x27;.join(a[&#x27;columns&#x27;])}); drop one&quot;})
+                elif a[&quot;columns&quot;] != b[&quot;columns&quot;]:
+                    short, long_ = (a, b) if len(a[&quot;columns&quot;]) &lt; len(b[&quot;columns&quot;]) else (b, a)
+                    if long_[&quot;columns&quot;][:len(short[&quot;columns&quot;])] == short[&quot;columns&quot;] and not short[&quot;unique&quot;] \
+                            and not short.get(&quot;partial&quot;):
+                        out.append({&quot;level&quot;: &quot;warn&quot;, &quot;rule&quot;: &quot;redundant-prefix&quot;,
+                                    &quot;message&quot;: f&quot;{t}: {short[&#x27;name&#x27;]} ({&#x27;, &#x27;.join(short[&#x27;columns&#x27;])}) is a leftmost prefix of &quot;
+                                               f&quot;{long_[&#x27;name&#x27;]} ({&#x27;, &#x27;.join(long_[&#x27;columns&#x27;])}); usually droppable&quot;})
+        for ix in ixs:
+            if len(ix[&quot;columns&quot;]) == 1 and LOW_CARD.search(ix[&quot;columns&quot;][0]) and ix[&quot;kind&quot;] == &quot;index&quot; and not ix.get(&quot;partial&quot;):
+                out.append({&quot;level&quot;: &quot;warn&quot;, &quot;rule&quot;: &quot;low-selectivity&quot;,
+                            &quot;message&quot;: f&quot;{t}: {ix[&#x27;name&#x27;]} indexes only &#x27;{ix[&#x27;columns&#x27;][0]}&#x27;, which sounds like a flag or status &quot;
+                                       &quot;with few values; use a composite or partial index instead&quot;})
+        total = len(ixs) + new_by_table.get(t, 0)
+        if total &gt; max_indexes:
+            out.append({&quot;level&quot;: &quot;warn&quot;, &quot;rule&quot;: &quot;many-indexes&quot;,
+                        &quot;message&quot;: f&quot;{t}: {len(ixs)} existing + {new_by_table.get(t, 0)} suggested = {total} indexes &quot;
+                                   f&quot;(limit {max_indexes}); every insert and update maintains all of them&quot;})
+    return out
+
+
+def ddl(c, dialect):
+    name = f&quot;idx_{c[&#x27;table&#x27;]}_{&#x27;_&#x27;.join(c[&#x27;columns&#x27;])}&quot;[:63]
+    cols = &quot;, &quot;.join(c[&quot;columns&quot;])
+    if c[&quot;include&quot;]:
+        if dialect == &quot;postgres&quot;:
+            return f&quot;CREATE INDEX CONCURRENTLY {name} ON {c[&#x27;table&#x27;]} ({cols}) INCLUDE ({&#x27;, &#x27;.join(c[&#x27;include&#x27;])});&quot;
+        cols += &quot;, &quot; + &quot;, &quot;.join(c[&quot;include&quot;])
+    if dialect == &quot;postgres&quot;:
+        return f&quot;CREATE INDEX CONCURRENTLY {name} ON {c[&#x27;table&#x27;]} ({cols});&quot;
+    if dialect == &quot;mysql&quot;:
+        return f&quot;ALTER TABLE {c[&#x27;table&#x27;]} ADD INDEX {name} ({cols}), ALGORITHM=INPLACE, LOCK=NONE;&quot;
+    return f&quot;CREATE INDEX {name} ON {c[&#x27;table&#x27;]} ({cols});&quot;
+
+
+# ---------------------------------------------------------------- main
+
+def parse_args(argv):
+    opts = {&quot;schema&quot;: None, &quot;files&quot;: [], &quot;dialect&quot;: &quot;postgres&quot;, &quot;max_indexes&quot;: 6, &quot;covering&quot;: True,
+            &quot;json&quot;: False, &quot;strict&quot;: False}
+    i = 0
+    while i &lt; len(argv):
+        a = argv[i]
+        if a in (&quot;-h&quot;, &quot;--help&quot;):
+            print(__doc__)
+            sys.exit(0)
+        if a in (&quot;--schema&quot;, &quot;--dialect&quot;, &quot;--max-indexes&quot;):
+            if i + 1 &gt;= len(argv):
+                raise UsageError(f&quot;{a} needs a value&quot;)
+            v = argv[i + 1]
+            if a == &quot;--schema&quot;:
+                opts[&quot;schema&quot;] = v
+            elif a == &quot;--dialect&quot;:
+                if v not in (&quot;postgres&quot;, &quot;mysql&quot;, &quot;sqlite&quot;):
+                    raise UsageError(&quot;--dialect must be postgres, mysql, or sqlite&quot;)
+                opts[&quot;dialect&quot;] = v
+            else:
+                try:
+                    opts[&quot;max_indexes&quot;] = int(v)
+                except ValueError:
+                    raise UsageError(f&quot;--max-indexes needs a whole number, got {v!r}&quot;)
+            i += 2
+        elif a == &quot;--no-covering&quot;:
+            opts[&quot;covering&quot;] = False; i += 1
+        elif a == &quot;--json&quot;:
+            opts[&quot;json&quot;] = True; i += 1
+        elif a == &quot;--strict&quot;:
+            opts[&quot;strict&quot;] = True; i += 1
+        elif a.startswith(&quot;--&quot;):
+            raise UsageError(f&quot;unknown option {a}&quot;)
+        else:
+            opts[&quot;files&quot;].append(a); i += 1
+    if not opts[&quot;files&quot;] and not opts[&quot;schema&quot;]:
+        raise UsageError(&quot;give a query file (or - for stdin), optionally with --schema FILE&quot;)
+    return opts
+
+
+def read(path):
+    if path == &quot;-&quot;:
+        return sys.stdin.read()
+    with open(path, encoding=&quot;utf-8&quot;) as f:
+        return f.read()
+
+
+def main(argv):
+    try:
+        opts = parse_args(argv)
+        schema_text = read(opts[&quot;schema&quot;]) if opts[&quot;schema&quot;] else &quot;&quot;
+        query_texts = [read(p) for p in opts[&quot;files&quot;]]
+    except UsageError as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    except OSError as e:
+        print(f&quot;error: cannot read {e.filename}: {e.strerror}&quot;, file=sys.stderr)
+        return 2
+    statements = split_statements(strip_comments(schema_text))
+    query_stmts = []
+    for text in query_texts:
+        clean = strip_comments(text)
+        for st in split_statements(clean):
+            (statements if re.match(r&quot;\s*create\s&quot;, st, re.I) else query_stmts).append(st)
+    tables, indexes = parse_schema(statements)
+    queries, n = [], 0
+    expanded = []
+    for st in query_stmts:
+        masked, _l = mask_strings(st)
+        if len(split_top(masked, r&quot;\bunion(?:\s+all)?\b&quot;)) &gt; 1:  # a real top-level UNION, not one inside a string
+            expanded.extend(split_top(st, r&quot;\bunion(?:\s+all)?\b&quot;))  # each branch is analyzed as its own query
+        else:
+            expanded.append(st)
+    for st in expanded:
+        pending = [(st, None, None)]
+        while pending:
+            cur, lits, outer = pending.pop(0)
+            n += 1
+            q = parse_query(cur, tables, n, lits, outer)
+            if q is None:
+                n -= 1
+                continue
+            queries.append(q)
+            for sub in q[&quot;subqueries&quot;]:
+                pending.append((sub, q[&quot;lits&quot;], {**(outer or {}), **q[&quot;aliases&quot;]}))
+                q[&quot;notes&quot;].append(f&quot;subquery analyzed as Q{n + len(pending)}&quot;)
+    if not queries:
+        print(&quot;error: no SELECT, UPDATE, or DELETE statements found&quot;, file=sys.stderr)
+        return 2
+    pks = {ix[&quot;table&quot;]: ix[&quot;columns&quot;] for ix in indexes if ix[&quot;kind&quot;] == &quot;primary&quot;}
+    cands = []
+    for q in queries:
+        cands += candidates_for(q, opts[&quot;dialect&quot;], opts[&quot;covering&quot;], pks)
+    covered, open_cands = [], []
+    for c in cands:
+        ix = served_by(c, indexes)
+        if ix:
+            covered.append({**c, &quot;existing&quot;: ix[&quot;name&quot;]})
+        else:
+            open_cands.append(c)
+    suggested = merge(open_cands)
+    covered = merge(covered)
+    for c in covered:
+        c[&quot;existing&quot;] = next(x[&quot;existing&quot;] for x in [served_by_named(c, indexes)])
+    new_by_table = {}
+    for c in suggested:
+        new_by_table[c[&quot;table&quot;]] = new_by_table.get(c[&quot;table&quot;], 0) + 1
+        c[&quot;ddl&quot;] = ddl(c, opts[&quot;dialect&quot;])
+        lead = c[&quot;columns&quot;][0]
+        c[&quot;tradeoff&quot;] = (&quot;every INSERT, UPDATE of these columns, and DELETE on &quot; + c[&quot;table&quot;] +
+                         &quot; also writes this index; size grows with the row count and column widths&quot;)
+        if LOW_CARD.search(lead) and len(c[&quot;columns&quot;]) == 1:
+            c[&quot;tradeoff&quot;] += f&quot;; &#x27;{lead}&#x27; looks low-selectivity, so the planner may still prefer a scan&quot;
+    for a in suggested:
+        others = [k for k, b in enumerate(suggested, 1) if b is not a and b[&quot;table&quot;] == a[&quot;table&quot;]
+                  and b[&quot;columns&quot;][0] == a[&quot;columns&quot;][0]]
+        a[&quot;overlaps&quot;] = others
+        a[&quot;makes_redundant&quot;] = [ix[&quot;name&quot;] for ix in indexes if ix[&quot;table&quot;] == a[&quot;table&quot;] and not ix[&quot;unique&quot;]
+                                and ix[&quot;kind&quot;] != &quot;primary&quot; and len(ix[&quot;columns&quot;]) &lt; len(a[&quot;columns&quot;])
+                                and a[&quot;columns&quot;][:len(ix[&quot;columns&quot;])] == ix[&quot;columns&quot;]]
+        if a.get(&quot;null_filter&quot;) and opts[&quot;dialect&quot;] == &quot;postgres&quot;:
+            col = a[&quot;null_filter&quot;][0]
+            rest = [c for c in a[&quot;columns&quot;] if c != col]
+            name = f&quot;idx_{a[&#x27;table&#x27;]}_{&#x27;_&#x27;.join(rest)}_{col}_null&quot;[:63]
+            a[&quot;partial_hint&quot;] = (f&quot;CREATE INDEX CONCURRENTLY {name} ON {a[&#x27;table&#x27;]} ({&#x27;, &#x27;.join(rest)}) &quot;
+                                 f&quot;WHERE {col} IS NULL;  -- smaller if few rows match&quot;)
+    findings = schema_findings(indexes, opts[&quot;max_indexes&quot;], new_by_table)
+    report = {&quot;dialect&quot;: opts[&quot;dialect&quot;], &quot;tables&quot;: {t: len(v[&quot;columns&quot;]) for t, v in tables.items()},
+              &quot;existing_indexes&quot;: indexes, &quot;queries&quot;: [{k: v for k, v in q.items() if k not in (&quot;subqueries&quot;, &quot;lits&quot;)}
+                                                       for q in queries],
+              &quot;suggested&quot;: suggested, &quot;already_covered&quot;: covered, &quot;schema_findings&quot;: findings}
+    for q in report[&quot;queries&quot;]:
+        q[&quot;joins&quot;] = [f&quot;{a[0]}.{a[1]} = {b[0]}.{b[1]}&quot; for a, b in q[&quot;joins&quot;]]
+    strict_fail = opts[&quot;strict&quot;] and (any(q[&quot;non_sargable&quot;] for q in queries) or
+                                      any(f[&quot;rule&quot;] == &quot;duplicate-index&quot; for f in findings))
+    if opts[&quot;json&quot;]:
+        print(json.dumps(report, indent=2))
+        return 1 if strict_fail else 0
+    print(f&quot;Schema: {len(tables)} table(s), {len(indexes)} existing index(es) incl. keys | dialect: {opts[&#x27;dialect&#x27;]}&quot;)
+    print(f&quot;Queries analyzed: {len(queries)}&quot;)
+    for q in report[&quot;queries&quot;]:
+        print(f&quot;\nQ{q[&#x27;n&#x27;]} {q[&#x27;kind&#x27;]}: {q[&#x27;text&#x27;]}&quot;)
+        tabs = &quot;, &quot;.join(f&quot;{t} {a}&quot; if a != t else t for a, t in q[&quot;aliases&quot;].items())
+        print(f&quot;  tables: {tabs or &#x27;-&#x27;}&quot;)
+        eqs = [f&quot;{f[&#x27;table&#x27;] or &#x27;?&#x27;}.{f[&#x27;column&#x27;]} ({f[&#x27;op&#x27;]})&quot; for f in q[&quot;filters&quot;] if f[&quot;kind&quot;] == &quot;eq&quot;]
+        rngs = [f&quot;{f[&#x27;table&#x27;] or &#x27;?&#x27;}.{f[&#x27;column&#x27;]} ({f[&#x27;op&#x27;]})&quot; for f in q[&quot;filters&quot;] if f[&quot;kind&quot;] == &quot;range&quot;]
+        if eqs:
+            print(f&quot;  equality: {&#x27;, &#x27;.join(eqs)}&quot;)
+        if rngs:
+            print(f&quot;  range: {&#x27;, &#x27;.join(rngs)}&quot;)
+        if q[&quot;joins&quot;]:
+            print(f&quot;  joins: {&#x27;, &#x27;.join(q[&#x27;joins&#x27;])}&quot;)
+        if q[&quot;order_by&quot;]:
+            print(&quot;  order by: &quot; + &quot;, &quot;.join(f&quot;{o[&#x27;table&#x27;]}.{o[&#x27;column&#x27;]} {o[&#x27;dir&#x27;].upper()}&quot; for o in q[&quot;order_by&quot;])
+                  + (&quot;  (LIMIT)&quot; if q[&quot;limit&quot;] else &quot;&quot;))
+        if q[&quot;group_by&quot;]:
+            print(&quot;  group by: &quot; + &quot;, &quot;.join(f&quot;{g[&#x27;table&#x27;]}.{g[&#x27;column&#x27;]}&quot; for g in q[&quot;group_by&quot;]))
+        for w in q[&quot;warnings&quot;]:
+            print(f&quot;  WARN {w}&quot;)
+        for nt in q[&quot;notes&quot;]:
+            print(f&quot;  note: {nt}&quot;)
+    print(f&quot;\nSuggested indexes ({len(suggested)}):&quot;)
+    if not suggested:
+        print(&quot;  none: existing indexes already lead with the needed columns&quot;)
+    for k, c in enumerate(suggested, 1):
+        print(f&quot;  {k}. {c[&#x27;ddl&#x27;]}&quot;)
+        print(f&quot;     serves: {&#x27;, &#x27;.join(&#x27;Q&#x27; + str(x) for x in c[&#x27;queries&#x27;])} | why: {c[&#x27;why&#x27;]}&quot;)
+        if c[&quot;include&quot;]:
+            print(f&quot;     covering: {&#x27;, &#x27;.join(c[&#x27;include&#x27;])} added so the query can skip the table (optional)&quot;)
+        print(f&quot;     tradeoff: {c[&#x27;tradeoff&#x27;]}&quot;)
+        if c.get(&quot;overlaps&quot;):
+            print(f&quot;     overlap: same leading column as #{&#x27;, #&#x27;.join(map(str, c[&#x27;overlaps&#x27;]))}; &quot;
+                  &quot;check whether one index can serve both before creating two&quot;)
+        if c.get(&quot;makes_redundant&quot;):
+            print(f&quot;     makes redundant: {&#x27;, &#x27;.join(c[&#x27;makes_redundant&#x27;])} (leftmost prefix of this index; drop after checking usage)&quot;)
+        if c.get(&quot;partial_hint&quot;):
+            print(f&quot;     alternative: {c[&#x27;partial_hint&#x27;]}&quot;)
+    if covered:
+        print(f&quot;\nAlready served by existing indexes ({len(covered)}):&quot;)
+        for c in covered:
+            print(f&quot;  {c[&#x27;table&#x27;]} ({&#x27;, &#x27;.join(c[&#x27;columns&#x27;])}) -&gt; {c[&#x27;existing&#x27;]} (Q{&#x27;, Q&#x27;.join(map(str, c[&#x27;queries&#x27;]))})&quot;)
+    print(f&quot;\nSchema findings ({len(findings)}):&quot;)
+    if not findings:
+        print(&quot;  none&quot;)
+    for f in findings:
+        print(f&quot;  {f[&#x27;level&#x27;].upper():&lt;4} {f[&#x27;rule&#x27;]:&lt;17} {f[&#x27;message&#x27;]}&quot;)
+    print(&quot;\nNext: run EXPLAIN (ANALYZE, BUFFERS) or EXPLAIN on real data before and after; build one index at a time.&quot;)
+    return 1 if strict_fail else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/sql-index-recommendation-reviewer',TI="SQL Index Recommendation Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

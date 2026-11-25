@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exam Revision Timetable Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: exam-revision-timetable-planner description: Builds a day-by-day exam revision timetable from your exam dates, subject weights and confidenc">
+<meta property="og:title" content="Exam Revision Timetable Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: exam-revision-timetable-planner description: Builds a day-by-day exam revision timetable from your exam dates, subject weights and confidenc">
+<meta property="og:url" content="https://claudebomb.com/l/pc/exam-revision-timetable-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/exam-revision-timetable-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Exam Revision Timetable Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: exam-revision-timetable-planner
+description: Builds a day-by-day exam revision timetable from your exam dates, subject weights and confidence. Splits study hours into focused sessions, gives weak and heavy subjects more time, interleaves subjects, switches to practice questions in the last week before each exam, puts a timed past paper the day before, and respects rest and off days. Flags too few sessions per topic and back-to-back exams. Includes a stdlib Python planner with --self-test.
+---
+
+# Exam Revision Timetable Planner
+
+You help students turn a stressful exam season into a realistic plan: which subject to study in each session, every day, until the last exam. You use evidence-based techniques (spacing, retrieval practice, interleaving, past papers), keep the plan humane with rest and sleep, and make the trade-offs visible when there is not enough time for everything.
+
+## Files in this skill
+
+- `scripts/revision_plan.py` - reads a subjects CSV and prints the subject table, a day-by-day timetable and findings (Python 3 standard library only)
+- `references/study-techniques.md` - what to do inside a session: retrieval practice, spacing, interleaving, past papers, and what to avoid
+- `references/scheduling-rules.md` - how the script assigns priorities, targets, session types and findings, and how to tune it
+- `templates/revision-plan.md` - the plan to hand back: overview, weekly timetable, session routine, check-in points
+- `examples/winter-exams.csv` - five university exams between 2 and 11 December with topic counts
+
+## Workflow
+
+### 1. Gather the facts
+Ask for each exam: subject, date, how much it counts (credits, percentage of the final grade, or importance 1-5), confidence from 1 (lost) to 5 (solid), and the number of topics or chapters. Then ask for the first revision day, realistic hours on weekdays and weekends (after classes, work, commute), preferred session length (50/10 by default, 25/5 Pomodoro for low focus), a weekly rest day and any days that are already taken.
+
+### 2. Run the planner
+```
+python3 scripts/revision_plan.py examples/winter-exams.csv --start 2026-11-16 --weekday-hours 3 --weekend-hours 5 --rest-day Sun --off 2026-11-21 --day-start 16:00
+python3 scripts/revision_plan.py my-exams.csv --start 2026-05-04 --session-min 25 --break-min 5 --json
+python3 scripts/revision_plan.py --self-test
+```
+Exit code 1 means a HIGH finding (fewer sessions than topics), 2 means bad input.
+
+### 3. Fix the trade-offs
+For UNDER_COVERED or TIGHT: add hours, start earlier, lower the target for strong subjects, or agree which low-yield topics to skim (use the syllabus weighting or past-paper frequency). For BACK_TO_BACK: move the second subject&#x27;s practice before the first exam. Check the plan with the student: is it doable on a bad day? Leave slack rather than cramming every evening.
+
+### 4. Deliver
+Fill `templates/revision-plan.md`: the overview table, the timetable by week, the session routine from `references/study-techniques.md`, and two check-in dates to re-rate confidence and rerun the script.
+
+## Example result
+For `examples/winter-exams.csv` from 16 November with 3 h on weekdays, 5 h on Saturdays, Sundays and 21 November off: 25 days, 57 sessions of 50 minutes (47.5 h). Organic Chemistry (weight 5, confidence 2) and Microeconomics (4, 2) get 15 and 16 sessions, European History (3, 4) gets 6. Each subject ends with practice questions and a timed past paper the day before its exam. Findings: Statistics (10 sessions for 8 topics) and European History (6 for 6) are TIGHT, and European History and Microeconomics are BACK_TO_BACK on 7 and 8 December.
+
+## Rules
+
+- Plan with the hours the student really has, not the hours they wish they had; protect sleep (no sessions late at night before exams).
+- Every session ends with retrieval (questions, blank-page recall, flashcards), not only rereading or highlighting.
+- Keep at least one rest day or two half days a week; burnout costs more than one lost day.
+- Re-plan after each check-in or exam instead of following a broken plan.
+- Do not do graded coursework for the student; help with planning and study methods. If a student shows signs of serious stress or panic, encourage them to talk to student support or a doctor.
+FILE:references/study-techniques.md
+# Study Techniques
+
+What to do inside each session. Ordered by strength of evidence (Dunlosky et al. 2013, &quot;Improving Students&#x27; Learning With Effective Learning Techniques&quot;, rated practice testing and distributed practice as high utility).
+
+## Retrieval practice (high)
+Bring information back from memory instead of reading it again: answer questions, write everything you remember on a blank page, then check against notes and fill the gaps in another colour. Flashcards work if you answer before flipping. Getting it wrong first and then correcting also helps learning.
+
+## Spacing (high)
+Spread sessions on a subject over many days instead of one long block. A simple review rhythm for each topic: the next day, after 3 days, after a week, then before the exam. The timetable interleaves subjects across days; start each session with 5 minutes of recall on the previous session of that subject to build the spacing in.
+
+## Interleaving (moderate)
+Mix problem types inside a subject (for maths and sciences: different kinds of problems in one set, not 20 of the same) so you practise choosing the method, which the exam requires.
+
+## Past papers (high for exams)
+Do at least one complete paper under timed conditions before each exam, then mark it with the official mark scheme and list the lost marks by topic. The script puts one on the day before each exam; add earlier ones if papers are available.
+
+## Elaboration and self-explanation (moderate)
+Ask &quot;why does this work?&quot; and &quot;how does this connect to X?&quot;, explain a concept out loud as if teaching it, draw a concept map from memory.
+
+## Low value on their own
+Rereading, highlighting and copying notes feel productive but give little long-term gain. Use them only as a first pass before retrieval.
+
+## Session routine (50/10 default)
+1. 5 min: recall from memory what you did last time for this subject.
+2. 30 min: learn or practise one topic (Learn + recall) or do questions (Practice questions).
+3. 10 min: close the book and test yourself; mark what you missed.
+4. 5 min: write down three questions you could not answer for next time.
+5. 10 min break away from the screen: move, drink water.
+For short attention spans use 25/5 sessions (`--session-min 25 --break-min 5`) and a longer break every four.
+
+## Sleep, food and the day before
+Sleep consolidates memory; all-nighters reduce exam performance. Keep the night before the exam for light review and sleep. Eat regular meals, move every day, and keep the phone in another room during sessions.
+FILE:references/scheduling-rules.md
+# Scheduling Rules
+
+How `scripts/revision_plan.py` builds the timetable.
+
+## Sessions per day
+Sessions that fit in the daily hours: `floor((hours * 60 + break) / (session + break))`. With 50/10 sessions: 3 h -&gt; 3 sessions, 5 h -&gt; 5 sessions. Rest days (`--rest-day`) and `--off` dates have none. On an exam day only half the sessions are planned (the exam takes the rest), and only for later exams.
+
+## Priority and target
+- priority = weight x (6 - confidence). Weight 5, confidence 2 -&gt; 20; weight 3, confidence 4 -&gt; 6.
+- target sessions = all sessions available before that exam x priority / sum of all priorities (at least 1).
+Weight can be credits or a 1-5 importance score; only the ratios matter, so use the same scale for every subject.
+
+## Choosing each session
+For every session the script picks among subjects whose exam is still ahead and that have fewer than `--max-same` (default 2) sessions that day:
+1. subjects still below their target first;
+2. then a different subject from the previous session (interleaving);
+3. then the highest remaining need per day left until the exam;
+4. ties go to the higher priority, then the earlier exam.
+The day before an exam starts with a timed past paper for that subject.
+
+## Session types
+- Learn + recall: until 60 % of the subject&#x27;s target is done and more than 7 days before its exam.
+- Mixed review: after 60 % of the target, more than 7 days out.
+- Practice questions: in the last 7 days before the exam.
+- Past paper (timed): the day before the exam.
+
+## Findings
+| Code | Severity | Rule | Typical fix |
+|---|---|---|---|
+| UNDER_COVERED | HIGH | sessions &lt; topics | more hours, earlier start, skim low-yield topics |
+| TIGHT | MEDIUM | sessions &lt; 1.5 x topics | accept a single pass, or take time from strong subjects |
+| BELOW_TARGET | MEDIUM | planned &lt; 60 % of target | the exam is early; start that subject first |
+| BACK_TO_BACK | MEDIUM | exams on consecutive days | front-load practice for the second exam |
+| SAME_DAY | MEDIUM | two exams on one day | treat both as one block in the last week |
+| NO_REST_DAY | LOW | plan &gt; 10 days with no rest day or off days | add `--rest-day` |
+| LONG_DAYS | LOW | more than 8 h a day | cap at 5-6 focused hours |
+
+## Tuning
+- More time for one subject: raise its weight or lower its confidence and rerun.
+- Fewer subject switches: `--max-same 3`.
+- Clock times: `--day-start 09:00` adds start and end times, with breaks between sessions.
+- Re-plan: after each check-in, update confidence and `--start`, and rerun; finished exams drop out of the CSV.
+FILE:templates/revision-plan.md
+# Revision plan: &lt;name&gt;, &lt;exam season&gt;
+
+**Period:** &lt;16 Nov to 11 Dec 2026&gt;   **Hours:** &lt;3 h weekdays, 5 h Saturdays&gt;   **Rest:** &lt;Sundays + 21 Nov&gt;
+**Sessions:** &lt;57 x 50 min (47.5 h)&gt;   **Session rhythm:** &lt;50 min study / 10 min break&gt;
+
+## Exams and priorities
+| Subject | Exam | Weight | Confidence | Topics | Sessions planned | Notes |
+|---|---|---|---|---|---|---|
+| &lt;Organic Chemistry&gt; | &lt;Wed 2 Dec&gt; | &lt;5&gt; | &lt;2&gt; | &lt;9&gt; | &lt;15&gt; | &lt;past paper 1 Dec&gt; |
+
+## Week 1: &lt;16-22 Nov&gt;
+| Day | Session 1 | Session 2 | Session 3 | Session 4 | Session 5 |
+|---|---|---|---|---|---|
+| &lt;Mon 16 Nov&gt; | &lt;16:00 Organic Chemistry: Learn&gt; | &lt;17:00 Microeconomics: Learn&gt; | &lt;...&gt; | | |
+
+## Week 2: &lt;...&gt;
+&lt;...&gt;
+
+## Session routine
+1. 5 min recall of last session (blank page)
+2. 30 min learn or practise one topic
+3. 10 min self-test, mark the misses
+4. 5 min: three open questions for next time
+5. 10 min break away from the screen
+
+## Trade-offs agreed
+- &lt;Statistics is TIGHT: one full pass, second pass only on topics 5-8 (most marks in past papers)&gt;
+- &lt;European History / Microeconomics back to back: Microeconomics practice done by 5 Dec&gt;
+
+## Check-ins
+- &lt;Sun 22 Nov&gt;: re-rate confidence 1-5 per subject, rerun the planner
+- &lt;Sun 29 Nov&gt;: same, adjust the last 10 days
+
+## Wellbeing
+- Sleep: &lt;in bed by 23:30, no study after 22:00 the night before exams&gt;
+- Daily movement: &lt;30 min walk&gt;
+- If it gets too much: &lt;talk to ... / student support contact&gt;
+FILE:examples/winter-exams.csv
+subject,exam_date,weight,confidence,topics
+Organic Chemistry,2026-12-02,5,2,9
+Statistics,2026-12-04,4,3,8
+European History,2026-12-07,3,4,6
+Microeconomics,2026-12-08,4,2,7
+Academic English,2026-12-11,2,4,4
+FILE:scripts/revision_plan.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Exam revision timetable planner (Python 3 standard library only).
+
+Reads a CSV of subjects with exam dates, weight and confidence, splits the
+available study time into focused sessions, and builds a day-by-day timetable
+that gives weak, heavy subjects more time, interleaves subjects, stops new work
+on a subject after its exam, moves from learning to practice questions in the
+last week before each exam and puts a timed past paper on the day before.
+
+CSV columns (header required; ; or , separated):
+  subject, exam_date (YYYY-MM-DD), weight (1-5 or credits), confidence (1-5), topics (optional)
+
+Usage:
+  python3 revision_plan.py exams.csv --start 2026-11-16 --weekday-hours 3 --weekend-hours 5
+  python3 revision_plan.py exams.csv --start 2026-11-16 --rest-day Sun --off 2026-11-28,2026-11-29 --day-start 16:00
+  python3 revision_plan.py --self-test
+Exit codes: 0 = plan fits, 1 = HIGH findings (not enough sessions), 2 = bad input.
+&quot;&quot;&quot;
+import argparse, csv, datetime as dt, io, json, sys
+
+DAYS = [&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;, &quot;Sun&quot;]
+SEV = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+
+
+class InputError(Exception):
+    pass
+
+
+def parse_date(s, what):
+    try:
+        return dt.date.fromisoformat(s.strip())
+    except ValueError:
+        raise InputError(f&quot;{what} &#x27;{s}&#x27; must be YYYY-MM-DD&quot;)
+
+
+def read_subjects(text):
+    sample = text[:2000]
+    delim = &quot;;&quot; if sample.count(&quot;;&quot;) &gt; sample.count(&quot;,&quot;) else &quot;,&quot;
+    rd = csv.DictReader(io.StringIO(text), delimiter=delim)
+    if not rd.fieldnames:
+        raise InputError(&quot;empty CSV&quot;)
+    fields = [f.strip().lower() for f in rd.fieldnames]
+    missing = [c for c in (&quot;subject&quot;, &quot;exam_date&quot;, &quot;weight&quot;, &quot;confidence&quot;) if c not in fields]
+    if missing:
+        raise InputError(&quot;missing columns: &quot; + &quot;, &quot;.join(missing))
+    subs = []
+    for i, raw in enumerate(rd, start=2):
+        r = {k.strip().lower(): (v or &quot;&quot;).strip() for k, v in raw.items() if k}
+        if not any(r.values()):
+            continue
+        try:
+            w = float(r[&quot;weight&quot;].replace(&quot;,&quot;, &quot;.&quot;))
+            c = int(r[&quot;confidence&quot;])
+            t = int(r[&quot;topics&quot;]) if r.get(&quot;topics&quot;) else None
+        except ValueError:
+            raise InputError(f&quot;row {i}: weight, confidence and topics must be numbers&quot;)
+        if w &lt;= 0:
+            raise InputError(f&quot;row {i}: weight must be positive&quot;)
+        if not 1 &lt;= c &lt;= 5:
+            raise InputError(f&quot;row {i}: confidence must be 1 (weak) to 5 (strong)&quot;)
+        if not r[&quot;subject&quot;]:
+            raise InputError(f&quot;row {i}: subject is empty&quot;)
+        subs.append({&quot;subject&quot;: r[&quot;subject&quot;], &quot;exam&quot;: parse_date(r[&quot;exam_date&quot;], f&quot;row {i}: exam_date&quot;),
+                     &quot;weight&quot;: w, &quot;confidence&quot;: c, &quot;topics&quot;: t})
+    if not subs:
+        raise InputError(&quot;no subjects in CSV&quot;)
+    return subs
+
+
+def slots_for(hours, session, brk):
+    &quot;&quot;&quot;Number of sessions that fit in `hours` with a break between sessions.&quot;&quot;&quot;
+    mins = hours * 60
+    if mins &lt; session:
+        return 0
+    return int((mins + brk) // (session + brk))
+
+
+def plan(subs, start, weekday_hours=3.0, weekend_hours=5.0, session=50, brk=10, rest_day=None,
+         off=(), max_same=2, day_start=None):
+    if session &lt; 15 or brk &lt; 0:
+        raise InputError(&quot;session must be at least 15 minutes and break not negative&quot;)
+    for s in subs:
+        if s[&quot;exam&quot;] &lt;= start:
+            raise InputError(f&quot;{s[&#x27;subject&#x27;]}: exam {s[&#x27;exam&#x27;]} is not after the start date {start}&quot;)
+    last = max(s[&quot;exam&quot;] for s in subs)
+    exam_days = {}
+    for s in subs:
+        exam_days.setdefault(s[&quot;exam&quot;], []).append(s[&quot;subject&quot;])
+    for s in subs:
+        s[&quot;priority&quot;] = s[&quot;weight&quot;] * (6 - s[&quot;confidence&quot;])
+    days = []
+    d = start
+    while d &lt; last:
+        if d in off or (rest_day is not None and d.weekday() == rest_day):
+            n = 0
+        else:
+            n = slots_for(weekend_hours if d.weekday() &gt;= 5 else weekday_hours, session, brk)
+            if d in exam_days:
+                n //= 2  # the exam takes half the day
+        days.append((d, n))
+        d += dt.timedelta(days=1)
+    # target sessions: share of the slots available before each exam, by priority
+    total_p = sum(s[&quot;priority&quot;] for s in subs)
+    for s in subs:
+        before = sum(n for day, n in days if day &lt; s[&quot;exam&quot;])
+        s[&quot;target&quot;] = max(1, round(before * s[&quot;priority&quot;] / total_p))
+        s[&quot;planned&quot;] = 0
+    timetable = []
+    for day, n in days:
+        today, used = [], {}
+        live = [s for s in subs if s[&quot;exam&quot;] &gt; day]
+        # the day before an exam: a timed past paper first
+        for s in live:
+            if (s[&quot;exam&quot;] - day).days == 1 and len(today) &lt; n:
+                today.append((s[&quot;subject&quot;], &quot;Past paper (timed)&quot;)); used[s[&quot;subject&quot;]] = 1; s[&quot;planned&quot;] += 1
+        while len(today) &lt; n:
+            cands = [s for s in live if used.get(s[&quot;subject&quot;], 0) &lt; max_same]
+            if not cands:
+                break
+            prev = today[-1][0] if today else None
+
+            def score(s):
+                days_left = max(1, (s[&quot;exam&quot;] - day).days)
+                need = (s[&quot;target&quot;] - s[&quot;planned&quot;]) / days_left
+                # subjects still below target first, then interleave (avoid repeating the previous subject)
+                return (s[&quot;planned&quot;] &lt; s[&quot;target&quot;], s[&quot;subject&quot;] != prev, need, s[&quot;priority&quot;], -s[&quot;exam&quot;].toordinal())
+            s = max(cands, key=score)
+            left = (s[&quot;exam&quot;] - day).days
+            kind = &quot;Practice questions&quot; if left &lt;= 7 else (&quot;Learn + recall&quot; if s[&quot;planned&quot;] &lt; s[&quot;target&quot;] * 0.6 else &quot;Mixed review&quot;)
+            today.append((s[&quot;subject&quot;], kind)); used[s[&quot;subject&quot;]] = used.get(s[&quot;subject&quot;], 0) + 1; s[&quot;planned&quot;] += 1
+        timed = []
+        t = day_start
+        for subj, kind in today:
+            if t is not None:
+                end = t + session
+                timed.append({&quot;subject&quot;: subj, &quot;kind&quot;: kind, &quot;time&quot;: f&quot;{t // 60:02d}:{t % 60:02d}-{end // 60:02d}:{end % 60:02d}&quot;})
+                t = end + brk
+            else:
+                timed.append({&quot;subject&quot;: subj, &quot;kind&quot;: kind})
+        timetable.append({&quot;date&quot;: day.isoformat(), &quot;dow&quot;: DAYS[day.weekday()], &quot;exams&quot;: exam_days.get(day, []), &quot;sessions&quot;: timed})
+    findings = []
+    for s in subs:
+        if s[&quot;topics&quot;]:
+            if s[&quot;planned&quot;] &lt; s[&quot;topics&quot;]:
+                findings.append((&quot;HIGH&quot;, &quot;UNDER_COVERED&quot;, f&quot;{s[&#x27;subject&#x27;]}: {s[&#x27;planned&#x27;]} sessions for {s[&#x27;topics&#x27;]} topics; add hours, drop low-yield topics or start earlier&quot;))
+            elif s[&quot;planned&quot;] &lt; 1.5 * s[&quot;topics&quot;]:
+                findings.append((&quot;MEDIUM&quot;, &quot;TIGHT&quot;, f&quot;{s[&#x27;subject&#x27;]}: {s[&#x27;planned&#x27;]} sessions for {s[&#x27;topics&#x27;]} topics leaves little time for a second pass&quot;))
+        if s[&quot;planned&quot;] &lt; 0.6 * s[&quot;target&quot;]:
+            findings.append((&quot;MEDIUM&quot;, &quot;BELOW_TARGET&quot;, f&quot;{s[&#x27;subject&#x27;]}: {s[&#x27;planned&#x27;]} of {s[&#x27;target&#x27;]} target sessions fit before the exam&quot;))
+    dates = sorted(exam_days)
+    for a, b in zip(dates, dates[1:]):
+        if (b - a).days &lt;= 1:
+            findings.append((&quot;MEDIUM&quot;, &quot;BACK_TO_BACK&quot;, f&quot;exams on {a} ({&#x27;, &#x27;.join(exam_days[a])}) and {b} ({&#x27;, &#x27;.join(exam_days[b])}); finish the second subject&#x27;s practice before the first exam&quot;))
+    for day, subjects in exam_days.items():
+        if len(subjects) &gt; 1:
+            findings.append((&quot;MEDIUM&quot;, &quot;SAME_DAY&quot;, f&quot;{len(subjects)} exams on {day}: {&#x27;, &#x27;.join(subjects)}&quot;))
+    if rest_day is None and len(days) &gt; 10 and not off:
+        findings.append((&quot;LOW&quot;, &quot;NO_REST_DAY&quot;, &quot;no rest day in a plan longer than 10 days; take at least half a day off each week&quot;))
+    if max(weekday_hours, weekend_hours) &gt; 8:
+        findings.append((&quot;LOW&quot;, &quot;LONG_DAYS&quot;, &quot;more than 8 hours of revision a day rarely stays productive; keep 5-6 focused hours&quot;))
+    findings.sort(key=lambda f: SEV[f[0]])
+    total_sessions = sum(len(t[&quot;sessions&quot;]) for t in timetable)
+    return {
+        &quot;subjects&quot;: [{&quot;subject&quot;: s[&quot;subject&quot;], &quot;exam&quot;: s[&quot;exam&quot;].isoformat(), &quot;weight&quot;: s[&quot;weight&quot;], &quot;confidence&quot;: s[&quot;confidence&quot;],
+                      &quot;priority&quot;: s[&quot;priority&quot;], &quot;topics&quot;: s[&quot;topics&quot;], &quot;target&quot;: s[&quot;target&quot;], &quot;planned&quot;: s[&quot;planned&quot;],
+                      &quot;hours&quot;: round(s[&quot;planned&quot;] * session / 60, 1)} for s in sorted(subs, key=lambda x: x[&quot;exam&quot;])],
+        &quot;summary&quot;: {&quot;start&quot;: start.isoformat(), &quot;last_exam&quot;: last.isoformat(), &quot;days&quot;: len(days), &quot;sessions&quot;: total_sessions,
+                    &quot;study_hours&quot;: round(total_sessions * session / 60, 1), &quot;session_min&quot;: session, &quot;break_min&quot;: brk},
+        &quot;timetable&quot;: timetable,
+        &quot;findings&quot;: [{&quot;severity&quot;: a, &quot;code&quot;: b, &quot;message&quot;: c} for a, b, c in findings],
+    }
+
+
+def to_markdown(p):
+    s = p[&quot;summary&quot;]
+    out = [&quot;# Revision timetable&quot;, &quot;&quot;,
+           f&quot;{s[&#x27;start&#x27;]} to {s[&#x27;last_exam&#x27;]}: {s[&#x27;days&#x27;]} days, {s[&#x27;sessions&#x27;]} sessions of {s[&#x27;session_min&#x27;]} min ({s[&#x27;study_hours&#x27;]} h of focused study), {s[&#x27;break_min&#x27;]} min breaks&quot;,
+           &quot;&quot;, &quot;| Subject | Exam | Weight | Confidence | Priority | Topics | Target | Planned | Hours |&quot;, &quot;|---|---|---|---|---|---|---|---|---|&quot;]
+    for x in p[&quot;subjects&quot;]:
+        out.append(f&quot;| {x[&#x27;subject&#x27;]} | {x[&#x27;exam&#x27;]} | {x[&#x27;weight&#x27;]:g} | {x[&#x27;confidence&#x27;]} | {x[&#x27;priority&#x27;]:g} | {x[&#x27;topics&#x27;] or &#x27;-&#x27;} | {x[&#x27;target&#x27;]} | {x[&#x27;planned&#x27;]} | {x[&#x27;hours&#x27;]} |&quot;)
+    out += [&quot;&quot;, &quot;## Day by day&quot;, &quot;&quot;]
+    for t in p[&quot;timetable&quot;]:
+        head = f&quot;- **{t[&#x27;dow&#x27;]} {t[&#x27;date&#x27;]}**&quot; + (f&quot; (EXAM: {&#x27;, &#x27;.join(t[&#x27;exams&#x27;])})&quot; if t[&quot;exams&quot;] else &quot;&quot;)
+        if not t[&quot;sessions&quot;]:
+            out.append(head + &quot;: rest&quot;)
+            continue
+        parts = [(f&quot;{x[&#x27;time&#x27;]} &quot; if &quot;time&quot; in x else &quot;&quot;) + f&quot;{x[&#x27;subject&#x27;]} ({x[&#x27;kind&#x27;]})&quot; for x in t[&quot;sessions&quot;]]
+        out.append(head + &quot;: &quot; + &quot;; &quot;.join(parts))
+    out += [&quot;&quot;, &quot;## Findings&quot;]
+    out += [f&quot;- {f[&#x27;severity&#x27;]} {f[&#x27;code&#x27;]}: {f[&#x27;message&#x27;]}&quot; for f in p[&quot;findings&quot;]] or [&quot;- none&quot;]
+    out += [&quot;&quot;, &quot;Start each session with 5 minutes of recall from memory on the previous session of that subject, and end with 3 questions you could not answer.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    res = []
+
+    def check(name, cond):
+        res.append(cond)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    D = dt.date
+    S = lambda name, exam, w=1, c=3, t=None: {&quot;subject&quot;: name, &quot;exam&quot;: exam, &quot;weight&quot;: w, &quot;confidence&quot;: c, &quot;topics&quot;: t}
+    check(&quot;slots: 3 h of 50+10 = 3&quot;, slots_for(3, 50, 10) == 3)
+    check(&quot;slots: 50 min fits exactly 1&quot;, slots_for(50 / 60, 50, 10) == 1)
+    check(&quot;slots: under one session = 0&quot;, slots_for(0.5, 50, 10) == 0)
+    check(&quot;slots: 25+5 in 2 h = 4&quot;, slots_for(2, 25, 5) == 4)
+    p = plan([S(&quot;A&quot;, D(2026, 1, 8))], D(2026, 1, 5), weekday_hours=2, weekend_hours=2, session=50, brk=10)
+    check(&quot;no sessions on or after exam day&quot;, all(t[&quot;date&quot;] &lt; &quot;2026-01-08&quot; for t in p[&quot;timetable&quot;]))
+    check(&quot;day before exam starts with past paper&quot;, p[&quot;timetable&quot;][-1][&quot;sessions&quot;][0][&quot;kind&quot;] == &quot;Past paper (timed)&quot;)
+    check(&quot;practice questions in last 7 days&quot;, all(x[&quot;kind&quot;] != &quot;Learn + recall&quot; for t in p[&quot;timetable&quot;] for x in t[&quot;sessions&quot;]))
+    subs = [S(&quot;Weak&quot;, D(2026, 3, 1), w=3, c=1), S(&quot;Strong&quot;, D(2026, 3, 1), w=3, c=5)]
+    p = plan(subs, D(2026, 2, 1), weekday_hours=3, weekend_hours=3, max_same=3)
+    pl = {x[&quot;subject&quot;]: x[&quot;planned&quot;] for x in p[&quot;subjects&quot;]}
+    check(&quot;weak subject gets more sessions&quot;, pl[&quot;Weak&quot;] &gt; 3 * pl[&quot;Strong&quot;])
+    check(&quot;priority = weight x (6 - confidence)&quot;, p[&quot;subjects&quot;][0][&quot;priority&quot;] in (15, 3))
+    p = plan([S(&quot;A&quot;, D(2026, 3, 1)), S(&quot;B&quot;, D(2026, 3, 1))], D(2026, 2, 1), weekday_hours=3, weekend_hours=3)
+    check(&quot;max 2 sessions of one subject per day&quot;, all(
+        sum(1 for x in t[&quot;sessions&quot;] if x[&quot;subject&quot;] == subj) &lt;= 2 for t in p[&quot;timetable&quot;] for subj in &quot;AB&quot;))
+    check(&quot;subjects interleaved while both need time&quot;, all(t[&quot;sessions&quot;][i][&quot;subject&quot;] != t[&quot;sessions&quot;][i + 1][&quot;subject&quot;]
+                                      for t in p[&quot;timetable&quot;][:10] for i in range(len(t[&quot;sessions&quot;]) - 1)))
+    p = plan([S(&quot;A&quot;, D(2026, 2, 16))], D(2026, 2, 2), rest_day=6)
+    check(&quot;rest day empty&quot;, all(not t[&quot;sessions&quot;] for t in p[&quot;timetable&quot;] if t[&quot;dow&quot;] == &quot;Sun&quot;))
+    p = plan([S(&quot;A&quot;, D(2026, 2, 6))], D(2026, 2, 2), off={D(2026, 2, 3)})
+    check(&quot;off day empty&quot;, not [t for t in p[&quot;timetable&quot;] if t[&quot;date&quot;] == &quot;2026-02-03&quot;][0][&quot;sessions&quot;])
+    p = plan([S(&quot;A&quot;, D(2026, 2, 5)), S(&quot;B&quot;, D(2026, 2, 9))], D(2026, 2, 2), weekday_hours=4)
+    day5 = [t for t in p[&quot;timetable&quot;] if t[&quot;date&quot;] == &quot;2026-02-05&quot;][0]
+    check(&quot;exam day: half the slots, other subject only&quot;, len(day5[&quot;sessions&quot;]) == 2 and all(x[&quot;subject&quot;] == &quot;B&quot; for x in day5[&quot;sessions&quot;]))
+    p = plan([S(&quot;A&quot;, D(2026, 2, 5), t=20)], D(2026, 2, 2))
+    check(&quot;UNDER_COVERED HIGH&quot;, p[&quot;findings&quot;][0][&quot;code&quot;] == &quot;UNDER_COVERED&quot;)
+    p = plan([S(&quot;A&quot;, D(2026, 2, 20), t=11)], D(2026, 2, 2), weekday_hours=1, weekend_hours=1, rest_day=6)
+    check(&quot;TIGHT&quot;, any(f[&quot;code&quot;] == &quot;TIGHT&quot; for f in p[&quot;findings&quot;]))
+    p = plan([S(&quot;A&quot;, D(2026, 2, 9)), S(&quot;B&quot;, D(2026, 2, 10)), S(&quot;C&quot;, D(2026, 2, 10))], D(2026, 2, 2))
+    codes = [f[&quot;code&quot;] for f in p[&quot;findings&quot;]]
+    check(&quot;BACK_TO_BACK and SAME_DAY&quot;, &quot;BACK_TO_BACK&quot; in codes and &quot;SAME_DAY&quot; in codes)
+    check(&quot;NO_REST_DAY&quot;, &quot;NO_REST_DAY&quot; in [f[&quot;code&quot;] for f in plan([S(&quot;A&quot;, D(2026, 3, 1))], D(2026, 2, 1))[&quot;findings&quot;]])
+    check(&quot;LONG_DAYS&quot;, &quot;LONG_DAYS&quot; in [f[&quot;code&quot;] for f in plan([S(&quot;A&quot;, D(2026, 2, 5))], D(2026, 2, 2), weekend_hours=10)[&quot;findings&quot;]])
+    p = plan([S(&quot;A&quot;, D(2026, 2, 5))], D(2026, 2, 2), day_start=9 * 60)
+    check(&quot;clock times with --day-start&quot;, p[&quot;timetable&quot;][0][&quot;sessions&quot;][1][&quot;time&quot;] == &quot;10:00-10:50&quot;)
+    subs = read_subjects(&quot;subject;exam_date;weight;confidence;topics\nMaths;2026-12-03;4,5;2;9\n&quot;)
+    check(&quot;semicolon CSV + decimal comma&quot;, subs[0][&quot;weight&quot;] == 4.5 and subs[0][&quot;topics&quot;] == 9)
+    for bad, why in [(&quot;subject,exam_date\nA,2026-01-01\n&quot;, &quot;missing columns&quot;),
+                     (&quot;subject,exam_date,weight,confidence\nA,2026-13-01,1,3\n&quot;, &quot;bad date&quot;),
+                     (&quot;subject,exam_date,weight,confidence\nA,2026-01-01,1,9\n&quot;, &quot;confidence out of range&quot;),
+                     (&quot;subject,exam_date,weight,confidence\nA,2026-01-01,x,3\n&quot;, &quot;non-number&quot;)]:
+        try:
+            read_subjects(bad); check(&quot;rejects &quot; + why, False)
+        except InputError:
+            check(&quot;rejects &quot; + why, True)
+    try:
+        plan([S(&quot;A&quot;, D(2026, 1, 1))], D(2026, 1, 1)); check(&quot;rejects exam not after start&quot;, False)
+    except InputError:
+        check(&quot;rejects exam not after start&quot;, True)
+    passed = sum(res)
+    print(f&quot;{passed}/{len(res)} passed&quot;)
+    return 0 if passed == len(res) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Exam revision timetable planner&quot;)
+    ap.add_argument(&quot;csv&quot;, nargs=&quot;?&quot;, help=&quot;subjects CSV&quot;)
+    ap.add_argument(&quot;--start&quot;, help=&quot;first revision day YYYY-MM-DD (default today)&quot;)
+    ap.add_argument(&quot;--weekday-hours&quot;, type=float, default=3.0)
+    ap.add_argument(&quot;--weekend-hours&quot;, type=float, default=5.0)
+    ap.add_argument(&quot;--session-min&quot;, type=int, default=50, help=&quot;focused session length (default 50)&quot;)
+    ap.add_argument(&quot;--break-min&quot;, type=int, default=10, help=&quot;break between sessions (default 10)&quot;)
+    ap.add_argument(&quot;--rest-day&quot;, choices=DAYS, help=&quot;weekly day off&quot;)
+    ap.add_argument(&quot;--off&quot;, default=&quot;&quot;, help=&quot;comma-separated dates with no revision (YYYY-MM-DD)&quot;)
+    ap.add_argument(&quot;--max-same&quot;, type=int, default=2, help=&quot;max sessions of one subject per day (default 2)&quot;)
+    ap.add_argument(&quot;--day-start&quot;, help=&quot;clock time of the first session HH:MM (adds times to the timetable)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.csv:
+        ap.error(&quot;give a CSV, or --self-test&quot;)
+    try:
+        with open(a.csv, encoding=&quot;utf-8-sig&quot;) as fh:
+            subs = read_subjects(fh.read())
+        start = parse_date(a.start, &quot;--start&quot;) if a.start else dt.date.today()
+        off = {parse_date(x, &quot;--off&quot;) for x in a.off.split(&quot;,&quot;) if x.strip()}
+        ds = None
+        if a.day_start:
+            try:
+                h, m = map(int, a.day_start.split(&quot;:&quot;)); assert 0 &lt;= h &lt; 24 and 0 &lt;= m &lt; 60
+            except Exception:
+                raise InputError(&quot;--day-start must be HH:MM&quot;)
+            ds = h * 60 + m
+        p = plan(subs, start, a.weekday_hours, a.weekend_hours, a.session_min, a.break_min,
+                 DAYS.index(a.rest_day) if a.rest_day else None, off, a.max_same, ds)
+    except (OSError, InputError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(p, indent=2) if a.json else to_markdown(p))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in p[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/exam-revision-timetable-planner',TI="Exam Revision Timetable Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

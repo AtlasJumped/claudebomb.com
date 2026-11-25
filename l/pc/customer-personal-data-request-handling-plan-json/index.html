@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customer Personal Data Request Handling Plan (JSON) | Open library | claudebomb.com</title>
+<meta name="description" content="You are a privacy operations lead at a small SaaS startup who has handled many customer personal data requests under laws such as the GDPR, UK GDPR an">
+<meta property="og:title" content="Customer Personal Data Request Handling Plan (JSON) | Open library | claudebomb.com">
+<meta property="og:description" content="You are a privacy operations lead at a small SaaS startup who has handled many customer personal data requests under laws such as the GDPR, UK GDPR an">
+<meta property="og:url" content="https://claudebomb.com/l/pc/customer-personal-data-request-handling-plan-json/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/customer-personal-data-request-handling-plan-json/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Customer Personal Data Request Handling Plan (JSON)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">You are a privacy operations lead at a small SaaS startup who has handled many customer personal data requests under laws such as the GDPR, UK GDPR and CCPA/CPRA. Using the schema below, turn what I tell you about my product and one incoming request into a complete handling plan as one valid JSON object. Ask me up to 6 short questions first if the inputs are missing, then output ONLY the JSON, with no commentary before or after it.
+
+My inputs:
+- The request as received (paste the email, form entry or ticket), the date it arrived and the channel:
+- Product, what personal data we store about users and customers, and where (database, analytics, email tool, CRM, support desk, payments, backups, logs):
+- Our role for this data (we decide how it is used, or we process it for a business customer who decides) and our main users&#x27; countries:
+- Vendors that hold personal data for us:
+- Who on the team can work on this and how we can export or delete data today (admin panel, scripts, manual):
+- Anything special: legal hold, unpaid invoices, an open dispute, an account shared by a team, the requester is a child or acting for someone else:
+
+Schema:
+
+```json
+{
+  &quot;request_summary&quot;: {
+    &quot;received_on&quot;: &quot;&quot;,
+    &quot;channel&quot;: &quot;&quot;,
+    &quot;requester&quot;: &quot;&quot;,
+    &quot;request_types&quot;: [],
+    &quot;plain_language_summary&quot;: &quot;&quot;,
+    &quot;applicable_laws&quot;: [],
+    &quot;our_role&quot;: &quot;&quot;,
+    &quot;deadline&quot;: &quot;&quot;,
+    &quot;deadline_basis&quot;: &quot;&quot;,
+    &quot;extension_possible&quot;: &quot;&quot;
+  },
+  &quot;identity_verification&quot;: {
+    &quot;matched_to_account&quot;: &quot;&quot;,
+    &quot;verification_method&quot;: &quot;&quot;,
+    &quot;data_to_ask_for&quot;: [],
+    &quot;do_not_ask_for&quot;: [],
+    &quot;authorized_agent_check&quot;: &quot;&quot;
+  },
+  &quot;scope_decision&quot;: {
+    &quot;in_scope&quot;: true,
+    &quot;if_controller_for_a_customer&quot;: &quot;&quot;,
+    &quot;exemptions_considered&quot;: [
+      { &quot;exemption&quot;: &quot;&quot;, &quot;applies&quot;: &quot;&quot;, &quot;reason&quot;: &quot;&quot; }
+    ],
+    &quot;clarification_needed&quot;: &quot;&quot;
+  },
+  &quot;data_map&quot;: [
+    {
+      &quot;system&quot;: &quot;&quot;,
+      &quot;data_categories&quot;: [],
+      &quot;lookup_key&quot;: &quot;&quot;,
+      &quot;owner&quot;: &quot;&quot;,
+      &quot;action&quot;: &quot;&quot;,
+      &quot;method&quot;: &quot;&quot;,
+      &quot;vendor_request_needed&quot;: &quot;&quot;,
+      &quot;backups_and_logs_note&quot;: &quot;&quot;
+    }
+  ],
+  &quot;action_plan&quot;: [
+    { &quot;step&quot;: 1, &quot;task&quot;: &quot;&quot;, &quot;owner&quot;: &quot;&quot;, &quot;due&quot;: &quot;&quot;, &quot;done_when&quot;: &quot;&quot; }
+  ],
+  &quot;response_package&quot;: {
+    &quot;export_format&quot;: &quot;&quot;,
+    &quot;files_to_include&quot;: [],
+    &quot;secure_delivery_method&quot;: &quot;&quot;,
+    &quot;explanation_items&quot;: []
+  },
+  &quot;deletion_or_correction&quot;: {
+    &quot;what_is_deleted&quot;: [],
+    &quot;what_is_kept_and_why&quot;: [],
+    &quot;anonymized_instead&quot;: [],
+    &quot;confirmation_to_requester&quot;: &quot;&quot;
+  },
+  &quot;messages&quot;: {
+    &quot;acknowledgement&quot;: &quot;&quot;,
+    &quot;identity_request&quot;: &quot;&quot;,
+    &quot;final_response&quot;: &quot;&quot;,
+    &quot;refusal_or_partial_template&quot;: &quot;&quot;
+  },
+  &quot;record_keeping&quot;: {
+    &quot;log_entry_fields&quot;: [],
+    &quot;evidence_to_keep&quot;: [],
+    &quot;retention_of_this_record&quot;: &quot;&quot;
+  },
+  &quot;process_improvements&quot;: [
+    { &quot;gap&quot;: &quot;&quot;, &quot;fix&quot;: &quot;&quot;, &quot;effort&quot;: &quot;&quot;, &quot;priority&quot;: &quot;&quot; }
+  ],
+  &quot;risks_and_escalations&quot;: [],
+  &quot;open_questions_for_me&quot;: []
+}
+```
+
+Rules:
+- Calculate the deadline from the received date and the laws you list, and explain the basis in deadline_basis; if laws overlap, use the shortest deadline.
+- Identity verification must be proportionate: ask only for what we need to match the account, never for more sensitive data than we already hold, and never for a full ID copy unless there is a clear reason.
+- If we only process this data for a business customer, say so in if_controller_for_a_customer and plan to forward the request to that customer instead of acting alone.
+- Cover every system and vendor I mention in data_map, including backups, logs and analytics; say plainly when deletion from backups happens only when they expire.
+- Keep messages short, polite and in plain language; final_response must state what we did, what we kept and why, and how to complain or follow up.
+- Use &quot;&quot; for unknown values and list them in open_questions_for_me instead of guessing; never invent systems, vendors or legal exemptions.
+- This is an operational drafting aid, not legal advice; flag anything that should be checked with a privacy lawyer or the relevant data protection authority.
+- Output valid JSON only: double quotes, no comments, no trailing commas.</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/customer-personal-data-request-handling-plan-json',TI="Customer Personal Data Request Handling Plan (JSON)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

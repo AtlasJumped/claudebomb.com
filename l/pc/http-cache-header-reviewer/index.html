@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTTP Cache Header Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: http-cache-header-reviewer description: Reviews HTTP caching headers (Cache-Control, Expires, ETag, Last-Modified, Vary, Set-Cookie) for pag">
+<meta property="og:title" content="HTTP Cache Header Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: http-cache-header-reviewer description: Reviews HTTP caching headers (Cache-Control, Expires, ETag, Last-Modified, Vary, Set-Cookie) for pag">
+<meta property="og:url" content="https://claudebomb.com/l/pc/http-cache-header-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/http-cache-header-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">HTTP Cache Header Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: http-cache-header-reviewer
+description: Reviews HTTP caching headers (Cache-Control, Expires, ETag, Last-Modified, Vary, Set-Cookie) for pages, assets, APIs. Computes browser and CDN freshness, flags cookie or personal responses a CDN may share, HTML cached too long, hashed assets cached too briefly, immutable on changing URLs, Vary fragmentation, missing validators, heuristic caching and cached errors. Suggests a header per resource. Includes a stdlib Python checker with --self-test.
+---
+
+# HTTP Cache Header Reviewer
+
+You help web developers get caching right: fast repeat visits and low CDN bills without stale pages after a deploy or, worse, one user&#x27;s data served to another. You collect real response headers, explain what each cache will actually do with them, and propose a header per resource type with a short fix list.
+
+## Files in this skill
+
+- `scripts/cache_audit.py` - reads response blocks (curl -sI or DevTools output) and prints resource kind, browser and CDN TTL, revalidation, flags and suggested Cache-Control (Python 3 standard library only)
+- `references/cache-control-directives.md` - every directive, freshness and heuristic rules, validators, Vary, cacheable status codes
+- `references/caching-strategy-playbook.md` - recommended headers per resource, deploy safety, CDN notes, how to collect and verify headers
+- `templates/cache-review-report.md` - report with current vs recommended headers and a fix list
+- `examples/shop-responses.txt` - eight responses from a sample shop with common mistakes
+
+## Workflow
+
+### 1. Collect headers
+Ask for a list of representative URLs: the home page, a logged-in page, a hashed JS/CSS file, an unhashed script, an image, a font, a public API call, a personal API call, an error response. Capture with `curl -sI &lt;url&gt;` (add `-H &#x27;Cookie: ...&#x27;` or `-H &#x27;Authorization: ...&#x27;` for logged-in requests, never paste real tokens into the report) or DevTools. Put each in the block format of `examples/shop-responses.txt`: a `### METHOD URL` line, optional `&gt; Request-Header: value` lines, the status line, then the response headers.
+
+### 2. Run the checker
+```
+python3 scripts/cache_audit.py examples/shop-responses.txt
+python3 scripts/cache_audit.py headers.txt --json &gt; cache-report.json
+python3 scripts/cache_audit.py --self-test
+```
+Exit code 1 means high-severity findings, 2 means the input could not be parsed.
+
+### 3. Explain the findings
+Order: privacy first (AUTH_SHARED_CACHE, PUBLIC_WITH_COOKIE, PERSONAL_NOT_PRIVATE), then correctness after deploys (HTML_LONG_TTL, IMMUTABLE_UNHASHED, ERROR_CACHED), then performance (HASHED_SHORT_TTL, ASSET_NO_CACHING, VARY_FRAGMENTS, NO_VALIDATOR, HEURISTIC_ONLY) and hygiene (INVALID_DIRECTIVE, NO_STORE_CONFLICT, EXPIRES_ONLY, PRAGMA_ONLY). Use `references/cache-control-directives.md` to explain why.
+
+### 4. Recommend headers
+Use `references/caching-strategy-playbook.md`. Give the exact header per resource and where to set it in the user&#x27;s stack (Nginx `add_header`, Express `res.set`, Next.js `headers()`, S3/CloudFront metadata, Cloudflare rules). Mention the deploy rule: hashed assets for a year, HTML revalidates.
+
+### 5. Verify and report
+Fill `templates/cache-review-report.md`. After changes, collect headers again and re-run the checker; check CDN HIT/MISS headers.
+
+## Example result
+For `examples/shop-responses.txt`: 5 high findings (home page HTML cached 1 day, widget.js immutable without a hash, the cart API with a session cookie cached by the CDN for 2 minutes, the login page with Set-Cookie marked public and cached 10 minutes), 4 medium (app.3f9a1c7b.js cached only 1 hour, hero.jpg on an 8.1-day heuristic, Vary: Cookie, a 503 cached for 1 hour) and 1 low (cart API has no validator); only vendor.81d2e0aa.css is already ideal.
+
+## Rules
+
+- Treat any chance of a shared cache storing personal data as the top issue.
+- Do not ask for or keep real cookies or tokens; placeholders are enough.
+- Recommend purges or URL versioning when changing TTLs that are already live.
+- Say when behavior depends on the CDN&#x27;s configuration and suggest checking it.
+FILE:references/cache-control-directives.md
+# Cache-Control Directives and Freshness Rules
+
+## Response directives
+| Directive | Meaning |
+|---|---|
+| max-age=N | Fresh for N seconds in any cache (browser and shared) |
+| s-maxage=N | Overrides max-age for shared caches (CDN, proxy) only |
+| no-cache | May be stored, but must be revalidated with the origin before every use |
+| no-store | Must not be stored anywhere; overrides everything else |
+| private | Only the browser may store it; CDNs and proxies must not |
+| public | Shared caches may store it even if it would normally not be cacheable (for example with Authorization) |
+| must-revalidate | Once stale, must not be served without a successful revalidation |
+| proxy-revalidate | Same as must-revalidate, for shared caches only |
+| immutable | Will never change while fresh; browsers skip revalidation on reload |
+| stale-while-revalidate=N | May serve stale for N seconds while refreshing in the background |
+| stale-if-error=N | May serve stale for N seconds if the origin returns 5xx or is unreachable |
+| no-transform | Intermediaries must not modify the body (recompress images, etc.) |
+
+Common mistakes: `no-cache` does NOT mean &quot;do not cache&quot; (that is `no-store`); `max-age` values must be whole seconds (`max-age=10m` is invalid and ignored); `Pragma: no-cache` only works on requests.
+
+## Freshness lifetime (RFC 9111)
+1. Shared cache: s-maxage, else max-age, else Expires - Date.
+2. Browser: max-age, else Expires - Date.
+3. Neither present and Last-Modified present: caches may use a heuristic, usually 10% of (Date - Last-Modified). A file last changed 80 days ago may be reused for 8 days with no check.
+4. `private` sets the shared lifetime to 0. `no-store` sets both to 0.
+
+## Validators and revalidation
+- ETag (strong `&quot;abc&quot;` or weak `W/&quot;abc&quot;`) -&gt; client sends If-None-Match.
+- Last-Modified -&gt; client sends If-Modified-Since.
+- A match returns `304 Not Modified` with no body, which is cheap. Without a validator, every revalidation downloads the whole body.
+
+## Vary
+- `Vary: Accept-Encoding` is normal and safe.
+- `Vary: Cookie`, `User-Agent` or `Referer` creates one cache entry per distinct value, which usually means no CDN hits.
+- `Vary: *` means the response can never be reused.
+
+## Status codes
+Cacheable by default when fresh: 200, 203, 204, 206, 300, 301, 308, 404, 405, 410, 414, 501. Error responses (4xx/5xx) should have short or no caching, or a CDN may serve an outage page for hours. Use `stale-if-error` to serve the last good copy instead.
+FILE:references/caching-strategy-playbook.md
+# Caching Strategy Playbook
+
+## Recommended headers by resource
+| Resource | Cache-Control | Notes |
+|---|---|---|
+| HTML pages, app shell | `no-cache` + ETag | Always fresh after deploys; 304s keep it cheap |
+| Marketing HTML on a CDN | `public, max-age=0, s-maxage=300, stale-while-revalidate=60` | Purge the CDN on publish |
+| JS/CSS with a content hash (`app.3f9a1c7b.js`) | `public, max-age=31536000, immutable` | New build = new URL |
+| JS/CSS without a hash | `public, max-age=300, stale-while-revalidate=86400` | Or add hashing to the build |
+| Images, user uploads with stable URLs | `public, max-age=86400, stale-while-revalidate=604800` | Version the URL when the image changes |
+| Fonts (versioned URL) | `public, max-age=31536000, immutable` | Also send CORS headers |
+| Public API data (prices, catalog) | `public, max-age=30, s-maxage=300, stale-if-error=600` | Keep TTLs short; purge on change |
+| Personal API data (cart, profile) | `private, no-cache` + ETag | Never public |
+| Secrets, banking, health records, one-time tokens | `no-store` | Also on the logout and account pages |
+| Redirect 301 | `max-age=86400` at first | Browsers can cache a bare 301 forever |
+| Errors 5xx | `no-store` or `max-age=0`, use stale-if-error on the good responses | |
+
+## Deploy safety
+1. Hash every built asset name, then cache it for a year.
+2. Make HTML revalidate so it always points at the current hashes.
+3. Keep old hashed assets online for at least one release so open tabs still work.
+4. Never put `immutable` on a URL whose content can change.
+
+## CDN notes
+- Most CDNs ignore `private`/`no-store` only if misconfigured; check &quot;respect origin headers&quot;.
+- Many CDNs do not cache responses with Set-Cookie by default; some do if `public` is set. Strip Set-Cookie from static responses.
+- Use a `Surrogate-Control` or CDN-Cache-Control header if the CDN supports it and you want a CDN TTL different from the browser TTL.
+- Normalize the cache key (ignore tracking query strings like utm_*).
+
+## How to collect headers
+```
+curl -sI https://example.com/ ; curl -sI -H &#x27;Cookie: session=...&#x27; https://example.com/api/me
+curl -s -o /dev/null -D - https://example.com/assets/app.js   # GET instead of HEAD
+```
+Some servers answer HEAD differently from GET; when in doubt use the GET form. In Chrome DevTools: Network tab, select a request, Headers, Response Headers (copy as text).
+
+## Checking the result
+- Reload twice in DevTools: hashed assets should show &quot;(memory cache)&quot; or &quot;(disk cache)&quot;, HTML should show 304 or 200.
+- CDN: look at its `Age`, `X-Cache` or `CF-Cache-Status` header (HIT / MISS / BYPASS).
+FILE:templates/cache-review-report.md
+# HTTP Cache Review - &lt;site / service&gt; - &lt;date&gt;
+
+**Scope:** &lt;URLs or HAR file&gt;  **CDN:** &lt;name or none&gt;  **Collected with:** &lt;curl -sI / DevTools / HAR&gt;
+
+## Summary
+- Responses reviewed: &lt;n&gt;  High: &lt;n&gt;  Medium: &lt;n&gt;  Low: &lt;n&gt;
+- Biggest risk: &lt;for example personal API cached on the CDN&gt;
+- Biggest win: &lt;for example year-long caching for hashed assets&gt;
+
+## Current vs recommended
+| Resource | Kind | Current Cache-Control | Browser / CDN TTL | Flags | Recommended |
+|---|---|---|---|---|---|
+| | | | | | |
+
+## Fix list
+| Priority | Change | Where (server, framework, CDN rule) | Owner | Done |
+|---|---|---|---|---|
+| 1 | | | | [ ] |
+
+## Verification
+- [ ] Re-run `python3 scripts/cache_audit.py` on fresh headers: no high findings
+- [ ] CDN shows HIT for static files, BYPASS/MISS for personal API
+- [ ] Deploy test: new HTML loads new assets without a hard refresh
+FILE:examples/shop-responses.txt
+# Responses captured with: curl -sI &lt;url&gt;  (request headers sent are listed with &quot;&gt; &quot;)
+### GET https://shop.example/
+HTTP/2 200
+content-type: text/html; charset=utf-8
+cache-control: public, max-age=86400
+date: Wed, 21 Oct 2026 07:00:00 GMT
+
+### GET https://shop.example/assets/app.3f9a1c7b.js
+HTTP/2 200
+content-type: application/javascript
+cache-control: public, max-age=3600
+etag: &quot;3f9a1c7b&quot;
+
+### GET https://shop.example/assets/vendor.81d2e0aa.css
+HTTP/2 200
+content-type: text/css
+cache-control: public, max-age=31536000, immutable
+etag: &quot;81d2e0aa&quot;
+
+### GET https://shop.example/js/widget.js
+HTTP/2 200
+content-type: application/javascript
+cache-control: public, max-age=31536000, immutable
+
+### GET https://shop.example/img/hero.jpg
+HTTP/2 200
+content-type: image/jpeg
+date: Wed, 21 Oct 2026 07:00:00 GMT
+last-modified: Sat, 01 Aug 2026 07:00:00 GMT
+
+### GET https://shop.example/api/cart
+&gt; Cookie: session=abc123
+HTTP/2 200
+content-type: application/json
+cache-control: public, s-maxage=120
+vary: Cookie
+
+### POST https://shop.example/login
+HTTP/2 200
+content-type: text/html; charset=utf-8
+cache-control: public, max-age=600
+set-cookie: session=xyz789; HttpOnly; Secure; SameSite=Lax
+
+### GET https://shop.example/api/products?page=1
+HTTP/2 503
+content-type: application/json
+cache-control: public, max-age=3600
+FILE:scripts/cache_audit.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;HTTP caching header reviewer (Python 3 standard library only).
+
+Input: a text file with one block per response, as copied from `curl -sI`, browser
+devtools or a HAR export:
+  ### GET https://shop.example/assets/app.3f9a1c7b.js
+  &gt; Authorization: Bearer ...          (optional request headers start with &quot;&gt; &quot;)
+  HTTP/2 200
+  content-type: application/javascript
+  cache-control: public, max-age=31536000, immutable
+  etag: &quot;3f9a1c7b&quot;
+Blank lines and lines starting with &quot;#&quot; (but not &quot;###&quot;) are ignored.
+
+For each response it works out the kind (html, hashed-asset, asset, api, image, font, other),
+browser and shared-cache (CDN) freshness in seconds (s-maxage &gt; max-age &gt; Expires - Date &gt;
+10% heuristic from Last-Modified), whether it can be revalidated, and flags:
+  NO_STORE_CONFLICT, PUBLIC_WITH_COOKIE, AUTH_SHARED_CACHE, PERSONAL_NOT_PRIVATE, VARY_STAR,
+  VARY_FRAGMENTS, HTML_LONG_TTL, HASHED_SHORT_TTL, IMMUTABLE_UNHASHED, ASSET_NO_CACHING,
+  NO_VALIDATOR, HEURISTIC_ONLY, EXPIRES_ONLY, PRAGMA_ONLY, ERROR_CACHED, INVALID_DIRECTIVE.
+It suggests a Cache-Control value per kind.
+Usage:
+  python3 cache_audit.py responses.txt
+  python3 cache_audit.py responses.txt --json
+  python3 cache_audit.py --self-test
+Exit code: 0 OK, 1 high-severity flags found, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import email.utils
+import json
+import re
+import sys
+
+KNOWN = {&quot;max-age&quot;, &quot;s-maxage&quot;, &quot;no-cache&quot;, &quot;no-store&quot;, &quot;no-transform&quot;, &quot;must-revalidate&quot;,
+         &quot;proxy-revalidate&quot;, &quot;must-understand&quot;, &quot;private&quot;, &quot;public&quot;, &quot;immutable&quot;,
+         &quot;stale-while-revalidate&quot;, &quot;stale-if-error&quot;}
+NEEDS_INT = {&quot;max-age&quot;, &quot;s-maxage&quot;, &quot;stale-while-revalidate&quot;, &quot;stale-if-error&quot;}
+HASH_RE = re.compile(r&quot;[.\-_]([0-9a-f]{8,}|[0-9A-Za-z_-]{8,}(?=\.[a-z0-9]+$))\.[a-z0-9]+$&quot;)
+SEVERITY = {&quot;NO_STORE_CONFLICT&quot;: &quot;low&quot;, &quot;PUBLIC_WITH_COOKIE&quot;: &quot;high&quot;, &quot;AUTH_SHARED_CACHE&quot;: &quot;high&quot;,
+            &quot;PERSONAL_NOT_PRIVATE&quot;: &quot;medium&quot;, &quot;VARY_STAR&quot;: &quot;medium&quot;, &quot;VARY_FRAGMENTS&quot;: &quot;medium&quot;,
+            &quot;HTML_LONG_TTL&quot;: &quot;high&quot;, &quot;HASHED_SHORT_TTL&quot;: &quot;medium&quot;, &quot;IMMUTABLE_UNHASHED&quot;: &quot;high&quot;,
+            &quot;ASSET_NO_CACHING&quot;: &quot;medium&quot;, &quot;NO_VALIDATOR&quot;: &quot;low&quot;, &quot;HEURISTIC_ONLY&quot;: &quot;medium&quot;,
+            &quot;EXPIRES_ONLY&quot;: &quot;low&quot;, &quot;PRAGMA_ONLY&quot;: &quot;low&quot;, &quot;ERROR_CACHED&quot;: &quot;medium&quot;,
+            &quot;INVALID_DIRECTIVE&quot;: &quot;medium&quot;}
+RECOMMEND = {
+    &quot;html&quot;: &quot;no-cache (plus ETag or Last-Modified), or max-age=0, must-revalidate&quot;,
+    &quot;hashed-asset&quot;: &quot;public, max-age=31536000, immutable&quot;,
+    &quot;asset&quot;: &quot;public, max-age=3600, stale-while-revalidate=86400 (or add a content hash to the file name)&quot;,
+    &quot;image&quot;: &quot;public, max-age=86400, stale-while-revalidate=604800&quot;,
+    &quot;font&quot;: &quot;public, max-age=31536000, immutable (if the URL is versioned)&quot;,
+    &quot;api&quot;: &quot;private, no-cache for user data; public, max-age=60, s-maxage=300 only for truly public data&quot;,
+    &quot;personal&quot;: &quot;private, no-cache (or no-store for sensitive data)&quot;,
+    &quot;other&quot;: &quot;set an explicit Cache-Control&quot;,
+}
+
+
+class CacheError(ValueError):
+    pass
+
+
+def parse_cc(value):
+    &quot;&quot;&quot;Return (directives dict, problems list).&quot;&quot;&quot;
+    d, problems = {}, []
+    for part in [p.strip() for p in value.split(&quot;,&quot;) if p.strip()]:
+        k, eq, v = part.partition(&quot;=&quot;)
+        k = k.strip().lower()
+        v = v.strip().strip(&#x27;&quot;&#x27;)
+        if k not in KNOWN:
+            problems.append(f&quot;unknown directive {k!r}&quot;)
+            continue
+        if k in NEEDS_INT:
+            if not re.fullmatch(r&quot;\d+&quot;, v or &quot;&quot;):
+                problems.append(f&quot;{k} needs a whole number of seconds, got {v!r}&quot;)
+                continue
+            d[k] = int(v)
+        else:
+            d[k] = True if not eq else v
+    return d, problems
+
+
+def parse_blocks(text):
+    blocks, cur = [], None
+    for raw in text.splitlines():
+        line = raw.rstrip(&quot;\r&quot;)
+        if line.startswith(&quot;###&quot;):
+            cur = {&quot;label&quot;: line[3:].strip(), &quot;status&quot;: None, &quot;headers&quot;: {}, &quot;request&quot;: {}}
+            blocks.append(cur)
+            continue
+        if not line.strip() or line.lstrip().startswith(&quot;#&quot;):
+            continue
+        if cur is None:
+            raise CacheError(&quot;file must start with a &#x27;### METHOD URL&#x27; line&quot;)
+        if line.startswith(&quot;&gt;&quot;):
+            k, _, v = line[1:].strip().partition(&quot;:&quot;)
+            cur[&quot;request&quot;][k.strip().lower()] = v.strip()
+            continue
+        m = re.match(r&quot;HTTP/[\d.]+\s+(\d{3})&quot;, line)
+        if m:
+            cur[&quot;status&quot;] = int(m.group(1))
+            continue
+        k, colon, v = line.partition(&quot;:&quot;)
+        if not colon:
+            raise CacheError(f&quot;cannot parse header line {line!r} in block {cur[&#x27;label&#x27;]!r}&quot;)
+        k = k.strip().lower()
+        if k in cur[&quot;headers&quot;] and k in (&quot;cache-control&quot;, &quot;vary&quot;):
+            cur[&quot;headers&quot;][k] += &quot;, &quot; + v.strip()
+        elif k == &quot;set-cookie&quot;:
+            cur[&quot;headers&quot;].setdefault(k, []).append(v.strip())
+        else:
+            cur[&quot;headers&quot;][k] = v.strip()
+    if not blocks:
+        raise CacheError(&quot;no response blocks found&quot;)
+    return blocks
+
+
+def url_of(label):
+    parts = label.split()
+    return parts[-1] if parts else &quot;&quot;
+
+
+def kind_of(url, ctype):
+    path = re.sub(r&quot;[?#].*$&quot;, &quot;&quot;, url)
+    name = path.rsplit(&quot;/&quot;, 1)[-1].lower()
+    ctype = ctype.lower()
+    hashed = bool(HASH_RE.search(name)) and bool(re.search(r&quot;\d&quot;, name))
+    if &quot;text/html&quot; in ctype or name.endswith(&quot;.html&quot;) or (not ctype and &quot;.&quot; not in name):
+        return &quot;html&quot;, False
+    if &quot;json&quot; in ctype or &quot;/api/&quot; in path or &quot;graphql&quot; in path:
+        return &quot;api&quot;, False
+    if name.endswith((&quot;.woff2&quot;, &quot;.woff&quot;, &quot;.ttf&quot;, &quot;.otf&quot;)) or &quot;font&quot; in ctype:
+        return &quot;font&quot;, hashed
+    if ctype.startswith(&quot;image/&quot;) or name.endswith((&quot;.png&quot;, &quot;.jpg&quot;, &quot;.jpeg&quot;, &quot;.gif&quot;, &quot;.webp&quot;, &quot;.avif&quot;, &quot;.svg&quot;, &quot;.ico&quot;)):
+        return (&quot;hashed-asset&quot; if hashed else &quot;image&quot;), hashed
+    if name.endswith((&quot;.js&quot;, &quot;.mjs&quot;, &quot;.css&quot;, &quot;.map&quot;, &quot;.wasm&quot;)) or &quot;javascript&quot; in ctype or &quot;text/css&quot; in ctype:
+        return (&quot;hashed-asset&quot; if hashed else &quot;asset&quot;), hashed
+    return &quot;other&quot;, hashed
+
+
+def http_date(v):
+    try:
+        return email.utils.parsedate_to_datetime(v)
+    except (TypeError, ValueError, IndexError):
+        return None
+
+
+def review(block):
+    h, req = block[&quot;headers&quot;], block[&quot;request&quot;]
+    status = block[&quot;status&quot;] or 200
+    url = url_of(block[&quot;label&quot;])
+    kind, hashed = kind_of(url, h.get(&quot;content-type&quot;, &quot;&quot;))
+    cc, problems = parse_cc(h.get(&quot;cache-control&quot;, &quot;&quot;))
+    flags = []
+
+    def flag(code, detail):
+        flags.append({&quot;code&quot;: code, &quot;severity&quot;: SEVERITY[code], &quot;detail&quot;: detail})
+
+    for p in problems:
+        flag(&quot;INVALID_DIRECTIVE&quot;, p)
+    cookies = h.get(&quot;set-cookie&quot;, [])
+    auth = &quot;authorization&quot; in req or &quot;cookie&quot; in req
+    date, expires, lastmod = http_date(h.get(&quot;date&quot;)), h.get(&quot;expires&quot;), http_date(h.get(&quot;last-modified&quot;))
+    no_store = &quot;no-store&quot; in cc
+    heuristic = False
+    if no_store:
+        browser = shared = 0
+    else:
+        browser = cc.get(&quot;max-age&quot;)
+        if browser is None and expires is not None:
+            ex = http_date(expires)
+            browser = max(0, int((ex - date).total_seconds())) if ex and date else 0
+        if browser is None and &quot;no-cache&quot; not in cc and lastmod and date and status in (200, 203, 204, 206, 300, 301, 404, 405, 410, 414, 501):
+            browser = max(0, int((date - lastmod).total_seconds() / 10))
+            heuristic = True
+        browser = browser or 0
+        shared = 0 if &quot;private&quot; in cc else cc.get(&quot;s-maxage&quot;, browser)
+    if &quot;no-cache&quot; in cc:
+        browser_eff, shared_eff = 0, 0
+    else:
+        browser_eff, shared_eff = browser, shared
+    validator = &quot;etag&quot; in h or &quot;last-modified&quot; in h
+    personal = bool(cookies) or auth
+
+    if no_store and any(k in cc for k in (&quot;max-age&quot;, &quot;s-maxage&quot;, &quot;public&quot;, &quot;immutable&quot;)):
+        flag(&quot;NO_STORE_CONFLICT&quot;, &quot;no-store overrides the other directives; remove the extras so intent is clear&quot;)
+    if cookies and (&quot;public&quot; in cc or &quot;s-maxage&quot; in cc) and not no_store:
+        flag(&quot;PUBLIC_WITH_COOKIE&quot;, &quot;response sets a cookie but allows shared caches; a CDN may serve one user&#x27;s cookie to others&quot;)
+    if auth and shared &gt; 0 and (&quot;public&quot; in cc or &quot;s-maxage&quot; in cc) and kind in (&quot;api&quot;, &quot;html&quot;, &quot;other&quot;):
+        flag(&quot;AUTH_SHARED_CACHE&quot;, &quot;authenticated request with a response that shared caches may store; personal data can leak across users&quot;)
+    elif personal and kind in (&quot;api&quot;, &quot;html&quot;, &quot;other&quot;) and not no_store and &quot;private&quot; not in cc \
+            and not any(f[&quot;code&quot;] == &quot;PUBLIC_WITH_COOKIE&quot; for f in flags):
+        flag(&quot;PERSONAL_NOT_PRIVATE&quot;, &quot;personalized response without private or no-store&quot;)
+    vary = [v.strip().lower() for v in h.get(&quot;vary&quot;, &quot;&quot;).split(&quot;,&quot;) if v.strip()]
+    if &quot;*&quot; in vary:
+        flag(&quot;VARY_STAR&quot;, &quot;Vary: * makes the response effectively uncacheable&quot;)
+    frag = [v for v in vary if v in (&quot;user-agent&quot;, &quot;cookie&quot;, &quot;referer&quot;)]
+    if frag and shared &gt; 0:
+        flag(&quot;VARY_FRAGMENTS&quot;, f&quot;Vary on {&#x27;, &#x27;.join(frag)} splits the CDN cache into many copies; vary on a normalized header instead&quot;)
+    if kind == &quot;html&quot; and browser_eff &gt; 300:
+        flag(&quot;HTML_LONG_TTL&quot;, f&quot;HTML cached {fmt_s(browser_eff)} without revalidation; users keep old pages that point to deleted assets after a deploy&quot;)
+    if kind == &quot;hashed-asset&quot; and browser_eff &lt; 30 * 86400 and not no_store:
+        flag(&quot;HASHED_SHORT_TTL&quot;, f&quot;content-hashed file cached only {fmt_s(browser_eff)}; it can be cached for a year with immutable&quot;)
+    if &quot;immutable&quot; in cc and not hashed:
+        flag(&quot;IMMUTABLE_UNHASHED&quot;, &quot;immutable on a URL without a content hash; browsers will not pick up changes until max-age expires&quot;)
+    if kind in (&quot;asset&quot;, &quot;image&quot;, &quot;font&quot;) and (no_store or &quot;no-cache&quot; in cc) and not personal:
+        flag(&quot;ASSET_NO_CACHING&quot;, &quot;static file is never reused from cache; every page view downloads or revalidates it&quot;)
+    if (&quot;no-cache&quot; in cc or browser_eff == 0) and not no_store and not validator and status == 200:
+        flag(&quot;NO_VALIDATOR&quot;, &quot;must revalidate but has no ETag or Last-Modified, so every check downloads the full body&quot;)
+    if heuristic:
+        flag(&quot;HEURISTIC_ONLY&quot;, f&quot;no Cache-Control or Expires; caches guess {fmt_s(browser)} from Last-Modified&quot;)
+    if &quot;cache-control&quot; not in h and expires is not None:
+        flag(&quot;EXPIRES_ONLY&quot;, &quot;only the legacy Expires header; add Cache-Control max-age&quot;)
+    if &quot;cache-control&quot; not in h and &quot;pragma&quot; in h:
+        flag(&quot;PRAGMA_ONLY&quot;, &quot;Pragma: no-cache is a request header and has no effect on responses; use Cache-Control&quot;)
+    if status &gt;= 400 and max(browser_eff, shared_eff) &gt; 300:
+        flag(&quot;ERROR_CACHED&quot;, f&quot;status {status} cached for {fmt_s(max(browser_eff, shared_eff))}; a brief error becomes a long outage&quot;)
+    rec_kind = &quot;personal&quot; if personal and kind in (&quot;api&quot;, &quot;html&quot;, &quot;other&quot;) else kind
+    return {&quot;label&quot;: block[&quot;label&quot;], &quot;status&quot;: status, &quot;kind&quot;: kind, &quot;hashed&quot;: hashed,
+            &quot;cache_control&quot;: h.get(&quot;cache-control&quot;), &quot;browser_ttl_s&quot;: browser_eff, &quot;shared_ttl_s&quot;: shared_eff,
+            &quot;revalidate&quot;: &quot;no-cache&quot; in cc or &quot;must-revalidate&quot; in cc, &quot;validator&quot;: validator,
+            &quot;stale_while_revalidate_s&quot;: cc.get(&quot;stale-while-revalidate&quot;), &quot;flags&quot;: flags,
+            &quot;recommended&quot;: RECOMMEND[rec_kind]}
+
+
+def fmt_s(s):
+    if s is None:
+        return &quot;-&quot;
+    for unit, n in ((&quot;d&quot;, 86400), (&quot;h&quot;, 3600), (&quot;m&quot;, 60)):
+        if s &gt;= n:
+            v = s / n
+            return f&quot;{v:.0f}{unit}&quot; if v == int(v) else f&quot;{v:.1f}{unit}&quot;
+    return f&quot;{s}s&quot;
+
+
+def audit(text):
+    items = [review(b) for b in parse_blocks(text)]
+    return {&quot;items&quot;: items, &quot;high_flags&quot;: sum(1 for i in items for f in i[&quot;flags&quot;] if f[&quot;severity&quot;] == &quot;high&quot;)}
+
+
+def to_markdown(r):
+    out = [&quot;# HTTP cache header review&quot;, &quot;&quot;,
+           &quot;| Response | Status | Kind | Browser TTL | CDN TTL | Revalidate | Validator | Flags |&quot;,
+           &quot;|---|---|---|---|---|---|---|---|&quot;]
+    for i in r[&quot;items&quot;]:
+        out.append(f&quot;| {i[&#x27;label&#x27;]} | {i[&#x27;status&#x27;]} | {i[&#x27;kind&#x27;]} | {fmt_s(i[&#x27;browser_ttl_s&#x27;])} | {fmt_s(i[&#x27;shared_ttl_s&#x27;])} | &quot;
+                   f&quot;{&#x27;yes&#x27; if i[&#x27;revalidate&#x27;] else &#x27;no&#x27;} | {&#x27;yes&#x27; if i[&#x27;validator&#x27;] else &#x27;no&#x27;} | {&#x27;, &#x27;.join(f[&#x27;code&#x27;] for f in i[&#x27;flags&#x27;]) or &#x27;-&#x27;} |&quot;)
+    out += [&quot;&quot;, &quot;## Findings&quot;]
+    n = 0
+    for sev in (&quot;high&quot;, &quot;medium&quot;, &quot;low&quot;):
+        for i in r[&quot;items&quot;]:
+            for f in i[&quot;flags&quot;]:
+                if f[&quot;severity&quot;] == sev:
+                    n += 1
+                    out.append(f&quot;- **{sev.upper()} {f[&#x27;code&#x27;]}** {i[&#x27;label&#x27;]}: {f[&#x27;detail&#x27;]}&quot;)
+    if not n:
+        out.append(&quot;- No findings.&quot;)
+    out += [&quot;&quot;, &quot;## Suggested Cache-Control&quot;]
+    for i in r[&quot;items&quot;]:
+        if i[&quot;flags&quot;]:
+            out.append(f&quot;- {i[&#x27;label&#x27;]}: `{i[&#x27;recommended&#x27;]}` (now: `{i[&#x27;cache_control&#x27;] or &#x27;none&#x27;}`)&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append((name, bool(cond)))
+
+    def one(url, *lines):
+        return review(parse_blocks(&quot;### GET &quot; + url + &quot;\nHTTP/1.1 200 OK\n&quot; + &quot;\n&quot;.join(lines))[0])
+
+    def codes(item):
+        return {f[&quot;code&quot;] for f in item[&quot;flags&quot;]}
+
+    ok(&quot;parse max-age&quot;, parse_cc(&quot;public, max-age=600&quot;)[0] == {&quot;public&quot;: True, &quot;max-age&quot;: 600})
+    ok(&quot;bad max-age reported&quot;, parse_cc(&quot;max-age=10m&quot;)[1])
+    ok(&quot;unknown directive reported&quot;, parse_cc(&quot;maxage=60&quot;)[1])
+    ok(&quot;hashed js detected&quot;, kind_of(&quot;https://x/app.3f9a1c7b.js&quot;, &quot;&quot;) == (&quot;hashed-asset&quot;, True))
+    ok(&quot;unhashed css&quot;, kind_of(&quot;https://x/styles.css&quot;, &quot;text/css&quot;) == (&quot;asset&quot;, False))
+    ok(&quot;html by content type&quot;, kind_of(&quot;https://x/&quot;, &quot;text/html; charset=utf-8&quot;)[0] == &quot;html&quot;)
+    ok(&quot;api by json&quot;, kind_of(&quot;https://x/api/cart&quot;, &quot;application/json&quot;)[0] == &quot;api&quot;)
+    i = one(&quot;https://x/app.3f9a1c7b.js&quot;, &quot;Cache-Control: public, max-age=31536000, immutable&quot;, &quot;ETag: \&quot;a\&quot;&quot;)
+    ok(&quot;ideal hashed asset clean&quot;, not codes(i) and i[&quot;browser_ttl_s&quot;] == 31536000)
+    i = one(&quot;https://x/app.3f9a1c7b.js&quot;, &quot;Cache-Control: public, max-age=3600&quot;)
+    ok(&quot;hashed short ttl&quot;, &quot;HASHED_SHORT_TTL&quot; in codes(i))
+    i = one(&quot;https://x/main.js&quot;, &quot;Cache-Control: public, max-age=31536000, immutable&quot;)
+    ok(&quot;immutable unhashed&quot;, &quot;IMMUTABLE_UNHASHED&quot; in codes(i))
+    i = one(&quot;https://x/&quot;, &quot;Content-Type: text/html&quot;, &quot;Cache-Control: max-age=86400&quot;)
+    ok(&quot;html long ttl&quot;, &quot;HTML_LONG_TTL&quot; in codes(i))
+    i = one(&quot;https://x/&quot;, &quot;Content-Type: text/html&quot;, &quot;Cache-Control: no-cache&quot;, &quot;ETag: \&quot;1\&quot;&quot;)
+    ok(&quot;html no-cache with etag clean&quot;, not codes(i) and i[&quot;browser_ttl_s&quot;] == 0)
+    i = one(&quot;https://x/&quot;, &quot;Content-Type: text/html&quot;, &quot;Cache-Control: no-cache&quot;)
+    ok(&quot;no validator&quot;, &quot;NO_VALIDATOR&quot; in codes(i))
+    i = one(&quot;https://x/login&quot;, &quot;Content-Type: text/html&quot;, &quot;Cache-Control: public, max-age=600&quot;, &quot;Set-Cookie: sid=1&quot;)
+    ok(&quot;public with cookie&quot;, &quot;PUBLIC_WITH_COOKIE&quot; in codes(i))
+    i = review(parse_blocks(&quot;### GET https://x/api/me\n&gt; Authorization: Bearer t\nHTTP/2 200\ncontent-type: application/json\ncache-control: public, s-maxage=300&quot;)[0])
+    ok(&quot;auth shared cache&quot;, &quot;AUTH_SHARED_CACHE&quot; in codes(i) and i[&quot;shared_ttl_s&quot;] == 300)
+    i = review(parse_blocks(&quot;### GET https://x/api/me\n&gt; Cookie: sid=1\nHTTP/2 200\ncontent-type: application/json\ncache-control: max-age=60&quot;)[0])
+    ok(&quot;personal not private&quot;, &quot;PERSONAL_NOT_PRIVATE&quot; in codes(i))
+    i = one(&quot;https://x/api/me&quot;, &quot;Content-Type: application/json&quot;, &quot;Cache-Control: private, max-age=60&quot;)
+    ok(&quot;private hides from cdn&quot;, i[&quot;shared_ttl_s&quot;] == 0 and i[&quot;browser_ttl_s&quot;] == 60)
+    i = one(&quot;https://x/a.css&quot;, &quot;Cache-Control: no-store, max-age=60&quot;)
+    ok(&quot;no-store conflict and asset no caching&quot;, {&quot;NO_STORE_CONFLICT&quot;, &quot;ASSET_NO_CACHING&quot;} &lt;= codes(i))
+    i = one(&quot;https://x/a.css&quot;, &quot;Cache-Control: public, max-age=600&quot;, &quot;Vary: *&quot;)
+    ok(&quot;vary star&quot;, &quot;VARY_STAR&quot; in codes(i))
+    i = one(&quot;https://x/a.css&quot;, &quot;Cache-Control: public, max-age=600&quot;, &quot;Vary: Accept-Encoding, User-Agent&quot;)
+    ok(&quot;vary user-agent fragments&quot;, &quot;VARY_FRAGMENTS&quot; in codes(i))
+    i = one(&quot;https://x/logo.png&quot;, &quot;Date: Wed, 21 Oct 2026 10:00:00 GMT&quot;, &quot;Last-Modified: Mon, 11 Oct 2026 10:00:00 GMT&quot;)
+    ok(&quot;heuristic 10% of 10 days = 1 day&quot;, &quot;HEURISTIC_ONLY&quot; in codes(i) and i[&quot;browser_ttl_s&quot;] == 86400)
+    i = one(&quot;https://x/logo.png&quot;, &quot;Date: Wed, 21 Oct 2026 10:00:00 GMT&quot;, &quot;Expires: Wed, 21 Oct 2026 11:00:00 GMT&quot;)
+    ok(&quot;expires only gives 1h&quot;, &quot;EXPIRES_ONLY&quot; in codes(i) and i[&quot;browser_ttl_s&quot;] == 3600)
+    i = one(&quot;https://x/&quot;, &quot;Content-Type: text/html&quot;, &quot;Pragma: no-cache&quot;)
+    ok(&quot;pragma only&quot;, &quot;PRAGMA_ONLY&quot; in codes(i))
+    i = review(parse_blocks(&quot;### GET https://x/a.css\nHTTP/1.1 503 Service Unavailable\ncache-control: public, max-age=3600&quot;)[0])
+    ok(&quot;error cached&quot;, &quot;ERROR_CACHED&quot; in codes(i))
+    ok(&quot;repeated cache-control merged&quot;, parse_blocks(&quot;### GET https://x/a\nHTTP/1.1 200\ncache-control: public\ncache-control: max-age=5&quot;)[0][&quot;headers&quot;][&quot;cache-control&quot;] == &quot;public, max-age=5&quot;)
+    try:
+        parse_blocks(&quot;HTTP/1.1 200 OK\n&quot;)
+        ok(&quot;missing ### rejected&quot;, False)
+    except CacheError:
+        ok(&quot;missing ### rejected&quot;, True)
+    ok(&quot;fmt_s&quot;, fmt_s(31536000) == &quot;365d&quot; and fmt_s(600) == &quot;10m&quot; and fmt_s(45) == &quot;45s&quot; and fmt_s(699840) == &quot;8.1d&quot;)
+    passed = sum(c for _, c in cases)
+    for name, c in cases:
+        print((&quot;PASS &quot; if c else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Review HTTP caching headers.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;responses text file (&#x27;-&#x27; for stdin)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.file:
+        ap.error(&quot;responses file required (or --self-test)&quot;)
+    try:
+        text = sys.stdin.read() if a.file == &quot;-&quot; else open(a.file, encoding=&quot;utf-8&quot;).read()
+        r = audit(text)
+    except (OSError, CacheError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else to_markdown(r))
+    return 1 if r[&quot;high_flags&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/http-cache-header-reviewer',TI="HTTP Cache Header Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

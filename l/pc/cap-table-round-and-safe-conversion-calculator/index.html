@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cap Table Round and SAFE Conversion Calculator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: cap-table-round-and-safe-conversion-calculator description: Models a priced seed or Series A round on your cap table: converts post-money an">
+<meta property="og:title" content="Cap Table Round and SAFE Conversion Calculator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: cap-table-round-and-safe-conversion-calculator description: Models a priced seed or Series A round on your cap table: converts post-money an">
+<meta property="og:url" content="https://claudebomb.com/l/pc/cap-table-round-and-safe-conversion-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/cap-table-round-and-safe-conversion-calculator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Cap Table Round and SAFE Conversion Calculator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: cap-table-round-and-safe-conversion-calculator
+description: Models a priced seed or Series A round on your cap table: converts post-money and pre-money SAFEs (cap and/or discount), tops up the option pool to a post-money target, prices the new shares and shows every holder&#x27;s dilution, value and red flags, with a pre-money comparison. Offline stdlib Python.
+---
+
+# Cap Table Round and SAFE Conversion Calculator
+
+You help founders, early employees and small-company finance leads understand what a priced equity round does to their cap table before they sign a term sheet. SAFEs, option pool top-ups and the price per share interact in ways that are easy to get wrong in a spreadsheet: a &quot;10% pool post-money&quot; request quietly lowers the price, several post-money SAFEs dilute each other&#x27;s holders but not each other, and a discount can beat a cap. You build the model, explain it in plain language and point out what to negotiate or check with a lawyer.
+
+You work only with the numbers the user gives you, on their machine. You never present the model as legal, tax or investment advice, and you tell the user that the signed SAFEs, the term sheet and the closing cap table prepared by their lawyer decide the real numbers.
+
+## Files in this skill
+
+- `scripts/captable_round.py` - the calculator: reads a cap table CSV and a round JSON, solves price per share, SAFE conversions and pool top-up together, prints before/after fully diluted tables, SAFE conversion details and warnings; `--compare 10000000,12000000` adds a pre-money comparison, `--json` for tooling, `--self-test` runs 18 checks (Python 3.8+ standard library only)
+- `references/cap-table-math.md` - the formulas: fully diluted shares, price per share, post-money and pre-money SAFE conversion, discount vs cap, the option pool shuffle, rounding
+- `references/term-sheet-checks.md` - what to check and negotiate: pool size and timing, SAFE stacking, MFN and pro rata side letters, liquidation preference basics, questions for your lawyer
+- `templates/round-summary.md` - the summary you hand back to the founders
+- `examples/cap_table.csv`, `examples/round.json` - a fictional two-founder company raising 3M at 12M pre-money with three SAFEs and a 10% post-money pool target
+
+## Workflow
+
+### 1. Collect the inputs
+Ask for:
+- The current fully diluted cap table: every holder of common and preferred shares, granted options (vested or not), and the unissued pool. Warrants and convertible notes too, if any (treat notes like SAFEs with a cap/discount and add accrued interest to the amount).
+- Every SAFE: holder, amount, valuation cap, discount, and whether it is a post-money or pre-money SAFE (the document title says &quot;Post-Money Valuation Cap&quot; for the current standard). Ask about MFN and pro rata side letters.
+- The proposed round: pre-money valuation, new money, and the option pool requirement (for example &quot;unissued pool equal to 10% post-money&quot;).
+If something is missing, ask; do not guess the SAFE type or the pool definition.
+
+### 2. Build the input files
+Write `cap_table.csv` with columns `holder,class,shares` (class: common, preferred, options, pool) and `round.json` with `pre_money`, `new_money`, optional `pool_target_post` as a fraction (0.10, not 10), optional `investor_name`, and `safes` (`holder`, `amount`, optional `cap`, optional `discount` as a fraction, `type` &quot;post&quot; or &quot;pre&quot;).
+
+### 3. Run the model
+```
+python3 scripts/captable_round.py examples/cap_table.csv examples/round.json
+python3 scripts/captable_round.py cap_table.csv round.json --compare 10000000,12000000,15000000
+python3 scripts/captable_round.py cap_table.csv round.json --json &gt; round_model.json
+python3 scripts/captable_round.py --self-test
+```
+Exit 0 = no warnings, 1 = warnings to discuss, 2 = bad input. Without a shell, follow `references/cap-table-math.md` step by step and show your working; iterate the price and pool top-up two or three times until they stop changing.
+
+### 4. Explain the result
+- Lead with four numbers: price per share, post-money valuation, new investor ownership, and founders&#x27; combined ownership after the round.
+- Explain each SAFE: which term won (cap or discount), the effective price, and the ownership it buys.
+- Explain the pool shuffle in one sentence: the top-up is counted pre-money, so it lowers the price and is paid for by existing holders. Show its cost in percentage points.
+- Use the comparison table to show how pre-money, pool size or a smaller raise move founder ownership. Suggest specific levers (a smaller pool sized to a real hiring plan, pool counted post-money, a higher pre-money, a smaller raise).
+
+### 5. Flag what to check
+Go through every warning the script prints and `references/term-sheet-checks.md`. Always mention: verify SAFE types and caps against the signed documents, confirm how the investor defines the pool, ask about MFN and pro rata rights, and ask the lawyer for the pro forma closing cap table to compare against this model.
+
+### 6. Hand back the summary
+Fill `templates/round-summary.md`: headline numbers, before/after table, SAFE conversions, pool shuffle cost, comparison, warnings, negotiation points and open questions.
+
+## Rules
+- Shares are whole numbers: the script rounds SAFE and investor shares down and the pool top-up up, so totals can differ from the headline valuation by a few currency units; say so if asked.
+- Percentages are of the fully diluted total (all shares, granted options and the unissued pool).
+- Never tell the user a round is &quot;good&quot; or &quot;bad&quot;; show the trade-offs and the questions to ask.
+- Keep the user&#x27;s numbers private; do not upload the cap table anywhere.
+
+FILE:references/cap-table-math.md
+# Cap table math used by captable_round.py
+
+## Fully diluted shares
+Fully diluted (FD) = issued common + issued preferred + granted options (vested and unvested) + unissued option pool (+ warrants). Ownership percentages in the report are always of the FD total.
+
+## Priced round
+- Pre-money FD = existing FD + SAFE conversion shares + option pool top-up.
+- Price per share = pre-money valuation / pre-money FD.
+- New investor shares = new money / price per share (rounded down).
+- Post-money FD = pre-money FD + new investor shares; post-money valuation = post-money FD x price.
+Because the SAFE shares and the pool top-up are inside the pre-money FD, the price depends on them and they depend on the price. The script solves this by fixed-point iteration (it converges in a few rounds) and then rounds to whole shares.
+
+## Option pool shuffle
+If the investor asks for an unissued pool equal to T% of the post-money FD:
+- Top-up = max(0, T x post-money FD - existing unissued pool).
+- The top-up is part of the pre-money FD, so it lowers the price per share. The new investor still gets new money / post-money valuation; existing holders carry the whole dilution of the top-up.
+- Cost to existing holders, in percentage points of pre-money ownership = top-up / pre-money FD.
+
+## Post-money SAFE (current standard)
+The holder gets ownership = amount / post-money valuation cap, measured against the &quot;company capitalization&quot; just before the round: existing FD (including the unissued pool, excluding the new pool top-up) plus the shares of all converting post-money SAFEs.
+- With several post-money SAFEs with fractions f1..fn (fi = amount / cap) and existing FD C, total SAFE shares S = C x f / (1 - f) where f = sum fi; each SAFE gets fi x (C + S).
+- Cap price = cap / (C + S).
+- Post-money SAFEs dilute the founders and earlier holders, not each other.
+
+## Pre-money SAFE (older form)
+Cap price = cap / existing FD before any SAFE converts. Each later SAFE dilutes the earlier ones.
+
+## Discount and &quot;better of&quot;
+Discount price = round price x (1 - discount). A SAFE with both terms converts at the lower of cap price and discount price, so it gets more shares. A SAFE with neither converts at the round price (check for an MFN clause instead).
+
+## Convertible notes
+Treat a note like a SAFE: amount = principal + accrued interest to the conversion date, with its cap and discount. Note maturity and repayment terms are not modeled.
+
+## Rounding
+SAFE and investor shares are rounded down; the pool top-up is rounded up so the pool target is met. Real closing sets may round differently by a few shares.
+
+## Worked example (examples/)
+Existing FD 9,000,000 (8,000,000 founders, 700,000 granted options, 300,000 unissued pool). Raise 3,000,000 at 12,000,000 pre-money with a 10% post-money pool target and three post-money SAFEs. Result: price about 1.1104, pool top-up 1,050,912, investor 20.00%, SAFEs 5.60% together, founders from 88.89% to 59.22%.
+
+FILE:references/term-sheet-checks.md
+# Term sheet and SAFE checks to raise with founders
+
+## Option pool
+- Size the pool to a real 12-18 month hiring plan (roles x typical grant) instead of a round percentage; a smaller, justified pool is the most common negotiation win.
+- Ask whether the pool target is measured pre-money or post-money, and whether already granted options count toward it.
+- Compare &quot;pool counted pre-money&quot; vs &quot;pool counted post-money&quot; with the script (set the target lower or 0 and add the pool to the investor side) to show the difference in founder ownership.
+
+## SAFEs
+- Confirm every SAFE&#x27;s type (post-money or pre-money), cap, discount and amount from the signed document, not from memory or a spreadsheet.
+- Post-money SAFEs stack: every new post-money SAFE dilutes the founders by roughly amount / cap. Add them up before raising more on SAFEs.
+- MFN clauses let an uncapped SAFE take better terms from a later SAFE; check whether any MFN was triggered.
+- Pro rata side letters let SAFE holders buy into this round; their money usually comes out of the round size, so confirm the allocation with the lead.
+
+## Round terms that change outcomes but not this model
+- Liquidation preference (1x non-participating is the common seed standard; participating or more than 1x is investor-friendly).
+- Anti-dilution protection (broad-based weighted average is common; full ratchet is harsh).
+- Board seats, protective provisions, founder vesting reset, and information rights.
+The script does not model exit waterfalls; say so and suggest a waterfall model if the user asks what they receive at a given exit value.
+
+## Questions for the lawyer
+1. Please share the pro forma closing cap table so we can compare it with our model.
+2. Which SAFEs and notes convert, and at what price did you use for each?
+3. How is the option pool target defined, and is it measured on a fully diluted basis including the SAFEs?
+4. Are there MFN, pro rata or side letter rights we need to honor in this round?
+5. Are there any warrants, promised options or advisor grants not yet on the cap table?
+
+## Red flags to mention
+- SAFEs converting into more than about 20% of the company.
+- A single round selling more than about 25-30% of the company.
+- Founders together below 50% after a seed round.
+- A cap table with no pool at all, or a pool far larger than the hiring plan.
+- Numbers in the term sheet that do not match the model by more than rounding.
+
+FILE:templates/round-summary.md
+# Round summary: {{company}} - {{round_name}}
+
+Prepared {{date}} from the cap table and SAFE terms you shared. Model only: the signed documents and the lawyer&#x27;s closing cap table decide the real numbers.
+
+## Headline
+- Raise: {{new_money}} at {{pre_money}} pre-money ({{post_money}} post-money)
+- Price per share: {{price_per_share}}
+- New investors own: {{investor_pct}}
+- Founders together: {{founders_before_pct}} before -&gt; {{founders_after_pct}} after
+- Option pool after the round: {{pool_after_pct}} unissued (top-up {{pool_top_up}} shares)
+
+## SAFE conversions
+| SAFE | type | amount | cap | discount | term that won | shares | ownership |
+|---|---|---:|---:|---:|---|---:|---:|
+| {{safe}} | {{type}} | {{amount}} | {{cap}} | {{discount}} | {{cap_or_discount}} | {{shares}} | {{pct}} |
+
+## Cap table before and after
+(paste the table from captable_round.py)
+
+## What the option pool shuffle costs
+{{one sentence: top-up counted pre-money, cost in percentage points, who pays}}
+
+## Scenarios
+| pre-money | price/share | new investors % | founders % |
+|---:|---:|---:|---:|
+| {{pre}} | {{price}} | {{inv_pct}} | {{founders_pct}} |
+
+## Warnings from the model
+- {{warning}}
+
+## Negotiation points
+1. {{for example: size the pool to the 18-month hiring plan (about X%) instead of 10%}}
+2. {{...}}
+
+## Open questions for the lawyer and investors
+- {{question}}
+
+FILE:examples/cap_table.csv
+holder,class,shares
+Founder A (CEO),common,4200000
+Founder B (CTO),common,3800000
+Early employee grants,options,600000
+Advisor grants,options,100000
+Unissued option pool,pool,300000
+
+FILE:examples/round.json
+{
+  &quot;investor_name&quot;: &quot;Seed lead and syndicate&quot;,
+  &quot;pre_money&quot;: 12000000,
+  &quot;new_money&quot;: 3000000,
+  &quot;pool_target_post&quot;: 0.10,
+  &quot;safes&quot;: [
+    {&quot;holder&quot;: &quot;Angel SAFE 2024&quot;, &quot;amount&quot;: 250000, &quot;cap&quot;: 6000000, &quot;discount&quot;: 0.2, &quot;type&quot;: &quot;post&quot;},
+    {&quot;holder&quot;: &quot;Accelerator SAFE&quot;, &quot;amount&quot;: 125000, &quot;cap&quot;: 5000000, &quot;type&quot;: &quot;post&quot;},
+    {&quot;holder&quot;: &quot;Friends and family note-style SAFE&quot;, &quot;amount&quot;: 100000, &quot;discount&quot;: 0.15, &quot;type&quot;: &quot;post&quot;}
+  ]
+}
+
+FILE:scripts/captable_round.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;captable_round.py - model a priced equity round on a startup cap table.
+
+Converts post-money and pre-money SAFEs (valuation cap and/or discount), tops up the
+option pool to a post-money target (the &quot;option pool shuffle&quot;), prices the new
+shares, and prints the pre-round and post-round fully diluted cap table, the price
+per share, each holder&#x27;s dilution and sanity warnings. Standard library only.
+
+Usage:
+  python3 captable_round.py CAP_TABLE.csv ROUND.json [--json] [--compare PRE1,PRE2,...]
+  python3 captable_round.py --self-test
+
+CAP_TABLE.csv columns: holder,class,shares   (class: common, preferred, options, pool)
+  - &quot;options&quot; = granted options (outstanding), &quot;pool&quot; = unissued option pool.
+ROUND.json keys:
+  pre_money (number, required), new_money (number, required),
+  pool_target_post (fraction 0-1, optional, e.g. 0.10), investor_name (optional),
+  safes: [{&quot;holder&quot;, &quot;amount&quot;, &quot;cap&quot; (optional), &quot;discount&quot; (fraction, optional),
+           &quot;type&quot;: &quot;post&quot; | &quot;pre&quot; (default &quot;post&quot;)}]
+Exit codes: 0 ok, 1 ok with warnings, 2 bad input.
+This is a model for planning and negotiation. Lawyers and the signed documents decide the real numbers.
+&quot;&quot;&quot;
+import csv, json, math, sys
+
+CLASSES = {&quot;common&quot;, &quot;preferred&quot;, &quot;options&quot;, &quot;pool&quot;}
+
+
+class InputError(Exception):
+    pass
+
+
+def load_cap_table(path):
+    rows = []
+    with open(path, newline=&quot;&quot;, encoding=&quot;utf-8&quot;) as f:
+        r = csv.DictReader(f)
+        need = {&quot;holder&quot;, &quot;class&quot;, &quot;shares&quot;}
+        if not r.fieldnames or not need.issubset({h.strip() for h in r.fieldnames}):
+            raise InputError(&quot;cap table needs columns holder,class,shares&quot;)
+        for i, row in enumerate(r, start=2):
+            row = {k.strip(): (v or &quot;&quot;).strip() for k, v in row.items()}
+            if not row[&quot;holder&quot;] and not row[&quot;shares&quot;]:
+                continue
+            cls = row[&quot;class&quot;].lower()
+            if cls not in CLASSES:
+                raise InputError(&quot;line %d: class must be one of %s&quot; % (i, &quot;, &quot;.join(sorted(CLASSES))))
+            try:
+                sh = int(row[&quot;shares&quot;].replace(&quot;,&quot;, &quot;&quot;).replace(&quot;_&quot;, &quot;&quot;))
+            except ValueError:
+                raise InputError(&quot;line %d: shares must be a whole number&quot; % i)
+            if sh &lt; 0:
+                raise InputError(&quot;line %d: negative shares&quot; % i)
+            rows.append({&quot;holder&quot;: row[&quot;holder&quot;] or &quot;(unnamed)&quot;, &quot;class&quot;: cls, &quot;shares&quot;: sh})
+    if not rows:
+        raise InputError(&quot;cap table is empty&quot;)
+    return rows
+
+
+def validate_round(rd):
+    for k in (&quot;pre_money&quot;, &quot;new_money&quot;):
+        if not isinstance(rd.get(k), (int, float)) or rd[k] &lt;= 0:
+            raise InputError(&quot;round.%s must be a positive number&quot; % k)
+    t = rd.get(&quot;pool_target_post&quot;, 0) or 0
+    if not 0 &lt;= t &lt; 0.5:
+        raise InputError(&quot;pool_target_post must be a fraction between 0 and 0.5 (e.g. 0.10)&quot;)
+    for s in rd.get(&quot;safes&quot;, []) or []:
+        if not isinstance(s.get(&quot;amount&quot;), (int, float)) or s[&quot;amount&quot;] &lt;= 0:
+            raise InputError(&quot;every SAFE needs a positive amount (%s)&quot; % s.get(&quot;holder&quot;))
+        if s.get(&quot;cap&quot;) is not None and s[&quot;cap&quot;] &lt;= 0:
+            raise InputError(&quot;SAFE cap must be positive (%s)&quot; % s.get(&quot;holder&quot;))
+        d = s.get(&quot;discount&quot;) or 0
+        if not 0 &lt;= d &lt; 1:
+            raise InputError(&quot;SAFE discount must be a fraction like 0.2 (%s)&quot; % s.get(&quot;holder&quot;))
+        if s.get(&quot;type&quot;, &quot;post&quot;) not in (&quot;post&quot;, &quot;pre&quot;):
+            raise InputError(&quot;SAFE type must be &#x27;post&#x27; or &#x27;pre&#x27; (%s)&quot; % s.get(&quot;holder&quot;))
+
+
+def model(rows, rd, iterations=500):
+    &quot;&quot;&quot;Fixed-point solve for price, SAFE conversion shares and pool top-up.&quot;&quot;&quot;
+    validate_round(rd)
+    safes = rd.get(&quot;safes&quot;, []) or []
+    C = sum(r[&quot;shares&quot;] for r in rows)                       # pre-round fully diluted, before SAFEs
+    unissued = sum(r[&quot;shares&quot;] for r in rows if r[&quot;class&quot;] == &quot;pool&quot;)
+    target = rd.get(&quot;pool_target_post&quot;, 0) or 0
+    pre_money, new_money = float(rd[&quot;pre_money&quot;]), float(rd[&quot;new_money&quot;])
+    safe_sh = [0.0] * len(safes)
+    pool_top = 0.0
+    price = pre_money / C
+    for _ in range(iterations):
+        S = sum(safe_sh)
+        pre_fd = C + S + pool_top
+        price = pre_money / pre_fd
+        new_sh = new_money / price
+        post = pre_fd + new_sh
+        pool_top_n = max(0.0, target * post - unissued) if target else 0.0
+        S_post = sum(sh for sh, s in zip(safe_sh, safes) if s.get(&quot;type&quot;, &quot;post&quot;) == &quot;post&quot;)
+        new_safe = []
+        for s in safes:
+            prices = []
+            if s.get(&quot;cap&quot;):
+                if s.get(&quot;type&quot;, &quot;post&quot;) == &quot;post&quot;:
+                    # post-money SAFE: capitalization includes all converting post-money SAFEs (not the new money or pool top-up)
+                    prices.append(s[&quot;cap&quot;] / (C + S_post))
+                else:
+                    prices.append(s[&quot;cap&quot;] / C)
+            if s.get(&quot;discount&quot;):
+                prices.append(price * (1 - s[&quot;discount&quot;]))
+            if not prices:
+                prices.append(price)       # uncapped, no discount: converts at the round price
+            new_safe.append(s[&quot;amount&quot;] / min(prices))
+        delta = abs(pool_top_n - pool_top) + sum(abs(a - b) for a, b in zip(new_safe, safe_sh))
+        safe_sh, pool_top = new_safe, pool_top_n
+        if delta &lt; 1e-6:
+            break
+    # final integer shares (round down, like most closing sets)
+    safe_int = [math.floor(x) for x in safe_sh]
+    pool_int = math.ceil(pool_top) if pool_top &gt; 0 else 0
+    pre_fd = C + sum(safe_int) + pool_int
+    price = pre_money / pre_fd
+    new_int = math.floor(new_money / price)
+    post = pre_fd + new_int
+    conv = []
+    for s, sh in zip(safes, safe_int):
+        conv.append({&quot;holder&quot;: s.get(&quot;holder&quot;, &quot;SAFE&quot;), &quot;amount&quot;: s[&quot;amount&quot;], &quot;type&quot;: s.get(&quot;type&quot;, &quot;post&quot;),
+                     &quot;cap&quot;: s.get(&quot;cap&quot;), &quot;discount&quot;: s.get(&quot;discount&quot;), &quot;shares&quot;: sh,
+                     &quot;effective_price&quot;: round(s[&quot;amount&quot;] / sh, 6) if sh else None})
+    return {&quot;price_per_share&quot;: price, &quot;pre_round_fd_before_safes&quot;: C, &quot;pre_money_fd&quot;: pre_fd,
+            &quot;safe_conversions&quot;: conv, &quot;pool_top_up&quot;: pool_int, &quot;new_money_shares&quot;: new_int,
+            &quot;post_money_fd&quot;: post, &quot;post_money_valuation&quot;: post * price,
+            &quot;investor&quot;: rd.get(&quot;investor_name&quot;, &quot;New investors&quot;)}
+
+
+def tables(rows, rd, res):
+    post = res[&quot;post_money_fd&quot;]
+    C = res[&quot;pre_round_fd_before_safes&quot;]
+    out = []
+    for r in rows:
+        out.append({&quot;holder&quot;: r[&quot;holder&quot;], &quot;class&quot;: r[&quot;class&quot;], &quot;before&quot;: r[&quot;shares&quot;], &quot;after&quot;: r[&quot;shares&quot;]})
+    if res[&quot;pool_top_up&quot;]:
+        out.append({&quot;holder&quot;: &quot;Option pool top-up&quot;, &quot;class&quot;: &quot;pool&quot;, &quot;before&quot;: 0, &quot;after&quot;: res[&quot;pool_top_up&quot;]})
+    for c in res[&quot;safe_conversions&quot;]:
+        out.append({&quot;holder&quot;: c[&quot;holder&quot;] + &quot; (SAFE)&quot;, &quot;class&quot;: &quot;preferred&quot;, &quot;before&quot;: 0, &quot;after&quot;: c[&quot;shares&quot;]})
+    out.append({&quot;holder&quot;: res[&quot;investor&quot;], &quot;class&quot;: &quot;preferred&quot;, &quot;before&quot;: 0, &quot;after&quot;: res[&quot;new_money_shares&quot;]})
+    for o in out:
+        o[&quot;pct_before&quot;] = o[&quot;before&quot;] / C if C else 0
+        o[&quot;pct_after&quot;] = o[&quot;after&quot;] / post if post else 0
+        o[&quot;value_after&quot;] = o[&quot;after&quot;] * res[&quot;price_per_share&quot;]
+    return out
+
+
+def warnings(rows, rd, res, tab):
+    w = []
+    post = res[&quot;post_money_fd&quot;]
+    safe_pct = sum(c[&quot;shares&quot;] for c in res[&quot;safe_conversions&quot;]) / post
+    inv_pct = res[&quot;new_money_shares&quot;] / post
+    if safe_pct &gt; 0.20:
+        w.append(&quot;SAFEs convert into %.1f%% of the company: more than 20%% is a lot of dilution for one round.&quot; % (100 * safe_pct))
+    if inv_pct &gt; 0.30:
+        w.append(&quot;New investors get %.1f%% post-money; above about 25-30%% in one round can make later rounds hard.&quot; % (100 * inv_pct))
+    for c in res[&quot;safe_conversions&quot;]:
+        if not c[&quot;cap&quot;] and not c[&quot;discount&quot;]:
+            w.append(&quot;%s is uncapped with no discount: it converts at the round price; check for an MFN clause.&quot; % c[&quot;holder&quot;])
+        if c[&quot;effective_price&quot;] and c[&quot;effective_price&quot;] &gt; res[&quot;price_per_share&quot;] + 1e-9:
+            w.append(&quot;%s converts above the round price (cap higher than the round): check the SAFE terms.&quot; % c[&quot;holder&quot;])
+    if res[&quot;pool_top_up&quot;]:
+        pre_cost = res[&quot;pool_top_up&quot;] / res[&quot;pre_money_fd&quot;]
+        w.append(&quot;Option pool shuffle: the %s-share pool top-up is counted pre-money, so existing holders (not the new investor) absorb %.1f%% of pre-money dilution.&quot; % (format(res[&quot;pool_top_up&quot;], &quot;,&quot;), 100 * pre_cost))
+    founders = [t for t in tab if t[&quot;class&quot;] == &quot;common&quot; and t[&quot;before&quot;]]
+    fpct = sum(t[&quot;pct_after&quot;] for t in founders)
+    if founders and fpct &lt; 0.5:
+        w.append(&quot;Common holders together own %.1f%% after the round (below 50%%).&quot; % (100 * fpct))
+    granted = sum(r[&quot;shares&quot;] for r in rows if r[&quot;class&quot;] == &quot;options&quot;)
+    if granted == 0 and not any(r[&quot;class&quot;] == &quot;pool&quot; for r in rows):
+        w.append(&quot;No options or pool in the cap table: is the employee pool missing?&quot;)
+    if abs(res[&quot;post_money_valuation&quot;] - (rd[&quot;pre_money&quot;] + rd[&quot;new_money&quot;])) / (rd[&quot;pre_money&quot;] + rd[&quot;new_money&quot;]) &gt; 0.001:
+        w.append(&quot;Post-money value differs from pre-money + new money because of share rounding (%.0f vs %.0f).&quot; % (res[&quot;post_money_valuation&quot;], rd[&quot;pre_money&quot;] + rd[&quot;new_money&quot;]))
+    return w
+
+
+def money(x):
+    return &quot;{:,.0f}&quot;.format(x)
+
+
+def report(rows, rd, res, tab, warns):
+    L = []
+    L.append(&quot;# Round model: %s raises %s at %s pre-money&quot; % (res[&quot;investor&quot;], money(rd[&quot;new_money&quot;]), money(rd[&quot;pre_money&quot;])))
+    L.append(&quot;&quot;)
+    L.append(&quot;Price per share: %.4f | pre-money fully diluted shares: %s | post-money fully diluted shares: %s | post-money valuation: %s&quot; % (
+        res[&quot;price_per_share&quot;], money(res[&quot;pre_money_fd&quot;]), money(res[&quot;post_money_fd&quot;]), money(res[&quot;post_money_valuation&quot;])))
+    if rd.get(&quot;pool_target_post&quot;):
+        L.append(&quot;Option pool target: %.1f%% post-money unissued; top-up %s shares (pre-money).&quot; % (100 * rd[&quot;pool_target_post&quot;], money(res[&quot;pool_top_up&quot;])))
+    L.append(&quot;&quot;)
+    if res[&quot;safe_conversions&quot;]:
+        L.append(&quot;## SAFE conversions&quot;)
+        L.append(&quot;| SAFE | type | amount | cap | discount | shares | effective price |&quot;)
+        L.append(&quot;|---|---|---:|---:|---:|---:|---:|&quot;)
+        for c in res[&quot;safe_conversions&quot;]:
+            L.append(&quot;| %s | %s-money | %s | %s | %s | %s | %.4f |&quot; % (c[&quot;holder&quot;], c[&quot;type&quot;], money(c[&quot;amount&quot;]),
+                     money(c[&quot;cap&quot;]) if c[&quot;cap&quot;] else &quot;none&quot;, (&quot;%d%%&quot; % round(100 * c[&quot;discount&quot;])) if c[&quot;discount&quot;] else &quot;none&quot;,
+                     money(c[&quot;shares&quot;]), c[&quot;effective_price&quot;] or 0))
+        L.append(&quot;&quot;)
+    L.append(&quot;## Cap table before and after (fully diluted)&quot;)
+    L.append(&quot;| holder | class | shares before | % before | shares after | % after | value at round price |&quot;)
+    L.append(&quot;|---|---|---:|---:|---:|---:|---:|&quot;)
+    for t in tab:
+        L.append(&quot;| %s | %s | %s | %.2f%% | %s | %.2f%% | %s |&quot; % (t[&quot;holder&quot;], t[&quot;class&quot;], money(t[&quot;before&quot;]), 100 * t[&quot;pct_before&quot;],
+                 money(t[&quot;after&quot;]), 100 * t[&quot;pct_after&quot;], money(t[&quot;value_after&quot;])))
+    L.append(&quot;| **Total** | | %s | 100.00%% | %s | 100.00%% | %s |&quot; % (money(res[&quot;pre_round_fd_before_safes&quot;]), money(res[&quot;post_money_fd&quot;]), money(res[&quot;post_money_valuation&quot;])))
+    L.append(&quot;&quot;)
+    L.append(&quot;## Warnings&quot;)
+    L.extend([&quot;- &quot; + x for x in warns] or [&quot;- none&quot;])
+    L.append(&quot;&quot;)
+    L.append(&quot;Model only: the signed SAFEs, term sheet and closing cap table from your lawyer decide the real numbers.&quot;)
+    return &quot;\n&quot;.join(L)
+
+
+def compare(rows, rd, pres):
+    L = [&quot;## Pre-money comparison&quot;, &quot;| pre-money | price/share | new investors % | SAFEs % | pool top-up | common holders % |&quot;, &quot;|---:|---:|---:|---:|---:|---:|&quot;]
+    for p in pres:
+        r2 = dict(rd, pre_money=p)
+        res = model(rows, r2)
+        tab = tables(rows, r2, res)
+        post = res[&quot;post_money_fd&quot;]
+        L.append(&quot;| %s | %.4f | %.2f%% | %.2f%% | %s | %.2f%% |&quot; % (money(p), res[&quot;price_per_share&quot;], 100 * res[&quot;new_money_shares&quot;] / post,
+                 100 * sum(c[&quot;shares&quot;] for c in res[&quot;safe_conversions&quot;]) / post, money(res[&quot;pool_top_up&quot;]),
+                 100 * sum(t[&quot;pct_after&quot;] for t in tab if t[&quot;class&quot;] == &quot;common&quot;)))
+    return &quot;\n&quot;.join(L)
+
+
+def self_test():
+    ok = True
+    def check(name, cond):
+        nonlocal ok
+        print((&quot;PASS  &quot; if cond else &quot;FAIL  &quot;) + name)
+        ok = ok and cond
+    base = [{&quot;holder&quot;: &quot;A&quot;, &quot;class&quot;: &quot;common&quot;, &quot;shares&quot;: 4_500_000}, {&quot;holder&quot;: &quot;B&quot;, &quot;class&quot;: &quot;common&quot;, &quot;shares&quot;: 4_500_000},
+            {&quot;holder&quot;: &quot;Pool&quot;, &quot;class&quot;: &quot;pool&quot;, &quot;shares&quot;: 1_000_000}]
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000})
+    check(&quot;plain round price = pre-money / FD&quot;, abs(r[&quot;price_per_share&quot;] - 1.0) &lt; 1e-9)
+    check(&quot;plain round investor shares = new money / price&quot;, r[&quot;new_money_shares&quot;] == 2_500_000)
+    check(&quot;post-money = pre + new&quot;, abs(r[&quot;post_money_valuation&quot;] - 12_500_000) &lt; 1)
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000, &quot;pool_target_post&quot;: 0.15})
+    pool_after = 1_000_000 + r[&quot;pool_top_up&quot;]
+    check(&quot;pool shuffle hits 15% post-money&quot;, abs(pool_after / r[&quot;post_money_fd&quot;] - 0.15) &lt; 1e-4)
+    check(&quot;pool shuffle lowers the price&quot;, r[&quot;price_per_share&quot;] &lt; 1.0)
+    check(&quot;investor still owns new/post-money (20%)&quot;, abs(r[&quot;new_money_shares&quot;] / r[&quot;post_money_fd&quot;] - 0.2) &lt; 1e-4)
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000, &quot;safes&quot;: [{&quot;holder&quot;: &quot;S&quot;, &quot;amount&quot;: 500_000, &quot;cap&quot;: 5_000_000, &quot;type&quot;: &quot;post&quot;}]})
+    c = r[&quot;safe_conversions&quot;][0]
+    check(&quot;post-money SAFE owns amount/cap of pre-round capitalization (10%)&quot;, abs(c[&quot;shares&quot;] / (10_000_000 + c[&quot;shares&quot;]) - 0.10) &lt; 1e-6)
+    check(&quot;capped SAFE converts below round price&quot;, c[&quot;effective_price&quot;] &lt; r[&quot;price_per_share&quot;])
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000, &quot;safes&quot;: [{&quot;holder&quot;: &quot;S&quot;, &quot;amount&quot;: 500_000, &quot;discount&quot;: 0.2}]})
+    c = r[&quot;safe_conversions&quot;][0]
+    check(&quot;discount-only SAFE converts at 80% of round price&quot;, abs(c[&quot;effective_price&quot;] / r[&quot;price_per_share&quot;] - 0.8) &lt; 1e-4)
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000, &quot;safes&quot;: [{&quot;holder&quot;: &quot;S&quot;, &quot;amount&quot;: 500_000, &quot;cap&quot;: 50_000_000, &quot;discount&quot;: 0.2}]})
+    c = r[&quot;safe_conversions&quot;][0]
+    check(&quot;cap above round: discount wins&quot;, abs(c[&quot;effective_price&quot;] / r[&quot;price_per_share&quot;] - 0.8) &lt; 1e-4)
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000, &quot;safes&quot;: [{&quot;holder&quot;: &quot;S&quot;, &quot;amount&quot;: 500_000, &quot;cap&quot;: 4_000_000, &quot;type&quot;: &quot;pre&quot;}]})
+    c = r[&quot;safe_conversions&quot;][0]
+    check(&quot;pre-money SAFE price = cap / pre-round FD&quot;, abs(c[&quot;effective_price&quot;] - 0.4) &lt; 1e-3)
+    r = model(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000, &quot;safes&quot;: [{&quot;holder&quot;: &quot;S&quot;, &quot;amount&quot;: 500_000}]})
+    tab = tables(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000}, r)
+    w = warnings(base, {&quot;pre_money&quot;: 10_000_000, &quot;new_money&quot;: 2_500_000}, r, tab)
+    check(&quot;uncapped SAFE warning&quot;, any(&quot;uncapped&quot; in x for x in w))
+    two = {&quot;pre_money&quot;: 8_000_000, &quot;new_money&quot;: 2_000_000, &quot;safes&quot;: [{&quot;holder&quot;: &quot;S1&quot;, &quot;amount&quot;: 300_000, &quot;cap&quot;: 6_000_000}, {&quot;holder&quot;: &quot;S2&quot;, &quot;amount&quot;: 600_000, &quot;cap&quot;: 6_000_000}]}
+    r = model(base, two)
+    s1, s2 = r[&quot;safe_conversions&quot;]
+    check(&quot;two post-money SAFEs at same cap: shares proportional to amount&quot;, abs(s2[&quot;shares&quot;] / s1[&quot;shares&quot;] - 2) &lt; 1e-4)
+    check(&quot;two post-money SAFEs together own 15% of capitalization&quot;, abs((s1[&quot;shares&quot;] + s2[&quot;shares&quot;]) / (10_000_000 + s1[&quot;shares&quot;] + s2[&quot;shares&quot;]) - 0.15) &lt; 1e-5)
+    tab = tables(base, two, r)
+    check(&quot;post-round table sums to post-money FD&quot;, sum(t[&quot;after&quot;] for t in tab) == r[&quot;post_money_fd&quot;])
+    for bad, name in (({&quot;pre_money&quot;: 0, &quot;new_money&quot;: 1}, &quot;zero pre-money rejected&quot;), ({&quot;pre_money&quot;: 1, &quot;new_money&quot;: 1, &quot;pool_target_post&quot;: 15}, &quot;pool target as percent rejected&quot;),
+                      ({&quot;pre_money&quot;: 1, &quot;new_money&quot;: 1, &quot;safes&quot;: [{&quot;holder&quot;: &quot;x&quot;, &quot;amount&quot;: 1, &quot;discount&quot;: 20}]}, &quot;discount as percent rejected&quot;)):
+        try:
+            model(base, bad); check(name, False)
+        except InputError:
+            check(name, True)
+    print(&quot;ALL PASS&quot; if ok else &quot;SOME TESTS FAILED&quot;)
+    return 0 if ok else 1
+
+
+def main(argv):
+    if &quot;--self-test&quot; in argv:
+        return self_test()
+    args = [a for a in argv if not a.startswith(&quot;--&quot;)]
+    pres = None
+    if &quot;--compare&quot; in argv:
+        i = argv.index(&quot;--compare&quot;)
+        try:
+            pres = [float(x) for x in argv[i + 1].split(&quot;,&quot;)]
+        except (IndexError, ValueError):
+            print(&quot;--compare needs comma-separated pre-money values&quot;, file=sys.stderr); return 2
+        args = [a for a in args if a != argv[i + 1]]
+    if len(args) != 2:
+        print(__doc__, file=sys.stderr); return 2
+    try:
+        rows = load_cap_table(args[0])
+        with open(args[1], encoding=&quot;utf-8&quot;) as f:
+            rd = json.load(f)
+        res = model(rows, rd)
+    except (InputError, OSError, json.JSONDecodeError) as e:
+        print(&quot;input error: %s&quot; % e, file=sys.stderr); return 2
+    tab = tables(rows, rd, res)
+    warns = warnings(rows, rd, res, tab)
+    if &quot;--json&quot; in argv:
+        print(json.dumps({&quot;round&quot;: rd, &quot;result&quot;: res, &quot;table&quot;: tab, &quot;warnings&quot;: warns}, indent=2))
+    else:
+        print(report(rows, rd, res, tab, warns))
+        if pres:
+            print(); print(compare(rows, rd, pres))
+    return 1 if warns else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/cap-table-round-and-safe-conversion-calculator',TI="Cap Table Round and SAFE Conversion Calculator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Insurance Claim Document Checklist Builder (JSON) | Open library | claudebomb.com</title>
+<meta name="description" content="{ &quot;role&quot;: &quot;You are an independent insurance claims preparation advisor who has helped thousands of people file auto, home, travel, and health claims. ">
+<meta property="og:title" content="Insurance Claim Document Checklist Builder (JSON) | Open library | claudebomb.com">
+<meta property="og:description" content="{ &quot;role&quot;: &quot;You are an independent insurance claims preparation advisor who has helped thousands of people file auto, home, travel, and health claims. ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/insurance-claim-document-checklist-builder-json/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/insurance-claim-document-checklist-builder-json/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Insurance Claim Document Checklist Builder (JSON)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">{
+  &quot;role&quot;: &quot;You are an independent insurance claims preparation advisor who has helped thousands of people file auto, home, travel, and health claims. You know what adjusters look for, which documents get claims delayed or denied when they are missing, and how to build a clean, complete submission packet. You are on the policyholder&#x27;s side, you never invent policy terms, deadlines, or coverage that the user did not give you, and you clearly label anything that depends on the actual policy wording as something to confirm with the insurer.&quot;,
+  &quot;task&quot;: &quot;Build a complete, prioritized document and evidence checklist for the insurance claim described below: required documents, helpful extras, a photo and evidence list, the deadlines to track, the questions to ask the insurer, red flags that could weaken the claim, and the order in which to assemble the submission packet.&quot;,
+  &quot;inputs&quot;: {
+    &quot;claim_type&quot;: &quot;${claim_type:home}&quot;,
+    &quot;what_happened&quot;: &quot;${what_happened:a washing machine hose burst on 3 November while we were out; water soaked the kitchen floor, the lower cabinets, and leaked into the downstairs neighbor&#x27;s ceiling}&quot;,
+    &quot;date_of_loss&quot;: &quot;${date_of_loss:2026-11-03}&quot;,
+    &quot;country_or_region&quot;: &quot;${region:Netherlands}&quot;,
+    &quot;currency&quot;: &quot;${currency:EUR}&quot;,
+    &quot;policy_details_known&quot;: &quot;${policy:contents and buildings policy with a 250 EUR excess, I think it covers sudden water damage, not sure about the neighbor&#x27;s damage}&quot;,
+    &quot;already_reported&quot;: &quot;${reported:called the insurer hotline on 4 November, got claim reference HC-123456, no adjuster visit yet}&quot;,
+    &quot;documents_already_have&quot;: &quot;${have:photos taken the same evening, the plumber&#x27;s invoice for the emergency repair, the broken hose kept in a bag}&quot;,
+    &quot;estimated_loss&quot;: &quot;${estimated_loss:about 6500 EUR for floor and cabinets, neighbor estimate unknown}&quot;,
+    &quot;people_involved&quot;: &quot;${people:downstairs neighbor (tenant) and their landlord; our own landlord is not involved because we own the flat}&quot;,
+    &quot;my_concerns&quot;: &quot;${concerns:that the old hose counts as wear and tear, and that I already threw away the swollen skirting boards}&quot;
+  },
+  &quot;method&quot;: [
+    &quot;Restate the claim in two sentences and list every assumption you make about the policy, region, and facts.&quot;,
+    &quot;Identify the likely coverage sections involved (for example buildings, contents, liability, alternative accommodation, medical, trip cancellation) and mark each as likely, possible, or unlikely based only on what I said, with what to confirm in the policy wording.&quot;,
+    &quot;List required documents for this claim type and region: proof of ownership or purchase, proof of loss, official reports where relevant (police, incident, medical, airline property irregularity report), repair estimates, invoices, and identity and policy details.&quot;,
+    &quot;List nice-to-have documents that strengthen the claim (for example maintenance records, prior condition photos, witness statements, bank statements).&quot;,
+    &quot;Write a photo and evidence checklist with exactly what each photo or video must show, how to keep damaged items or parts, and how to record serial numbers, dates, and measurements.&quot;,
+    &quot;List deadlines: the ones I gave you, typical ones for this claim type to verify in my policy (notification, proof of loss, repair approval, appeal), and internal target dates, each with the date or relative timing and its source.&quot;,
+    &quot;Write the questions to ask the insurer, phrased so the answers can be put in writing.&quot;,
+    &quot;Flag red flags and weak points (gaps in evidence, discarded items, late notice, wear and tear or exclusion risks, inconsistent amounts) and give a practical fix for each.&quot;,
+    &quot;Give a submission packet order with a file name for each item and a one-line cover note.&quot;,
+    &quot;Finish with the next 5 actions, each with a target date.&quot;
+  ],
+  &quot;output_format&quot;: {
+    &quot;type&quot;: &quot;json&quot;,
+    &quot;schema&quot;: {
+      &quot;claim_summary&quot;: { &quot;claim_type&quot;: &quot;auto | home | travel | health | other&quot;, &quot;summary&quot;: &quot;string&quot;, &quot;date_of_loss&quot;: &quot;string&quot;, &quot;region&quot;: &quot;string&quot;, &quot;currency&quot;: &quot;string&quot;, &quot;estimated_loss&quot;: &quot;number or null&quot;, &quot;assumptions&quot;: [&quot;string&quot;] },
+      &quot;coverage_to_confirm&quot;: [ { &quot;section&quot;: &quot;string&quot;, &quot;likelihood&quot;: &quot;likely | possible | unlikely&quot;, &quot;why&quot;: &quot;string&quot;, &quot;confirm_in_policy&quot;: &quot;string&quot; } ],
+      &quot;required_documents&quot;: [ { &quot;document&quot;: &quot;string&quot;, &quot;purpose&quot;: &quot;string&quot;, &quot;status&quot;: &quot;have | missing | partial&quot;, &quot;how_to_get_it&quot;: &quot;string or null&quot;, &quot;priority&quot;: &quot;high | medium | low&quot; } ],
+      &quot;nice_to_have_documents&quot;: [ { &quot;document&quot;: &quot;string&quot;, &quot;why_it_helps&quot;: &quot;string&quot; } ],
+      &quot;photo_and_evidence_checklist&quot;: [ { &quot;item&quot;: &quot;string&quot;, &quot;must_show&quot;: &quot;string&quot;, &quot;tip&quot;: &quot;string&quot; } ],
+      &quot;deadlines&quot;: [ { &quot;deadline&quot;: &quot;string&quot;, &quot;date_or_timing&quot;: &quot;string&quot;, &quot;source&quot;: &quot;given_by_user | typical_verify_in_policy | recommended_target&quot;, &quot;consequence_if_missed&quot;: &quot;string&quot; } ],
+      &quot;questions_for_insurer&quot;: [ { &quot;question&quot;: &quot;string&quot;, &quot;why_ask&quot;: &quot;string&quot;, &quot;get_answer_in_writing&quot;: &quot;boolean&quot; } ],
+      &quot;red_flags&quot;: [ { &quot;issue&quot;: &quot;string&quot;, &quot;risk&quot;: &quot;low | medium | high&quot;, &quot;fix&quot;: &quot;string&quot; } ],
+      &quot;submission_packet&quot;: [ { &quot;order&quot;: &quot;number&quot;, &quot;file_name&quot;: &quot;string&quot;, &quot;contents&quot;: &quot;string&quot; } ],
+      &quot;cover_note&quot;: &quot;string&quot;,
+      &quot;next_actions&quot;: [ { &quot;action&quot;: &quot;string&quot;, &quot;owner&quot;: &quot;string&quot;, &quot;target_date&quot;: &quot;string&quot; } ],
+      &quot;disclaimer&quot;: &quot;string&quot;
+    }
+  },
+  &quot;constraints&quot;: [
+    &quot;Return only valid JSON matching the schema, with no text before or after it.&quot;,
+    &quot;Never state that something is covered or excluded as fact; use likelihood and say what to confirm in the policy wording.&quot;,
+    &quot;Mark every deadline that I did not give you as typical_verify_in_policy or recommended_target; never present it as the insurer&#x27;s rule.&quot;,
+    &quot;Use my currency and region; if a document is region specific (for example a police report number or an airline property irregularity report), say so.&quot;,
+    &quot;For health claims, list medical documents by type only and remind me to share only what the insurer asks for.&quot;,
+    &quot;Keep each string under 45 words, start every action with a verb, and keep the disclaimer to one sentence saying this is not legal or financial advice and the policy wording decides.&quot;
+  ]
+}</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/insurance-claim-document-checklist-builder-json',TI="Insurance Claim Document Checklist Builder (JSON)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

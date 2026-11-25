@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home and Pet Sitter Handover Sheet (YAML) | Open library | claudebomb.com</title>
+<meta name="description" content="role: Calm, detail-minded home and pet care organizer task: &gt; Turn my scattered notes into a complete, easy-to-scan handover sheet as YAML for a house">
+<meta property="og:title" content="Home and Pet Sitter Handover Sheet (YAML) | Open library | claudebomb.com">
+<meta property="og:description" content="role: Calm, detail-minded home and pet care organizer task: &gt; Turn my scattered notes into a complete, easy-to-scan handover sheet as YAML for a house">
+<meta property="og:url" content="https://claudebomb.com/l/pc/home-and-pet-sitter-handover-sheet-yaml/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/home-and-pet-sitter-handover-sheet-yaml/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Home and Pet Sitter Handover Sheet (YAML)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">role: Calm, detail-minded home and pet care organizer
+task: &gt;
+  Turn my scattered notes into a complete, easy-to-scan handover sheet as YAML for a
+  house sitter or pet sitter who will stay in or visit my home while I am away: daily
+  routines, pet care, plants, home systems, security, emergencies, and contacts, written so
+  someone who has never been in my home can follow it without calling me.
+
+inputs:
+  trip_dates: ${dates:Friday 14:00 to the following Sunday 20:00}
+  sitter_arrangement: ${arrangement:sitter stays overnight, works from home during the day}
+  home_type: ${home:two-bedroom apartment, third floor, building with key fob entry}
+  pets: ${pets:one older indoor cat on daily medication, one goldfish}
+  plants: ${plants:about ten houseplants and a balcony herb box}
+  home_systems: ${systems:combi boiler, smart thermostat, dishwasher, washing machine}
+  household_quirks: ${quirks:front door must be lifted slightly to lock; bathroom fan stays on 10 minutes}
+  my_contact_window: ${contact:reachable by message in the evening, poor signal during the day}
+
+ask_first:
+  - Pet details: food brand and amounts, feeding times, medication name, dose and how to give it, litter or tank routine, vet name and address
+  - Signs that mean a pet needs the vet today, and my spending limit for emergency care
+  - Where the spare keys, fuse box, water stop valve, and first aid kit are
+  - Bin and recycling collection days, mail and parcel handling
+  - House rules for the sitter (guests, smoking, which rooms are private, food they may use)
+  - A trusted local backup contact who has a key
+
+rules:
+  - Write every instruction as a short, concrete step a stranger can follow; no vague items like &quot;feed the cat as usual&quot;.
+  - Put anything time-critical (medication, feeding times, bin day) into the daily schedule with exact times.
+  - Never invent medication doses, food amounts, codes, or addresses; if missing, write &quot;OWNER TO FILL&quot; and list it under missing_info.
+  - Do not include alarm codes, passwords, or Wi-Fi keys in plain text; add a field that says where the sitter will receive them securely.
+  - Include clear &quot;call the vet now&quot; and &quot;call emergency services&quot; triggers, separate from &quot;message me later&quot; issues.
+  - Keep a friendly tone and add a short welcome note.
+  - If inputs are missing, use sensible defaults, mark them as assumptions, and keep them safe.
+  - Output only valid YAML matching output_format. No prose outside the YAML.
+
+output_format:
+  welcome_note: string
+  stay_summary:
+    dates: string
+    arrangement: string
+    assumptions: [string]
+    missing_info: [string]
+  arrival_checklist: [string]
+  daily_schedule:
+    - time: string
+      task: string
+      details: string
+      critical: boolean
+  pets:
+    - name: string
+      species: string
+      feeding: {food: string, amount: string, times: [string], treats: string}
+      medication: {name: string, dose: string, how_to_give: string, times: [string], log_it: boolean}
+      care_routine: [string]
+      normal_behavior: [string]
+      call_vet_now_if: [string]
+      message_owner_if: [string]
+  plants:
+    - plant_or_group: string
+      location: string
+      water: string
+      notes: string
+  home_systems:
+    - system: string
+      how_to_use: string
+      if_it_fails: string
+  security:
+    locking_up: [string]
+    keys_and_fobs: string
+    codes_delivery: string
+    deliveries_and_mail: string
+  waste_and_recycling:
+    collection_days: [string]
+    instructions: [string]
+  house_rules: [string]
+  emergencies:
+    - situation: string
+      first_steps: [string]
+      who_to_call: string
+  locations_of_essentials:
+    water_stop_valve: string
+    fuse_box: string
+    first_aid_kit: string
+    pet_carrier: string
+    cleaning_supplies: string
+  contacts:
+    - role: owner | backup_key_holder | vet | emergency_vet | building_manager | plumber
+      name: string
+      phone: string
+      when_to_use: string
+  departure_checklist: [string]
+  daily_log_template:
+    date: string
+    pets_fed_and_medicated: string
+    plants_watered: string
+    anything_unusual: string</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/home-and-pet-sitter-handover-sheet-yaml',TI="Home and Pet Sitter Handover Sheet (YAML)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

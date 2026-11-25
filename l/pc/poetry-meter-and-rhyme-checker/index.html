@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Poetry Meter and Rhyme Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: poetry-meter-and-rhyme-checker description: Counts syllables per line with a transparent heuristic, checks common forms (haiku, limerick, ia">
+<meta property="og:title" content="Poetry Meter and Rhyme Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: poetry-meter-and-rhyme-checker description: Counts syllables per line with a transparent heuristic, checks common forms (haiku, limerick, ia">
+<meta property="og:url" content="https://claudebomb.com/l/pc/poetry-meter-and-rhyme-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/poetry-meter-and-rhyme-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Poetry Meter and Rhyme Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: poetry-meter-and-rhyme-checker
+description: Counts syllables per line with a transparent heuristic, checks common forms (haiku, limerick, iambic pentameter targets), maps end-rhyme schemes (AABB, ABAB, ABCB), and flags near-misses with suggested edits. Use when a user asks &quot;does this scan?&quot;, &quot;is this a haiku?&quot;, or &quot;what is my rhyme scheme?&quot;. Includes a tested stdlib Python checker.
+---
+
+# Poetry Meter and Rhyme Checker
+
+You help writers see how a draft scans: syllables per line, a plausible stress sketch for English meter targets, and the end-rhyme scheme. You are honest that English syllable counting is heuristic, you show your work, and you suggest small edits instead of rewriting the poem unless asked.
+
+## Files in this skill
+
+- `scripts/poetry_check.py` - syllable estimates, form checks, rhyme-scheme detection (Python 3 standard library only)
+- `references/forms-and-targets.md` - syllable and rhyme targets for common short forms
+- `references/syllable-heuristic.md` - how the counter works and where it fails (names, -ed, diphthongs)
+- `templates/poetry-report.md` - the report shape to return
+- `examples/example-haiku-and-quatrain.md` - worked examples
+
+## Workflow
+
+### 1. Collect the facts
+- The poem text (keep the user&#x27;s line breaks).
+- Target form if any: haiku, tanka, limerick, sonnet couplet, free verse with a rhyme check only, or custom syllable pattern.
+- Dialect notes (US/UK spelling) when relevant to endings like `-our` / `-or`.
+
+### 2. Run the checker
+```bash
+python3 scripts/poetry_check.py poem.txt
+python3 scripts/poetry_check.py poem.txt --form haiku
+python3 scripts/poetry_check.py poem.txt --form limerick --rhyme
+python3 scripts/poetry_check.py - --json &lt; poem.txt
+```
+
+### 3. Advise
+1. Show a per-line syllable table and the detected rhyme scheme.
+2. Say whether the form target passed, and which lines miss by how many syllables.
+3. Offer minimal edits (swap a synonym, split a compound, drop a filler word) rather than a full rewrite.
+4. Deliver with `templates/poetry-report.md`.
+
+## Rules
+- Always label syllable counts as estimates.
+- Do not mock the writer&#x27;s voice; keep suggestions optional.
+- For free verse, still report syllables and rhyme if useful, without forcing a form.
+FILE:references/forms-and-targets.md
+# Forms and targets
+
+| Form | Syllable target (lines) | Typical rhyme |
+|---|---|---|
+| Haiku (English teaching form) | 5 / 7 / 5 | usually unrhymed |
+| Tanka | 5 / 7 / 5 / 7 / 7 | usually unrhymed |
+| Limerick | ~8–9 / 8–9 / 5–6 / 5–6 / 8–9 | AABBA |
+| Quatrain (ballad) | often 8 / 6 / 8 / 6 | ABCB or ABAB |
+| Heroic couplet | ~10 / 10 (iambic pentameter feel) | AA |
+
+Exact classical Japanese mora counts differ from English syllable teaching forms; this skill uses the common English classroom targets unless the user asks for mora-aware analysis.
+FILE:references/syllable-heuristic.md
+# Syllable heuristic (honest limits)
+
+The script estimates English syllables by:
+1. Lowercasing and stripping punctuation.
+2. Counting vowel groups (`a e i o u y`) with common silent-`e` and `-ed` / `-es` adjustments.
+3. Treating hyphenated compounds as the sum of parts.
+
+## Known failure modes
+- Proper names (`Olivia`, `Michael`) and loanwords.
+- Words where `y` is consonantal (`beyond`) vs vocalic (`rhythm` is still hard).
+- `-ism`, `-tion`, and compressed pronunciations (`family` as 2 or 3).
+
+When a count looks wrong, say so and offer a manual override in the report.
+FILE:templates/poetry-report.md
+# Poetry meter and rhyme report
+
+## Target form
+- …
+
+## Per-line table
+| # | Line | Syllables (est.) | End word | Rhyme letter |
+|---|---|---|---|---|
+
+## Form check
+- Pass / fail: …
+- Misses: …
+
+## Rhyme scheme
+- …
+
+## Minimal edit ideas
+- …
+
+## Notes on uncertain counts
+- …
+FILE:examples/example-haiku-and-quatrain.md
+# Examples
+
+## Haiku (should pass 5-7-5)
+```
+An old silent pond
+A frog jumps into the pond—
+Splash! Silence again.
+```
+Estimated syllables often land near 5 / 7 / 5 depending on `silent` and `silence`.
+
+## Quatrain rhyme ABCB
+```
+The woods are lovely, dark and deep,
+But I have promises to keep,
+And miles to go before I sleep,
+And miles to go before I sleep.
+```
+End words deep/keep/sleep/sleep → AAAA if all rhyme together; a true ABCB sample should use different B and C words.
+FILE:scripts/poetry_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Estimate syllables, check simple forms, and map end-rhyme schemes.
+
+Usage:
+  python3 poetry_check.py poem.txt
+  python3 poetry_check.py poem.txt --form haiku
+  python3 poetry_check.py poem.txt --form limerick --rhyme
+  python3 poetry_check.py - --json &lt; poem.txt
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+FORMS = {
+    &quot;haiku&quot;: [5, 7, 5],
+    &quot;tanka&quot;: [5, 7, 5, 7, 7],
+    &quot;limerick&quot;: None,  # soft ranges handled separately
+}
+
+VOWELS = set(&quot;aeiouy&quot;)
+
+
+def strip_word(w: str) -&gt; str:
+    return re.sub(r&quot;[^a-zA-Z&#x27;]&quot;, &quot;&quot;, w).lower()
+
+
+def syllables_word(word: str) -&gt; int:
+    w = strip_word(word)
+    if not w:
+        return 0
+    # common overrides
+    overrides = {
+        &quot;poem&quot;: 2, &quot;poems&quot;: 2, &quot;fire&quot;: 1, &quot;hour&quot;: 1, &quot;our&quot;: 1, &quot;//&quot;: 0,
+        &quot;family&quot;: 3, &quot;every&quot;: 3, &quot;different&quot;: 3, &quot;interesting&quot;: 4,
+        &quot;rhythm&quot;: 2, &quot;business&quot;: 2, &quot;wednesday&quot;: 2, &quot;beautiful&quot;: 3,
+    }
+    if w in overrides:
+        return overrides[w]
+    if &quot;-&quot; in word:
+        return sum(syllables_word(p) for p in word.split(&quot;-&quot;))
+    # remove trailing silent e
+    base = w
+    if base.endswith(&quot;e&quot;) and not base.endswith((&quot;le&quot;, &quot;ue&quot;, &quot;oe&quot;)) and len(base) &gt; 2:
+        base = base[:-1]
+    # -ed endings: walked=1 extra often silent
+    if re.search(r&quot;[^aeiou]ed$&quot;, w) and not w.endswith((&quot;ted&quot;, &quot;ded&quot;)):
+        base = re.sub(r&quot;ed$&quot;, &quot;&quot;, w)
+        if base.endswith(&quot;e&quot;):
+            base = base[:-1]
+    groups = re.findall(r&quot;[aeiouy]+&quot;, base)
+    count = len(groups) if groups else 1
+    # adjust ion/ial
+    if w.endswith((&quot;tion&quot;, &quot;sion&quot;, &quot;cial&quot;, &quot;tial&quot;)):
+        count = max(count, 2)
+    return max(1, count)
+
+
+def end_word(line: str) -&gt; str:
+    words = [w for w in re.findall(r&quot;[A-Za-z&#x27;]+&quot;, line)]
+    return words[-1].lower() if words else &quot;&quot;
+
+
+def rhyme_key(word: str) -&gt; str:
+    w = strip_word(word)
+    if not w:
+        return &quot;&quot;
+    aliases = {
+        &quot;you&quot;: &quot;oo&quot;, &quot;blue&quot;: &quot;oo&quot;, &quot;too&quot;: &quot;oo&quot;, &quot;two&quot;: &quot;oo&quot;, &quot;to&quot;: &quot;oo&quot;, &quot;through&quot;: &quot;oo&quot;,
+        &quot;threw&quot;: &quot;oo&quot;, &quot;shoe&quot;: &quot;oo&quot;, &quot;who&quot;: &quot;oo&quot;, &quot;new&quot;: &quot;oo&quot;, &quot;knew&quot;: &quot;oo&quot;, &quot;true&quot;: &quot;oo&quot;,
+        &quot;lee&quot;: &quot;ee&quot;, &quot;tea&quot;: &quot;ee&quot;, &quot;glee&quot;: &quot;ee&quot;, &quot;sea&quot;: &quot;ee&quot;, &quot;me&quot;: &quot;ee&quot;, &quot;we&quot;: &quot;ee&quot;, &quot;be&quot;: &quot;ee&quot;,
+        &quot;green&quot;: &quot;een&quot;, &quot;keen&quot;: &quot;een&quot;, &quot;seen&quot;: &quot;een&quot;, &quot;mean&quot;: &quot;een&quot;,
+    }
+    if w in aliases:
+        return aliases[w]
+    matches = list(re.finditer(r&quot;[aeiouy]+&quot;, w))
+    if not matches:
+        return w
+    start = matches[-1].start()
+    if len(matches) &gt;= 2 and len(w) - start &lt; 2:
+        start = matches[-2].start()
+    tail = w[start:]
+    # light normalization for common English end-rhymes
+    for a, b in (
+        (&quot;igh&quot;, &quot;i&quot;), (&quot;ea&quot;, &quot;ee&quot;), (&quot;ee&quot;, &quot;ee&quot;), (&quot;ey&quot;, &quot;ee&quot;), (&quot;ie&quot;, &quot;ee&quot;),
+        (&quot;ay&quot;, &quot;ei&quot;), (&quot;ai&quot;, &quot;ei&quot;), (&quot;ou&quot;, &quot;ow&quot;), (&quot;oo&quot;, &quot;u&quot;), (&quot;ue&quot;, &quot;u&quot;),
+    ):
+        if a in tail:
+            tail = tail.replace(a, b)
+    return tail
+
+
+def rhyme_scheme(end_words: list[str]) -&gt; str:
+    mapping = {}
+    letters = []
+    next_ord = 0
+    for w in end_words:
+        key = rhyme_key(w)
+        if not key:
+            letters.append(&quot;-&quot;)
+            continue
+        # near-rhyme: same key
+        if key not in mapping:
+            # also merge if share last 2 chars and vowel
+            found = None
+            for k, let in mapping.items():
+                if k == key or (len(k) &gt;= 2 and len(key) &gt;= 2 and k[-2:] == key[-2:]):
+                    found = let
+                    mapping[key] = let
+                    break
+            if found is None:
+                let = chr(ord(&quot;A&quot;) + next_ord)
+                next_ord += 1
+                mapping[key] = let
+        letters.append(mapping[key])
+    return &quot;&quot;.join(letters)
+
+
+def limerick_ok(counts: list[int]) -&gt; tuple[bool, str]:
+    if len(counts) != 5:
+        return False, f&quot;expected 5 lines, got {len(counts)}&quot;
+    ranges = [(7, 10), (7, 10), (4, 7), (4, 7), (7, 10)]
+    misses = []
+    for i, (c, (lo, hi)) in enumerate(zip(counts, ranges), 1):
+        if not (lo &lt;= c &lt;= hi):
+            misses.append(f&quot;line {i}: {c} not in {lo}-{hi}&quot;)
+    return (not misses), (&quot;; &quot;.join(misses) if misses else &quot;ok&quot;)
+
+
+def analyze(text: str, form: str | None) -&gt; dict:
+    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+    rows = []
+    counts = []
+    ends = []
+    for i, ln in enumerate(lines, 1):
+        words = re.findall(r&quot;[A-Za-z&#x27;]+(?:-[A-Za-z&#x27;]+)*&quot;, ln)
+        sc = sum(syllables_word(w) for w in words)
+        ew = end_word(ln)
+        counts.append(sc)
+        ends.append(ew)
+        rows.append({&quot;n&quot;: i, &quot;line&quot;: ln, &quot;syllables&quot;: sc, &quot;end&quot;: ew})
+    scheme = rhyme_scheme(ends)
+    form_result = None
+    if form == &quot;limerick&quot;:
+        ok, detail = limerick_ok(counts)
+        rhyme_ok = scheme == &quot;AABBA&quot;
+        form_result = {&quot;form&quot;: form, &quot;pass&quot;: ok and rhyme_ok, &quot;detail&quot;: detail,
+                       &quot;rhyme_expected&quot;: &quot;AABBA&quot;, &quot;rhyme_got&quot;: scheme}
+    elif form in FORMS and FORMS[form]:
+        target = FORMS[form]
+        if len(counts) != len(target):
+            form_result = {&quot;form&quot;: form, &quot;pass&quot;: False,
+                           &quot;detail&quot;: f&quot;expected {len(target)} lines, got {len(counts)}&quot;,
+                           &quot;target&quot;: target, &quot;got&quot;: counts}
+        else:
+            misses = [f&quot;line {i}: got {g}, want {t}&quot; for i, (g, t) in enumerate(zip(counts, target), 1) if g != t]
+            form_result = {&quot;form&quot;: form, &quot;pass&quot;: not misses, &quot;detail&quot;: &quot;; &quot;.join(misses) or &quot;ok&quot;,
+                           &quot;target&quot;: target, &quot;got&quot;: counts}
+    return {&quot;lines&quot;: rows, &quot;rhyme_scheme&quot;: scheme, &quot;form_check&quot;: form_result}
+
+
+def main(argv: list[str]) -&gt; int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument(&quot;path&quot;, help=&quot;Poem file, or - for stdin&quot;)
+    ap.add_argument(&quot;--form&quot;, choices=[&quot;haiku&quot;, &quot;tanka&quot;, &quot;limerick&quot;], help=&quot;Form to validate&quot;)
+    ap.add_argument(&quot;--rhyme&quot;, action=&quot;store_true&quot;, help=&quot;Always print rhyme scheme (default on)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    args = ap.parse_args(argv)
+    text = sys.stdin.read() if args.path == &quot;-&quot; else Path(args.path).read_text(encoding=&quot;utf-8&quot;)
+    result = analyze(text, args.form)
+    if args.json:
+        json.dump(result, sys.stdout, indent=2)
+        sys.stdout.write(&quot;\n&quot;)
+    else:
+        print(&quot;n | syl | end | line&quot;)
+        for r in result[&quot;lines&quot;]:
+            print(f&quot;{r[&#x27;n&#x27;]:&lt;2}| {r[&#x27;syllables&#x27;]:&lt;3}| {r[&#x27;end&#x27;]:&lt;12}| {r[&#x27;line&#x27;]}&quot;)
+        print(f&quot;rhyme scheme: {result[&#x27;rhyme_scheme&#x27;]}&quot;)
+        fc = result[&quot;form_check&quot;]
+        if fc:
+            print(f&quot;form {fc[&#x27;form&#x27;]}: {&#x27;PASS&#x27; if fc[&#x27;pass&#x27;] else &#x27;FAIL&#x27;} ({fc[&#x27;detail&#x27;]})&quot;)
+            if &quot;rhyme_expected&quot; in fc:
+                print(f&quot;  rhyme expected {fc[&#x27;rhyme_expected&#x27;]}, got {fc[&#x27;rhyme_got&#x27;]}&quot;)
+    if result[&quot;form_check&quot;] and not result[&quot;form_check&quot;][&quot;pass&quot;]:
+        return 1
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/poetry-meter-and-rhyme-checker',TI="Poetry Meter and Rhyme Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

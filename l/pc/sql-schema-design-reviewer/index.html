@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL Schema Design Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: sql-schema-design-reviewer description: Reviews PostgreSQL and MySQL tables (schema.sql, a dump or a pull request&#x27;s CREATE TABLE) for design">
+<meta property="og:title" content="SQL Schema Design Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: sql-schema-design-reviewer description: Reviews PostgreSQL and MySQL tables (schema.sql, a dump or a pull request&#x27;s CREATE TABLE) for design">
+<meta property="og:url" content="https://claudebomb.com/l/pc/sql-schema-design-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/sql-schema-design-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">SQL Schema Design Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: sql-schema-design-reviewer
+description: Reviews PostgreSQL and MySQL tables (schema.sql, a dump or a pull request&#x27;s CREATE TABLE) for design flaws that are cheap to fix before data exists - missing primary keys, money in float columns, foreign keys with mismatched types or no index, 32-bit ids, timestamps without time zone, nullable flags, free-text statuses, reserved names and case-sensitive unique emails. Returns corrected DDL. Includes a stdlib Python linter with --self-test.
+---
+
+# SQL Schema Design Reviewer
+
+You review database schemas the way an experienced data modeler would at design time: before the first row is written, when changing a type or a key is a one-line edit instead of a weekend migration. You look at the shape of the data (keys, types, constraints, names, indexes), explain the concrete failure each problem leads to, and hand back corrected DDL.
+
+This skill reviews the design of tables. It is not about deploying changes to a live database (locks, backfills, expand/contract rollouts); for that, use a migration safety review.
+
+## Files in this skill
+
+- `scripts/schema_lint.py` - parses CREATE TABLE, CREATE INDEX and ALTER TABLE ... ADD statements and reports keys, types, constraints, naming and index problems with severities and fixes; auto-detects PostgreSQL or MySQL (Python 3 standard library only, no database connection)
+- `references/design-rules.md` - every finding code with the failure it causes, when it is acceptable to keep, and the fix
+- `references/type-choices.md` - which type to use for ids, money, time, text, flags, statuses and JSON in PostgreSQL and MySQL
+- `templates/schema-review.md` - the review to hand back
+- `examples/shop-schema.sql` - a small online shop schema with deliberate design flaws
+- `examples/shop-schema-fixed.sql` - the same schema after the review; it lints clean
+
+## Workflow
+
+### 1. Get the schema and the context
+Ask for the DDL (schema.sql, `pg_dump --schema-only`, `mysqldump --no-data`, or the CREATE TABLE from the pull request), the engine and version, expected row counts per table in a year, and how the data is used (OLTP app, reporting, multi-tenant, replicated, exposed through an ORM). Ask which rules the team already has (UUID vs bigint ids, soft deletes, naming).
+
+### 2. Run the linter
+```
+python3 scripts/schema_lint.py examples/shop-schema.sql
+python3 scripts/schema_lint.py schema.sql --dialect mysql --min-severity MEDIUM
+python3 scripts/schema_lint.py db/*.sql --ignore NO_CREATED_AT --json &gt; schema-review.json
+python3 scripts/schema_lint.py --self-test
+```
+Exit 0 means no HIGH findings, 1 means at least one HIGH (use as a CI gate on schema files), 2 means bad input. The linter is heuristic: it reads names (a `price` column in float, an `order_id` without a foreign key), so confirm each finding against the user&#x27;s intent.
+
+### 3. Review what a script cannot see
+Then read the schema yourself (see `references/design-rules.md`):
+- Does every table have one clear meaning and a natural unique key besides the surrogate id (sku, email, provider + provider_id)?
+- Are relationships right: one-to-many vs many-to-many, ON DELETE behaviour (RESTRICT by default; CASCADE only for true children), nullable foreign keys only where the relation is optional?
+- Are invariants in CHECK constraints (quantity &gt; 0, ends_at &gt; starts_at) instead of only in app code?
+- Multi-tenant: does every tenant-owned table carry tenant_id, is it in the unique keys and the leading index column?
+- Soft deletes: are unique constraints partial (`WHERE deleted_at IS NULL`)?
+- Personal data: which columns hold PII, and do they need separate access or retention rules?
+
+### 4. Deliver
+Fill `templates/schema-review.md`: verdict, findings ranked by impact with the failure each one causes, then the corrected DDL (see `examples/shop-schema-fixed.sql`) and a list of decisions left to the team. If the tables already hold data, say which fixes now need a migration and flag them for a migration safety review instead of rewriting live tables in place.
+
+## Example result
+`examples/shop-schema.sql` (PostgreSQL, 5 tables): 20 findings, 4 HIGH. order_items has no primary key (duplicate lines possible); products.price is double precision and payments.amount is real (cents drift); payments.order_id is integer but references &quot;order&quot;.id (bigserial). MEDIUM: serial ids on customers and products, timestamp without time zone on customers.created_at and placed_at, a table named &quot;order&quot; (reserved), foreign keys on &quot;order&quot;.customer_id and order_items.order_id with no index. LOW: case-sensitive unique email, varchar(255) habit, nullable is_verified, free-text status, product_id without a foreign key, a redundant payments index, JSON kept in text. `examples/shop-schema-fixed.sql` fixes all of them (orders, bigint identity, numeric(12,2), timestamptz, citext, CHECK on status, composite key on order_items) and lints clean.
+
+## Rules
+
+- Explain each finding as the failure it causes (wrong totals, orphans, duplicate signups, an outage at 2.1 billion ids), not as a style rule.
+- Keep the user&#x27;s conventions (UUID ids, naming) unless they cause a real problem; say when a finding is a judgement call.
+- Prefer constraints in the database over checks in the application; the database is the last line of defence.
+- Money is exact: numeric/DECIMAL or integer minor units, never float, and store the currency.
+- Time is an instant: timestamptz in PostgreSQL, UTC everywhere in MySQL.
+- Do not propose changes to tables that already hold production data without pointing out that each one is a migration with its own risks.
+FILE:references/design-rules.md
+# Design rules and finding codes
+
+| Code | Sev | What goes wrong | Acceptable when | Fix |
+|---|---|---|---|---|
+| NO_PRIMARY_KEY | HIGH | duplicate rows cannot be told apart or deleted one at a time; logical replication and CDC need a key; ORMs misbehave | never for OLTP tables (staging tables loaded and dropped in one job, maybe) | surrogate `id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY` or a composite natural key (order_id, product_id) |
+| FLOAT_MONEY | HIGH | 0.1 + 0.2 = 0.30000000000000004; sums and refunds drift by cents, reports do not tie out | never for money; floats are fine for measurements | `numeric(12,2)` / `DECIMAL(12,2)` or `bigint` minor units (`amount_cents`) plus a currency column |
+| FK_TYPE_MISMATCH | HIGH | integer column referencing a bigint key: joins cast, and inserts fail once ids pass 2,147,483,647 | never | same type on both sides |
+| MYISAM_ENGINE | HIGH | no transactions, no foreign keys, table locks, corruption on crash | read-only archives, rarely | `ENGINE=InnoDB` |
+| INT32_PRIMARY_KEY | MEDIUM | id exhaustion at about 2.1 billion (sequences also skip on rollbacks); the fix is a full table rewrite on the biggest table | small lookup tables (statuses, countries) | `bigint` identity / `BIGINT UNSIGNED AUTO_INCREMENT` |
+| TIMESTAMP_WITHOUT_TZ | MEDIUM | the stored value means different instants depending on the writer&#x27;s zone; DST and server moves corrupt ordering | local wall-clock values that are not instants (store opening hours, a birthday time) | `timestamptz` |
+| MONEY_TYPE | MEDIUM | Postgres `money` follows lc_monetary, one currency, rounding on division | never in new schemas | `numeric(12,2)` + currency |
+| NULLABLE_AUDIT_COLUMN | MEDIUM | rows without created_at break &quot;last 7 days&quot; reports and backfills | never | `NOT NULL DEFAULT now()` |
+| FK_WITHOUT_INDEX | MEDIUM | (PostgreSQL) deleting or updating a parent scans the whole child table under lock; joins from parent to children are slow. MySQL InnoDB creates the index itself | tiny child tables, parents never deleted | index whose leading columns are the FK columns |
+| RESERVED_WORD_NAME | MEDIUM | `order`, `user`, `group` must be quoted in every query, ORM, BI tool and ad-hoc psql session | never in new schemas | plural or qualified names: orders, app_users, user_groups, sort_order |
+| MYSQL_UTF8MB3 | MEDIUM | `utf8` is 3-byte: emoji and some CJK characters fail or are cut | never in new schemas | `utf8mb4` + `utf8mb4_0900_ai_ci` |
+| NULLABLE_BOOLEAN | LOW | three-valued logic: `WHERE NOT is_verified` skips NULL rows | when &quot;unknown&quot; is a real state (then prefer an explicit status) | `NOT NULL DEFAULT false` |
+| UNCHECKED_STATUS | LOW | &#x27;Shipped&#x27;, &#x27;shipped &#x27;, &#x27;shiped&#x27; all appear; reports split | statuses owned by another system you only mirror | `CHECK (status IN (...))`, an enum type or a lookup table FK |
+| MISSING_FOREIGN_KEY | LOW | orphans after deletes, typos in ids, no documented relation | cross-database or event-sourced references; document them | `REFERENCES parent(id)` + index |
+| CASE_SENSITIVE_UNIQUE_EMAIL | LOW | Ana@x.com and ana@x.com are two accounts; password resets go to the wrong one | never for login emails | `citext` or `UNIQUE INDEX ON t (lower(email))` and normalize on write |
+| VARCHAR_255_HABIT | LOW | in Postgres, 255 is an arbitrary MySQL-era limit; real rules are missing and odd values get rejected | when 255 really is the rule | `text` + `CHECK (char_length(x) &lt;= n)` for real limits |
+| REDUNDANT_INDEX | LOW | an index that is a prefix of another (or of the PK) costs writes and memory for nothing | the shorter index is much smaller and very hot | drop it |
+| JSON_IN_TEXT | LOW | no validation, no operators, no GIN index | the text is not really JSON | `jsonb` / `JSON` |
+| NO_CREATED_AT | LOW | debugging, audits and backfills need to know when rows appeared | pure join tables | `created_at timestamptz NOT NULL DEFAULT now()` |
+| MIXED_CASE_NAME | LOW | quoted &quot;OrderItems&quot; must be quoted forever in Postgres | never | snake_case |
+| DATETIME_NO_ZONE | LOW | (MySQL) DATETIME has no zone; mixed writers store mixed zones | when every connection sets time_zone=&#x27;+00:00&#x27; | enforce UTC |
+
+## Things the linter cannot judge (review by hand)
+- **Keys**: is there a natural unique key besides the surrogate id? Missing `UNIQUE (provider, provider_id)` is how payments get recorded twice.
+- **ON DELETE**: RESTRICT/NO ACTION by default; CASCADE only for true child rows (order_items of an order), never from customers to payments.
+- **CHECK constraints for invariants**: `quantity &gt; 0`, `ends_at &gt; starts_at`, `discount &lt;= total`.
+- **Multi-tenancy**: tenant_id on every tenant table, first in unique keys and indexes, and in every FK (composite FKs prevent cross-tenant references).
+- **Soft deletes**: partial unique indexes `WHERE deleted_at IS NULL`, or the email can never be reused.
+- **Denormalized totals**: if orders.total is stored, say how it stays equal to the sum of order_items.
+- **PII**: list columns with personal data; consider a separate table with stricter access and retention.
+FILE:references/type-choices.md
+# Type choices (PostgreSQL / MySQL 8)
+
+| Data | PostgreSQL | MySQL 8 | Avoid |
+|---|---|---|---|
+| Surrogate id | `bigint GENERATED ALWAYS AS IDENTITY` | `BIGINT UNSIGNED AUTO_INCREMENT` | `serial`/`int` on growing tables |
+| Public / distributed id | `uuid` (UUIDv7 for index locality, `gen_random_uuid()` for v4) | `BINARY(16)` with UUID_TO_BIN(x, 1) | `varchar(36)` UUIDs (3x bigger, slower) |
+| Money | `numeric(12,2)` (or (19,4) for rates) + `currency char(3)` | `DECIMAL(12,2)` + `CHAR(3)` | `float`, `double`, `real`, Postgres `money` |
+| Money as integer | `bigint amount_cents` (mind currencies with 0 or 3 decimals) | `BIGINT` | `int` cents (overflows at 21 million) |
+| Instant (event happened) | `timestamptz` | `DATETIME(6)` in UTC, or `TIMESTAMP` (2038 limit, converted by session zone) | `timestamp` without time zone |
+| Calendar date | `date` | `DATE` | timestamps at midnight |
+| Wall-clock time / schedule | `time` + an IANA zone column | `TIME` + zone column | `timetz` |
+| Duration | `interval` or integer seconds | `INT` seconds | text like &quot;1h30&quot; |
+| Text | `text` (+ CHECK for real limits) | `VARCHAR(n)` with a real n; `TEXT` for long bodies | `varchar(255)` by habit; `char(n)` padding |
+| Case-insensitive text (email, username) | `citext` or a `lower()` unique index | case-insensitive `_ci` collation (default) | plain unique on text in Postgres |
+| Flag | `boolean NOT NULL DEFAULT false` | `BOOLEAN` (TINYINT(1)) `NOT NULL DEFAULT 0` | nullable booleans, &#x27;Y&#x27;/&#x27;N&#x27; strings |
+| Status | `text` + `CHECK (... IN (...))`, enum type, or lookup table | `ENUM(...)` or lookup table | unconstrained text |
+| JSON | `jsonb` (GIN index for containment) | `JSON` (generated columns to index) | JSON in text |
+| IP address | `inet` / `cidr` | `VARBINARY(16)` with INET6_ATON | text |
+| Large binary | object storage + key in a `text` column | same | big BLOBs in hot tables |
+
+## Notes
+- Changing a column type later rewrites the table in both engines (with a few exceptions such as widening varchar in Postgres). Get ids and money right first.
+- Enum types in Postgres: adding a value is cheap, removing or renaming one is not. Lookup tables are easier to evolve and can carry labels and sort order.
+- `NOT NULL` with a sensible default is the norm; nullable should mean &quot;genuinely unknown or not applicable&quot;.
+- Store the currency next to every amount, even if today there is only one.
+- Name things the same everywhere: `customer_id` in every table that references customers, `_at` for instants, `_on` or `_date` for dates, `is_`/`has_` for booleans.
+FILE:templates/schema-review.md
+# Schema review: &lt;project / schema file&gt;, &lt;date&gt;
+
+**Engine:** &lt;PostgreSQL 16&gt;   **Scope:** &lt;5 tables: customers, products, orders, order_items, payments&gt;
+**Context:** &lt;OLTP shop backend, ~2M orders/year, Prisma ORM, no data yet&gt;
+**Command:** `python3 scripts/schema_lint.py &lt;shop-schema.sql&gt;`
+**Verdict:** &lt;CHANGES NEEDED before the first release: 4 HIGH, 8 MEDIUM, 8 LOW&gt;
+
+## Must fix (HIGH)
+| # | Table.column | Finding | What goes wrong | Fix |
+|---|---|---|---|---|
+| 1 | &lt;products.price&gt; | &lt;FLOAT_MONEY&gt; | &lt;0.1 + 0.2 != 0.3; order totals drift by cents&gt; | &lt;numeric(12,2) NOT NULL CHECK (price &gt;= 0)&gt; |
+
+## Should fix (MEDIUM)
+| # | Table.column | Finding | What goes wrong | Fix |
+|---|---|---|---|---|
+| 1 | &lt;&quot;order&quot;&gt; | &lt;RESERVED_WORD_NAME&gt; | &lt;must be quoted in every query and BI tool&gt; | &lt;rename to orders&gt; |
+
+## Consider (LOW / judgement calls)
+- &lt;customers.email: citext so Ana@x.com and ana@x.com are one account&gt;
+
+## Found by reading (not by the linter)
+- &lt;payments: add UNIQUE (provider, provider_id) so a webhook retry cannot record a payment twice&gt;
+- &lt;ON DELETE: keep RESTRICT on payments -&gt; orders; CASCADE only order_items -&gt; orders&gt;
+
+## Corrected DDL
+```sql
+&lt;full corrected schema, lints clean&gt;
+```
+
+## Decisions for the team
+- &lt;bigint identity vs UUIDv7 for public ids&gt;
+- &lt;store orders.total or compute it from order_items?&gt;
+
+## If tables already hold data
+- &lt;each change above is a migration; list them and run a migration safety review before deploying&gt;
+FILE:examples/shop-schema.sql
+-- Small online shop schema (PostgreSQL), first draft for review.
+-- The problems are deliberate: this is what the skill is meant to catch.
+
+CREATE TABLE customers (
+    id          serial PRIMARY KEY,
+    email       varchar(255) NOT NULL UNIQUE,
+    full_name   varchar(255),
+    phone       varchar(255),
+    is_verified boolean,
+    created_at  timestamp
+);
+
+CREATE TABLE products (
+    id         serial PRIMARY KEY,
+    sku        varchar(64) NOT NULL UNIQUE,
+    title      text NOT NULL,
+    price      double precision NOT NULL,
+    attributes text,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE &quot;order&quot; (
+    id          bigserial PRIMARY KEY,
+    customer_id integer NOT NULL REFERENCES customers (id),
+    status      varchar(20) NOT NULL DEFAULT &#x27;pending&#x27;,
+    total       numeric(12,2) NOT NULL,
+    placed_at   timestamp NOT NULL DEFAULT now(),
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE order_items (
+    order_id   bigint NOT NULL REFERENCES &quot;order&quot; (id),
+    product_id bigint NOT NULL,
+    quantity   integer NOT NULL,
+    unit_price numeric(12,2) NOT NULL
+);
+
+CREATE TABLE payments (
+    id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    order_id    integer NOT NULL REFERENCES &quot;order&quot; (id),
+    amount      real NOT NULL,
+    provider    text NOT NULL,
+    provider_id text,
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX payments_order_idx ON payments (order_id);
+CREATE INDEX payments_order_created_idx ON payments (order_id, created_at);
+FILE:examples/shop-schema-fixed.sql
+-- Small online shop schema (PostgreSQL), after review.
+-- Every change is explained in templates/schema-review.md style in the review.
+
+CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE TABLE customers (
+    id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    email       citext NOT NULL UNIQUE,
+    full_name   text,
+    phone       text CHECK (char_length(phone) &lt;= 32),
+    is_verified boolean NOT NULL DEFAULT false,
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE products (
+    id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sku        text NOT NULL UNIQUE,
+    title      text NOT NULL,
+    price      numeric(12,2) NOT NULL CHECK (price &gt;= 0),
+    attributes jsonb NOT NULL DEFAULT &#x27;{}&#x27;,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE orders (
+    id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    customer_id bigint NOT NULL REFERENCES customers (id),
+    status      text NOT NULL DEFAULT &#x27;pending&#x27;
+                CHECK (status IN (&#x27;pending&#x27;, &#x27;paid&#x27;, &#x27;shipped&#x27;, &#x27;cancelled&#x27;, &#x27;refunded&#x27;)),
+    total       numeric(12,2) NOT NULL CHECK (total &gt;= 0),
+    placed_at   timestamptz NOT NULL DEFAULT now(),
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX orders_customer_idx ON orders (customer_id);
+
+CREATE TABLE order_items (
+    order_id   bigint NOT NULL REFERENCES orders (id),
+    product_id bigint NOT NULL REFERENCES products (id),
+    quantity   integer NOT NULL CHECK (quantity &gt; 0),
+    unit_price numeric(12,2) NOT NULL CHECK (unit_price &gt;= 0),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (order_id, product_id)
+);
+CREATE INDEX order_items_product_idx ON order_items (product_id);
+
+CREATE TABLE payments (
+    id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    order_id    bigint NOT NULL REFERENCES orders (id),
+    amount      numeric(12,2) NOT NULL,
+    provider    text NOT NULL,
+    provider_id text,
+    created_at  timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (provider, provider_id)
+);
+CREATE INDEX payments_order_created_idx ON payments (order_id, created_at);
+FILE:scripts/schema_lint.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;SQL schema design linter for PostgreSQL and MySQL DDL (Python 3 standard library only).
+
+Reads CREATE TABLE / CREATE INDEX / ALTER TABLE ... ADD statements (a schema dump,
+schema.sql, or the DDL of new tables in a pull request) and reports design problems
+that are cheap to fix before data exists and expensive after: tables without a
+primary key, money stored in floating point, foreign keys whose type differs from the
+referenced key or that have no supporting index (PostgreSQL), *_id columns without a
+foreign key, 32-bit primary keys, timestamps without time zone, nullable audit
+columns and booleans, unchecked status columns, reserved-word and mixed-case names,
+case-sensitive unique emails, redundant indexes, JSON kept in text columns, and MySQL
+tables using MyISAM or 3-byte utf8.
+
+It does not connect to a database and does not judge migration safety (locks,
+backfills); it reviews the shape of the schema itself.
+
+Usage:
+  python3 schema_lint.py FILE.sql [FILE.sql ...] [--dialect auto|postgres|mysql]
+        [--min-severity LOW|MEDIUM|HIGH] [--ignore CODE,CODE] [--json]
+  python3 schema_lint.py --self-test
+Exit codes: 0 = no HIGH findings, 1 = HIGH findings, 2 = bad input (unreadable file,
+no CREATE TABLE found).
+&quot;&quot;&quot;
+import argparse, json, re, sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+MONEY_RE = re.compile(r&quot;(^|_)(price|amount|total|subtotal|cost|balance|fee|fees|tax|salary|refund|discount|paid|payment|revenue|credit|debit|charge)(_|$)&quot;, re.I)
+RESERVED = {&quot;user&quot;, &quot;order&quot;, &quot;group&quot;, &quot;select&quot;, &quot;table&quot;, &quot;column&quot;, &quot;desc&quot;, &quot;asc&quot;, &quot;check&quot;, &quot;default&quot;, &quot;from&quot;,
+            &quot;where&quot;, &quot;limit&quot;, &quot;offset&quot;, &quot;references&quot;, &quot;primary&quot;, &quot;key&quot;, &quot;range&quot;, &quot;rank&quot;, &quot;window&quot;, &quot;all&quot;, &quot;both&quot;,
+            &quot;end&quot;, &quot;grant&quot;, &quot;to&quot;, &quot;type&quot;, &quot;values&quot;, &quot;constraint&quot;, &quot;index&quot;, &quot;match&quot;, &quot;condition&quot;, &quot;interval&quot;, &quot;read&quot;, &quot;row&quot;}
+RESERVED_PG_ONLY_SAFE = {&quot;key&quot;, &quot;range&quot;, &quot;rank&quot;, &quot;type&quot;, &quot;values&quot;, &quot;match&quot;, &quot;condition&quot;, &quot;interval&quot;, &quot;read&quot;, &quot;row&quot;, &quot;index&quot;}  # fine unquoted in Postgres
+RESERVED_MY_ONLY_SAFE = {&quot;offset&quot;, &quot;user&quot;, &quot;end&quot;, &quot;type&quot;, &quot;values&quot;, &quot;row&quot;}  # fine unquoted in MySQL 8
+STATUS_RE = re.compile(r&quot;^(status|state|kind|role|type|.*_status|.*_state|.*_type)$&quot;, re.I)
+JSONISH_RE = re.compile(r&quot;(^|_)(json|payload|metadata|meta|attributes|settings|extra|data)$&quot;, re.I)
+INT32 = {&quot;int&quot;, &quot;integer&quot;, &quot;int4&quot;, &quot;serial&quot;, &quot;serial4&quot;, &quot;mediumint&quot;, &quot;smallint&quot;, &quot;int2&quot;, &quot;smallserial&quot;, &quot;tinyint&quot;}
+INT64 = {&quot;bigint&quot;, &quot;int8&quot;, &quot;bigserial&quot;, &quot;serial8&quot;}
+
+
+def finding(sev, code, table, column, problem, fix, line=0):
+    return {&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;table&quot;: table, &quot;column&quot;: column, &quot;line&quot;: line, &quot;problem&quot;: problem, &quot;fix&quot;: fix}
+
+
+def strip_comments(sql):
+    out, i, n = [], 0, len(sql)
+    while i &lt; n:
+        c = sql[i]
+        if c in &quot;&#x27;\&quot;`&quot;:
+            j = i + 1
+            while j &lt; n and sql[j] != c:
+                j += 2 if sql[j] == &quot;\\&quot; and c == &quot;&#x27;&quot; else 1
+            out.append(sql[i:j + 1]); i = j + 1
+        elif sql.startswith(&quot;--&quot;, i) or c == &quot;#&quot; and (i == 0 or sql[i - 1] in &quot;\n \t&quot;):
+            j = sql.find(&quot;\n&quot;, i); j = n if j &lt; 0 else j
+            out.append(&quot; &quot; * (j - i)); i = j
+        elif sql.startswith(&quot;/*&quot;, i):
+            j = sql.find(&quot;*/&quot;, i + 2); j = n if j &lt; 0 else j + 2
+            out.append(re.sub(r&quot;[^\n]&quot;, &quot; &quot;, sql[i:j])); i = j
+        else:
+            out.append(c); i += 1
+    return &quot;&quot;.join(out)
+
+
+def split_top(s, sep=&quot;,&quot;):
+    parts, depth, cur, q = [], 0, [], None
+    for ch in s:
+        if q:
+            cur.append(ch)
+            if ch == q:
+                q = None
+            continue
+        if ch in &quot;&#x27;\&quot;`&quot;:
+            q = ch
+        elif ch == &quot;(&quot;:
+            depth += 1
+        elif ch == &quot;)&quot;:
+            depth -= 1
+        if ch == sep and depth == 0:
+            parts.append(&quot;&quot;.join(cur)); cur = []
+        else:
+            cur.append(ch)
+    if &quot;&quot;.join(cur).strip():
+        parts.append(&quot;&quot;.join(cur))
+    return parts
+
+
+def statements(sql):
+    clean = strip_comments(sql)
+    pos = 0
+    for part in split_top(clean, &quot;;&quot;):
+        line = clean.count(&quot;\n&quot;, 0, pos + len(part) - len(part.lstrip())) + 1
+        pos += len(part) + 1
+        if part.strip():
+            yield line, part.strip()
+
+
+def ident(s):
+    s = s.strip()
+    quoted = s[:1] in &quot;\&quot;`&quot;
+    name = s.split(&quot;.&quot;)[-1].strip().strip(&quot;\&quot;`&quot;)
+    return name, quoted
+
+
+def cols_list(s):
+    return [ident(re.sub(r&quot;\s+(ASC|DESC|NULLS\s+(FIRST|LAST)).*$&quot;, &quot;&quot;, c.strip(), flags=re.I))[0].lower() if not c.strip().startswith(&quot;(&quot;) and &quot;(&quot; not in c else c.strip().lower()
+            for c in split_top(s)]
+
+
+class Schema:
+    def __init__(self):
+        self.tables, self.indexes, self.fks, self.enums = {}, [], [], set()
+        self.dialect_hints = {&quot;mysql&quot;: 0, &quot;postgres&quot;: 0}
+
+
+def parse(sql):
+    sc = Schema()
+    if re.search(r&quot;AUTO_INCREMENT|ENGINE\s*=|`|UNSIGNED|DATETIME|TINYINT\(&quot;, sql, re.I):
+        sc.dialect_hints[&quot;mysql&quot;] += 1
+    if re.search(r&quot;\bSERIAL\b|BIGSERIAL|TIMESTAMPTZ|JSONB|GENERATED\s+(ALWAYS|BY DEFAULT)\s+AS\s+IDENTITY|::|CREATE\s+TYPE|CITEXT|CONCURRENTLY|\bTEXT\[\]&quot;, sql, re.I):
+        sc.dialect_hints[&quot;postgres&quot;] += 1
+    for line, st in statements(sql):
+        m = re.match(r&quot;CREATE\s+(?:TEMP(?:ORARY)?\s+|UNLOGGED\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([\w\&quot;.`]+)\s*\((.*)\)\s*(.*)$&quot;, st, re.I | re.S)
+        if m:
+            name, quoted = ident(m.group(1))
+            t = {&quot;name&quot;: name, &quot;quoted&quot;: quoted, &quot;line&quot;: line, &quot;cols&quot;: {}, &quot;order&quot;: [], &quot;pk&quot;: [], &quot;uniques&quot;: [],
+                 &quot;checks&quot;: &quot; &quot;.join([]), &quot;options&quot;: m.group(3), &quot;raw&quot;: st}
+            checks = []
+            for item in split_top(m.group(2)):
+                parse_item(item.strip(), t, sc, checks)
+            t[&quot;checks&quot;] = &quot; &quot;.join(checks).lower()
+            sc.tables[name.lower()] = t
+            continue
+        m = re.match(r&quot;CREATE\s+(UNIQUE\s+)?INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+NOT\s+EXISTS\s+)?([\w\&quot;.`]*)\s*ON\s+(?:ONLY\s+)?([\w\&quot;.`]+)\s*(?:USING\s+\w+\s*)?\((.*)\)\s*(.*)$&quot;, st, re.I | re.S)
+        if m:
+            sc.indexes.append({&quot;table&quot;: ident(m.group(3))[0].lower(), &quot;cols&quot;: cols_list(m.group(4)), &quot;unique&quot;: bool(m.group(1)),
+                               &quot;name&quot;: ident(m.group(2))[0] if m.group(2) else &quot;&quot;, &quot;partial&quot;: &quot;where&quot; in m.group(5).lower(), &quot;line&quot;: line})
+            continue
+        m = re.match(r&quot;ALTER\s+TABLE\s+(?:ONLY\s+)?(?:IF\s+EXISTS\s+)?([\w\&quot;.`]+)\s+(.*)$&quot;, st, re.I | re.S)
+        if m:
+            tname = ident(m.group(1))[0].lower()
+            for action in split_top(m.group(2)):
+                a = action.strip()
+                am = re.match(r&quot;ADD\s+(?:COLUMN\s+)(?:IF\s+NOT\s+EXISTS\s+)?(.*)$&quot;, a, re.I | re.S)
+                if am and tname in sc.tables:
+                    parse_item(am.group(1), sc.tables[tname], sc, [])
+                    continue
+                am = re.match(r&quot;ADD\s+(.*)$&quot;, a, re.I | re.S)
+                if am and tname in sc.tables:
+                    chk = []
+                    parse_item(am.group(1), sc.tables[tname], sc, chk)
+                    sc.tables[tname][&quot;checks&quot;] += &quot; &quot; + &quot; &quot;.join(chk).lower()
+            continue
+        m = re.match(r&quot;CREATE\s+TYPE\s+([\w\&quot;.]+)\s+AS\s+ENUM&quot;, st, re.I)
+        if m:
+            sc.enums.add(ident(m.group(1))[0].lower())
+        m = re.match(r&quot;CREATE\s+(?:DOMAIN|EXTENSION)\s+(?:IF\s+NOT\s+EXISTS\s+)?([\w\&quot;.]+)&quot;, st, re.I)
+        if m:
+            sc.enums.add(ident(m.group(1))[0].lower())
+    return sc
+
+
+def parse_item(item, t, sc, checks):
+    u = item.upper()
+    m = re.match(r&quot;CONSTRAINT\s+[\w\&quot;`]+\s+(.*)$&quot;, item, re.I | re.S)
+    if m:
+        item, u = m.group(1).strip(), m.group(1).strip().upper()
+    if u.startswith(&quot;PRIMARY KEY&quot;):
+        t[&quot;pk&quot;] = cols_list(re.search(r&quot;\((.*)\)&quot;, item, re.S).group(1)); return
+    if re.match(r&quot;UNIQUE\b&quot;, u):
+        cm = re.search(r&quot;\((.*?)\)&quot;, item, re.S)
+        if cm:
+            cols = cols_list(cm.group(1))
+            t[&quot;uniques&quot;].append(cols)
+            sc.indexes.append({&quot;table&quot;: t[&quot;name&quot;].lower(), &quot;cols&quot;: cols, &quot;unique&quot;: True, &quot;name&quot;: &quot;&quot;, &quot;partial&quot;: False, &quot;line&quot;: t[&quot;line&quot;]})
+        return
+    if u.startswith(&quot;FOREIGN KEY&quot;):
+        fm = re.match(r&quot;FOREIGN\s+KEY\s*\((.*?)\)\s*REFERENCES\s+([\w\&quot;.`]+)\s*(?:\((.*?)\))?&quot;, item, re.I | re.S)
+        if fm:
+            sc.fks.append({&quot;table&quot;: t[&quot;name&quot;].lower(), &quot;cols&quot;: cols_list(fm.group(1)), &quot;ref&quot;: ident(fm.group(2))[0].lower(),
+                           &quot;ref_cols&quot;: cols_list(fm.group(3)) if fm.group(3) else None})
+        return
+    if u.startswith(&quot;CHECK&quot;):
+        checks.append(item); return
+    if re.match(r&quot;(UNIQUE\s+)?(KEY|INDEX)\b&quot;, u) or re.match(r&quot;(FULLTEXT|SPATIAL)\b&quot;, u):
+        cm = re.search(r&quot;\((.*)\)&quot;, item, re.S)
+        if cm:
+            sc.indexes.append({&quot;table&quot;: t[&quot;name&quot;].lower(), &quot;cols&quot;: cols_list(cm.group(1)), &quot;unique&quot;: u.startswith(&quot;UNIQUE&quot;),
+                               &quot;name&quot;: &quot;&quot;, &quot;partial&quot;: False, &quot;line&quot;: t[&quot;line&quot;]})
+        return
+    if u.startswith((&quot;EXCLUDE&quot;, &quot;LIKE&quot;, &quot;PERIOD&quot;)):
+        return
+    cm = re.match(r&quot;([\&quot;`][^\&quot;`]+[\&quot;`]|[\w$]+)\s+(.*)$&quot;, item, re.S)
+    if not cm:
+        return
+    name, quoted = ident(cm.group(1))
+    rest = cm.group(2)
+    tm = re.match(r&quot;((?:double\s+precision|character\s+varying|bit\s+varying|timestamp(?:\s*\(\d+\))?(?:\s+with(?:out)?\s+time\s+zone)?(?!\w)|time(?:\s+with(?:out)?\s+time\s+zone)?(?!\w)|[\w.]+)(?:\s*\([^)]*\))?(?:\s+unsigned)?(?:\s*\[\])?)&quot;, rest, re.I)
+    ctype = re.sub(r&quot;\s+&quot;, &quot; &quot;, tm.group(1).lower()) if tm else &quot;&quot;
+    ru = rest.upper()
+    col = {&quot;name&quot;: name, &quot;quoted&quot;: quoted, &quot;type&quot;: ctype, &quot;not_null&quot;: &quot;NOT NULL&quot; in ru or &quot;PRIMARY KEY&quot; in ru,
+           &quot;default&quot;: &quot;DEFAULT&quot; in ru or &quot;IDENTITY&quot; in ru or &quot;AUTO_INCREMENT&quot; in ru or ctype.endswith(&quot;serial&quot;),
+           &quot;check&quot;: &quot;CHECK&quot; in ru}
+    t[&quot;cols&quot;][name.lower()] = col
+    t[&quot;order&quot;].append(name.lower())
+    if &quot;PRIMARY KEY&quot; in ru:
+        t[&quot;pk&quot;] = [name.lower()]
+    if re.search(r&quot;\bUNIQUE\b&quot;, ru):
+        t[&quot;uniques&quot;].append([name.lower()])
+        sc.indexes.append({&quot;table&quot;: t[&quot;name&quot;].lower(), &quot;cols&quot;: [name.lower()], &quot;unique&quot;: True, &quot;name&quot;: &quot;&quot;, &quot;partial&quot;: False, &quot;line&quot;: t[&quot;line&quot;]})
+    rm = re.search(r&quot;REFERENCES\s+([\w\&quot;.`]+)\s*(?:\((.*?)\))?&quot;, rest, re.I)
+    if rm:
+        sc.fks.append({&quot;table&quot;: t[&quot;name&quot;].lower(), &quot;cols&quot;: [name.lower()], &quot;ref&quot;: ident(rm.group(1))[0].lower(),
+                       &quot;ref_cols&quot;: cols_list(rm.group(2)) if rm.group(2) else None})
+    if col[&quot;check&quot;]:
+        checks.append(f&quot;check ({name})&quot;)
+
+
+def qi(name):
+    return f&#x27;&quot;{name}&quot;&#x27; if name.lower() in RESERVED or name != name.lower() else name
+
+
+def base_type(ctype):
+    t = re.sub(r&quot;\(.*?\)|\s+unsigned|\[\]&quot;, &quot;&quot;, ctype).strip()
+    return {&quot;int4&quot;: &quot;integer&quot;, &quot;int&quot;: &quot;integer&quot;, &quot;serial&quot;: &quot;integer&quot;, &quot;serial4&quot;: &quot;integer&quot;, &quot;int8&quot;: &quot;bigint&quot;,
+            &quot;bigserial&quot;: &quot;bigint&quot;, &quot;serial8&quot;: &quot;bigint&quot;, &quot;int2&quot;: &quot;smallint&quot;, &quot;smallserial&quot;: &quot;smallint&quot;}.get(t, t)
+
+
+def lint(sql, dialect=&quot;auto&quot;, ignore=()):
+    sc = parse(sql)
+    if dialect == &quot;auto&quot;:
+        dialect = &quot;mysql&quot; if sc.dialect_hints[&quot;mysql&quot;] &gt; sc.dialect_hints[&quot;postgres&quot;] else &quot;postgres&quot;
+    out = []
+
+    def add(*a, **k):
+        f = finding(*a, **k)
+        if f[&quot;code&quot;] not in ignore:
+            out.append(f)
+
+    table_names = set(sc.tables)
+    for key, t in sc.tables.items():
+        tn = t[&quot;name&quot;]
+        ln = t[&quot;line&quot;]
+        if not t[&quot;pk&quot;]:
+            add(&quot;HIGH&quot;, &quot;NO_PRIMARY_KEY&quot;, tn, &quot;&quot;, &quot;table has no primary key: duplicate rows cannot be told apart, updates and replication (logical replication, MySQL row-based, CDC) suffer&quot;,
+                &quot;add a bigint identity (or UUID) primary key, or a composite key on the natural unique columns&quot;, line=ln)
+        elif len(t[&quot;pk&quot;]) == 1 and t[&quot;pk&quot;][0] in t[&quot;cols&quot;]:
+            c = t[&quot;cols&quot;][t[&quot;pk&quot;][0]]
+            bt = base_type(c[&quot;type&quot;])
+            if bt in {&quot;integer&quot;, &quot;smallint&quot;, &quot;mediumint&quot;, &quot;tinyint&quot;} and not re.search(r&quot;(^|_)(type|status|kind|country|currency|lookup)s?$&quot;, tn, re.I):
+                add(&quot;MEDIUM&quot;, &quot;INT32_PRIMARY_KEY&quot;, tn, c[&quot;name&quot;], f&quot;primary key {c[&#x27;name&#x27;]} is {c[&#x27;type&#x27;]} (max about 2.1 billion, less for smaller types); running out means an emergency type change on the biggest table&quot;,
+                    &quot;use bigint GENERATED ALWAYS AS IDENTITY (Postgres) or BIGINT UNSIGNED AUTO_INCREMENT (MySQL)&quot;, line=ln)
+        if dialect == &quot;postgres&quot; and t[&quot;quoted&quot;] and t[&quot;name&quot;] != t[&quot;name&quot;].lower():
+            add(&quot;LOW&quot;, &quot;MIXED_CASE_NAME&quot;, tn, &quot;&quot;, f&#x27;table &quot;{tn}&quot; is quoted mixed case: every query must quote it forever&#x27;, &quot;use snake_case lower-case names&quot;, line=ln)
+        if tn.lower() in RESERVED and not (dialect == &quot;postgres&quot; and tn.lower() in RESERVED_PG_ONLY_SAFE) and not (dialect == &quot;mysql&quot; and tn.lower() in RESERVED_MY_ONLY_SAFE):
+            add(&quot;MEDIUM&quot;, &quot;RESERVED_WORD_NAME&quot;, tn, &quot;&quot;, f&quot;table name &#x27;{tn}&#x27; is a reserved word and must be quoted in every query and ORM&quot;, &quot;rename (e.g. users, orders, user_groups)&quot;, line=ln)
+        if dialect == &quot;mysql&quot;:
+            opts = t[&quot;options&quot;].lower()
+            if re.search(r&quot;engine\s*=\s*myisam&quot;, opts):
+                add(&quot;HIGH&quot;, &quot;MYISAM_ENGINE&quot;, tn, &quot;&quot;, &quot;ENGINE=MyISAM has no transactions, no foreign keys and table-level locks; crashes can corrupt it&quot;, &quot;use ENGINE=InnoDB&quot;, line=ln)
+            if re.search(r&quot;charset\s*=\s*utf8(mb3)?\b(?!mb4)&quot;, opts):
+                add(&quot;MEDIUM&quot;, &quot;MYSQL_UTF8MB3&quot;, tn, &quot;&quot;, &quot;utf8 in MySQL is 3-byte utf8mb3: emoji and some CJK characters fail to insert or get mangled&quot;, &quot;use DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci&quot;, line=ln)
+        if not any(re.match(r&quot;^(created_at|created|created_on|inserted_at|date_created|creation_date)$&quot;, c) for c in t[&quot;cols&quot;]):
+            add(&quot;LOW&quot;, &quot;NO_CREATED_AT&quot;, tn, &quot;&quot;, &quot;no created_at column: hard to debug, audit or backfill later&quot;, &quot;add created_at timestamptz NOT NULL DEFAULT now()&quot;, line=ln)
+        v255 = [c[&quot;name&quot;] for c in t[&quot;cols&quot;].values() if re.match(r&quot;(varchar|character varying)\s*\(255\)&quot;, c[&quot;type&quot;])]
+        if dialect == &quot;postgres&quot; and len(v255) &gt;= 3:
+            add(&quot;LOW&quot;, &quot;VARCHAR_255_HABIT&quot;, tn, &quot;, &quot;.join(v255), f&quot;{len(v255)} columns are varchar(255): in Postgres the limit costs nothing to drop but 255 is rarely the real rule&quot;,
+                &quot;use text, with a CHECK (char_length(x) &lt;= n) where a real limit exists&quot;, line=ln)
+        for cname in t[&quot;order&quot;]:
+            c = t[&quot;cols&quot;][cname]
+            ct, bt = c[&quot;type&quot;], base_type(c[&quot;type&quot;])
+            cn = c[&quot;name&quot;]
+            if MONEY_RE.search(cn) and bt in {&quot;float&quot;, &quot;real&quot;, &quot;double&quot;, &quot;double precision&quot;, &quot;float4&quot;, &quot;float8&quot;}:
+                add(&quot;HIGH&quot;, &quot;FLOAT_MONEY&quot;, tn, cn, f&quot;{cn} is {ct}: binary floating point cannot store 0.10 exactly, sums drift by cents&quot;,
+                    &quot;use numeric(12,2) / DECIMAL(12,2), or bigint minor units (amount_cents)&quot;, line=ln)
+            if bt == &quot;money&quot; and dialect == &quot;postgres&quot;:
+                add(&quot;MEDIUM&quot;, &quot;MONEY_TYPE&quot;, tn, cn, &quot;Postgres money type depends on lc_monetary, has one fixed currency and rounds&quot;, &quot;use numeric(12,2) plus a currency column&quot;, line=ln)
+            if dialect == &quot;postgres&quot; and (re.match(r&quot;^timestamp(\s*\(\d+\))?$&quot;, ct) or &quot;without time zone&quot; in ct):
+                add(&quot;MEDIUM&quot;, &quot;TIMESTAMP_WITHOUT_TZ&quot;, tn, cn, f&quot;{cn} is timestamp without time zone: the instant depends on whatever zone the writer assumed&quot;, &quot;use timestamptz (stores an absolute instant, displays in the session zone)&quot;, line=ln)
+            if dialect == &quot;mysql&quot; and bt == &quot;datetime&quot; and re.search(r&quot;_at$&quot;, cn):
+                add(&quot;LOW&quot;, &quot;DATETIME_NO_ZONE&quot;, tn, cn, f&quot;{cn} is DATETIME (no zone): make sure every writer stores UTC&quot;, &quot;document and enforce UTC (time_zone=&#x27;+00:00&#x27; on connections) or use TIMESTAMP within its 2038 range&quot;, line=ln)
+            if re.match(r&quot;^(created_at|updated_at|inserted_at)$&quot;, cn, re.I) and not c[&quot;not_null&quot;]:
+                add(&quot;MEDIUM&quot;, &quot;NULLABLE_AUDIT_COLUMN&quot;, tn, cn, f&quot;{cn} is nullable{&#x27;&#x27; if c[&#x27;default&#x27;] else &#x27; and has no default&#x27;}: rows without it will appear&quot;, f&quot;{cn} timestamptz NOT NULL DEFAULT now()&quot;, line=ln)
+            if bt in {&quot;boolean&quot;, &quot;bool&quot;} and not c[&quot;not_null&quot;]:
+                add(&quot;LOW&quot;, &quot;NULLABLE_BOOLEAN&quot;, tn, cn, f&quot;{cn} is a nullable boolean: three states (true, false, unknown) and NULL-unsafe WHERE clauses&quot;, f&quot;{cn} boolean NOT NULL DEFAULT false&quot;, line=ln)
+            if STATUS_RE.match(cn) and re.match(r&quot;^(text|varchar|character varying|char|character)&quot;, bt) and not c[&quot;check&quot;] \
+                    and cn.lower() not in t[&quot;checks&quot;] and not any(f[&quot;table&quot;] == key and cname in f[&quot;cols&quot;] for f in sc.fks):
+                add(&quot;LOW&quot;, &quot;UNCHECKED_STATUS&quot;, tn, cn, f&quot;{cn} is free text: typos like &#x27;Shipped &#x27; and &#x27;shiped&#x27; will end up in the data&quot;, &quot;add CHECK (status IN (...)), an enum type, or a FK to a lookup table&quot;, line=ln)
+            if bt in {&quot;text&quot;, &quot;longtext&quot;, &quot;mediumtext&quot;} and JSONISH_RE.search(cn):
+                add(&quot;LOW&quot;, &quot;JSON_IN_TEXT&quot;, tn, cn, f&quot;{cn} looks like JSON stored as {ct}: no validation, no indexing&quot;, &quot;use jsonb (Postgres) or JSON (MySQL) if it really is JSON&quot;, line=ln)
+            if cn.lower() in RESERVED and not (dialect == &quot;postgres&quot; and cn.lower() in RESERVED_PG_ONLY_SAFE) and not (dialect == &quot;mysql&quot; and cn.lower() in RESERVED_MY_ONLY_SAFE) and cn.lower() not in {&quot;type&quot;}:
+                add(&quot;MEDIUM&quot;, &quot;RESERVED_WORD_NAME&quot;, tn, cn, f&quot;column name &#x27;{cn}&#x27; is a reserved word and needs quoting everywhere&quot;, &quot;rename it (e.g. sort_order, user_id, group_name, ends_at)&quot;, line=ln)
+            if dialect == &quot;postgres&quot; and c[&quot;quoted&quot;] and cn != cn.lower():
+                add(&quot;LOW&quot;, &quot;MIXED_CASE_NAME&quot;, tn, cn, f&#x27;column &quot;{cn}&quot; is quoted mixed case: every query must quote it&#x27;, &quot;use snake_case&quot;, line=ln)
+            if cn.lower().endswith(&quot;_id&quot;) and cname not in t[&quot;pk&quot;] and not any(f[&quot;table&quot;] == key and cname in f[&quot;cols&quot;] for f in sc.fks):
+                stem = cn.lower()[:-3]
+                cands = [x for x in (stem, stem + &quot;s&quot;, stem + &quot;es&quot;, stem[:-1] + &quot;ies&quot; if stem.endswith(&quot;y&quot;) else None) if x and x in table_names]
+                if cands:
+                    add(&quot;LOW&quot;, &quot;MISSING_FOREIGN_KEY&quot;, tn, cn, f&quot;{cn} looks like a reference to {cands[0]} but has no foreign key: orphans and typos are possible&quot;, f&quot;add REFERENCES {cands[0]}(id) (with an index)&quot;, line=ln)
+            if re.search(r&quot;(^|_)email$&quot;, cn, re.I) and [cname] in t[&quot;uniques&quot;] and dialect == &quot;postgres&quot; and bt != &quot;citext&quot;:
+                if not any(i[&quot;table&quot;] == key and any(&quot;lower(&quot; in c2 for c2 in i[&quot;cols&quot;]) for i in sc.indexes):
+                    add(&quot;LOW&quot;, &quot;CASE_SENSITIVE_UNIQUE_EMAIL&quot;, tn, cn, &quot;UNIQUE on email is case-sensitive in Postgres: Ana@x.com and ana@x.com can both sign up&quot;, &quot;CREATE UNIQUE INDEX ... ON t (lower(email)) or use citext&quot;, line=ln)
+    # foreign keys: types and indexes
+    for f in sc.fks:
+        t = sc.tables.get(f[&quot;table&quot;])
+        r = sc.tables.get(f[&quot;ref&quot;])
+        if not t:
+            continue
+        ref_cols = f[&quot;ref_cols&quot;] or (r[&quot;pk&quot;] if r else None)
+        if r and ref_cols and len(ref_cols) == len(f[&quot;cols&quot;]):
+            for c, rc in zip(f[&quot;cols&quot;], ref_cols):
+                a, b = t[&quot;cols&quot;].get(c), r[&quot;cols&quot;].get(rc)
+                if a and b and base_type(a[&quot;type&quot;]) != base_type(b[&quot;type&quot;]) and not ({base_type(a[&quot;type&quot;]), base_type(b[&quot;type&quot;])} &lt;= {&quot;uuid&quot;}):
+                    add(&quot;HIGH&quot;, &quot;FK_TYPE_MISMATCH&quot;, t[&quot;name&quot;], a[&quot;name&quot;], f&quot;{a[&#x27;name&#x27;]} is {a[&#x27;type&#x27;]} but references {r[&#x27;name&#x27;]}.{b[&#x27;name&#x27;]} ({b[&#x27;type&#x27;]}): joins need casts and the FK fails once ids pass the smaller range&quot;,
+                        f&quot;make {a[&#x27;name&#x27;]} the same type as {r[&#x27;name&#x27;]}.{b[&#x27;name&#x27;]}&quot;, line=t[&quot;line&quot;])
+        if dialect == &quot;postgres&quot;:
+            covered = any(idx[&quot;table&quot;] == f[&quot;table&quot;] and not idx[&quot;partial&quot;] and idx[&quot;cols&quot;][:len(f[&quot;cols&quot;])] == f[&quot;cols&quot;] for idx in sc.indexes) \
+                or t[&quot;pk&quot;][:len(f[&quot;cols&quot;])] == f[&quot;cols&quot;] or any(u[:len(f[&quot;cols&quot;])] == f[&quot;cols&quot;] for u in t[&quot;uniques&quot;])
+            if not covered:
+                add(&quot;MEDIUM&quot;, &quot;FK_WITHOUT_INDEX&quot;, t[&quot;name&quot;], &quot;, &quot;.join(f[&quot;cols&quot;]), f&quot;foreign key ({&#x27;, &#x27;.join(f[&#x27;cols&#x27;])}) -&gt; {f[&#x27;ref&#x27;]} has no index starting with it: deletes/updates on {f[&#x27;ref&#x27;]} scan {t[&#x27;name&#x27;]}, and joins are slow&quot;,
+                    f&quot;CREATE INDEX CONCURRENTLY ON {qi(t[&#x27;name&#x27;])} ({&#x27;, &#x27;.join(f[&#x27;cols&#x27;])})&quot;, line=t[&quot;line&quot;])
+    # redundant indexes
+    for i, a in enumerate(sc.indexes):
+        t = sc.tables.get(a[&quot;table&quot;])
+        if not t or a[&quot;partial&quot;] or any(&quot;(&quot; in c for c in a[&quot;cols&quot;]):
+            continue
+        others = [b for j, b in enumerate(sc.indexes) if j != i and b[&quot;table&quot;] == a[&quot;table&quot;] and not b[&quot;partial&quot;]]
+        if t[&quot;pk&quot;] and a[&quot;cols&quot;] == t[&quot;pk&quot;][:len(a[&quot;cols&quot;])] and not a[&quot;unique&quot;]:
+            add(&quot;LOW&quot;, &quot;REDUNDANT_INDEX&quot;, t[&quot;name&quot;], &quot;, &quot;.join(a[&quot;cols&quot;]), f&quot;index on ({&#x27;, &#x27;.join(a[&#x27;cols&#x27;])}) duplicates the primary key&#x27;s leading columns&quot;, &quot;drop it&quot;, line=a[&quot;line&quot;])
+            continue
+        for b in others:
+            if len(b[&quot;cols&quot;]) &gt; len(a[&quot;cols&quot;]) and b[&quot;cols&quot;][:len(a[&quot;cols&quot;])] == a[&quot;cols&quot;] and not a[&quot;unique&quot;]:
+                add(&quot;LOW&quot;, &quot;REDUNDANT_INDEX&quot;, t[&quot;name&quot;], &quot;, &quot;.join(a[&quot;cols&quot;]), f&quot;index on ({&#x27;, &#x27;.join(a[&#x27;cols&#x27;])}) is a prefix of the index on ({&#x27;, &#x27;.join(b[&#x27;cols&#x27;])})&quot;, &quot;drop the shorter one unless it is much smaller and hot&quot;, line=a[&quot;line&quot;])
+                break
+            if b[&quot;cols&quot;] == a[&quot;cols&quot;] and j_before(sc.indexes, b, a) and a[&quot;unique&quot;] == b[&quot;unique&quot;]:
+                add(&quot;LOW&quot;, &quot;REDUNDANT_INDEX&quot;, t[&quot;name&quot;], &quot;, &quot;.join(a[&quot;cols&quot;]), f&quot;two indexes on ({&#x27;, &#x27;.join(a[&#x27;cols&#x27;])})&quot;, &quot;drop one&quot;, line=a[&quot;line&quot;])
+                break
+    out.sort(key=lambda f: (SEV_ORDER[f[&quot;severity&quot;]], f[&quot;table&quot;], f[&quot;column&quot;], f[&quot;code&quot;]))
+    return dialect, sc, out
+
+
+def j_before(lst, b, a):
+    return lst.index(b) &lt; lst.index(a)
+
+
+def report(path, dialect, sc, found):
+    counts = {s: sum(1 for f in found if f[&quot;severity&quot;] == s) for s in SEV_ORDER}
+    out = [f&quot;# Schema review: {path} ({dialect})&quot;, &quot;&quot;,
+           f&quot;Tables: {len(sc.tables)}   Indexes: {len(sc.indexes)}   Foreign keys: {len(sc.fks)}   Findings: {len(found)} (HIGH {counts[&#x27;HIGH&#x27;]}, MEDIUM {counts[&#x27;MEDIUM&#x27;]}, LOW {counts[&#x27;LOW&#x27;]})&quot;, &quot;&quot;]
+    if not found:
+        out.append(&quot;No findings.&quot;)
+        return &quot;\n&quot;.join(out)
+    out += [&quot;| Sev | Code | Table.Column | Problem | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+    for f in found:
+        loc = f[&quot;table&quot;] + (&quot;.&quot; + f[&quot;column&quot;] if f[&quot;column&quot;] else &quot;&quot;)
+        out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | {loc} | {f[&#x27;problem&#x27;].replace(&#x27;|&#x27;, &#x27;/&#x27;)} | {f[&#x27;fix&#x27;].replace(&#x27;|&#x27;, &#x27;/&#x27;)} |&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    ok_pk = &quot;CREATE TABLE t (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now()&quot;
+    cases = [
+        (&quot;clean postgres table&quot;, ok_pk + &quot;, name text NOT NULL);&quot;, &quot;postgres&quot;, [], [&quot;NO_PRIMARY_KEY&quot;, &quot;INT32_PRIMARY_KEY&quot;, &quot;NO_CREATED_AT&quot;]),
+        (&quot;no primary key&quot;, &quot;CREATE TABLE logs (msg text, created_at timestamptz NOT NULL);&quot;, &quot;auto&quot;, [&quot;NO_PRIMARY_KEY&quot;], []),
+        (&quot;table-level composite pk&quot;, &quot;CREATE TABLE m (a bigint, b bigint, created_at timestamptz NOT NULL, PRIMARY KEY (a, b));&quot;, &quot;auto&quot;, [], [&quot;NO_PRIMARY_KEY&quot;]),
+        (&quot;named pk constraint&quot;, &quot;CREATE TABLE m (id bigint, created_at timestamptz NOT NULL, CONSTRAINT m_pk PRIMARY KEY (id));&quot;, &quot;auto&quot;, [], [&quot;NO_PRIMARY_KEY&quot;]),
+        (&quot;pk added by alter&quot;, &quot;CREATE TABLE m (id bigint NOT NULL, created_at timestamptz NOT NULL); ALTER TABLE m ADD CONSTRAINT m_pkey PRIMARY KEY (id);&quot;, &quot;auto&quot;, [], [&quot;NO_PRIMARY_KEY&quot;]),
+        (&quot;serial pk is int32&quot;, &quot;CREATE TABLE orders (id serial PRIMARY KEY, created_at timestamptz NOT NULL);&quot;, &quot;auto&quot;, [&quot;INT32_PRIMARY_KEY&quot;], []),
+        (&quot;small lookup table int pk ok&quot;, &quot;CREATE TABLE order_status (id smallint PRIMARY KEY, created_at timestamptz NOT NULL);&quot;, &quot;auto&quot;, [], [&quot;INT32_PRIMARY_KEY&quot;]),
+        (&quot;float money&quot;, ok_pk + &quot;, total_price double precision);&quot;, &quot;postgres&quot;, [&quot;FLOAT_MONEY&quot;], []),
+        (&quot;numeric money ok&quot;, ok_pk + &quot;, amount numeric(12,2) NOT NULL);&quot;, &quot;postgres&quot;, [], [&quot;FLOAT_MONEY&quot;]),
+        (&quot;float non-money ok&quot;, ok_pk + &quot;, latitude double precision);&quot;, &quot;postgres&quot;, [], [&quot;FLOAT_MONEY&quot;]),
+        (&quot;money type&quot;, ok_pk + &quot;, balance money);&quot;, &quot;postgres&quot;, [&quot;MONEY_TYPE&quot;], []),
+        (&quot;timestamp without tz&quot;, ok_pk + &quot;, shipped_at timestamp);&quot;, &quot;postgres&quot;, [&quot;TIMESTAMP_WITHOUT_TZ&quot;], []),
+        (&quot;timestamp(3) without time zone&quot;, ok_pk + &quot;, shipped_at timestamp(3) without time zone);&quot;, &quot;postgres&quot;, [&quot;TIMESTAMP_WITHOUT_TZ&quot;], []),
+        (&quot;timestamptz ok&quot;, ok_pk + &quot;, shipped_at timestamp with time zone);&quot;, &quot;postgres&quot;, [], [&quot;TIMESTAMP_WITHOUT_TZ&quot;]),
+        (&quot;nullable created_at&quot;, &quot;CREATE TABLE t (id bigint PRIMARY KEY, created_at timestamptz);&quot;, &quot;postgres&quot;, [&quot;NULLABLE_AUDIT_COLUMN&quot;], []),
+        (&quot;no created_at&quot;, &quot;CREATE TABLE t (id bigint PRIMARY KEY, name text);&quot;, &quot;postgres&quot;, [&quot;NO_CREATED_AT&quot;], []),
+        (&quot;nullable boolean&quot;, ok_pk + &quot;, is_active boolean);&quot;, &quot;postgres&quot;, [&quot;NULLABLE_BOOLEAN&quot;], []),
+        (&quot;boolean not null ok&quot;, ok_pk + &quot;, is_active boolean NOT NULL DEFAULT true);&quot;, &quot;postgres&quot;, [], [&quot;NULLABLE_BOOLEAN&quot;]),
+        (&quot;unchecked status&quot;, ok_pk + &quot;, status varchar(20) NOT NULL);&quot;, &quot;postgres&quot;, [&quot;UNCHECKED_STATUS&quot;], []),
+        (&quot;status with check ok&quot;, ok_pk + &quot;, status text NOT NULL CHECK (status IN (&#x27;a&#x27;,&#x27;b&#x27;)));&quot;, &quot;postgres&quot;, [], [&quot;UNCHECKED_STATUS&quot;]),
+        (&quot;status table check ok&quot;, ok_pk + &quot;, status text NOT NULL, CONSTRAINT st CHECK (status IN (&#x27;a&#x27;)));&quot;, &quot;postgres&quot;, [], [&quot;UNCHECKED_STATUS&quot;]),
+        (&quot;reserved table name&quot;, &quot;CREATE TABLE \&quot;user\&quot; (id bigint PRIMARY KEY, created_at timestamptz NOT NULL);&quot;, &quot;postgres&quot;, [&quot;RESERVED_WORD_NAME&quot;], []),
+        (&quot;reserved column order&quot;, ok_pk + &quot;, \&quot;order\&quot; int);&quot;, &quot;postgres&quot;, [&quot;RESERVED_WORD_NAME&quot;], []),
+        (&quot;mixed case quoted&quot;, &quot;CREATE TABLE \&quot;OrderItems\&quot; (id bigint PRIMARY KEY, created_at timestamptz NOT NULL);&quot;, &quot;postgres&quot;, [&quot;MIXED_CASE_NAME&quot;], []),
+        (&quot;fk without index&quot;, &quot;CREATE TABLE a (id bigint PRIMARY KEY, created_at timestamptz NOT NULL); CREATE TABLE b (id bigint PRIMARY KEY, created_at timestamptz NOT NULL, a_id bigint NOT NULL REFERENCES a(id));&quot;, &quot;postgres&quot;, [&quot;FK_WITHOUT_INDEX&quot;], [&quot;FK_TYPE_MISMATCH&quot;]),
+        (&quot;fk with index ok&quot;, &quot;CREATE TABLE a (id bigint PRIMARY KEY, created_at timestamptz NOT NULL); CREATE TABLE b (id bigint PRIMARY KEY, created_at timestamptz NOT NULL, a_id bigint REFERENCES a); CREATE INDEX ON b (a_id, id);&quot;, &quot;postgres&quot;, [], [&quot;FK_WITHOUT_INDEX&quot;]),
+        (&quot;fk covered by composite pk&quot;, &quot;CREATE TABLE a (id bigint PRIMARY KEY, created_at timestamptz NOT NULL); CREATE TABLE ab (a_id bigint REFERENCES a(id), x bigint, created_at timestamptz NOT NULL, PRIMARY KEY (a_id, x));&quot;, &quot;postgres&quot;, [], [&quot;FK_WITHOUT_INDEX&quot;]),
+        (&quot;fk type mismatch&quot;, &quot;CREATE TABLE a (id bigint PRIMARY KEY, created_at timestamptz NOT NULL); CREATE TABLE b (id bigint PRIMARY KEY, created_at timestamptz NOT NULL, a_id integer, FOREIGN KEY (a_id) REFERENCES a (id));&quot;, &quot;postgres&quot;, [&quot;FK_TYPE_MISMATCH&quot;], []),
+        (&quot;missing fk on _id&quot;, &quot;CREATE TABLE customers (id bigint PRIMARY KEY, created_at timestamptz NOT NULL); CREATE TABLE orders (id bigint PRIMARY KEY, created_at timestamptz NOT NULL, customer_id bigint NOT NULL);&quot;, &quot;postgres&quot;, [&quot;MISSING_FOREIGN_KEY&quot;], []),
+        (&quot;external _id without table ok&quot;, ok_pk + &quot;, stripe_id text);&quot;, &quot;postgres&quot;, [], [&quot;MISSING_FOREIGN_KEY&quot;]),
+        (&quot;case-sensitive unique email&quot;, ok_pk + &quot;, email text NOT NULL UNIQUE);&quot;, &quot;postgres&quot;, [&quot;CASE_SENSITIVE_UNIQUE_EMAIL&quot;], []),
+        (&quot;lower(email) index ok&quot;, ok_pk + &quot;, email text NOT NULL UNIQUE); CREATE UNIQUE INDEX t_email ON t (lower(email));&quot;, &quot;postgres&quot;, [], [&quot;CASE_SENSITIVE_UNIQUE_EMAIL&quot;]),
+        (&quot;redundant prefix index&quot;, ok_pk + &quot;, a bigint, b bigint); CREATE INDEX i1 ON t (a); CREATE INDEX i2 ON t (a, b);&quot;, &quot;postgres&quot;, [&quot;REDUNDANT_INDEX&quot;], []),
+        (&quot;json in text&quot;, ok_pk + &quot;, payload text);&quot;, &quot;postgres&quot;, [&quot;JSON_IN_TEXT&quot;], []),
+        (&quot;varchar 255 habit&quot;, ok_pk + &quot;, a varchar(255), b varchar(255), c varchar(255));&quot;, &quot;postgres&quot;, [&quot;VARCHAR_255_HABIT&quot;], []),
+        (&quot;mysql myisam and utf8&quot;, &quot;CREATE TABLE `t` (`id` int unsigned NOT NULL AUTO_INCREMENT, `created_at` datetime NOT NULL, PRIMARY KEY (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8;&quot;, &quot;auto&quot;, [&quot;MYISAM_ENGINE&quot;, &quot;MYSQL_UTF8MB3&quot;, &quot;INT32_PRIMARY_KEY&quot;, &quot;DATETIME_NO_ZONE&quot;], [&quot;TIMESTAMP_WITHOUT_TZ&quot;]),
+        (&quot;mysql utf8mb4 innodb ok&quot;, &quot;CREATE TABLE `t` (`id` bigint unsigned NOT NULL AUTO_INCREMENT, `created_at` datetime NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;&quot;, &quot;auto&quot;, [], [&quot;MYISAM_ENGINE&quot;, &quot;MYSQL_UTF8MB3&quot;, &quot;INT32_PRIMARY_KEY&quot;]),
+        (&quot;mysql fk needs no extra index&quot;, &quot;CREATE TABLE a (id bigint PRIMARY KEY, created_at datetime NOT NULL) ENGINE=InnoDB; CREATE TABLE b (id bigint PRIMARY KEY, created_at datetime NOT NULL, a_id bigint, FOREIGN KEY (a_id) REFERENCES a(id)) ENGINE=InnoDB;&quot;, &quot;mysql&quot;, [], [&quot;FK_WITHOUT_INDEX&quot;]),
+        (&quot;comments and strings ignored&quot;, &quot;-- CREATE TABLE x (a int);\n/* CREATE TABLE y (b int); */\n&quot; + ok_pk + &quot;, note text DEFAULT &#x27;a;b -- c&#x27;);&quot;, &quot;postgres&quot;, [], [&quot;NO_PRIMARY_KEY&quot;]),
+        (&quot;alter add column parsed&quot;, ok_pk + &quot;); ALTER TABLE t ADD COLUMN total_amount float;&quot;, &quot;postgres&quot;, [&quot;FLOAT_MONEY&quot;], []),
+    ]
+    passed = 0
+    for name, sql, dialect, expect, absent in cases:
+        d, sc, found = lint(sql, dialect)
+        codes = {f[&quot;code&quot;] for f in found}
+        ok = all(c in codes for c in expect) and not any(c in codes for c in absent)
+        if name == &quot;clean postgres table&quot;:
+            ok = ok and not found
+        if name == &quot;comments and strings ignored&quot;:
+            ok = ok and len(sc.tables) == 1
+        if name.startswith(&quot;mysql myisam&quot;):
+            ok = ok and d == &quot;mysql&quot;
+        passed += ok
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name + (&quot;&quot; if ok else f&quot; -&gt; got {sorted(codes)}&quot;))
+    d, sc, found = lint(&quot;&quot;, &quot;auto&quot;)
+    ok = report(&quot;x.sql&quot;, d, sc, found).endswith(&quot;No findings.&quot;)
+    passed += ok
+    print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + &quot;empty report&quot;)
+    total = len(cases) + 1
+    print(f&quot;{passed}/{total} passed&quot;)
+    return 0 if passed == total else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;SQL schema design linter (Postgres/MySQL DDL)&quot;)
+    ap.add_argument(&quot;files&quot;, nargs=&quot;*&quot;)
+    ap.add_argument(&quot;--dialect&quot;, default=&quot;auto&quot;, choices=[&quot;auto&quot;, &quot;postgres&quot;, &quot;mysql&quot;])
+    ap.add_argument(&quot;--min-severity&quot;, default=&quot;LOW&quot;, choices=list(SEV_ORDER))
+    ap.add_argument(&quot;--ignore&quot;, default=&quot;&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.files:
+        ap.print_usage(sys.stderr)
+        return 2
+    ignore = {c.strip() for c in a.ignore.split(&quot;,&quot;) if c.strip()}
+    sql_all = []
+    for p in a.files:
+        try:
+            with open(p, encoding=&quot;utf-8&quot;) as fh:
+                sql_all.append(fh.read())
+        except OSError as e:
+            print(f&quot;error: cannot read {p}: {e}&quot;, file=sys.stderr)
+            return 2
+    dialect, sc, found = lint(&quot;\n;\n&quot;.join(sql_all), a.dialect, ignore)
+    if not sc.tables:
+        print(&quot;error: no CREATE TABLE statements found&quot;, file=sys.stderr)
+        return 2
+    found = [f for f in found if SEV_ORDER[f[&quot;severity&quot;]] &lt;= SEV_ORDER[a.min_severity]]
+    if a.json:
+        print(json.dumps({&quot;dialect&quot;: dialect, &quot;tables&quot;: len(sc.tables), &quot;findings&quot;: found}, indent=2))
+    else:
+        print(report(&quot;, &quot;.join(a.files), dialect, sc, found))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in found) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/sql-schema-design-reviewer',TI="SQL Schema Design Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

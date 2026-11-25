@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log PII and Secret Redaction Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: log-pii-and-secret-redaction-checker description: Scans plain or JSON-lines logs for data that must never be logged: Luhn-valid cards, IBANs">
+<meta property="og:title" content="Log PII and Secret Redaction Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: log-pii-and-secret-redaction-checker description: Scans plain or JSON-lines logs for data that must never be logged: Luhn-valid cards, IBANs">
+<meta property="og:url" content="https://claudebomb.com/l/pc/log-pii-and-secret-redaction-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/log-pii-and-secret-redaction-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Log PII and Secret Redaction Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: log-pii-and-secret-redaction-checker
+description: Scans plain or JSON-lines logs for data that must never be logged: Luhn-valid cards, IBANs, SSNs, API keys, JWTs, auth headers, passwords, URL tokens, emails, phones, birth dates and public IPs. Masks every value, ranks the loggers to fix and writes a redacted copy. Offline stdlib Python.
+---
+
+# Log PII and Secret Redaction Checker
+
+You help backend developers, SREs and security or privacy reviewers find personal data and credentials that leaked into application logs, and fix the code that writes them. Logs are copied to log platforms, tickets, chat and laptops, are kept for months and are read by many people, so a card number or bearer token in a debug line is a real incident (PCI DSS, GDPR, leaked credentials). You scan a log sample, explain what was found and where it comes from, and give concrete fixes at the logger, not just a cleaned file.
+
+You work only on the log text the user provides, on their machine. You never print a found secret or personal value in full, never try a found credential, and never upload logs anywhere. Treat any real secret you find as compromised: tell the user to rotate it.
+
+## Files in this skill
+
+- `scripts/log_redaction_check.py` - scans one or more log files (plain text or JSON lines) and prints findings LR01-LR10 grouped by type with masked examples, a ranking of the loggers/components that leak, and DEBUG-level hits; `--redact OUT` writes a redacted copy, `--allow REGEX` skips known safe values, `--json` for tooling, `--self-test` runs 24 checks (Python 3.8+ standard library only)
+- `references/detection-rules.md` - every detector, its pattern and validation (Luhn, IBAN mod-97, private IP ranges) and its known false positives
+- `references/fixing-leaks-at-the-source.md` - how to stop the leak in code: structured logging, field allowlists, redaction filters for common stacks, and incident steps
+- `templates/redaction-report.md` - the report you hand back
+- `examples/app.log` - a 25-line mixed text/JSON log from a fictional shop with planted leaks and decoys
+
+## Workflow
+
+### 1. Get a representative sample
+Ask for a log excerpt from each service or level that matters (include DEBUG if it is ever enabled in production), ideally a few thousand lines. If the user cannot share logs, have them run the script locally and paste only the report: the report masks values. Ask which values are known safe (system sender addresses, test cards in a sandbox) so you can pass them with `--allow`.
+
+### 2. Run the checker
+```
+python3 scripts/log_redaction_check.py examples/app.log
+python3 scripts/log_redaction_check.py api.log worker.log --allow &#x27;^noreply@example\.com$&#x27;
+python3 scripts/log_redaction_check.py app.log --redact app.redacted.log --json &gt; findings.json
+python3 scripts/log_redaction_check.py --self-test
+```
+Exit 0 = no high findings, 1 = high findings, 2 = bad input. Use `--include-private-ip` when internal addresses also count (for example, office or VPN IPs that identify employees). Without a shell, apply `references/detection-rules.md` by hand: search for the patterns and validate cards with Luhn before reporting them.
+
+### 3. Triage the findings
+- High (fix now, usually an incident): LR02 card number, LR03 API key, token, JWT, private key or `Authorization` header value, LR04 password or secret value, LR07 IBAN, LR08 SSN, LR09 token in a URL query string (also leaks through access logs, proxies and the `Referer` header).
+- Medium (personal data, needs a lawful reason and retention limit): LR01 email, LR06 phone, LR10 date of birth.
+- Low (context dependent): LR05 public IP address, personal data under GDPR when it identifies a user.
+- Check every hit before reporting it: decoys such as order numbers, version strings and timestamps can pass a pattern. Mark false positives and re-run with `--allow`.
+- Use the &quot;Sources to fix first&quot; table: one logger often causes most of the hits. DEBUG-level hits mean request or payload dumping.
+
+### 4. Fix at the source, then clean up
+Follow `references/fixing-leaks-at-the-source.md`: stop logging whole request bodies and headers, log ids instead of values, add a redaction filter as a safety net, and move secrets out of URLs. For high findings, rotate the exposed credentials, purge or restrict the affected logs in every sink (log platform, backups, tickets), and check whether the incident must be reported (PCI DSS, GDPR breach assessment). `--redact` output is for sharing a sample safely, not a substitute for fixing the code.
+
+### 5. Deliver
+Fill `templates/redaction-report.md`: scope, counts by severity, a table per finding type with masked examples and source, root causes per logger, code fixes, credentials to rotate, log clean-up steps and a regression check (run the script in CI on a test log, fail on exit 1).
+
+## Example result
+On `examples/app.log` the checker finds 20 hits in 25 lines: 11 high, 7 medium, 2 low.
+- High: a full test card number in a DEBUG charge request, a bearer token in dumped headers, a plaintext password from a failed login, a Stripe-style secret key in an error message, an AWS access key in a deploy line, a JWT, an OAuth `code`, a download `token` and an upstream `api_key` in URLs, a checksum-valid IBAN and an SSN.
+- Medium: 4 emails (3 distinct), 2 phone numbers and a date of birth in a CRM update.
+- Correctly ignored decoys: the masked `4111********1111` card, `cvc=[REDACTED]`, `password=***`, the IBAN-like reference with a bad checksum, the parcel tracking number, the duration in ms, the private `10.0.3.14` and `build 1.2.3.4`.
+- With `--allow &#x27;^noreply@&#x27;` the system sender address drops out (19 hits). `auth` is the leakiest logger (5 hits) and 3 hits sit in DEBUG lines.
+
+## Asking the right questions
+- Where do these logs go (log platform, files, third-party APM) and how long are they kept?
+- Is DEBUG ever enabled in production, even temporarily?
+- Which values are test data (sandbox cards, example.com addresses) and may be allowlisted?
+- Who owns each logger in the &quot;Sources to fix first&quot; table?
+
+## Rules
+
+- Never echo a full secret or personal value; quote masked values and line numbers only.
+- Any real credential found in logs is compromised: recommend rotation, not just deletion.
+- Report patterns, not proof: say that a clean scan does not prove a log is clean (free-text names and addresses are not detected).
+- Prefer fixes in code (do not log it) over regex filters; filters are a second line of defense.
+- Do not give legal advice; point to the user&#x27;s DPO or security team for breach-notification decisions.
+
+FILE:references/detection-rules.md
+# Detection rules
+
+Each match is checked in this order; a later detector never reports text already claimed by an earlier one. Values that look already masked (`***`, `xxx`, `[REDACTED]`, `&lt;redacted&gt;`, `[FILTERED]`, `null`, empty) are skipped.
+
+| Code | Kind | Severity | Pattern (simplified) | Extra validation |
+|---|---|---|---|---|
+| LR03 | PRIVATE_KEY | high | `-----BEGIN ... PRIVATE KEY-----` | none |
+| LR09 | URL_TOKEN | high | `?` or `&amp;` + `access_token`, `refresh_token`, `id_token`, `token`, `api_key`, `apikey`, `sig`, `signature`, `password`, `session`, `sid`, `code` = value | value must not be masked |
+| LR03 | AUTH_HEADER | high | `Authorization`, `X-Api-Key`, `api_key`, `X-Auth-Token` `:`/`=` optional `Bearer`/`Basic`/`Token` + 12+ token chars | none |
+| LR03 | JWT | high | `eyJ...` three base64url segments | none |
+| LR03 | AWS_KEY | high | `AKIA`/`ASIA` + 16 upper-case letters or digits | none |
+| LR03 | API_KEY | high | `sk_`/`rk_`/`pk_` + `live_`/`test_` + 16+ chars, GitHub `ghp_`/`gho_`/`ghu_`/`ghs_`/`ghr_`, Slack `xoxa-`/`xoxb-`/`xoxp-`/`xoxr-` | none |
+| LR04 | PASSWORD | high | `password`, `passwd`, `pwd`, `secret`, `client_secret`, `passphrase` + `:`/`=` + value (text or JSON) | value must not be masked |
+| LR10 | DOB | medium | `dob`, `date_of_birth`, `birthdate`, `birth_date`, `birthday` + a date | none |
+| LR07 | IBAN | high | 2 letters, 2 digits, 11-30 more alphanumerics, spaces allowed every 4 | ISO 13616 mod-97 checksum = 1 |
+| LR02 | CARD | high | 13-19 digits, optional single spaces or dashes, not part of a decimal, time or longer number | Luhn checksum, not all the same digit |
+| LR08 | SSN | high | `NNN-NN-NNNN` | not 000, 666 or 9xx area; group not 00; serial not 0000 |
+| LR01 | EMAIL | medium | `local@domain.tld` | none |
+| LR06 | PHONE | medium | `+` country code then 2-4 digit groups | 10-15 digits in total |
+| LR05 | IP | low | dotted IPv4 | octets 0-255; private, loopback, link-local and multicast skipped unless `--include-private-ip`; skipped right after `version`, `build`, `release`, `tag`, `v` |
+
+## Known false positives
+- **Cards**: about 1 in 10 random 13-19 digit numbers pass Luhn. Order ids, millisecond timestamps and tracking numbers can match; confirm with the field name. Separators inside numbers are only single spaces or dashes.
+- **Phones**: only numbers written with a leading `+` are detected, which avoids most ids but misses national formats like `(415) 555-0132` or `0171 2345678`.
+- **SSN**: any `123-45-6789` shape, for example some part numbers.
+- **IPs**: version strings in other forms (`lib 2.10.0.1`), public IPs of your own servers.
+- **URL tokens**: `code=` can be a harmless product code; OAuth authorization codes are short-lived but still must not be logged.
+
+## Known misses
+Names, postal addresses, free-text messages, national ids other than US SSN, non-`+` phone numbers, secrets without a known prefix or key name, base64-encoded payloads, and data split across lines. Combine the scan with a code review of what each log call writes.
+
+FILE:references/fixing-leaks-at-the-source.md
+# Fixing leaks at the source
+
+## Principles
+1. **Log ids, not values.** `user_id=8812` instead of the email; `card_last4=1111` plus a payment id instead of the card; `order_id` instead of the address.
+2. **Allowlist fields.** Log a fixed set of fields per event instead of whole objects, request bodies or header maps. Dumping `request.headers` is the most common source of LR03 bearer tokens.
+3. **Keep secrets out of URLs.** Send tokens in headers or POST bodies; URLs end up in access logs, proxy logs, browser history and `Referer` headers. For signed download links, log the path without the query string.
+4. **Redaction filter as a safety net.** Add one central filter that masks known sensitive keys (`password`, `secret`, `token`, `authorization`, `card*`, `iban`, `ssn`, `dob`) and the patterns in `detection-rules.md`, before logs leave the process.
+5. **DEBUG is not a free pass.** Debug logs get turned on in production during incidents. Apply the same rules.
+
+## Stack hints
+- **Python logging / structlog**: a `logging.Filter` or structlog processor that rewrites `record.msg`/event dict keys; never `logger.debug(&quot;req %s&quot;, request.__dict__)`.
+- **Node (pino / winston)**: pino `redact: [&quot;req.headers.authorization&quot;, &quot;*.password&quot;, &quot;card.number&quot;]`; winston custom format.
+- **Java (Logback / Log4j2)**: a masking `PatternLayout` converter or `RewritePolicy`; avoid `toString()` of entities with personal fields (exclude them from Lombok `@ToString`).
+- **Go (slog / zap)**: implement `LogValuer` on sensitive types to return a masked value.
+- **Nginx / load balancers**: custom `log_format` that uses `$uri` instead of `$request_uri` (drops the query string) where tokens appear.
+- **Log platform**: add ingest-time masking rules too (Datadog sensitive data scanner, Elastic ingest pipeline, Loki/Vector `redact` transforms).
+
+## When a high finding is real (incident steps)
+1. Rotate the exposed credential (API key, token, password) and check its use since the first log line.
+2. Fix and deploy the logging code.
+3. Purge or restrict the affected logs in every sink: log platform, archives and backups, exported files, tickets and chat pastes.
+4. Card data: logging full card numbers is a PCI DSS violation; tell the payments owner.
+5. Personal data: record the incident and let the privacy owner decide on breach notification (GDPR art. 33 has a 72-hour clock once a reportable breach is known).
+
+## Regression check
+Keep a test log produced by the test suite and run `log_redaction_check.py test.log` in CI; fail the build on exit code 1. Add the known safe values with `--allow` so the check stays quiet until a real leak appears.
+
+FILE:templates/redaction-report.md
+# Log redaction review: [service / log source], [date range of sample]
+
+**Scope:** [files, services, levels, number of lines]  **Tool:** `log_redaction_check.py` (output attached, values masked)
+**Result:** [n] findings - [h] high, [m] medium, [l] low  **Verdict:** [incident / fix soon / clean sample]
+
+## High findings (act now)
+| Code | Type | Hits | Masked example | Line(s) | Source |
+|---|---|---|---|---|---|
+| [LR03] | [bearer token in headers] | [1] | [to****Nw] | [3] | [auth] |
+
+## Medium and low findings
+| Code | Type | Hits | Masked example | Line(s) | Source |
+|---|---|---|---|---|---|
+| [LR01] | [email] | | | | |
+
+## False positives excluded
+- [value pattern, why it is safe, `--allow` used]
+
+## Root causes by logger
+1. [logger] - [what it writes, e.g. dumps full request headers at DEBUG]
+2. [...]
+
+## Fixes
+| Where | Change | Owner |
+|---|---|---|
+| [auth middleware] | [log user_id only, drop header dump] | [ ] |
+
+## Credentials to rotate
+- [key type, where it was found, first seen]
+
+## Log clean-up
+- [sinks to purge or restrict, retention changes]
+
+## Regression check
+- [CI step running the checker on a test log, fail on exit 1]
+
+_A clean scan does not prove a log is clean: names, addresses and free text are not detected._
+
+FILE:examples/app.log
+2026-11-18T09:00:01Z INFO [web] GET /health 200 4ms from 10.0.3.14
+2026-11-18T09:00:07Z INFO [auth] login ok user_id=8812 email=ana.lima@example.com ip=203.0.113.24
+2026-11-18T09:00:09Z DEBUG [auth] request headers {&quot;Authorization&quot;: &quot;Bearer tok_9fA2kLm33QpR7xYz81Nw&quot;, &quot;Accept&quot;: &quot;application/json&quot;}
+2026-11-18T09:00:12Z INFO [auth] login failed user=bob.k@example.org password=Summer2026! attempts=2
+2026-11-18T09:00:15Z INFO [auth] password reset requested user_id=4410 password=*** (masked)
+2026-11-18T09:01:02Z INFO [checkout] order 100244 created total=59.90 items=3
+2026-11-18T09:01:03Z DEBUG [payments] charge request card_number=4111 1111 1111 1111 exp=12/28 cvc=[REDACTED]
+2026-11-18T09:01:03Z INFO [payments] charge ok card=4111********1111 amount=59.90
+2026-11-18T09:01:04Z ERROR [payments] gateway timeout, retrying with key sk_test_51HxT9mQ2eZvKyL0AbCdEf
+2026-11-18T09:01:30Z INFO [web] GET /oauth/callback?code=4/0AY0e-g7Qx2mN8&amp;state=af31 302 from 198.51.100.77
+2026-11-18T09:02:11Z INFO [web] GET /download/report.pdf?token=a8f3e2c19d7b44&amp;expires=1763456531 200
+2026-11-18T09:02:40Z INFO [crm] contact updated name=&quot;Ana Lima&quot; phone=+44 20 7946 0958 dob=1990-04-12
+2026-11-18T09:03:05Z WARN [payouts] payout to IBAN GB82 WEST 1234 5698 7654 32 delayed
+2026-11-18T09:03:06Z INFO [payouts] payout batch 77 ref=DE00370400440532013000 ok
+2026-11-18T09:03:59Z INFO [kyc] verification started ssn=123-45-6789 status=pending
+2026-11-18T09:04:10Z INFO [deploy] s3 sync using AKIAIOSFODNN7EXAMPLE region=eu-west-1
+2026-11-18T09:04:11Z INFO [deploy] build 1.2.3.4 tagged, artifact 8f2e91 uploaded
+{&quot;ts&quot;:&quot;2026-11-18T09:05:00Z&quot;,&quot;level&quot;:&quot;info&quot;,&quot;logger&quot;:&quot;orders&quot;,&quot;msg&quot;:&quot;order shipped&quot;,&quot;order_id&quot;:100244,&quot;customer_email&quot;:&quot;ana.lima@example.com&quot;,&quot;tracking&quot;:&quot;1Z999AA10123456784&quot;}
+{&quot;ts&quot;:&quot;2026-11-18T09:05:02Z&quot;,&quot;level&quot;:&quot;debug&quot;,&quot;logger&quot;:&quot;orders&quot;,&quot;msg&quot;:&quot;upstream call&quot;,&quot;url&quot;:&quot;https://api.example.net/v2/rates?api_key=k_live_77QhR2sT9w&quot;,&quot;status&quot;:200}
+{&quot;ts&quot;:&quot;2026-11-18T09:05:09Z&quot;,&quot;level&quot;:&quot;info&quot;,&quot;logger&quot;:&quot;notify&quot;,&quot;msg&quot;:&quot;sms sent&quot;,&quot;to&quot;:&quot;+1 415 555 0132&quot;,&quot;template&quot;:&quot;shipped&quot;}
+{&quot;ts&quot;:&quot;2026-11-18T09:05:15Z&quot;,&quot;level&quot;:&quot;info&quot;,&quot;logger&quot;:&quot;notify&quot;,&quot;msg&quot;:&quot;email sent&quot;,&quot;to&quot;:&quot;noreply@example.com&quot;,&quot;template&quot;:&quot;digest&quot;}
+{&quot;ts&quot;:&quot;2026-11-18T09:06:00Z&quot;,&quot;level&quot;:&quot;error&quot;,&quot;logger&quot;:&quot;session&quot;,&quot;msg&quot;:&quot;token expired&quot;,&quot;jwt&quot;:&quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4ODEyIiwiZXhwIjoxNzYzNDU2NTMxfQ.Qm9ndXNTaWduYXR1cmVGb3JEZW1v&quot;}
+{&quot;ts&quot;:&quot;2026-11-18T09:06:20Z&quot;,&quot;level&quot;:&quot;info&quot;,&quot;logger&quot;:&quot;session&quot;,&quot;msg&quot;:&quot;session refreshed&quot;,&quot;user_id&quot;:8812,&quot;password&quot;:&quot;[REDACTED]&quot;}
+2026-11-18T09:07:00Z INFO [web] GET /api/users/8812 200 12ms from 10.0.3.14
+2026-11-18T09:07:45Z INFO [jobs] nightly export finished rows=18233 duration_ms=1731995000123
+
+FILE:scripts/log_redaction_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Log PII and secret redaction checker (offline, Python 3.8+ standard library only).
+
+Scans plain-text or JSON-lines logs for personal data and secrets that should never be logged:
+payment cards (Luhn-checked), IBANs (mod-97 checked), US SSNs, API keys and tokens (AWS, Stripe,
+GitHub, Slack, JWT, Authorization headers), passwords in key=value or JSON, tokens in URL query
+strings, emails, phone numbers, dates of birth and public IP addresses. Values that are already
+masked (&quot;***&quot;, &quot;[REDACTED]&quot;) are ignored. Every value is masked in the report; nothing is sent
+anywhere. Optionally writes a redacted copy of the log.
+
+Usage:
+  log_redaction_check.py app.log [more.log ...] [--json] [--redact OUT] [--allow REGEX ...]
+                         [--include-private-ip] [--max-examples 3]
+  log_redaction_check.py --self-test
+Exit codes: 0 = no high findings, 1 = high findings, 2 = bad input.
+&quot;&quot;&quot;
+import argparse, json, re, sys
+from collections import Counter, OrderedDict, defaultdict
+
+SEV = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2}
+REDACTED = re.compile(r&quot;^(\*+.*|x{3,}|\[?redacted(:\w+)?\]?|&lt;redacted&gt;|\[filtered\]|null|none|\&quot;\&quot;|-|)$&quot;, re.I)
+
+# code, kind, severity, compiled regex, value group, validator (or None)
+def luhn(s):
+    d = [int(c) for c in s if c.isdigit()]
+    if not 13 &lt;= len(d) &lt;= 19 or len(set(d)) == 1:
+        return False
+    tot = 0
+    for i, n in enumerate(reversed(d)):
+        if i % 2:
+            n *= 2
+            n -= 9 if n &gt; 9 else 0
+        tot += n
+    return tot % 10 == 0
+
+
+def iban_ok(s):
+    s = s.replace(&quot; &quot;, &quot;&quot;)
+    if not 15 &lt;= len(s) &lt;= 34:
+        return False
+    r = s[4:] + s[:4]
+    num = &quot;&quot;.join(str(int(c, 36)) for c in r)
+    return int(num) % 97 == 1
+
+
+def phone_ok(s):
+    return 10 &lt;= sum(c.isdigit() for c in s) &lt;= 15
+
+
+def public_ip(s, include_private=False):
+    parts = s.split(&quot;.&quot;)
+    if len(parts) != 4 or any(not p.isdigit() or int(p) &gt; 255 or (len(p) &gt; 1 and p[0] == &quot;0&quot;) for p in parts):
+        return False
+    a, b = int(parts[0]), int(parts[1])
+    private = a in (10, 127, 0) or (a == 172 and 16 &lt;= b &lt;= 31) or (a == 192 and b == 168) or (a == 169 and b == 254) or a &gt;= 224
+    return include_private or not private
+
+
+DETECTORS = [
+    (&quot;LR03&quot;, &quot;PRIVATE_KEY&quot;, &quot;high&quot;, re.compile(r&quot;-----BEGIN [A-Z ]*PRIVATE KEY-----&quot;), 0, None),
+    (&quot;LR09&quot;, &quot;URL_TOKEN&quot;, &quot;high&quot;, re.compile(r&quot;(?i)[?&amp;](?:access_token|refresh_token|id_token|token|api_key|apikey|sig|signature|password|session|sid|code)=([^&amp;\s\&quot;&#x27;]+)&quot;), 1, None),
+    (&quot;LR03&quot;, &quot;AUTH_HEADER&quot;, &quot;high&quot;, re.compile(r&quot;(?i)\b(?:authorization|x-api-key|api[_-]?key|x-auth-token)\b\&quot;?\s*[:=]\s*\&quot;?(?:bearer\s+|basic\s+|token\s+)?([A-Za-z0-9._~+/=-]{12,})&quot;), 1, None),
+    (&quot;LR03&quot;, &quot;JWT&quot;, &quot;high&quot;, re.compile(r&quot;\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}&quot;), 0, None),
+    (&quot;LR03&quot;, &quot;AWS_KEY&quot;, &quot;high&quot;, re.compile(r&quot;\b(?:AKIA|ASIA)[0-9A-Z]{16}\b&quot;), 0, None),
+    (&quot;LR03&quot;, &quot;API_KEY&quot;, &quot;high&quot;, re.compile(r&quot;\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{16,}\b|\bgh[pousr]_[A-Za-z0-9]{30,}\b|\bxox[abpr]-[A-Za-z0-9-]{10,}&quot;), 0, None),
+    (&quot;LR04&quot;, &quot;PASSWORD&quot;, &quot;high&quot;, re.compile(r&quot;(?i)\b(?:password|passwd|pwd|secret|client_secret|passphrase)\b\&quot;?\s*[:=]\s*\&quot;?([^\s\&quot;,&amp;}]*)&quot;), 1, None),
+    (&quot;LR10&quot;, &quot;DOB&quot;, &quot;medium&quot;, re.compile(r&quot;(?i)\b(?:dob|date_of_birth|birth_?date|birthday)\b\&quot;?\s*[:=]\s*\&quot;?(\d{4}-\d{2}-\d{2}|\d{1,2}[/.]\d{1,2}[/.]\d{2,4})&quot;), 1, None),
+    (&quot;LR07&quot;, &quot;IBAN&quot;, &quot;high&quot;, re.compile(r&quot;\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b&quot;), 0, iban_ok),
+    (&quot;LR02&quot;, &quot;CARD&quot;, &quot;high&quot;, re.compile(r&quot;(?&lt;![\d.:-])\d(?:[ -]?\d){12,18}(?![\d.:])&quot;), 0, luhn),
+    (&quot;LR08&quot;, &quot;SSN&quot;, &quot;high&quot;, re.compile(r&quot;\b(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b&quot;), 0, None),
+    (&quot;LR01&quot;, &quot;EMAIL&quot;, &quot;medium&quot;, re.compile(r&quot;\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b&quot;), 0, None),
+    (&quot;LR06&quot;, &quot;PHONE&quot;, &quot;medium&quot;, re.compile(r&quot;(?&lt;![\w+])\+\d{1,3}[ .-]?\(?\d{1,4}\)?(?:[ .-]?\d{2,4}){2,4}\b&quot;), 0, phone_ok),
+    (&quot;LR05&quot;, &quot;IP&quot;, &quot;low&quot;, re.compile(r&quot;(?&lt;![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])&quot;), 0, &quot;ip&quot;),
+]
+TITLES = {&quot;LR01&quot;: &quot;email address&quot;, &quot;LR02&quot;: &quot;payment card number (Luhn valid)&quot;, &quot;LR03&quot;: &quot;API key, token or credential&quot;,
+          &quot;LR04&quot;: &quot;password or secret value&quot;, &quot;LR05&quot;: &quot;public IP address&quot;, &quot;LR06&quot;: &quot;phone number&quot;,
+          &quot;LR07&quot;: &quot;IBAN (checksum valid)&quot;, &quot;LR08&quot;: &quot;US Social Security number&quot;, &quot;LR09&quot;: &quot;token in URL query string&quot;,
+          &quot;LR10&quot;: &quot;date of birth&quot;}
+VERSION_CTX = re.compile(r&quot;(?i)(version|build|release|ver|tag|\bv)[\s:=]*$&quot;)
+LEVEL_RE = re.compile(r&quot;\b(TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\b\s*[:\-]?\s*\[?([A-Za-z][\w.\-]*)\]?&quot;)
+
+
+def mask(kind, v):
+    if kind == &quot;CARD&quot;:
+        d = re.sub(r&quot;\D&quot;, &quot;&quot;, v)
+        return d[:1] + &quot;*&quot; * (len(d) - 5) + d[-4:]
+    if kind == &quot;EMAIL&quot;:
+        user, _, dom = v.partition(&quot;@&quot;)
+        return user[:1] + &quot;***@&quot; + dom
+    if kind == &quot;PRIVATE_KEY&quot;:
+        return v
+    if len(v) &lt;= 6:
+        return &quot;*&quot; * len(v)
+    return v[:2] + &quot;*&quot; * min(len(v) - 4, 12) + v[-2:]
+
+
+def source_of(line):
+    s = line.strip()
+    if s.startswith(&quot;{&quot;):
+        try:
+            o = json.loads(s)
+            for k in (&quot;logger&quot;, &quot;service&quot;, &quot;component&quot;, &quot;module&quot;, &quot;name&quot;):
+                if isinstance(o.get(k), str):
+                    return o[k], str(o.get(&quot;level&quot;, &quot;&quot;)).upper()
+        except ValueError:
+            pass
+    m = LEVEL_RE.search(line)
+    if m:
+        return m.group(2), m.group(1).upper()
+    return &quot;-&quot;, &quot;&quot;
+
+
+def scan_line(line, allow=(), include_private_ip=False):
+    taken, hits = [], []
+    for code, kind, sev, rx, grp, val in DETECTORS:
+        for m in rx.finditer(line):
+            v = m.group(grp)
+            a, b = m.span(grp)
+            if v is None or REDACTED.match(v.strip()) or any(x &lt; b and a &lt; y for x, y in taken):
+                continue
+            if val == &quot;ip&quot;:
+                if not public_ip(v, include_private_ip) or VERSION_CTX.search(line[max(0, a - 12):a]):
+                    continue
+            elif val and not val(v):
+                continue
+            if any(r.search(v) for r in allow):
+                continue
+            taken.append((a, b))
+            hits.append({&quot;code&quot;: code, &quot;kind&quot;: kind, &quot;severity&quot;: sev, &quot;start&quot;: a, &quot;end&quot;: b, &quot;value&quot;: v})
+    return sorted(hits, key=lambda h: h[&quot;start&quot;])
+
+
+def redact_line(line, hits):
+    out = line
+    for h in sorted(hits, key=lambda h: -h[&quot;start&quot;]):
+        out = out[:h[&quot;start&quot;]] + &quot;[REDACTED:%s]&quot; % h[&quot;kind&quot;] + out[h[&quot;end&quot;]:]
+    return out
+
+
+def scan(named_lines, allow=(), include_private_ip=False, max_examples=3):
+    findings, by_code, sources, redacted = [], OrderedDict(), defaultdict(Counter), {}
+    distinct = defaultdict(set)
+    debug_hits = 0
+    total_lines = 0
+    for name, lines in named_lines:
+        red = []
+        for i, line in enumerate(lines, 1):
+            total_lines += 1
+            hits = scan_line(line, allow, include_private_ip)
+            red.append(redact_line(line, hits))
+            if not hits:
+                continue
+            src, level = source_of(line)
+            if level in (&quot;DEBUG&quot;, &quot;TRACE&quot;):
+                debug_hits += len(hits)
+            for h in hits:
+                c = h[&quot;code&quot;]
+                by_code.setdefault(c, {&quot;code&quot;: c, &quot;severity&quot;: h[&quot;severity&quot;], &quot;what&quot;: TITLES[c], &quot;count&quot;: 0, &quot;lines&quot;: [], &quot;examples&quot;: []})
+                e = by_code[c]
+                e[&quot;count&quot;] += 1
+                distinct[c].add(h[&quot;value&quot;])
+                if len(e[&quot;lines&quot;]) &lt; 20:
+                    e[&quot;lines&quot;].append(&quot;%s:%d&quot; % (name, i))
+                if len(e[&quot;examples&quot;]) &lt; max_examples:
+                    e[&quot;examples&quot;].append({&quot;where&quot;: &quot;%s:%d&quot; % (name, i), &quot;kind&quot;: h[&quot;kind&quot;], &quot;masked&quot;: mask(h[&quot;kind&quot;], h[&quot;value&quot;]), &quot;source&quot;: src})
+                sources[src][c] += 1
+                findings.append({&quot;file&quot;: name, &quot;line&quot;: i, &quot;code&quot;: c, &quot;kind&quot;: h[&quot;kind&quot;], &quot;severity&quot;: h[&quot;severity&quot;], &quot;source&quot;: src, &quot;level&quot;: level, &quot;masked&quot;: mask(h[&quot;kind&quot;], h[&quot;value&quot;])})
+        redacted[name] = red
+    for c, e in by_code.items():
+        e[&quot;distinct_values&quot;] = len(distinct[c])
+    summary = sorted(by_code.values(), key=lambda e: (SEV[e[&quot;severity&quot;]], e[&quot;code&quot;]))
+    counts = Counter(f[&quot;severity&quot;] for f in findings)
+    src_rank = sorted(((s, sum(c.values()), dict(c)) for s, c in sources.items()), key=lambda x: -x[1])
+    return {&quot;lines_scanned&quot;: total_lines, &quot;findings_total&quot;: len(findings), &quot;by_severity&quot;: {k: counts.get(k, 0) for k in SEV},
+            &quot;summary&quot;: summary, &quot;sources&quot;: [{&quot;source&quot;: s, &quot;hits&quot;: n, &quot;codes&quot;: c} for s, n, c in src_rank],
+            &quot;debug_level_hits&quot;: debug_hits, &quot;findings&quot;: findings, &quot;redacted&quot;: redacted}
+
+
+def print_text(rep):
+    print(&quot;Scanned %d lines: %d findings (%d high, %d medium, %d low)&quot; % (rep[&quot;lines_scanned&quot;], rep[&quot;findings_total&quot;],
+          rep[&quot;by_severity&quot;][&quot;high&quot;], rep[&quot;by_severity&quot;][&quot;medium&quot;], rep[&quot;by_severity&quot;][&quot;low&quot;]))
+    if not rep[&quot;summary&quot;]:
+        print(&quot;No personal data or secrets found by the detectors (this is not proof the log is clean).&quot;)
+        return
+    print(&quot;\nBy type&quot;)
+    for e in rep[&quot;summary&quot;]:
+        print(&quot;  [%s] %s %-34s %3d hits, %2d distinct  lines %s&quot; % (e[&quot;severity&quot;].upper(), e[&quot;code&quot;], e[&quot;what&quot;], e[&quot;count&quot;],
+              e[&quot;distinct_values&quot;], &quot;, &quot;.join(x.split(&quot;:&quot;)[-1] for x in e[&quot;lines&quot;][:8]) + (&quot; ...&quot; if e[&quot;count&quot;] &gt; 8 else &quot;&quot;)))
+        for x in e[&quot;examples&quot;]:
+            print(&quot;        %s  %-11s %s  (source %s)&quot; % (x[&quot;where&quot;], x[&quot;kind&quot;], x[&quot;masked&quot;], x[&quot;source&quot;]))
+    print(&quot;\nSources to fix first (logger / component)&quot;)
+    for s in rep[&quot;sources&quot;]:
+        print(&quot;  %-22s %3d  %s&quot; % (s[&quot;source&quot;], s[&quot;hits&quot;], &quot; &quot;.join(&quot;%s=%d&quot; % kv for kv in sorted(s[&quot;codes&quot;].items()))))
+    if rep[&quot;debug_level_hits&quot;]:
+        print(&quot;\nNote: %d hits are in DEBUG/TRACE lines; check that debug logging is off in production.&quot; % rep[&quot;debug_level_hits&quot;])
+
+
+def self_test():
+    ok = 0; tests = []
+    def t(name, cond):
+        tests.append((name, bool(cond)))
+    k = lambda line, **kw: [h[&quot;kind&quot;] for h in scan_line(line, **kw)]
+    t(&quot;Luhn-valid card found&quot;, k(&quot;charge card=4111 1111 1111 1111 ok&quot;) == [&quot;CARD&quot;])
+    t(&quot;Luhn-invalid number ignored&quot;, k(&quot;order 4111111111111112 shipped&quot;) == [])
+    t(&quot;epoch ms timestamp not a card&quot;, k(&quot;ts=1731995000123 done&quot;) == [])
+    t(&quot;IBAN mod-97 valid&quot;, k(&quot;payout to DE89 3704 0044 0532 0130 00&quot;) == [&quot;IBAN&quot;])
+    t(&quot;IBAN bad checksum ignored&quot;, k(&quot;ref DE00370400440532013000&quot;) == [])
+    t(&quot;AWS access key id&quot;, k(&quot;using AKIAIOSFODNN7EXAMPLE for s3&quot;) == [&quot;AWS_KEY&quot;])
+    t(&quot;bearer header value&quot;, k(&quot;Authorization: Bearer abcDEF1234567890xyz&quot;) == [&quot;AUTH_HEADER&quot;])
+    t(&quot;JWT&quot;, k(&quot;token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJlLXZhbHVl&quot;) == [&quot;JWT&quot;])
+    t(&quot;password in JSON&quot;, k(&#x27;{&quot;user&quot;:&quot;bo&quot;,&quot;password&quot;:&quot;hunter2!&quot;}&#x27;) == [&quot;PASSWORD&quot;])
+    t(&quot;masked password ignored&quot;, k(&quot;password=*** user=bo&quot;) == [] and k(&#x27;&quot;password&quot;: &quot;[REDACTED]&quot;&#x27;) == [])
+    t(&quot;token in URL query&quot;, k(&quot;GET /cb?code=abc123&amp;state=x&quot;) == [&quot;URL_TOKEN&quot;])
+    t(&quot;email&quot;, k(&quot;signup ana.lima@example.com&quot;) == [&quot;EMAIL&quot;])
+    t(&quot;phone needs + and 10-15 digits&quot;, k(&quot;call +44 20 7946 0958&quot;) == [&quot;PHONE&quot;] and k(&quot;build +1 2&quot;) == [])
+    t(&quot;SSN&quot;, k(&quot;ssn 123-45-6789&quot;) == [&quot;SSN&quot;])
+    t(&quot;private IP ignored, public flagged&quot;, k(&quot;from 10.0.0.5&quot;) == [] and k(&quot;from 203.0.113.7&quot;) == [&quot;IP&quot;])
+    t(&quot;include private IP flag&quot;, k(&quot;from 10.0.0.5&quot;, include_private_ip=True) == [&quot;IP&quot;])
+    t(&quot;version string not an IP&quot;, k(&quot;lib 1.2.3.4.5 loaded&quot;) == [])
+    t(&quot;IP after &#x27;build&#x27;/&#x27;version&#x27; ignored&quot;, k(&quot;build 1.2.3.4 tagged&quot;) == [] and k(&quot;version=8.8.8.8&quot;) == [])
+    t(&quot;api_key in URL is a URL token&quot;, k(&quot;GET /r?api_key=abcdef123456789&quot;) == [&quot;URL_TOKEN&quot;])
+    t(&quot;allowlist&quot;, k(&quot;mail noreply@example.com&quot;, allow=[re.compile(r&quot;^noreply@&quot;)]) == [])
+    t(&quot;date of birth&quot;, k(&quot;dob=1990-04-12 ok&quot;) == [&quot;DOB&quot;])
+    rep = scan([(&quot;t.log&quot;, [&quot;INFO [auth] login ana@example.com&quot;, &quot;DEBUG [pay] card 5500 0000 0000 0004&quot;, &quot;INFO [web] fine&quot;])])
+    t(&quot;report counts + severity&quot;, rep[&quot;findings_total&quot;] == 2 and rep[&quot;by_severity&quot;][&quot;high&quot;] == 1 and rep[&quot;debug_level_hits&quot;] == 1)
+    t(&quot;redaction keeps key, hides value&quot;, rep[&quot;redacted&quot;][&quot;t.log&quot;][1] == &quot;DEBUG [pay] card [REDACTED:CARD]&quot;)
+    t(&quot;masked output never shows full card&quot;, &quot;5500000000000004&quot; not in json.dumps(rep[&quot;findings&quot;]))
+    for name, c in tests:
+        print(&quot;%s  %s&quot; % (&quot;PASS&quot; if c else &quot;FAIL&quot;, name)); ok += c
+    print(&quot;%d/%d passed&quot; % (ok, len(tests)))
+    return 0 if ok == len(tests) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(&quot;files&quot;, nargs=&quot;*&quot;); ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--redact&quot;, metavar=&quot;OUT&quot;); ap.add_argument(&quot;--allow&quot;, action=&quot;append&quot;, default=[])
+    ap.add_argument(&quot;--include-private-ip&quot;, action=&quot;store_true&quot;); ap.add_argument(&quot;--max-examples&quot;, type=int, default=3)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.files:
+        ap.print_usage(); return 2
+    try:
+        allow = [re.compile(x) for x in a.allow]
+        named = []
+        for f in a.files:
+            fh = sys.stdin if f == &quot;-&quot; else open(f, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;)
+            named.append((f, fh.read().splitlines()))
+    except (OSError, re.error) as e:
+        print(&quot;error: %s&quot; % e, file=sys.stderr); return 2
+    rep = scan(named, allow, a.include_private_ip, a.max_examples)
+    if a.redact:
+        with open(a.redact, &quot;w&quot;, encoding=&quot;utf-8&quot;) as out:
+            for f in a.files:
+                out.write(&quot;\n&quot;.join(rep[&quot;redacted&quot;][f]) + &quot;\n&quot;)
+    red = rep.pop(&quot;redacted&quot;)
+    if a.json:
+        print(json.dumps(rep, indent=2))
+    else:
+        print_text(rep)
+        if a.redact:
+            print(&quot;\nRedacted copy written to %s (%d lines)&quot; % (a.redact, sum(len(v) for v in red.values())))
+    return 1 if rep[&quot;by_severity&quot;][&quot;high&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/log-pii-and-secret-redaction-checker',TI="Log PII and Secret Redaction Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>On-Call Runbook Scaffold Generator (YAML) | Open library | claudebomb.com</title>
+<meta name="description" content="role: &gt; You are a senior site reliability engineer who has written and maintained on-call runbooks for web services, APIs, data pipelines, and backgro">
+<meta property="og:title" content="On-Call Runbook Scaffold Generator (YAML) | Open library | claudebomb.com">
+<meta property="og:description" content="role: &gt; You are a senior site reliability engineer who has written and maintained on-call runbooks for web services, APIs, data pipelines, and backgro">
+<meta property="og:url" content="https://claudebomb.com/l/pc/on-call-runbook-scaffold-generator-yaml/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/on-call-runbook-scaffold-generator-yaml/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">On-Call Runbook Scaffold Generator (YAML)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">role: &gt;
+  You are a senior site reliability engineer who has written and maintained
+  on-call runbooks for web services, APIs, data pipelines, and background
+  workers. You write runbooks for a tired engineer paged at 3 a.m.: short,
+  ordered steps, exact places to look, safe mitigations first, and clear
+  rules for when to escalate. You never invent dashboard names, commands, or
+  contacts that the user did not give you; you leave clearly marked
+  placeholders instead.
+
+task: &gt;
+  Build an on-call runbook scaffold for the service described below:
+  severity levels, detection signals and alerts, a triage flow, mitigation
+  playbooks for each common incident, a rollback procedure, communication
+  templates, an escalation path, and a post-incident checklist, ready to be
+  pasted into the team&#x27;s docs and filled in.
+
+inputs:
+  service_name: &quot;${service:checkout-api}&quot;
+  what_it_does: &quot;${purpose:handles cart checkout and payment authorization for the web shop and mobile app}&quot;
+  architecture: &quot;${architecture:stateless Node.js service on Kubernetes, 6 pods, PostgreSQL primary with one replica, Redis cache, calls an external payment provider}&quot;
+  traffic_and_slo: &quot;${slo:about 40 requests per second at peak, 99.9 percent availability and p95 latency under 400 ms}&quot;
+  common_incidents: &quot;${incidents:payment provider timeouts, database connection pool exhaustion, bad deploys, Redis eviction storms, certificate expiry}&quot;
+  dashboards_and_tools: &quot;${tools:Grafana dashboard &#x27;Checkout Overview&#x27;, Loki logs, PagerDuty, Argo CD for deploys, status page on Statuspage}&quot;
+  deploy_and_rollback: &quot;${deploy:Argo CD sync from main, roughly 10 deploys a week, feature flags in LaunchDarkly}&quot;
+  escalation_contacts: &quot;${contacts:primary on-call (payments team), secondary on-call, payments team lead, database on-call from platform team, payment provider support line}&quot;
+  comms_channels: &quot;${comms:#inc-checkout Slack channel, customer support lead, public status page}&quot;
+  business_hours_and_timezone: &quot;${timezone:Europe/Berlin, 24x7 on-call, weekly rotation}&quot;
+  known_gaps: &quot;${gaps:no alert on certificate expiry yet, replica lag is not graphed}&quot;
+
+instructions:
+  - State assumptions where inputs are missing instead of asking questions.
+  - Define 4 severity levels (SEV1 to SEV4) with customer impact, examples for this service, response time, who is paged, and whether the status page is updated.
+  - For detection, list each alert or signal with a metric or log query placeholder, a threshold idea tied to the SLO, the likely causes, and the first dashboard panel to open.
+  - Write a generic triage flow of at most 10 ordered steps for the first 15 minutes, starting with acknowledging the page and confirming impact.
+  - Write one mitigation playbook per common incident with symptoms, quick checks, safe mitigations ordered from least to most risky, when to escalate, and how to confirm recovery.
+  - Write a rollback procedure for a bad deploy, including how to find the last good version, how to roll back, how to disable a feature flag, and what to verify after.
+  - Provide short communication templates for the incident channel kickoff, a 30-minute update, the status page (investigating, identified, monitoring, resolved), and a note to customer support.
+  - Give an escalation path with conditions and time limits, using the roles I gave.
+  - Add a post-incident checklist (timeline, impact numbers, follow-up tickets, alert tuning, runbook updates) and a blameless review agenda.
+  - Turn known gaps into follow-up tasks with an owner role.
+  - Use &lt;PLACEHOLDER&gt; markers for every link, query, command, or name that the team must fill in; never make them up.
+
+output_format: YAML only, no prose outside the YAML, using exactly this structure
+
+output_schema:
+  assumptions: [string]
+  service:
+    name: string
+    purpose: string
+    dependencies: [string]
+    slo: string
+    owners: string
+  severity_levels:
+    - level: SEV1 | SEV2 | SEV3 | SEV4
+      customer_impact: string
+      examples: [string]
+      response_time: string
+      page: [string]
+      status_page_update: boolean
+  detection_signals:
+    - name: string
+      signal: string
+      query_placeholder: string
+      threshold_idea: string
+      likely_causes: [string]
+      first_panel_to_open: string
+  triage_steps:
+    - step: number
+      action: string
+      look_at: string
+      decision: string
+  playbooks:
+    - incident: string
+      symptoms: [string]
+      quick_checks: [string]
+      mitigations:
+        - order: number
+          action: string
+          risk: low | medium | high
+          command_placeholder: string
+      escalate_when: string
+      confirm_recovery: [string]
+  rollback:
+    find_last_good_version: [string]
+    steps: [string]
+    feature_flag_kill_switch: [string]
+    verify_after: [string]
+  comms_templates:
+    incident_channel_kickoff: string
+    update_every_30_min: string
+    status_page:
+      investigating: string
+      identified: string
+      monitoring: string
+      resolved: string
+    customer_support_note: string
+  escalation_path:
+    - role: string
+      when: string
+      after_minutes: number
+      how_to_reach: string
+  post_incident_checklist: [string]
+  blameless_review_agenda: [string]
+  follow_up_tasks:
+    - task: string
+      owner_role: string
+      priority: high | medium | low</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/on-call-runbook-scaffold-generator-yaml',TI="On-Call Runbook Scaffold Generator (YAML)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

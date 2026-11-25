@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grocery Meal Plan Cost Estimator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: grocery-meal-plan-cost-estimator description: Builds a weekly meal plan with portion estimates and a grocery list rolled up by store section">
+<meta property="og:title" content="Grocery Meal Plan Cost Estimator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: grocery-meal-plan-cost-estimator description: Builds a weekly meal plan with portion estimates and a grocery list rolled up by store section">
+<meta property="og:url" content="https://claudebomb.com/l/pc/grocery-meal-plan-cost-estimator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/grocery-meal-plan-cost-estimator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Grocery Meal Plan Cost Estimator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: grocery-meal-plan-cost-estimator
+description: Builds a weekly meal plan with portion estimates and a grocery list rolled up by store section, then estimates total cost from unit prices you provide or simple defaults. Use when planning meals on a budget, batch cooking, or asking &quot;what should I buy for 4 people this week?&quot;. Includes a stdlib Python cost estimator with --self-test.
+---
+
+# Grocery Meal Plan Cost Estimator
+
+You help households plan a week of meals, scale portions to headcount, build a grocery list grouped by store section, and estimate cost from unit prices. You are practical about leftovers and pantry staples. You do not give medical diet therapy; you note allergies and preferences the user states.
+
+## Files in this skill
+
+- `scripts/estimate_cost.py` - sums a grocery list with unit prices and prints section totals (Python 3 standard library only)
+- `references/portion-guide.md` - rough per-person amounts for common foods
+- `references/store-section-map.md` - where items usually live in a supermarket
+- `templates/meal-plan.md` - weekly plan + list structure
+- `examples/sample-week.md` - worked example for 2 adults
+
+## Workflow
+
+### 1. Collect constraints
+Ask for: headcount and ages, nights cooking at home, budget and currency, diet rules (veg, halal, allergies), appliances/time, and pantry items already owned.
+
+### 2. Draft the week
+Propose breakfast / lunch / dinner / snacks with leftover reuse. Keep variety without requiring 21 unique recipes.
+
+### 3. Explode to groceries
+Using `references/portion-guide.md`, convert meals to ingredients and quantities. Deduplicate (one bottle of oil, not seven).
+
+### 4. Map to store sections
+Group with `references/store-section-map.md` so the list is walkable.
+
+### 5. Estimate cost
+```
+python3 scripts/estimate_cost.py --list groceries.json
+python3 scripts/estimate_cost.py --self-test
+```
+If the user has no prices, use clearly labeled default unit prices and say they are placeholders.
+
+### 6. Answer
+Return: meal plan table, grocery list by section with qty, estimated total, cost per person-day, and 2 to 3 swap ideas if over budget.
+
+## Rules
+
+- Never invent that something is &quot;healthy&quot; as medical advice; stick to preferences and macros only if asked.
+- Prefer grams and milliliters plus a household measure.
+- Flag perishable items that should be bought mid-week.
+FILE:references/portion-guide.md
+# Rough per-person cooked portions (adjust for appetite)
+
+| Food | Per adult | Per child (5–10) |
+| --- | --- | --- |
+| Cooked rice / grains | 150–180 g | 80–100 g |
+| Dry pasta | 80–100 g | 50–70 g |
+| Protein (raw meat/fish) | 120–150 g | 70–90 g |
+| Beans/lentils (dry) | 50–70 g | 30–40 g |
+| Vegetables (raw weight) | 150–200 g | 80–120 g |
+| Fruit | 1 piece or 120 g | 1 small piece |
+| Milk / alt milk | 200–250 ml | 150 ml |
+| Bread | 2 slices | 1 slice |
+| Oil for cooking | ~10 ml per saute | shared |
+| Eggs | 2 | 1 |
+
+## Scaling tips
+
+- Soups/stews: scale liquid 90% when going from 2 to 4 (pot efficiency).
+- Spices: do not scale linearly past 4 portions; taste and adjust.
+- Leftovers lunch: cook +40% dinner on two weeknights instead of separate recipes.
+FILE:references/store-section-map.md
+# Typical supermarket section map
+
+Use these buckets on the grocery list (adapt names to local stores):
+
+1. **Produce** — fruit, vegetables, herbs, salad
+2. **Bakery** — bread, tortillas, buns
+3. **Meat &amp; seafood** — fresh/cooled protein
+4. **Dairy &amp; eggs** — milk, yogurt, cheese, butter, eggs
+5. **Deli / prepared** — if used
+6. **Pantry dry** — rice, pasta, beans, flour, sugar, cereal
+7. **Cans &amp; jars** — tomatoes, tuna, sauces
+8. **Oils &amp; spices** — cooking oil, salt, spices, vinegar
+9. **Frozen** — vegetables, frozen protein, ice cream
+10. **Beverages** — coffee, tea, juice, sparkling water
+11. **Household** — if buying soap/bags on the same trip
+
+Walk order suggestion: produce → bakery → meat → dairy → center aisles → frozen → beverages.
+FILE:templates/meal-plan.md
+# Weekly meal plan
+
+- **People**:
+- **Budget / currency**:
+- **Diet notes**:
+
+## Meals
+
+| Day | Breakfast | Lunch | Dinner | Notes |
+| --- | --- | --- | --- | --- |
+| Mon |  |  |  |  |
+| Tue |  |  |  |  |
+| Wed |  |  |  |  |
+| Thu |  |  |  |  |
+| Fri |  |  |  |  |
+| Sat |  |  |  |  |
+| Sun |  |  |  |  |
+
+## Grocery list by section
+
+### Produce
+- [ ] item — qty — est. price
+
+### Dairy &amp; eggs
+- [ ]
+
+## Cost summary
+
+- Estimated total:
+- Per person-day:
+- Mid-week top-up:
+FILE:examples/sample-week.md
+# Sample week — 2 adults, flexible omnivore, EUR
+
+Budget target: €70
+
+## Meals (short)
+
+| Day | Dinner highlight | Lunch plan |
+| --- | --- | --- |
+| Mon | Chickpea curry + rice | Leftover curry |
+| Tue | Pasta aglio e olio + salad | Egg sandwiches |
+| Wed | Sheet-pan chicken + veg | Leftover chicken bowls |
+| Thu | Lentil soup + bread | Soup + fruit |
+| Fri | Fish tacos (frozen fish) | Rice fried with leftover veg |
+| Sat | Veggie omelette feast | Eating out / skip |
+| Sun | Batch chili for Mon lunch | Chili |
+
+## Grocery excerpt (for estimate_cost.py)
+
+See accompanying JSON shape:
+
+```json
+{
+  &quot;currency&quot;: &quot;EUR&quot;,
+  &quot;items&quot;: [
+    {&quot;name&quot;: &quot;rice 1kg&quot;, &quot;section&quot;: &quot;Pantry dry&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 2.2},
+    {&quot;name&quot;: &quot;chickpeas canned x4&quot;, &quot;section&quot;: &quot;Cans &amp; jars&quot;, &quot;qty&quot;: 4, &quot;unit_price&quot;: 0.9},
+    {&quot;name&quot;: &quot;pasta 500g&quot;, &quot;section&quot;: &quot;Pantry dry&quot;, &quot;qty&quot;: 2, &quot;unit_price&quot;: 1.1},
+    {&quot;name&quot;: &quot;chicken thighs 1kg&quot;, &quot;section&quot;: &quot;Meat &amp; seafood&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 6.5},
+    {&quot;name&quot;: &quot;mixed veg 1kg&quot;, &quot;section&quot;: &quot;Produce&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 3.0},
+    {&quot;name&quot;: &quot;eggs 12&quot;, &quot;section&quot;: &quot;Dairy &amp; eggs&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 3.2},
+    {&quot;name&quot;: &quot;milk 1L&quot;, &quot;section&quot;: &quot;Dairy &amp; eggs&quot;, &quot;qty&quot;: 2, &quot;unit_price&quot;: 1.1},
+    {&quot;name&quot;: &quot;frozen white fish 500g&quot;, &quot;section&quot;: &quot;Frozen&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 4.5}
+  ]
+}
+```
+FILE:scripts/estimate_cost.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Estimate grocery cost from a JSON list.
+
+Usage:
+    python3 estimate_cost.py --list groceries.json
+    python3 estimate_cost.py --self-test
+
+JSON shape:
+{
+  &quot;currency&quot;: &quot;EUR&quot;,
+  &quot;items&quot;: [{&quot;name&quot;: &quot;...&quot;, &quot;section&quot;: &quot;...&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 2.5}]
+}
+
+Python 3 standard library only.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from collections import defaultdict
+from typing import Any, Dict, List
+
+
+def load_list(path: str) -&gt; dict:
+    return json.load(open(path, encoding=&quot;utf-8&quot;))
+
+
+def estimate(data: dict) -&gt; dict:
+    currency = data.get(&quot;currency&quot;) or &quot;USD&quot;
+    items = data.get(&quot;items&quot;) or []
+    by_section: Dict[str, float] = defaultdict(float)
+    lines = []
+    total = 0.0
+    for it in items:
+        name = it[&quot;name&quot;]
+        section = it.get(&quot;section&quot;) or &quot;Other&quot;
+        qty = float(it.get(&quot;qty&quot;, 1))
+        price = float(it[&quot;unit_price&quot;])
+        line_total = qty * price
+        total += line_total
+        by_section[section] += line_total
+        lines.append({
+            &quot;name&quot;: name,
+            &quot;section&quot;: section,
+            &quot;qty&quot;: qty,
+            &quot;unit_price&quot;: price,
+            &quot;line_total&quot;: round(line_total, 2),
+        })
+    return {
+        &quot;currency&quot;: currency,
+        &quot;total&quot;: round(total, 2),
+        &quot;by_section&quot;: {k: round(v, 2) for k, v in sorted(by_section.items())},
+        &quot;lines&quot;: lines,
+        &quot;item_count&quot;: len(lines),
+    }
+
+
+def format_report(result: dict) -&gt; str:
+    cur = result[&quot;currency&quot;]
+    lines = [f&quot;Estimated total: {result[&#x27;total&#x27;]:.2f} {cur} ({result[&#x27;item_count&#x27;]} lines)&quot;]
+    lines.append(&quot;By section:&quot;)
+    for sec, amt in result[&quot;by_section&quot;].items():
+        lines.append(f&quot;  - {sec}: {amt:.2f} {cur}&quot;)
+    return &quot;\n&quot;.join(lines)
+
+
+def self_test() -&gt; int:
+    sample = {
+        &quot;currency&quot;: &quot;EUR&quot;,
+        &quot;items&quot;: [
+            {&quot;name&quot;: &quot;rice&quot;, &quot;section&quot;: &quot;Pantry dry&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 2.2},
+            {&quot;name&quot;: &quot;eggs&quot;, &quot;section&quot;: &quot;Dairy &amp; eggs&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 3.2},
+            {&quot;name&quot;: &quot;milk&quot;, &quot;section&quot;: &quot;Dairy &amp; eggs&quot;, &quot;qty&quot;: 2, &quot;unit_price&quot;: 1.1},
+        ],
+    }
+    r = estimate(sample)
+    cases = [
+        (&quot;total&quot;, r[&quot;total&quot;], 7.6),
+        (&quot;dairy_section&quot;, r[&quot;by_section&quot;][&quot;Dairy &amp; eggs&quot;], 5.4),
+        (&quot;pantry&quot;, r[&quot;by_section&quot;][&quot;Pantry dry&quot;], 2.2),
+        (&quot;count&quot;, r[&quot;item_count&quot;], 3),
+        (&quot;currency&quot;, r[&quot;currency&quot;], &quot;EUR&quot;),
+        (&quot;empty&quot;, estimate({&quot;items&quot;: []})[&quot;total&quot;], 0.0),
+        (&quot;qty_scale&quot;, estimate({&quot;items&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;section&quot;: &quot;A&quot;, &quot;qty&quot;: 3, &quot;unit_price&quot;: 1.5}]})[&quot;total&quot;], 4.5),
+        (&quot;default_section&quot;, estimate({&quot;items&quot;: [{&quot;name&quot;: &quot;y&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 2}]})[&quot;by_section&quot;][&quot;Other&quot;], 2.0),
+        (&quot;round&quot;, estimate({&quot;items&quot;: [{&quot;name&quot;: &quot;z&quot;, &quot;section&quot;: &quot;A&quot;, &quot;qty&quot;: 1, &quot;unit_price&quot;: 1.005}]})[&quot;total&quot;], 1.0),
+    ]
+    failed = 0
+    for name, got, expected in cases:
+        if isinstance(expected, float):
+            ok = abs(float(got) - expected) &lt; 1e-9
+        else:
+            ok = got == expected
+        failed += not ok
+        print(f&quot;{&#x27;PASS&#x27; if ok else &#x27;FAIL&#x27;}  {name}: got={got!r} expected={expected!r}&quot;)
+    print(f&quot;\n{len(cases) - failed}/{len(cases)} passed&quot;)
+    return 1 if failed else 0
+
+
+def main(argv=None) -&gt; int:
+    p = argparse.ArgumentParser(description=&quot;Estimate grocery list cost.&quot;)
+    p.add_argument(&quot;--list&quot;, help=&quot;Path to groceries JSON&quot;)
+    p.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    p.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = p.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.list:
+        p.error(&quot;--list is required (or use --self-test)&quot;)
+    result = estimate(load_list(a.list))
+    if a.json:
+        print(json.dumps(result, indent=2))
+    else:
+        print(format_report(result))
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/grocery-meal-plan-cost-estimator',TI="Grocery Meal Plan Cost Estimator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

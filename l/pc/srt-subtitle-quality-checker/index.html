@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SRT Subtitle Quality Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: srt-subtitle-quality-checker description: Checks SRT and WebVTT subtitle files for broken or overlapping timings, numbering gaps, empty cues">
+<meta property="og:title" content="SRT Subtitle Quality Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: srt-subtitle-quality-checker description: Checks SRT and WebVTT subtitle files for broken or overlapping timings, numbering gaps, empty cues">
+<meta property="og:url" content="https://claudebomb.com/l/pc/srt-subtitle-quality-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/srt-subtitle-quality-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">SRT Subtitle Quality Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: srt-subtitle-quality-checker
+description: Checks SRT and WebVTT subtitle files for broken or overlapping timings, numbering gaps, empty cues, reading speed above a characters-per-second limit, long or extra lines, cues that flash by or linger, unbalanced tags, and sound labels, then rewrites and retimes the problem cues and can shift the whole file. Use when a user shares subtitles or captions and asks &quot;check my subtitles&quot;, &quot;why are these captions hard to read?&quot;, &quot;fix the timing&quot;, or &quot;make these subtitles follow the guidelines&quot;.
+---
+
+# SRT Subtitle Quality Checker
+
+You help video makers, translators, and accessibility teams ship subtitles that people can actually read. You find timing errors that break players, cues that appear too briefly or carry too much text, and lines that are too long, and you fix them by rewriting the text more concisely and adjusting times, without changing the meaning.
+
+## Files in this skill
+
+- `scripts/check_subtitles.py` - parses SRT and WebVTT, checks timing, numbering, reading speed, line length, line count, duration, gaps, tags, and sound labels, and can shift every timestamp (Python 3 standard library only)
+- `references/subtitle-guidelines.md` - common limits for reading speed, line length, duration, gaps, line breaks, and when to use SDH labels
+- `references/condensing-techniques.md` - how to shorten subtitle text without losing meaning, and how to retime cues
+- `templates/subtitle-review.md` - the review report to return
+- `examples/example-workshop-video.md` - a worked review of a short tutorial video
+
+## Workflow
+
+### 1. Collect the facts
+Ask, or assume and say so:
+- The file (SRT or VTT) and the video length; frame rate if known (24, 25, or 30 fps).
+- Audience and style guide: general adult viewers, children, a platform guide, or the client&#x27;s own limits.
+- Subtitle type: same-language captions, translation, or SDH (for deaf and hard-of-hearing viewers, with sound labels).
+- Whether you may rewrite text or only retime it.
+
+### 2. Run the checker
+```bash
+python3 scripts/check_subtitles.py movie.srt
+python3 scripts/check_subtitles.py movie.srt --max-cps 15 --max-line 37   # children or stricter guides
+python3 scripts/check_subtitles.py movie.vtt --json
+python3 scripts/check_subtitles.py movie.srt --shift -1200 &gt; movie-synced.srt   # whole file 1.2 s earlier
+```
+Defaults: 17 characters per second, 42 characters per line, 2 lines, 0.833 to 7 seconds on screen, 83 ms minimum gap. Pick limits from `references/subtitle-guidelines.md` to match the audience. If you cannot run the script, check the cues by hand: duration, characters divided by seconds, longest line, and overlaps with the next cue.
+
+### 3. Fix in this order
+1. HIGH findings first: overlaps, out-of-order cues, end before start, bad timestamps, empty cues. These break players or hide text.
+2. Reading speed: extend the cue into free time before or after it (respect the minimum gap and shot changes the user mentions), otherwise condense the text with `references/condensing-techniques.md`, otherwise split the cue in two at a natural pause.
+3. Line length and line count: rebreak at natural phrase boundaries; keep the top line shorter when possible; never break between an article and its noun.
+4. Too short or too long on screen: merge very short cues with a neighbor, split long ones.
+5. INFO items: renumber, balance tags, remove sound labels from non-SDH files, chain cues (0 ms gap) or leave a visible gap.
+Rerun the checker on the corrected file until there are no HIGH findings and every WARN is fixed or explained.
+
+### 4. Deliver
+Fill in `templates/subtitle-review.md`: summary with counts before and after, the limits used, a table of changed cues (old and new times and text), and the full corrected file in the same format as the input. Follow the style of `examples/example-workshop-video.md`.
+
+## Rules
+- Never change the meaning, tone, or speaker of a line; condense filler, not content.
+- Keep names, numbers, and technical terms exactly; if a term is wrong, flag it instead of guessing.
+- Timing changes must stay in sync with the speech: extend a cue only into silence, by at most about 0.5 s before speech starts or 1 s after it ends, unless the user allows more.
+- Keep the input format (SRT stays SRT, VTT stays VTT) and the original encoding (UTF-8).
+- Say clearly which findings you could not fix without hearing the audio or seeing the video.
+FILE:references/subtitle-guidelines.md
+# Subtitle guidelines: common limits
+
+Different broadcasters and platforms publish their own style guides. The values below are common starting points; always prefer the client&#x27;s or platform&#x27;s guide when one exists, and say which limits you used.
+
+## Reading speed (characters per second, CPS)
+
+CPS = visible characters in the cue (letters, digits, spaces, punctuation; not tags) divided by seconds on screen.
+
+| Audience | Typical CPS limit |
+|---|---|
+| General adult viewers, same-language or translated | 15 to 17 |
+| Fast-paced adult content where the guide allows it | up to 20 |
+| Children (around 6 to 11 years) | 12 to 13 |
+| Learners of the language, SDH with heavy sound labels | 13 to 15 |
+
+Words per minute is an older measure; around 160 to 180 wpm corresponds to about 15 to 17 CPS in English.
+
+## Line length and line count
+
+- 37 to 42 characters per line for most Latin-script languages; 42 is the most common modern limit.
+- Maximum 2 lines per cue. A third line covers the picture and is hard to read.
+- Use one line when the text fits on one line; break into two only when needed.
+
+## Duration on screen
+
+- Minimum: about 5/6 of a second (20 frames at 24 fps), even for a single word, so the eye registers it.
+- Maximum: about 7 seconds. Longer cues get reread and feel stuck; split them.
+
+## Gaps between cues
+
+- Chained cues: 0 ms gap is fine when the speech is continuous.
+- Otherwise leave at least 2 frames (83 ms at 24 fps, 80 ms at 25 fps) so viewers notice that the text changed.
+- Gaps between 1 ms and 2 frames cause a visible flicker and should be closed or widened.
+
+## Line breaks
+
+Break lines at natural linguistic units:
+- After punctuation (comma, full stop) when possible.
+- Before conjunctions (and, but, because) and prepositions.
+- Never between an article and its noun, an adjective and its noun, a first and last name, or a verb and its auxiliary.
+- Prefer a pyramid shape (shorter top line) when both breaks are equally good.
+
+## Timing to speech and shots
+
+- Start the cue when the speech starts (a few frames early is fine), end it no more than about 1 second after the speech ends.
+- Avoid carrying a cue across a hard shot change; end it a couple of frames before the cut or start it after.
+
+## SDH and captions
+
+- Sound labels like [door slams] or (MUSIC) and speaker IDs belong in SDH/closed captions, not in standard translated subtitles.
+- Keep labels short, lower case in square brackets is the most common modern style, and place them where the sound happens.
+
+## Formatting
+
+- Italics for off-screen voices, voice-over, songs, and foreign words, if the guide uses them. Every opening tag needs a closing tag in the same cue.
+- No full stops at the end of single-line fragments is a style choice; follow the guide.
+- SRT: cue number, timestamp line `00:01:02,500 --&gt; 00:01:04,000`, text, blank line. VTT: `WEBVTT` header, optional cue id, timestamps with a dot `00:01:02.500`.
+FILE:references/condensing-techniques.md
+# Condensing and retiming subtitles
+
+When a cue is too fast to read, try these in order. Stop as soon as the cue fits the limits.
+
+## 1. Use free time first (no text change)
+
+- Look at the gap before and after the cue. Extend the start up to about 0.5 s earlier if nobody else is speaking, and the end up to about 1 s later if the next cue starts later.
+- Keep the minimum gap (2 frames) to the neighbors, or chain at 0 ms.
+- Required time for a cue = characters / CPS limit. Example: 68 characters at 17 CPS need 4.0 s.
+
+## 2. Cut filler, keep content
+
+Remove words that the viewer hears or sees anyway:
+- Hesitations and fillers: &quot;well&quot;, &quot;you know&quot;, &quot;I mean&quot;, &quot;um&quot;, &quot;so, basically&quot;.
+- Repetitions: &quot;very, very&quot; -&gt; &quot;very&quot;; false starts.
+- Greetings and names already obvious from the picture.
+- Tag questions when tone is clear: &quot;It&#x27;s ready, isn&#x27;t it?&quot; -&gt; &quot;It&#x27;s ready?&quot; only if the meaning stays.
+
+## 3. Use shorter forms
+
+| Long | Short |
+|---|---|
+| we are going to | we&#x27;ll |
+| at this point in time | now |
+| in order to | to |
+| a large number of | many |
+| it is not possible to | you can&#x27;t |
+| I would like to show you | let me show you |
+| due to the fact that | because |
+
+Contractions are usually fine in subtitles; follow the guide for formal content.
+
+## 4. Simplify structure
+
+- Turn passive into active: &quot;The bowl was cleaned by the artist&quot; -&gt; &quot;The artist cleans the bowl&quot;.
+- Replace a clause with a single word when possible.
+- Split one long sentence into two shorter cues at a natural pause.
+
+## 5. Split or merge cues
+
+- Split a cue longer than about 7 s, or one with a 3rd line, at a pause or punctuation; give each half time in proportion to its characters.
+- Merge a cue under about 0.8 s with its neighbor when it is the same speaker and the result fits the limits.
+
+## What never to cut
+
+- Names, numbers, quantities, dates, technical terms, and negations (&quot;not&quot;, &quot;never&quot;).
+- Words that carry the joke, the twist, or the emotion of the line.
+- Information the viewer needs later in the video.
+
+## Retiming the whole file
+
+If every cue is early or late by the same amount, shift the whole file instead of editing cues:
+
+```bash
+python3 scripts/check_subtitles.py movie.srt --shift 1500 &gt; movie-shifted.srt    # 1.5 s later
+python3 scripts/check_subtitles.py movie.srt --shift -800 &gt; movie-shifted.srt    # 0.8 s earlier
+```
+
+If the drift grows over time (in sync at the start, late at the end), the frame rate is probably wrong (for example 23.976 vs 25 fps); a constant shift will not fix it. Say so and ask for the frame rate of the video.
+FILE:templates/subtitle-review.md
+# Subtitle review: ${file_name}
+
+**Video:** ${video_title} (${duration}, ${fps} fps)
+**Type:** ${type: translation / same-language captions / SDH}
+**Limits used:** ${cps} chars/s, ${line} chars/line, ${lines} lines, ${min_dur} to ${max_dur} s on screen, ${gap} ms minimum gap (${source_of_limits})
+
+## Summary
+
+| | Before | After |
+|---|---|---|
+| Cues | | |
+| HIGH | | |
+| WARN | | |
+| INFO | | |
+| Average chars/s | | |
+
+Main problems in one or two sentences.
+
+## Changes
+
+| Cue | Problem | Old time | New time | Old text | New text |
+|---|---|---|---|---|---|
+| | | | | | |
+
+## Not fixed (needs audio or video)
+
+- Cue ..., reason ...
+
+## Notes for the editor
+
+- Style choices made (italics, contractions, labels).
+- Anything to check against the picture (shot changes, on-screen text).
+
+## Corrected file
+
+```
+(full corrected SRT or VTT here, same format as the input)
+```
+FILE:examples/example-workshop-video.md
+# Example: subtitle review of a short tutorial video
+
+## User request
+
+&quot;Here are the English subtitles for our 25-second kintsugi workshop clip. Viewers say they can&#x27;t keep up. Can you check them and fix what&#x27;s wrong? General adult audience, normal subtitles, not SDH.&quot;
+
+## Input (excerpt of interview.srt)
+
+```
+2
+00:00:03,250 --&gt; 00:00:04,000
+Today we are going to look at how to repair a cracked ceramic bowl with gold.
+
+3
+00:00:03,900 --&gt; 00:00:06,500
+[HAMMER TAPPING]
+First, clean the edges.
+
+5
+00:00:07,000 --&gt; 00:00:16,000
+&lt;i&gt;This technique is called kintsugi.
+```
+
+## Checker run
+
+```
+$ python3 scripts/check_subtitles.py interview.srt
+interview.srt (SRT): 8 cues, 00:00:01,000 to 00:00:24,000, avg 16.3 chars/s, avg 2.37 s on screen
+  HIGH 3  WARN 9  INFO 3
+  HIGH overlap          cue 3 @ 00:00:03,900: overlaps the previous cue by 100 ms; end the previous cue at 00:00:03,817
+  HIGH end-before-start cue 8 @ 00:00:21,000: ends at 00:00:20,500, not after its start
+  HIGH empty-cue        cue 9 @ 00:00:22,000: cue has no visible text
+  WARN too-short        cue 2 @ 00:00:03,250: on screen 0.75 s (minimum 0.83 s)
+  WARN reading-speed    cue 2 @ 00:00:03,250: 102.7 chars/s (limit 17); needs 4.53 s on screen or about 64 fewer chars
+  ...
+```
+
+## Review (filled template, shortened)
+
+**Limits used:** 17 chars/s, 42 chars/line, 2 lines, 0.833 to 7 s, 83 ms gap (common general-audience values; no client guide given).
+
+| | Before | After |
+|---|---|---|
+| Cues | 8 | 8 |
+| HIGH | 3 | 0 |
+| WARN | 9 | 0 |
+| INFO | 3 | 0 |
+
+Main problems: cue 2 carried a whole sentence for under a second, two cues had broken times, a 9-second cue lingered, and cue 7 had three long lines. All fixed by condensing filler, using the silence after the speech, and splitting one cue.
+
+| Cue | Problem | Old time | New time | Old text | New text |
+|---|---|---|---|---|---|
+| 2 | 102.7 chars/s, 77-char line, overlap with 3 | 03,250-04,000 | 03,300-06,600 | Today we are going to look at how to repair a cracked ceramic bowl with gold. | Today we&#x27;ll repair a cracked bowl / with lacquer and gold. |
+| 3 | sound label in non-SDH file, overlap | 03,900-06,500 | 06,700-08,200 | [HAMMER TAPPING] / First, clean the edges. | First, clean the edges. |
+| 4 (was 5) | 9 s on screen, unclosed italics, numbering gap | 07,000-16,000 | 08,300-11,000 | `&lt;i&gt;`This technique is called kintsugi. | `&lt;i&gt;`This technique is called kintsugi.`&lt;/i&gt;` |
+| 5 (was 6) | 0.4 s on screen | 16,000-16,400 | 16,000-16,900 | Okay. | Okay. |
+| 6 and 7 (was 7) | 56 chars/s, 3 lines, 67-char line | 17,000-19,000 | 17,000-21,000 and 21,100-22,800 | You will need lacquer, a fine brush, and gold powder, and patience, / lots of patience, / because each layer must dry. | You&#x27;ll need lacquer, a fine brush, / gold powder, and lots of patience. + Each layer must dry first. |
+| 8 (was 8) | ends before it starts | 21,000-20,500 | 22,900-24,000 | Let&#x27;s start. | Let&#x27;s start. |
+| 9 | empty cue | 22,000-24,000 | removed | | |
+
+Note: the old cue 2 was shortened (&quot;look at how to&quot;, &quot;ceramic&quot;) only where the picture already shows it; &quot;lacquer&quot; was added because the speaker names it a few seconds later and the viewer needs it.
+
+**Not fixed:** none, but please confirm against the video that the speaker pauses after &quot;gold&quot; (cue 2 now runs 2.6 s longer, into what looks like silence) and that &quot;Let&#x27;s start.&quot; is spoken at about 22.9 s.
+
+Corrected file rechecked:
+
+```
+$ python3 scripts/check_subtitles.py interview-fixed.srt
+interview-fixed.srt (SRT): 8 cues, 00:00:01,000 to 00:00:24,000, avg 14.5 chars/s, avg 2.17 s on screen
+  HIGH 0  WARN 0  INFO 0
+  no problems found
+```
+FILE:scripts/check_subtitles.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Check SRT or WebVTT subtitle files for timing and readability problems.
+
+Usage:
+  python3 check_subtitles.py FILE [FILE ...] [options]
+  python3 check_subtitles.py - &lt; movie.srt          (read stdin)
+
+Options:
+  --max-cps N        maximum characters per second (default 17)
+  --max-line N       maximum characters per line (default 42)
+  --max-lines N      maximum lines per cue (default 2)
+  --min-dur S        minimum cue duration in seconds (default 0.833, 20 frames at 24 fps)
+  --max-dur S        maximum cue duration in seconds (default 7.0)
+  --min-gap MS       minimum gap between cues in milliseconds (default 83, 2 frames at 24 fps)
+  --shift MS         print the file with every timestamp shifted by MS (may be negative) and exit
+  --json             print findings as JSON
+  --fail-on LEVEL    exit 1 if any finding is at least LEVEL: high (default), warn, info
+
+Findings: HIGH = broken or overlapping timing, unreadable numbering, empty cue;
+WARN = reading speed, line length, too many lines, too short or long on screen;
+INFO = tiny gaps, unbalanced tags, hearing-impaired brackets, statistics.
+Exit codes: 0 ok, 1 findings at or above --fail-on, 2 usage or parse error.
+Python 3 standard library only.
+&quot;&quot;&quot;
+import json
+import math
+import re
+import sys
+
+TS = re.compile(r&quot;^\s*(\d{1,2}:)?(\d{1,2}):(\d{2})[,.](\d{1,3})\s*--&gt;\s*(\d{1,2}:)?(\d{1,2}):(\d{2})[,.](\d{1,3})(.*)$&quot;)
+TAG = re.compile(r&quot;&lt;/?[^&gt;]+&gt;|\{\\[^}]*\}&quot;)
+LEVELS = {&quot;info&quot;: 0, &quot;warn&quot;: 1, &quot;high&quot;: 2}
+
+
+def to_ms(h, m, s, ms):
+    h = int(h[:-1]) if h else 0
+    return ((h * 60 + int(m)) * 60 + int(s)) * 1000 + int(ms.ljust(3, &quot;0&quot;))
+
+
+def fmt(ms, vtt=False):
+    sign = &quot;-&quot; if ms &lt; 0 else &quot;&quot;
+    ms = abs(ms)
+    h, rem = divmod(ms, 3600000)
+    m, rem = divmod(rem, 60000)
+    s, rem = divmod(rem, 1000)
+    sep = &quot;.&quot; if vtt else &quot;,&quot;
+    return f&quot;{sign}{h:02d}:{m:02d}:{s:02d}{sep}{rem:03d}&quot;
+
+
+def parse(text):
+    &quot;&quot;&quot;Return (cues, errors, is_vtt). Each cue: dict(index, start, end, lines, line_no).&quot;&quot;&quot;
+    text = text.replace(&quot;\r\n&quot;, &quot;\n&quot;).replace(&quot;\r&quot;, &quot;\n&quot;).lstrip(&quot;\ufeff&quot;)
+    is_vtt = text.lstrip().startswith(&quot;WEBVTT&quot;)
+    blocks = re.split(r&quot;\n\s*\n&quot;, text.strip(&quot;\n&quot;))
+    cues, errors = [], []
+    line_no = 1
+    for block in blocks:
+        lines = block.split(&quot;\n&quot;)
+        start_line = line_no
+        line_no += len(lines) + 1
+        if is_vtt and (lines[0].startswith(&quot;WEBVTT&quot;) or lines[0].startswith(&quot;NOTE&quot;) or lines[0].startswith(&quot;STYLE&quot;) or lines[0].startswith(&quot;REGION&quot;)):
+            continue
+        ts_i = next((i for i, ln in enumerate(lines[:3]) if &quot;--&gt;&quot; in ln), None)
+        if ts_i is None:
+            errors.append({&quot;level&quot;: &quot;high&quot;, &quot;rule&quot;: &quot;unparsed-block&quot;, &quot;line&quot;: start_line,
+                           &quot;message&quot;: f&quot;block without a timestamp line: {lines[0][:50]!r}&quot;})
+            continue
+        m = TS.match(lines[ts_i])
+        if not m:
+            errors.append({&quot;level&quot;: &quot;high&quot;, &quot;rule&quot;: &quot;bad-timestamp&quot;, &quot;line&quot;: start_line + ts_i,
+                           &quot;message&quot;: f&quot;cannot read timestamp {lines[ts_i].strip()!r} (expected 00:01:02,500 --&gt; 00:01:04,000)&quot;})
+            continue
+        g = m.groups()
+        index = lines[0].strip() if ts_i == 1 else None
+        cues.append({&quot;index&quot;: index, &quot;start&quot;: to_ms(*g[0:4]), &quot;end&quot;: to_ms(*g[4:8]),
+                     &quot;lines&quot;: [ln for ln in lines[ts_i + 1:]], &quot;line_no&quot;: start_line})
+    return cues, errors, is_vtt
+
+
+def visible(line):
+    return TAG.sub(&quot;&quot;, line).strip()
+
+
+def check(cues, errors, opts, is_vtt):
+    out = list(errors)
+
+    def add(level, rule, cue, msg):
+        out.append({&quot;level&quot;: level, &quot;rule&quot;: rule, &quot;line&quot;: cue[&quot;line_no&quot;],
+                    &quot;cue&quot;: cue[&quot;index&quot;] or &quot;-&quot;, &quot;time&quot;: fmt(cue[&quot;start&quot;], is_vtt), &quot;message&quot;: msg})
+
+    if not is_vtt:
+        expected = 1
+        for c in cues:
+            if c[&quot;index&quot;] is None or not c[&quot;index&quot;].isdigit():
+                add(&quot;high&quot;, &quot;bad-number&quot;, c, f&quot;cue number missing or not a number: {c[&#x27;index&#x27;]!r}&quot;)
+            elif int(c[&quot;index&quot;]) != expected:
+                add(&quot;warn&quot;, &quot;numbering&quot;, c, f&quot;cue number {c[&#x27;index&#x27;]} but expected {expected} (renumber the file)&quot;)
+                expected = int(c[&quot;index&quot;])
+            expected += 1
+    prev = None
+    for c in cues:
+        dur = (c[&quot;end&quot;] - c[&quot;start&quot;]) / 1000
+        text_lines = [visible(ln) for ln in c[&quot;lines&quot;] if visible(ln)]
+        chars = sum(len(ln) for ln in text_lines)
+        if c[&quot;end&quot;] &lt;= c[&quot;start&quot;]:
+            add(&quot;high&quot;, &quot;end-before-start&quot;, c, f&quot;ends at {fmt(c[&#x27;end&#x27;], is_vtt)}, not after its start&quot;)
+        if not text_lines:
+            add(&quot;high&quot;, &quot;empty-cue&quot;, c, &quot;cue has no visible text&quot;)
+        if prev is not None:
+            gap = c[&quot;start&quot;] - prev[&quot;end&quot;]
+            if c[&quot;start&quot;] &lt; prev[&quot;start&quot;]:
+                add(&quot;high&quot;, &quot;out-of-order&quot;, c, f&quot;starts before the previous cue ({fmt(prev[&#x27;start&#x27;], is_vtt)}); sort by time&quot;)
+            elif gap &lt; 0:
+                add(&quot;high&quot;, &quot;overlap&quot;, c, f&quot;overlaps the previous cue by {-gap} ms; end the previous cue at {fmt(c[&#x27;start&#x27;] - opts[&#x27;min_gap&#x27;], is_vtt)}&quot;)
+            elif 0 &lt; gap &lt; opts[&quot;min_gap&quot;]:
+                add(&quot;info&quot;, &quot;tiny-gap&quot;, c, f&quot;only {gap} ms after the previous cue; use 0 ms (chained) or at least {opts[&#x27;min_gap&#x27;]} ms so the change is visible&quot;)
+        if c[&quot;end&quot;] &gt; c[&quot;start&quot;] and text_lines:
+            if dur &lt; opts[&quot;min_dur&quot;]:
+                add(&quot;warn&quot;, &quot;too-short&quot;, c, f&quot;on screen {dur:.2f} s (minimum {opts[&#x27;min_dur&#x27;]:.2f} s)&quot;)
+            if dur &gt; opts[&quot;max_dur&quot;]:
+                add(&quot;warn&quot;, &quot;too-long&quot;, c, f&quot;on screen {dur:.2f} s (maximum {opts[&#x27;max_dur&#x27;]:.1f} s); split it or shorten the time&quot;)
+            cps = chars / dur if dur &gt; 0 else float(&quot;inf&quot;)
+            if cps &gt; opts[&quot;max_cps&quot;]:
+                need = chars / opts[&quot;max_cps&quot;]
+                cut = max(1, math.ceil(chars - opts[&quot;max_cps&quot;] * dur))
+                add(&quot;warn&quot;, &quot;reading-speed&quot;, c, f&quot;{cps:.1f} chars/s (limit {opts[&#x27;max_cps&#x27;]:g}); needs {need:.2f} s on screen or about {cut} fewer chars&quot;)
+        for ln in text_lines:
+            if len(ln) &gt; opts[&quot;max_line&quot;]:
+                add(&quot;warn&quot;, &quot;line-length&quot;, c, f&quot;line has {len(ln)} chars (limit {opts[&#x27;max_line&#x27;]}): {ln[:60]!r}&quot;)
+        if len(text_lines) &gt; opts[&quot;max_lines&quot;]:
+            add(&quot;warn&quot;, &quot;too-many-lines&quot;, c, f&quot;{len(text_lines)} lines (limit {opts[&#x27;max_lines&#x27;]})&quot;)
+        raw = &quot; &quot;.join(c[&quot;lines&quot;])
+        for tag in (&quot;i&quot;, &quot;b&quot;, &quot;u&quot;):
+            if len(re.findall(rf&quot;&lt;{tag}&gt;&quot;, raw, re.I)) != len(re.findall(rf&quot;&lt;/{tag}&gt;&quot;, raw, re.I)):
+                add(&quot;info&quot;, &quot;unbalanced-tag&quot;, c, f&quot;&lt;{tag}&gt; tags are not balanced in this cue&quot;)
+        if re.search(r&quot;\[[^\]]+\]|\([A-Z][A-Z ]+\)&quot;, raw):
+            add(&quot;info&quot;, &quot;sdh-label&quot;, c, &quot;contains a sound or speaker label in brackets; keep it only in SDH/CC files&quot;)
+        prev = c
+    return out
+
+
+def stats(cues, is_vtt=False):
+    if not cues:
+        return {}
+    total_chars = sum(len(visible(ln)) for c in cues for ln in c[&quot;lines&quot;])
+    total_time = sum(max(c[&quot;end&quot;] - c[&quot;start&quot;], 0) for c in cues) / 1000
+    return {&quot;cues&quot;: len(cues), &quot;first&quot;: fmt(cues[0][&quot;start&quot;], is_vtt), &quot;last_end&quot;: fmt(max(c[&quot;end&quot;] for c in cues), is_vtt),
+            &quot;avg_cps&quot;: round(total_chars / total_time, 1) if total_time else None,
+            &quot;avg_duration_s&quot;: round(total_time / len(cues), 2)}
+
+
+def shift_text(text, delta):
+    def rep(m):
+        g = m.groups()
+        vtt = &quot;.&quot; in m.group(0).split(&quot;--&gt;&quot;)[0]
+        a = max(to_ms(*g[0:4]) + delta, 0)
+        b = max(to_ms(*g[4:8]) + delta, 0)
+        return f&quot;{fmt(a, vtt)} --&gt; {fmt(b, vtt)}{g[8]}&quot;
+    return &quot;\n&quot;.join(TS.sub(rep, ln) if &quot;--&gt;&quot; in ln else ln
+                     for ln in text.replace(&quot;\r\n&quot;, &quot;\n&quot;).split(&quot;\n&quot;))
+
+
+def main(argv):
+    opts = {&quot;max_cps&quot;: 17.0, &quot;max_line&quot;: 42, &quot;max_lines&quot;: 2, &quot;min_dur&quot;: 0.833, &quot;max_dur&quot;: 7.0,
+            &quot;min_gap&quot;: 83, &quot;json&quot;: False, &quot;fail_on&quot;: &quot;high&quot;, &quot;shift&quot;: None}
+    files = []
+    it = iter(argv)
+    try:
+        for a in it:
+            if a == &quot;--json&quot;:
+                opts[&quot;json&quot;] = True
+            elif a in (&quot;--max-cps&quot;, &quot;--min-dur&quot;, &quot;--max-dur&quot;):
+                opts[a[2:].replace(&quot;-&quot;, &quot;_&quot;)] = float(next(it))
+            elif a in (&quot;--max-line&quot;, &quot;--max-lines&quot;, &quot;--min-gap&quot;, &quot;--shift&quot;):
+                opts[a[2:].replace(&quot;-&quot;, &quot;_&quot;)] = int(next(it))
+            elif a == &quot;--fail-on&quot;:
+                opts[&quot;fail_on&quot;] = next(it).lower()
+                if opts[&quot;fail_on&quot;] not in LEVELS:
+                    raise ValueError(&quot;--fail-on must be high, warn, or info&quot;)
+            elif a in (&quot;-h&quot;, &quot;--help&quot;):
+                print(__doc__)
+                return 0
+            elif a.startswith(&quot;--&quot;):
+                raise ValueError(f&quot;unknown option {a}&quot;)
+            else:
+                files.append(a)
+    except (StopIteration, ValueError) as e:
+        print(f&quot;error: {e or &#x27;option needs a value&#x27;}&quot;, file=sys.stderr)
+        return 2
+    if not files:
+        print(&quot;error: give at least one .srt or .vtt file, or - for stdin&quot;, file=sys.stderr)
+        return 2
+    report, worst = [], -1
+    for f in files:
+        try:
+            text = sys.stdin.read() if f == &quot;-&quot; else open(f, encoding=&quot;utf-8-sig&quot;).read()
+        except (OSError, UnicodeDecodeError) as e:
+            print(f&quot;error: cannot read {f}: {e}&quot;, file=sys.stderr)
+            return 2
+        if opts[&quot;shift&quot;] is not None:
+            sys.stdout.write(shift_text(text, opts[&quot;shift&quot;]))
+            return 0
+        cues, errors, is_vtt = parse(text)
+        if not cues:
+            print(f&quot;error: {f}: no subtitle cues found (is this an SRT or WebVTT file?)&quot;, file=sys.stderr)
+            return 2
+        findings = check(cues, errors, opts, is_vtt)
+        for x in findings:
+            worst = max(worst, LEVELS[x[&quot;level&quot;]])
+        report.append({&quot;file&quot;: f, &quot;format&quot;: &quot;vtt&quot; if is_vtt else &quot;srt&quot;, &quot;stats&quot;: stats(cues, is_vtt), &quot;findings&quot;: findings})
+    if opts[&quot;json&quot;]:
+        print(json.dumps(report, indent=2))
+    else:
+        for r in report:
+            counts = {lv: sum(1 for x in r[&quot;findings&quot;] if x[&quot;level&quot;] == lv) for lv in (&quot;high&quot;, &quot;warn&quot;, &quot;info&quot;)}
+            st = r[&quot;stats&quot;]
+            print(f&quot;{r[&#x27;file&#x27;]} ({r[&#x27;format&#x27;].upper()}): {st[&#x27;cues&#x27;]} cues, {st[&#x27;first&#x27;]} to {st[&#x27;last_end&#x27;]}, &quot;
+                  f&quot;avg {st[&#x27;avg_cps&#x27;]} chars/s, avg {st[&#x27;avg_duration_s&#x27;]} s on screen&quot;)
+            print(f&quot;  HIGH {counts[&#x27;high&#x27;]}  WARN {counts[&#x27;warn&#x27;]}  INFO {counts[&#x27;info&#x27;]}&quot;)
+            for x in sorted(r[&quot;findings&quot;], key=lambda x: (-LEVELS[x[&quot;level&quot;]], x[&quot;line&quot;])):
+                where = f&quot;cue {x.get(&#x27;cue&#x27;, &#x27;-&#x27;)} @ {x[&#x27;time&#x27;]}&quot; if &quot;time&quot; in x else f&quot;line {x[&#x27;line&#x27;]}&quot;
+                print(f&quot;  {x[&#x27;level&#x27;].upper():&lt;4} {x[&#x27;rule&#x27;]:&lt;16} {where}: {x[&#x27;message&#x27;]}&quot;)
+            if not r[&quot;findings&quot;]:
+                print(&quot;  no problems found&quot;)
+    return 1 if worst &gt;= LEVELS[opts[&quot;fail_on&quot;]] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/srt-subtitle-quality-checker',TI="SRT Subtitle Quality Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

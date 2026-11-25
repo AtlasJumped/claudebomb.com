@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Markdown Accessibility and Alt Text Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: markdown-accessibility-checker description: Reviews Markdown documentation (READMEs, docs sites, wikis, blog posts, changelogs) for accessib">
+<meta property="og:title" content="Markdown Accessibility and Alt Text Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: markdown-accessibility-checker description: Reviews Markdown documentation (READMEs, docs sites, wikis, blog posts, changelogs) for accessib">
+<meta property="og:url" content="https://claudebomb.com/l/pc/markdown-accessibility-and-alt-text-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/markdown-accessibility-and-alt-text-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Markdown Accessibility and Alt Text Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: markdown-accessibility-checker
+description: Reviews Markdown documentation (READMEs, docs sites, wikis, blog posts, changelogs) for accessibility - missing or poor image alt text, heading structure, vague or duplicate link text, bare URLs, empty table headers, color-only instructions, ALL CAPS, and emoji bullets - then writes good alt text for each image from context and returns a fix list or a corrected file. Use when a user asks to &quot;check my README for accessibility&quot;, &quot;write alt text for these images&quot;, &quot;make our docs screen reader friendly&quot;, or wants an accessibility check for Markdown in CI.
+---
+
+# Markdown Accessibility Checker
+
+You make Markdown documents work for everyone, including people who use screen readers, keyboard navigation, magnification, or reading aids. You find the problems a script can detect, then do the part a script cannot: write meaningful alt text and link text that fit the document&#x27;s purpose.
+
+## Files in this skill
+
+- `scripts/check_md_a11y.py` - scans Markdown files or folders and reports problems with line numbers and severities (Python 3 standard library only)
+- `references/alt-text-guide.md` - how to write alt text by image type (screenshots, diagrams, charts, photos, logos, badges, decorative images)
+- `references/structure-and-links.md` - headings, link text, tables, lists, emphasis, and what each rule in the script means
+- `templates/a11y-review.md` - the review report and the alt text worksheet
+- `examples/example-readme-review.md` - a worked review of a project README
+
+## Workflow
+
+### 1. Scope the review
+Ask which files or folders to check, who reads them (developers, end users, students), and whether the user wants a report, a corrected file, or both. If the documents are rendered by a site generator, ask whether it adds its own page title (then the Markdown may not need an H1).
+
+### 2. Run the checker
+```bash
+python3 scripts/check_md_a11y.py README.md docs/
+python3 scripts/check_md_a11y.py docs/ --json
+python3 scripts/check_md_a11y.py docs/ --fail-on warn     # for CI
+```
+It ignores fenced code blocks and inline code. HIGH means content is lost for some readers (missing alt, empty link, empty heading), WARN should be fixed, INFO needs a human look. If you cannot run the script, check the same rules by reading the file and say so.
+
+### 3. Write alt text
+For every image flagged, and for every image with existing alt text, decide its purpose using `references/alt-text-guide.md`:
+- Read the text around it: what is the image for at this point in the document?
+- If you can see the image, describe what matters for that purpose. If you cannot, ask the user, or write a clearly marked draft from the file name and context (for example &quot;DRAFT: check against the image&quot;).
+- Decorative images get empty alt text; in Markdown prefer removing them, or use HTML `&lt;img alt=&quot;&quot;&gt;`.
+Fill in the alt text worksheet in `templates/a11y-review.md`.
+
+### 4. Fix structure and links
+Apply `references/structure-and-links.md`: one H1, no skipped levels, real headings instead of bold lines, descriptive unique link text, tables with headers, instructions that do not rely on color alone.
+
+### 5. Deliver
+- Report: fill in `templates/a11y-review.md`, as in `examples/example-readme-review.md`, with the most important fixes first.
+- Corrected file: return the full Markdown with fixes applied and a short change list. Do not change meaning, code samples, or links&#x27; destinations.
+- Rerun the checker on the corrected file and include the before and after counts.
+
+## Rules
+- Never invent what an image shows. If you have not seen it, mark the alt text as a draft.
+- Keep alt text short (usually under 150 characters); put long explanations (charts, diagrams) in the text or a caption and say so in the alt.
+- Do not start alt text with &quot;image of&quot; or &quot;picture of&quot;.
+- Remember that automated checks find only part of the problems; always mention what still needs a manual check (color contrast in images, reading order, video captions).
+- Respect the author&#x27;s voice; fix accessibility, not style.
+FILE:references/alt-text-guide.md
+# Alt text guide
+
+Alt text replaces the image for people who cannot see it. Ask: &quot;If I read this document aloud, what would I say at this point instead of showing the image?&quot; The answer depends on why the image is there, not only on what is in it.
+
+## Basics
+- Be specific and short: usually 5 to 20 words, rarely more than 150 characters.
+- Lead with the important part. Do not start with &quot;image of&quot;, &quot;picture of&quot;, or &quot;screenshot of&quot; unless the type itself matters (&quot;Screenshot&quot; can help when the reader needs to find the same screen).
+- End with a period so screen readers pause.
+- Do not repeat the caption or the sentence next to the image word for word.
+- Include text that appears in the image if the reader needs it (button labels, error messages).
+
+## By image type
+
+### Screenshots of an app or website
+State the screen and the one thing the reader should notice.
+- Weak: &quot;screenshot&quot;
+- Better: &quot;Settings screen with the Units toggle set to Metric.&quot;
+
+### Hero images and banners
+If it only sets the mood, it is decorative. If it shows the product, describe it in one sentence.
+- &quot;Trailhead Weather on a phone, showing a three-day forecast for a mountain pass.&quot;
+
+### Diagrams and flowcharts
+Give the main idea in the alt, and the full structure in the text or a list right after the image.
+- Alt: &quot;Architecture diagram: the mobile app calls the API, which reads from a forecast cache and a weather provider. Details in the list below.&quot;
+
+### Charts and graphs
+Give the type, the subject, and the key takeaway; put the data in a table if readers need numbers.
+- &quot;Line chart of daily active users, January to June 2026, rising from 2,000 to 9,500 with a dip in April.&quot;
+
+### Photos
+Describe what matters for the document&#x27;s purpose: subject, action, setting.
+- &quot;Snow-covered ridge trail with orange marker poles leading to a hut.&quot;
+
+### Logos
+Use the organization or product name, plus &quot;logo&quot; only if it helps: &quot;Trailhead Weather logo.&quot;
+When the logo is a link, describe the destination: &quot;Trailhead Weather home.&quot;
+
+### Badges (build status, version, license)
+Write the information the badge shows: &quot;Build: passing&quot;, &quot;License: MIT&quot;, &quot;Version 2.4.1&quot;.
+
+### Icons inside text or links
+If the icon has a function, describe the function (&quot;Download&quot;); if it repeats nearby text, it is decorative.
+
+### Animated GIFs and short videos
+Describe what happens: &quot;Animation: dragging a pin onto the map adds a new trailhead to the list.&quot; Videos also need captions and, for important content, a text alternative.
+
+### Decorative images
+Dividers, background textures, and purely visual flourishes. In HTML use `alt=&quot;&quot;` so screen readers skip them. In Markdown, `![](divider.png)` is ambiguous (often a mistake), so prefer removing the image or using `&lt;img src=&quot;divider.png&quot; alt=&quot;&quot;&gt;`.
+
+## Common mistakes
+- File names as alt text: &quot;IMG_2041.jpg&quot;, &quot;hero-final-v3&quot;.
+- One word: &quot;image&quot;, &quot;logo&quot;, &quot;chart&quot;.
+- Keyword stuffing for search engines.
+- Different alt text for the same image used in several places.
+- Describing colors or layout when the reader needs the information, not the look.
+FILE:references/structure-and-links.md
+# Structure, links, and what each rule means
+
+Screen reader users often jump through a document by headings or by links. Good structure is what makes that possible.
+
+## Headings
+| Rule | Severity | Why | Fix |
+|---|---|---|---|
+| empty-heading | HIGH | An empty heading is announced as &quot;heading level 2&quot; with nothing after it. | Add text or remove the #. |
+| no-h1 | WARN | The page has no title in the heading outline. | Start with one `# Title`. Skip this if the site generator adds the H1 from front matter. |
+| multiple-h1 | WARN | Several titles confuse the outline. | Keep one H1; use `##` for sections. |
+| heading-skip | WARN | Jumping from H2 to H4 suggests a missing section. | Use the next level down (H3). Pick levels for structure, not for font size. |
+| fake-heading | INFO | A bold line looks like a heading but is not in the outline. | Use a real heading if it starts a section; keep bold if it is just emphasis. |
+| no-headings | INFO | Long text without headings is hard to scan. | Add section headings every few paragraphs. |
+
+## Links
+| Rule | Severity | Why | Fix |
+|---|---|---|---|
+| empty-link | HIGH | The link has no accessible name. | Add descriptive text. |
+| vague-link | WARN | &quot;Click here&quot; or &quot;read more&quot; means nothing in a list of links. | Name the destination: &quot;download the latest release&quot;, &quot;setup guide&quot;. |
+| same-text-different-url | WARN | Two links called &quot;docs&quot; that go to different places are indistinguishable. | Make each text unique: &quot;API reference&quot;, &quot;setup guide&quot;. |
+| url-as-link-text | INFO | Long URLs are read character by character. | Use a short description; keep the URL only if readers must copy it. |
+| bare-url | INFO | Same as above, and not always clickable. | Wrap in a descriptive link. |
+
+Link text tips: put the important words first, keep it short, say when a link opens a file (&quot;pricing sheet (PDF, 2 MB)&quot;), and do not use &quot;link&quot; in the text.
+
+## Images
+| Rule | Severity | Why |
+|---|---|---|
+| img-missing-alt | HIGH | `![](file.png)` gives no alternative; some readers announce the file name. |
+| img-no-alt | HIGH | `&lt;img&gt;` without an alt attribute; screen readers fall back to the file name. |
+| img-generic-alt | WARN | &quot;image&quot;, &quot;screenshot&quot;, &quot;logo&quot; alone carry no information. |
+| img-filename-alt | WARN | &quot;IMG_2041.jpg&quot; is not a description. |
+| img-long-alt | WARN | Very long alt text cannot be navigated; move details to the text. |
+| img-redundant-alt | INFO | &quot;Image of&quot; is redundant; screen readers already say &quot;image&quot;. |
+| img-decorative | INFO | `alt=&quot;&quot;` hides the image; confirm it is truly decorative. |
+
+See `alt-text-guide.md` for how to write the text.
+
+## Tables
+- table-empty-header (WARN): every column needs a header so screen readers can announce &quot;Pro, Forecast days, 10&quot;. Add a header such as &quot;Feature&quot; to the first column.
+- Use tables for data, not for layout. Keep them small; split very wide tables.
+
+## Other rules
+- color-only (WARN): &quot;Press the green button&quot; fails for color-blind readers and screen reader users. Name the button: &quot;Select Save (the green button)&quot;.
+- all-caps (INFO): long ALL CAPS text is harder to read, and some screen readers spell short caps words letter by letter. Use normal case and bold for emphasis.
+- emoji-bullet (INFO): emoji are read aloud by name (&quot;white heavy check mark Hourly forecasts&quot;). Use normal list markers, and keep emoji rare and meaningful.
+
+## Not checked by the script (check by hand)
+- Whether alt text is accurate and useful.
+- Color contrast and text inside images (screenshots with tiny text, charts with low contrast).
+- Reading order of complex layouts, and HTML blocks embedded in Markdown.
+- Captions and transcripts for videos and audio.
+- Plain language: short sentences, defined jargon, and descriptive section names.
+FILE:templates/a11y-review.md
+# Accessibility Review: &lt;document or folder&gt;
+
+Date: &lt;YYYY-MM-DD&gt;
+Files checked: &lt;n&gt; (&lt;list or folder&gt;)
+Audience: &lt;who reads these docs&gt;
+Checker run: `python3 scripts/check_md_a11y.py &lt;paths&gt;` -&gt; HIGH &lt;n&gt;, WARN &lt;n&gt;, INFO &lt;n&gt;
+
+## Top fixes (most impact first)
+1. &lt;fix&gt; (&lt;file:line&gt;)
+2. &lt;fix&gt;
+3. &lt;fix&gt;
+
+## Alt text worksheet
+| File:line | Image | Purpose in the document | Current alt | New alt | Seen the image? |
+|---|---|---|---|---|---|
+| | | informative / functional / decorative / complex | | | yes / draft |
+
+## Headings
+- Current outline: &lt;H1 ... / H2 ... / H4 ...&gt;
+- Proposed outline: &lt;H1 ... / H2 ... / H3 ...&gt;
+
+## Links
+| File:line | Current text | New text | Destination |
+|---|---|---|---|
+| | | | |
+
+## Other findings
+| File:line | Rule | Change |
+|---|---|---|
+| | | |
+
+## After fixes
+Checker rerun: HIGH &lt;n&gt;, WARN &lt;n&gt;, INFO &lt;n&gt; (remaining INFO items explained below).
+- &lt;INFO item: reason it is acceptable&gt;
+
+## Manual checks still needed
+- &lt;for example: contrast of text inside screenshots, video captions&gt;
+FILE:examples/example-readme-review.md
+# Example: accessibility review of a project README
+
+## The request
+&quot;Our open source app&#x27;s README gets a lot of traffic. A user who relies on a screen reader said it is hard to follow. Can you check it and fix it? The hero image is the app on a phone with the 3-day forecast; app-main.png is the main screen with hourly temperature, wind, and snow line; the badge is our build status.&quot;
+
+## Checker run (before)
+```
+$ python3 scripts/check_md_a11y.py README.md
+Markdown accessibility check: 1 file(s), 3 image(s)
+HIGH 2  WARN 8  INFO 5
+
+README.md (3 images, 4 headings): 15 finding(s)
+     3  HIGH  img-missing-alt          Image hero.png has empty alt text; describe it, or confirm it is purely decorative.
+     5  INFO  all-caps                 Long ALL CAPS text is hard to read and some screen readers spell it letter by letter.
+     9  WARN  vague-link               Link text &quot;here&quot; does not say where it goes; describe the destination.
+     9  WARN  vague-link               Link text &quot;click here&quot; does not say where it goes; describe the destination.
+    11  WARN  img-generic-alt          Alt text &quot;screenshot&quot; for app-main.png is generic; say what the image shows or why it is there.
+    13  HIGH  img-no-alt               &lt;img src=&quot;docs/img/badge.svg&quot;&gt; has no alt attribute.
+    15  WARN  heading-skip             Heading level jumps from H2 to H4 (&quot;Configuration&quot;); use H3.
+    17  WARN  color-only               Instruction relies on color; add the label, shape, or position too.
+    19  INFO  fake-heading             Bold line &quot;Features&quot; looks like a heading; use a real # heading if it starts a section.
+    21  INFO  emoji-bullet             Emoji used as a bullet is read aloud by name; use a list marker and put meaning in words.
+    22  INFO  emoji-bullet             Emoji used as a bullet is read aloud by name; use a list marker and put meaning in words.
+    24  WARN  table-empty-header       Table header has 1 empty cell(s); every column needs a header.
+    28  WARN  same-text-different-url  Link text &quot;docs&quot; points to 2 different URLs; make each text unique.
+    28  INFO  bare-url                 Bare URL https://example.org/docs; screen readers spell it out. Use [descriptive text](https://example.org/docs).
+    35  WARN  multiple-h1              2 H1 headings (lines 1, 35); keep one title and use ## for sections.
+```
+The `![](not-an-image.png)` inside the bash code block and the inline code example on the last line were correctly ignored.
+
+## The review (filled template, shortened)
+
+# Accessibility Review: README.md
+
+Audience: hikers and contributors, many arriving from search.
+Checker run: HIGH 2, WARN 8, INFO 5.
+
+### Top fixes
+1. Give the hero image and the build badge real alt text (lines 3 and 13).
+2. Replace &quot;here&quot; and &quot;click here&quot; with link text that names the destination (line 9).
+3. Fix the outline: &quot;Configuration&quot; becomes H3, &quot;Features&quot; becomes a real H3, and the second H1 &quot;Contributing&quot; becomes H2.
+4. Name the Save button instead of only its color (line 17).
+5. Give the first table column a header (line 24).
+
+### Alt text worksheet
+| File:line | Image | Purpose | Current alt | New alt | Seen? |
+|---|---|---|---|---|---|
+| README.md:3 | hero.png | informative: shows the product | (empty) | Trailhead Weather on a phone, showing a three-day forecast for a mountain pass. | described by the user |
+| README.md:11 | app-main.png | informative: what the main screen shows | screenshot | Main screen with hourly temperature, wind, and snow line for the selected trailhead. | described by the user |
+| README.md:13 | badge.svg | informative: build status | (no alt) | Build: passing | described by the user |
+
+### Headings
+- Before: H1 Trailhead Weather / H2 Install / H4 Configuration / H1 Contributing (plus a bold &quot;Features&quot; line).
+- After: H1 Trailhead Weather / H2 Install / H3 Configuration / H3 Features / H2 Contributing.
+
+### Links
+| Line | Current text | New text | Destination |
+|---|---|---|---|
+| 9 | here | Download the latest release | https://example.org/releases |
+| 9 | click here | setup guide | docs/guides/setup.md |
+| 28 | docs (bare URL + &quot;docs&quot;) | API reference | https://example.org/docs |
+| 28 | docs | setup guide | docs/guides/setup.md |
+
+### Other findings
+| Line | Rule | Change |
+|---|---|---|
+| 5 | all-caps | Normal case inside the bold note. |
+| 17 | color-only | &quot;Select Save (the green button at the bottom of Settings)&quot;. |
+| 21-22 | emoji-bullet | Normal &quot;-&quot; list items. |
+| 24 | table-empty-header | First column header &quot;Feature&quot;. |
+
+### Corrected README (excerpt)
+```markdown
+# Trailhead Weather
+
+![Trailhead Weather on a phone, showing a three-day forecast for a mountain pass.](docs/img/hero.png)
+
+Trailhead Weather shows mountain forecasts for hikers. **Note: this project is still in beta and things will break often.**
+
+## Install
+
+[Download the latest release](https://example.org/releases), or follow the [setup guide](docs/guides/setup.md).
+
+&lt;img src=&quot;docs/img/badge.svg&quot; width=&quot;90&quot; alt=&quot;Build: passing&quot;&gt;
+
+### Configuration
+
+Select Save (the green button at the bottom of Settings) to save your settings.
+
+### Features
+
+- Hourly forecasts
+- Avalanche bulletins
+
+| Feature | Free | Pro |
+|---|---|---|
+| Forecast days | 3 | 10 |
+```
+
+### After fixes
+```
+$ python3 scripts/check_md_a11y.py README-fixed.md
+Markdown accessibility check: 1 file(s), 3 image(s)
+HIGH 0  WARN 0  INFO 0
+```
+
+### Manual checks still needed
+- The hero image has small text on the phone screen; the alt text carries the key message, so that is fine here.
+- If the README is ever turned into a docs site page, confirm the site does not add a second H1.
+
+## Why this is a good answer
+- Alt text describes each image&#x27;s purpose, using what the user said the images show instead of guessing.
+- Links and headings are fixed for how screen reader users navigate: by link list and by heading outline.
+- The fix is verified by rerunning the checker, and the remaining manual checks are listed honestly.
+FILE:scripts/check_md_a11y.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Check Markdown files for common accessibility problems.
+
+Usage:
+  python3 check_md_a11y.py README.md docs/            # files and folders (*.md, *.markdown)
+  python3 check_md_a11y.py docs/ --json
+  cat page.md | python3 check_md_a11y.py -
+  python3 check_md_a11y.py docs/ --fail-on warn      # exit 1 on WARN too (for CI)
+
+Checks (code blocks and inline code are ignored):
+  images   missing alt text, file-name or generic alt (&quot;image&quot;, &quot;screenshot&quot;),
+           redundant &quot;image of ...&quot; openers, very long alt, HTML &lt;img&gt; without alt,
+           empty alt (fine only for decorative images)
+  headings no H1 or more than one H1, skipped levels (H2 -&gt; H4), empty headings,
+           bold lines used as fake headings
+  links    empty link text, vague text (&quot;click here&quot;, &quot;read more&quot;, &quot;here&quot;),
+           bare URLs, the same text pointing to different URLs
+  tables   empty header cells
+  other    ALL CAPS sentences, emoji used as bullets, color-only instructions
+Severities: HIGH (blocks understanding), WARN (should fix), INFO (check by hand).
+Exit code: 0 no HIGH, 1 HIGH found (or WARN with --fail-on warn), 2 usage error.
+Standard library only.
+&quot;&quot;&quot;
+import argparse
+import json
+import os
+import re
+import sys
+
+GENERIC_ALT = {&quot;image&quot;, &quot;img&quot;, &quot;picture&quot;, &quot;pic&quot;, &quot;photo&quot;, &quot;screenshot&quot;, &quot;screen shot&quot;, &quot;graphic&quot;, &quot;icon&quot;,
+               &quot;logo&quot;, &quot;diagram&quot;, &quot;chart&quot;, &quot;figure&quot;, &quot;untitled&quot;, &quot;alt&quot;, &quot;alt text&quot;, &quot;banner&quot;, &quot;placeholder&quot;}
+VAGUE_LINK = {&quot;click here&quot;, &quot;here&quot;, &quot;click&quot;, &quot;read more&quot;, &quot;more&quot;, &quot;learn more&quot;, &quot;link&quot;, &quot;this&quot;, &quot;this link&quot;,
+              &quot;this page&quot;, &quot;go&quot;, &quot;details&quot;, &quot;more info&quot;, &quot;info&quot;, &quot;see here&quot;, &quot;check it out&quot;}
+REDUNDANT_START = re.compile(r&quot;^(an? )?(image|picture|photo|screenshot|graphic) (of|showing)\b&quot;, re.I)
+FILE_ALT = re.compile(r&quot;^[\w\-. ]+\.(png|jpe?g|gif|svg|webp|bmp|tiff?)$|^(img|image|dsc|screenshot)[_\- ]?\d+&quot;, re.I)
+IMG_MD = re.compile(r&quot;!\[([^\]]*)\]\(\s*&lt;?([^)\s&gt;]*)&gt;?(?:\s+\&quot;[^\&quot;]*\&quot;)?\s*\)&quot;)
+IMG_REF = re.compile(r&quot;!\[([^\]]*)\]\[[^\]]*\]&quot;)
+LINK_MD = re.compile(r&quot;(?&lt;!!)\[([^\]]*)\]\(\s*&lt;?([^)\s&gt;]*)&gt;?(?:\s+\&quot;[^\&quot;]*\&quot;)?\s*\)&quot;)
+HTML_IMG = re.compile(r&quot;&lt;img\b[^&gt;]*&gt;&quot;, re.I)
+BARE_URL = re.compile(r&quot;(?&lt;![(&lt;\&quot;&#x27;=\[])\bhttps?://[^\s)&gt;\]]+&quot;)
+COLOR_ONLY = re.compile(r&quot;\b(click|press|tap|select|choose|use)\b[^.]{0,30}\b(red|green|blue|yellow|orange|purple)\b(?! *\()&quot;, re.I)
+EMOJI_BULLET = re.compile(r&quot;^\s*[\u2705\u274c\u2b50\u27a1\u2714\u2716\U0001F300-\U0001FAFF]\ufe0f?\s+\S&quot;)
+
+
+def strip_inline_code(line):
+    return re.sub(r&quot;`+[^`]*`+&quot;, lambda m: &quot; &quot; * len(m.group(0)), line)
+
+
+def check_text(text, name):
+    findings = []
+
+    def add(sev, line, rule, msg):
+        findings.append({&quot;file&quot;: name, &quot;line&quot;: line, &quot;severity&quot;: sev, &quot;rule&quot;: rule, &quot;message&quot;: msg})
+
+    lines = text.replace(&quot;\r\n&quot;, &quot;\n&quot;).split(&quot;\n&quot;)
+    in_fence, fence = False, &quot;&quot;
+    headings, link_targets = [], {}
+    images = 0
+    prev_blank = True
+    for no, raw in enumerate(lines, 1):
+        stripped = raw.strip()
+        m = re.match(r&quot;^\s{0,3}(`{3,}|~{3,})&quot;, raw)
+        if m:
+            if not in_fence:
+                in_fence, fence = True, m.group(1)[0] * 3
+            elif stripped.startswith(fence):
+                in_fence = False
+            continue
+        if in_fence or raw.startswith(&quot;    &quot;) and prev_blank and not stripped.startswith((&quot;-&quot;, &quot;*&quot;, &quot;+&quot;)):
+            prev_blank = not stripped if not in_fence else prev_blank
+            continue
+        line = strip_inline_code(raw)
+        hm = re.match(r&quot;^\s{0,3}(#{1,6})(\s+|$)(.*?)\s*#*\s*$&quot;, line)
+        if hm:
+            level, title = len(hm.group(1)), hm.group(3).strip()
+            headings.append((no, level, title))
+            if not title:
+                add(&quot;HIGH&quot;, no, &quot;empty-heading&quot;, f&quot;Empty H{level} heading; screen reader users navigate by headings.&quot;)
+        elif re.fullmatch(r&quot;\s*(\*\*|__)[^*_]{2,80}(\*\*|__):?\s*&quot;, line) and prev_blank:
+            add(&quot;INFO&quot;, no, &quot;fake-heading&quot;, f&quot;Bold line \&quot;{stripped.strip(&#x27;*_:&#x27;)}\&quot; looks like a heading; use a real # heading if it starts a section.&quot;)
+        images += len(IMG_MD.findall(line)) + len(IMG_REF.findall(line)) + len(HTML_IMG.findall(line))
+        for alt, src in IMG_MD.findall(line):
+            check_alt(add, no, alt, src)
+        for alt in IMG_REF.findall(line):
+            check_alt(add, no, alt, &quot;(reference)&quot;)
+        for tag in HTML_IMG.findall(line):
+            am = re.search(r&quot;\balt\s*=\s*(\&quot;([^\&quot;]*)\&quot;|&#x27;([^&#x27;]*)&#x27;|(\S+))&quot;, tag, re.I)
+            src = re.search(r&quot;\bsrc\s*=\s*[\&quot;&#x27;]?([^\&quot;&#x27;\s&gt;]+)&quot;, tag, re.I)
+            src = src.group(1) if src else &quot;?&quot;
+            if not am:
+                add(&quot;HIGH&quot;, no, &quot;img-no-alt&quot;, f&quot;&lt;img src=\&quot;{src}\&quot;&gt; has no alt attribute.&quot;)
+            else:
+                check_alt(add, no, am.group(2) if am.group(2) is not None else (am.group(3) if am.group(3) is not None else am.group(4)), src, html=True)
+        no_images = IMG_MD.sub(&quot; &quot;, line)
+        for text_, url in LINK_MD.findall(no_images):
+            label = re.sub(r&quot;[*_`]&quot;, &quot;&quot;, text_).strip()
+            if not label:
+                add(&quot;HIGH&quot;, no, &quot;empty-link&quot;, f&quot;Link to {url or &#x27;(no url)&#x27;} has no text; screen readers will read the URL or nothing.&quot;)
+            elif label.lower().rstrip(&quot;.!:&quot;) in VAGUE_LINK:
+                add(&quot;WARN&quot;, no, &quot;vague-link&quot;, f&quot;Link text \&quot;{label}\&quot; does not say where it goes; describe the destination.&quot;)
+            elif re.fullmatch(r&quot;https?://\S+&quot;, label):
+                add(&quot;INFO&quot;, no, &quot;url-as-link-text&quot;, f&quot;Link text is a raw URL ({label[:60]}); use a short description.&quot;)
+            if label:
+                link_targets.setdefault(label.lower(), {}).setdefault(url, no)
+        for url in BARE_URL.findall(LINK_MD.sub(&quot; &quot;, no_images)):
+            add(&quot;INFO&quot;, no, &quot;bare-url&quot;, f&quot;Bare URL {url[:60]}; screen readers spell it out. Use [descriptive text]({url[:40]}).&quot;)
+        if &quot;|&quot; in line and re.match(r&quot;^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$&quot;, line) and no &gt; 1:
+            header = lines[no - 2].strip().strip(&quot;|&quot;)
+            cells = [c.strip() for c in header.split(&quot;|&quot;)]
+            if any(not c for c in cells):
+                add(&quot;WARN&quot;, no - 1, &quot;table-empty-header&quot;, f&quot;Table header has {sum(1 for c in cells if not c)} empty cell(s); every column needs a header.&quot;)
+        run = longest = 0
+        for w in re.findall(r&quot;[A-Za-z]+&quot;, line):
+            run = run + 1 if w.isupper() and (len(w) &gt; 1 or w in &quot;AI&quot;) else 0
+            longest = max(longest, run)
+        if longest &gt;= 5 and not hm:
+            add(&quot;INFO&quot;, no, &quot;all-caps&quot;, &quot;Long ALL CAPS text is hard to read and some screen readers spell it letter by letter.&quot;)
+        if EMOJI_BULLET.match(line):
+            add(&quot;INFO&quot;, no, &quot;emoji-bullet&quot;, &quot;Emoji used as a bullet is read aloud by name; use a list marker and put meaning in words.&quot;)
+        cm = COLOR_ONLY.search(line)
+        if cm:
+            between = line[cm.end(1):cm.start(2)]
+            inside_parens = line[:cm.start(2)].count(&quot;(&quot;) &gt; line[:cm.start(2)].count(&quot;)&quot;)
+            names_label = re.match(r&quot;\s+(\*\*|\&quot;|&#x27;)?[A-Z]&quot;, between)  # &quot;Select Save ...&quot; or &quot;Press **Save**&quot;
+            if inside_parens or names_label:
+                cm = None
+        if cm:
+            add(&quot;WARN&quot;, no, &quot;color-only&quot;, &quot;Instruction relies on color; add the label, shape, or position too.&quot;)
+        prev_blank = not stripped
+
+    h1 = [h for h in headings if h[1] == 1]
+    if headings and not h1:
+        add(&quot;WARN&quot;, headings[0][0], &quot;no-h1&quot;, &quot;Document has no H1; start with one # title.&quot;)
+    if len(h1) &gt; 1:
+        add(&quot;WARN&quot;, h1[1][0], &quot;multiple-h1&quot;, f&quot;{len(h1)} H1 headings (lines {&#x27;, &#x27;.join(str(h[0]) for h in h1)}); keep one title and use ## for sections.&quot;)
+    for (pno, plev, _), (no, lev, title) in zip(headings, headings[1:]):
+        if lev &gt; plev + 1:
+            add(&quot;WARN&quot;, no, &quot;heading-skip&quot;, f&quot;Heading level jumps from H{plev} to H{lev} (\&quot;{title[:50]}\&quot;); use H{plev + 1}.&quot;)
+    if not headings and len([l for l in lines if l.strip()]) &gt; 15:
+        add(&quot;INFO&quot;, 1, &quot;no-headings&quot;, &quot;Long document with no headings; add headings so readers can navigate.&quot;)
+    for label, targets in link_targets.items():
+        if len(targets) &gt; 1 and label not in VAGUE_LINK:
+            first = min(targets.values())
+            add(&quot;WARN&quot;, first, &quot;same-text-different-url&quot;, f&quot;Link text \&quot;{label}\&quot; points to {len(targets)} different URLs; make each text unique.&quot;)
+    order = {&quot;HIGH&quot;: 0, &quot;WARN&quot;: 1, &quot;INFO&quot;: 2}
+    findings.sort(key=lambda f: (f[&quot;line&quot;], order[f[&quot;severity&quot;]]))
+    return findings, len(headings), images
+
+
+def check_alt(add, no, alt, src, html=False):
+    a = alt.strip()
+    base = os.path.basename(src) if src else &quot;&quot;
+    if a == &quot;&quot; and html:
+        add(&quot;INFO&quot;, no, &quot;img-decorative&quot;, f&quot;&lt;img src=\&quot;{base}\&quot;&gt; has alt=\&quot;\&quot; (marked decorative); confirm it carries no information.&quot;)
+        return
+    if a == &quot;&quot; and src:
+        add(&quot;HIGH&quot;, no, &quot;img-missing-alt&quot;, f&quot;Image {base or src} has empty alt text; describe it, or confirm it is purely decorative.&quot;)
+        return
+    low = a.lower().rstrip(&quot;.&quot;)
+    if low in GENERIC_ALT:
+        add(&quot;WARN&quot;, no, &quot;img-generic-alt&quot;, f&quot;Alt text \&quot;{a}\&quot; for {base} is generic; say what the image shows or why it is there.&quot;)
+    elif FILE_ALT.search(a) or (base and low == os.path.splitext(base)[0].lower()):
+        add(&quot;WARN&quot;, no, &quot;img-filename-alt&quot;, f&quot;Alt text \&quot;{a}\&quot; looks like a file name; describe the image instead.&quot;)
+    elif REDUNDANT_START.match(a):
+        add(&quot;INFO&quot;, no, &quot;img-redundant-alt&quot;, f&quot;Alt text starts with \&quot;{&#x27; &#x27;.join(a.split()[:3])}\&quot;; screen readers already say &#x27;image&#x27;, so start with the content.&quot;)
+    if len(a) &gt; 150:
+        add(&quot;WARN&quot;, no, &quot;img-long-alt&quot;, f&quot;Alt text is {len(a)} characters; keep it under about 150 and move details to the surrounding text or a caption.&quot;)
+
+
+def collect(paths):
+    files = []
+    for p in paths:
+        if p == &quot;-&quot;:
+            files.append(&quot;-&quot;)
+        elif os.path.isdir(p):
+            for root, dirs, names in os.walk(p):
+                dirs[:] = sorted(d for d in dirs if not d.startswith(&quot;.&quot;) and d != &quot;node_modules&quot;)
+                files += [os.path.join(root, n) for n in sorted(names) if n.lower().endswith((&quot;.md&quot;, &quot;.markdown&quot;))]
+        elif os.path.isfile(p):
+            files.append(p)
+        else:
+            raise FileNotFoundError(p)
+    return files
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Markdown accessibility checker&quot;)
+    ap.add_argument(&quot;paths&quot;, nargs=&quot;+&quot;, help=&quot;Markdown files, folders, or - for stdin&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--fail-on&quot;, choices=[&quot;high&quot;, &quot;warn&quot;], default=&quot;high&quot;)
+    args = ap.parse_args()
+    try:
+        files = collect(args.paths)
+    except FileNotFoundError as e:
+        print(f&quot;error: path not found: {e}&quot;, file=sys.stderr)
+        return 2
+    if not files:
+        print(&quot;error: no Markdown files (*.md, *.markdown) found&quot;, file=sys.stderr)
+        return 2
+    all_findings, stats = [], []
+    for f in files:
+        text = sys.stdin.read() if f == &quot;-&quot; else open(f, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;).read()
+        name = &quot;&lt;stdin&gt;&quot; if f == &quot;-&quot; else f
+        found, nhead, images = check_text(text, name)
+        stats.append({&quot;file&quot;: name, &quot;images&quot;: images, &quot;headings&quot;: nhead, &quot;findings&quot;: len(found)})
+        all_findings += found
+    counts = {s: sum(1 for x in all_findings if x[&quot;severity&quot;] == s) for s in (&quot;HIGH&quot;, &quot;WARN&quot;, &quot;INFO&quot;)}
+    if args.json:
+        print(json.dumps({&quot;files&quot;: stats, &quot;counts&quot;: counts, &quot;findings&quot;: all_findings}, indent=2))
+    else:
+        print(f&quot;Markdown accessibility check: {len(files)} file(s), {sum(s[&#x27;images&#x27;] for s in stats)} image(s)&quot;)
+        print(f&quot;HIGH {counts[&#x27;HIGH&#x27;]}  WARN {counts[&#x27;WARN&#x27;]}  INFO {counts[&#x27;INFO&#x27;]}&quot;)
+        for s in stats:
+            items = [x for x in all_findings if x[&quot;file&quot;] == s[&quot;file&quot;]]
+            print(f&quot;\n{s[&#x27;file&#x27;]} ({s[&#x27;images&#x27;]} images, {s[&#x27;headings&#x27;]} headings): {len(items)} finding(s)&quot;)
+            for x in items:
+                print(f&quot;  {x[&#x27;line&#x27;]:&gt;4}  {x[&#x27;severity&#x27;]:&lt;4}  {x[&#x27;rule&#x27;]:&lt;24} {x[&#x27;message&#x27;]}&quot;)
+        print(&quot;\nAutomated checks cover only part of accessibility; review alt text meaning, reading order, and contrast by hand.&quot;)
+    bad = counts[&quot;HIGH&quot;] + (counts[&quot;WARN&quot;] if args.fail_on == &quot;warn&quot; else 0)
+    return 1 if bad else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/markdown-accessibility-and-alt-text-checker',TI="Markdown Accessibility and Alt Text Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

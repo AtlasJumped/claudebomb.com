@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accessibility Color Contrast Auditor | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: accessibility-color-contrast-auditor description: Audits foreground/background color pairs for WCAG 2.x contrast (AA and AAA for normal and ">
+<meta property="og:title" content="Accessibility Color Contrast Auditor | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: accessibility-color-contrast-auditor description: Audits foreground/background color pairs for WCAG 2.x contrast (AA and AAA for normal and ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/accessibility-color-contrast-auditor/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/accessibility-color-contrast-auditor/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Accessibility Color Contrast Auditor</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: accessibility-color-contrast-auditor
+description: Audits foreground/background color pairs for WCAG 2.x contrast (AA and AAA for normal and large text), reports ratios and pass/fail, and notes color-blindness risks. Use when checking UI palettes, design tokens, or asking &quot;is this gray-on-white readable?&quot;. Includes a stdlib Python contrast checker with --self-test.
+---
+
+# Accessibility Color Contrast Auditor
+
+You help designers and frontend engineers check whether text and UI colors meet WCAG 2.x contrast ratios. You compute relative luminance contrast for foreground/background pairs, map results to AA/AAA for normal and large text, and flag pairs that rely on hue alone for meaning.
+
+## Files in this skill
+
+- `scripts/contrast_check.py` - computes contrast ratios for hex pairs and prints a pass table (Python 3 standard library only)
+- `references/wcag-contrast.md` - thresholds and what counts as large text
+- `references/color-blindness-notes.md` - why hue-only status colors fail real users
+- `templates/audit-table.md` - markdown table for design reviews
+- `examples/palette.json` - sample token pairs
+
+## Workflow
+
+### 1. Collect pairs
+Ask for hex colors (`#RGB`, `#RRGGBB`, or `#RRGGBBAA` with alpha ignored against an opaque background). Note which is text/icon (fg) and which is surface (bg).
+
+### 2. Run the checker
+```
+python3 scripts/contrast_check.py --fg &#x27;#1a1a1a&#x27; --bg &#x27;#ffffff&#x27;
+python3 scripts/contrast_check.py --palette examples/palette.json
+python3 scripts/contrast_check.py --self-test
+```
+
+### 3. Interpret
+- Normal text AA needs **4.5:1**; AAA needs **7:1**.
+- Large text (18pt+ or 14pt+ bold) AA needs **3:1**; AAA needs **4.5:1**.
+- Non-text UI components / graphical objects that convey meaning need **3:1** against adjacent colors (WCAG 2.1 SC 1.4.11).
+
+### 4. Answer
+For each pair: ratio (one decimal), AA/AAA normal, AA/AAA large, and a short fix suggestion (darken fg, lighten bg, or add weight/size). Mention color-blindness if status depends on red vs green alone.
+
+## Rules
+
+- Use the WCAG relative luminance formula; do not approximate with &quot;eyeballing&quot;.
+- Ignore marketing claims about &quot;accessible mode&quot; unless ratios are shown.
+- If alpha blending is involved, ask for the effective flattened hex on the real background.
+FILE:references/wcag-contrast.md
+# WCAG contrast thresholds (WCAG 2.1 / 2.2)
+
+| Content | AA | AAA |
+| --- | --- | --- |
+| Normal text | 4.5:1 | 7:1 |
+| Large text | 3:1 | 4.5:1 |
+| UI components &amp; graphical objects (1.4.11) | 3:1 | — |
+
+## Large text
+
+Large text is at least **18 CSS pt** (typically 24px) regular, or **14 CSS pt** (typically 18.66px) bold.
+
+## Relative luminance
+
+For sRGB channel C_srgb in 0..1:
+
+- if C_srgb &lt;= 0.04045: C = C_srgb / 12.92
+- else: C = ((C_srgb + 0.055) / 1.055) ^ 2.4
+
+L = 0.2126 R + 0.7152 G + 0.0722 B
+
+Contrast ratio = (L_lighter + 0.05) / (L_darker + 0.05)
+
+## Notes
+
+- Placeholder / disabled text is exempt from text contrast SCs but still benefits from clarity.
+- Focus indicators need 3:1 against adjacent colors (2.4.11 / 2.4.13 depending on level).
+FILE:references/color-blindness-notes.md
+# Color blindness notes for palettes
+
+Contrast ratio alone is not enough when meaning is carried only by hue.
+
+## Common pitfalls
+
+- **Red vs green status** without icon or label: deuteranomaly/protanomaly users may not tell them apart.
+- **Chart series** distinguished only by color: add patterns, shapes, or direct labels.
+- **Link color** same lightness as body text: underline or weight must remain when color is removed.
+- **Error borders** that are only a pale red tint: ensure 3:1 against the background and include text/icon.
+
+## Safer patterns
+
+1. Pair color with text (&quot;Error&quot;, &quot;Success&quot;) or icon.
+2. Use lightness differences, not only hue shifts.
+3. Test a grayscale screenshot of the UI.
+4. Avoid conveying required-field state with red alone.
+
+## Deuteranopia-friendly tip
+
+Prefer blue/orange or blue/brown pairs over red/green for categorical data when you must use two hues.
+FILE:templates/audit-table.md
+# Contrast audit
+
+- **Product / screen**:
+- **Date**:
+- **Standard**: WCAG 2.2 AA (default) / AAA where noted
+
+| Token / use | FG | BG | Ratio | AA normal | AAA normal | AA large | Notes / fix |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| body text | `#1a1a1a` | `#ffffff` | 16.1 | pass | pass | pass | |
+| muted caption | `#9ca3af` | `#ffffff` | 2.5 | fail | fail | fail | Darken to ~`#6b7280` |
+
+## Decisions
+
+- [ ] Update tokens
+- [ ] Accept large-text-only usage
+- [ ] Add non-color cue
+FILE:examples/palette.json
+{
+  &quot;pairs&quot;: [
+    {&quot;name&quot;: &quot;body_on_white&quot;, &quot;fg&quot;: &quot;#1a1a1a&quot;, &quot;bg&quot;: &quot;#ffffff&quot;},
+    {&quot;name&quot;: &quot;muted_on_white&quot;, &quot;fg&quot;: &quot;#9ca3af&quot;, &quot;bg&quot;: &quot;#ffffff&quot;},
+    {&quot;name&quot;: &quot;link_on_white&quot;, &quot;fg&quot;: &quot;#2563eb&quot;, &quot;bg&quot;: &quot;#ffffff&quot;},
+    {&quot;name&quot;: &quot;button_label&quot;, &quot;fg&quot;: &quot;#ffffff&quot;, &quot;bg&quot;: &quot;#2563eb&quot;},
+    {&quot;name&quot;: &quot;error_on_white&quot;, &quot;fg&quot;: &quot;#dc2626&quot;, &quot;bg&quot;: &quot;#ffffff&quot;},
+    {&quot;name&quot;: &quot;white_on_light_gray&quot;, &quot;fg&quot;: &quot;#ffffff&quot;, &quot;bg&quot;: &quot;#e5e7eb&quot;}
+  ]
+}
+FILE:scripts/contrast_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;WCAG contrast ratio checker for hex fg/bg pairs.
+
+Usage:
+    python3 contrast_check.py --fg &#x27;#1a1a1a&#x27; --bg &#x27;#ffffff&#x27;
+    python3 contrast_check.py --palette palette.json
+    python3 contrast_check.py --self-test
+
+Python 3 standard library only.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+from typing import Dict, List, Tuple
+
+
+def parse_hex(color: str) -&gt; Tuple[float, float, float]:
+    c = color.strip().lstrip(&quot;#&quot;)
+    if len(c) == 3:
+        c = &quot;&quot;.join(ch * 2 for ch in c)
+    if len(c) == 8:
+        c = c[:6]  # ignore alpha
+    if len(c) != 6:
+        raise ValueError(f&quot;Bad hex color: {color!r}&quot;)
+    r = int(c[0:2], 16) / 255.0
+    g = int(c[2:4], 16) / 255.0
+    b = int(c[4:6], 16) / 255.0
+    return r, g, b
+
+
+def channel(c: float) -&gt; float:
+    if c &lt;= 0.04045:
+        return c / 12.92
+    return ((c + 0.055) / 1.055) ** 2.4
+
+
+def relative_luminance(rgb: Tuple[float, float, float]) -&gt; float:
+    r, g, b = rgb
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+
+
+def contrast_ratio(fg: str, bg: str) -&gt; float:
+    l1 = relative_luminance(parse_hex(fg))
+    l2 = relative_luminance(parse_hex(bg))
+    lighter, darker = max(l1, l2), min(l1, l2)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def evaluate(ratio: float) -&gt; Dict[str, bool]:
+    return {
+        &quot;aa_normal&quot;: ratio &gt;= 4.5,
+        &quot;aaa_normal&quot;: ratio &gt;= 7.0,
+        &quot;aa_large&quot;: ratio &gt;= 3.0,
+        &quot;aaa_large&quot;: ratio &gt;= 4.5,
+        &quot;ui_3_1&quot;: ratio &gt;= 3.0,
+    }
+
+
+def format_row(name: str, fg: str, bg: str) -&gt; str:
+    ratio = contrast_ratio(fg, bg)
+    ev = evaluate(ratio)
+    flags = &quot; &quot;.join(
+        f&quot;{k}={&#x27;PASS&#x27; if v else &#x27;FAIL&#x27;}&quot;
+        for k, v in ev.items()
+        if k in (&quot;aa_normal&quot;, &quot;aaa_normal&quot;, &quot;aa_large&quot;)
+    )
+    return f&quot;{name}: {fg} on {bg} -&gt; {ratio:.2f}:1  {flags}&quot;
+
+
+def self_test() -&gt; int:
+    cases = [
+        (&quot;black_white&quot;, contrast_ratio(&quot;#000000&quot;, &quot;#ffffff&quot;), 21.0),
+        (&quot;white_black&quot;, contrast_ratio(&quot;#ffffff&quot;, &quot;#000000&quot;), 21.0),
+        (&quot;body&quot;, contrast_ratio(&quot;#1a1a1a&quot;, &quot;#ffffff&quot;) &gt; 12.0, True),
+        (&quot;muted_fail_aa&quot;, evaluate(contrast_ratio(&quot;#9ca3af&quot;, &quot;#ffffff&quot;))[&quot;aa_normal&quot;], False),
+        (&quot;link_aa&quot;, evaluate(contrast_ratio(&quot;#2563eb&quot;, &quot;#ffffff&quot;))[&quot;aa_normal&quot;], True),
+        (&quot;same_color&quot;, abs(contrast_ratio(&quot;#ffffff&quot;, &quot;#ffffff&quot;) - 1.0) &lt; 1e-9, True),
+        (&quot;short_hex&quot;, abs(contrast_ratio(&quot;#000&quot;, &quot;#fff&quot;) - 21.0) &lt; 1e-9, True),
+        (&quot;parse3&quot;, parse_hex(&quot;#abc&quot;) == parse_hex(&quot;#aabbcc&quot;), True),
+        (&quot;ui_pass&quot;, evaluate(3.0)[&quot;ui_3_1&quot;], True),
+        (&quot;aaa_border&quot;, evaluate(7.0)[&quot;aaa_normal&quot;], True),
+        (&quot;just_under_aa&quot;, evaluate(4.49)[&quot;aa_normal&quot;], False),
+    ]
+    failed = 0
+    for name, got, expected in cases:
+        if isinstance(expected, float):
+            ok = abs(float(got) - expected) &lt; 0.05
+        else:
+            ok = got == expected
+        failed += not ok
+        print(f&quot;{&#x27;PASS&#x27; if ok else &#x27;FAIL&#x27;}  {name}: got={got!r} expected={expected!r}&quot;)
+    print(f&quot;\n{len(cases) - failed}/{len(cases)} passed&quot;)
+    return 1 if failed else 0
+
+
+def main(argv=None) -&gt; int:
+    p = argparse.ArgumentParser(description=&quot;Check WCAG contrast for fg/bg hex pairs.&quot;)
+    p.add_argument(&quot;--fg&quot;)
+    p.add_argument(&quot;--bg&quot;)
+    p.add_argument(&quot;--palette&quot;, help=&quot;JSON file with {pairs:[{name,fg,bg}]}&quot;)
+    p.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    p.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = p.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    rows = []
+    if a.palette:
+        data = json.load(open(a.palette, encoding=&quot;utf-8&quot;))
+        for pair in data.get(&quot;pairs&quot;, []):
+            rows.append(pair)
+    elif a.fg and a.bg:
+        rows.append({&quot;name&quot;: &quot;pair&quot;, &quot;fg&quot;: a.fg, &quot;bg&quot;: a.bg})
+    else:
+        p.error(&quot;provide --fg and --bg, or --palette, or --self-test&quot;)
+    out = []
+    any_fail = False
+    for row in rows:
+        ratio = contrast_ratio(row[&quot;fg&quot;], row[&quot;bg&quot;])
+        ev = evaluate(ratio)
+        if not ev[&quot;aa_normal&quot;]:
+            any_fail = True
+        item = {&quot;name&quot;: row.get(&quot;name&quot;, &quot;pair&quot;), &quot;fg&quot;: row[&quot;fg&quot;], &quot;bg&quot;: row[&quot;bg&quot;], &quot;ratio&quot;: round(ratio, 2), **ev}
+        out.append(item)
+        if not a.json:
+            print(format_row(item[&quot;name&quot;], item[&quot;fg&quot;], item[&quot;bg&quot;]))
+    if a.json:
+        print(json.dumps(out, indent=2))
+    return 1 if any_fail else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/accessibility-color-contrast-auditor',TI="Accessibility Color Contrast Auditor";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

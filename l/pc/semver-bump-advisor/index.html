@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SemVer Bump Advisor | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: semver-bump-advisor description: Reads Conventional Commits or a changelog snippet, classifies fix/feat/breaking changes, and recommends the">
+<meta property="og:title" content="SemVer Bump Advisor | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: semver-bump-advisor description: Reads Conventional Commits or a changelog snippet, classifies fix/feat/breaking changes, and recommends the">
+<meta property="og:url" content="https://claudebomb.com/l/pc/semver-bump-advisor/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/semver-bump-advisor/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">SemVer Bump Advisor</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: semver-bump-advisor
+description: Reads Conventional Commits or a changelog snippet, classifies fix/feat/breaking changes, and recommends the next SemVer bump (patch, minor, or major) with a clear rationale and a preview of the resulting version. Use when a user asks &quot;what version should I ship?&quot;, &quot;is this a breaking change?&quot;, or &quot;bump SemVer from these commits&quot;. Includes a tested stdlib Python advisor.
+---
+
+# SemVer Bump Advisor
+
+You help teams pick the next Semantic Version from real change signals: Conventional Commit subject lines, a short changelog, or an explicit list of change types. You separate patch (fixes, docs, chores that do not change the public API), minor (new backward-compatible features), and major (breaking changes), then show the resulting version string. You do not invent release notes the user did not imply.
+
+## Files in this skill
+
+- `scripts/semver_bump.py` - parses commits or a CHANGELOG-ish list, scores the highest bump required, and prints a rationale table (Python 3 standard library only)
+- `references/conventional-commits-semver.md` - how commit types map to SemVer, including `BREAKING CHANGE` and `!`
+- `references/edge-cases.md` - pre-1.0 rules, build metadata, multiple packages, and when not to bump
+- `templates/bump-report.md` - the report shape to return
+- `examples/example-library-release.md` - a worked example from a small library release
+
+## Workflow
+
+### 1. Collect the facts
+Ask, or assume and say so:
+- The current version (`MAJOR.MINOR.PATCH`, optional pre-release).
+- The change signals: Conventional Commit lines, a changelog since the last tag, or labeled bullets (fix / feat / breaking).
+- Whether the project is still `0.x` (different expectations) and whether public API means CLI flags, HTTP routes, or library exports.
+
+### 2. Run the advisor
+```bash
+python3 scripts/semver_bump.py 1.4.2 --commits commits.txt
+python3 scripts/semver_bump.py 0.9.1 --commits - --pre-1-0-major-as-minor
+python3 scripts/semver_bump.py 2.0.0-rc.1 --json &lt; changes.txt
+```
+A commits file has one subject per line (optional `type(scope):` prefix). Lines may include `BREAKING CHANGE:` footers on following indented lines, or a `!` after the type. Always show the tool output, then explain it in plain words.
+
+### 3. Advise
+1. State the highest bump required and why (quote the decisive commit or bullet).
+2. Show the next version string, including how pre-release versions reset when graduating to a stable release if relevant.
+3. Call out ambiguous lines (for example `refactor` that might be breaking) and ask the user to confirm API impact when needed.
+4. Deliver with `templates/bump-report.md`, following `examples/example-library-release.md`.
+
+## Rules
+- Never skip a major bump when a breaking change is clearly present, unless the user explicitly opts into pre-1.0 soft-major handling.
+- Do not invent commits; if the list is empty, say so and refuse to guess.
+- Keep build metadata (`+...`) out of bump math; strip or preserve it only as the user requests.
+- Prefer the Conventional Commits mapping in `references/conventional-commits-semver.md` over ad-hoc labels.
+FILE:references/conventional-commits-semver.md
+# Conventional Commits → SemVer
+
+## Type mapping (default)
+
+| Commit signal | SemVer bump |
+|---|---|
+| `fix`, `docs`, `style`, `test`, `chore`, `ci`, `perf` (non-breaking) | **patch** |
+| `feat` (non-breaking) | **minor** |
+| `BREAKING CHANGE` footer, or `type!:` / `type(scope)!:` | **major** |
+| `refactor`, `build`, `revert` without breaking marker | **patch** (confirm if public API moved) |
+
+When several commits appear, take the **maximum** bump: major &gt; minor &gt; patch.
+
+## Breaking change markers
+1. A footer line starting with `BREAKING CHANGE:` or `BREAKING-CHANGE:`.
+2. `!` immediately before the colon: `feat!: ...` or `feat(api)!: ...`.
+
+## Scopes
+Scopes do not change the bump by themselves. `feat(cli): add --json` is still a minor. `fix(docs): typo` is still a patch.
+
+## Pre-release versions
+Given `1.2.0-rc.3`:
+- A patch-level change while still in RC usually becomes `1.2.0-rc.4` if you stay on the RC channel.
+- Graduating to stable after RC is a product decision: often `1.2.0` (not `1.2.1`) when RC already represents that minor.
+
+This skill&#x27;s script treats the numeric core `MAJOR.MINOR.PATCH` for bump math and prints pre-release handling notes separately.
+FILE:references/edge-cases.md
+# Edge cases
+
+## Pre-1.0 (`0.x.y`)
+SemVer allows breaking changes in `0.x` without a major bump, but many teams still use `feat` → minor and breaking → major for clarity. Offer both:
+- Strict SemVer comfort: breaking in `0.x` may bump minor.
+- Team policy: treat breaking as major even before 1.0 (`--pre-1-0-major-as-minor` off).
+
+## Multiple packages
+Monorepos may bump packages independently. Run the advisor once per package with that package&#x27;s commits only.
+
+## Ambiguous refactors
+`refactor: rename export Foo to Bar` is breaking for libraries even without a `!`. Escalate to the user: if public API renamed → major; if internal only → patch.
+
+## Empty or non-conventional lines
+Plain sentences without a type still count if they clearly say &quot;breaking&quot; or &quot;add feature&quot;; otherwise mark them **unknown** and ask.
+
+## Build metadata
+`1.2.3+build.9` — bump the core version, then decide whether to drop or refresh `+build...`. Do not let metadata affect major/minor/patch math.
+FILE:templates/bump-report.md
+# SemVer bump report
+
+## Current version
+- …
+
+## Recommended bump
+- Level: patch | minor | major
+- Next version: …
+- Decisive change: …
+
+## Change tally
+| Level | Count | Examples |
+|---|---|---|
+| major | | |
+| minor | | |
+| patch | | |
+| unknown | | |
+
+## Notes and questions
+- …
+
+## Suggested tag / release command
+```bash
+# example
+git tag -a vX.Y.Z -m &quot;…&quot;
+```
+FILE:examples/example-library-release.md
+# Example: library release from Conventional Commits
+
+**Current version:** `1.4.2`
+
+**Commits since v1.4.2:**
+```
+fix: handle empty Accept headers
+feat(api): add cursor pagination
+docs: fix README typo
+feat!: remove deprecated /v1/list route
+```
+
+**Advisor result:** major → `2.0.0` because of `feat!: remove deprecated /v1/list route`.
+
+**Rationale:** The `!` marks a breaking API removal. The new pagination feature alone would have been a minor (`1.5.0`), and the fix/docs alone a patch (`1.4.3`), but major wins.
+
+**Report excerpt:** Recommend releasing `2.0.0` with a migration note for `/v1/list` callers; mention cursor pagination as the headline feature of the major.
+FILE:scripts/semver_bump.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Recommend a SemVer bump from Conventional Commit subjects or change lines.
+
+Usage:
+  python3 semver_bump.py 1.4.2 --commits commits.txt
+  python3 semver_bump.py 0.9.1 --commits - --pre-1-0-major-as-minor
+  python3 semver_bump.py 2.0.0 --json &lt; changes.txt
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+
+TYPE_PATCH = {&quot;fix&quot;, &quot;docs&quot;, &quot;style&quot;, &quot;test&quot;, &quot;chore&quot;, &quot;ci&quot;, &quot;perf&quot;, &quot;build&quot;, &quot;refactor&quot;, &quot;revert&quot;}
+TYPE_MINOR = {&quot;feat&quot;}
+COMMIT_RE = re.compile(
+    r&quot;^(?P&lt;type&gt;[a-zA-Z]+)(?P&lt;scope&gt;\([^)]*\))?(?P&lt;breaking&gt;!)?:\s*(?P&lt;sub&gt;.+)$&quot;
+)
+VER_RE = re.compile(
+    r&quot;^(?P&lt;major&gt;0|[1-9]\d*)\.(?P&lt;minor&gt;0|[1-9]\d*)\.(?P&lt;patch&gt;0|[1-9]\d*)&quot;
+    r&quot;(?:-(?P&lt;pre&gt;[0-9A-Za-z.-]+))?(?:\+(?P&lt;build&gt;[0-9A-Za-z.-]+))?$&quot;
+)
+LEVELS = {&quot;none&quot;: 0, &quot;patch&quot;: 1, &quot;minor&quot;: 2, &quot;major&quot;: 3}
+
+
+def parse_version(v: str) -&gt; dict:
+    m = VER_RE.match(v.strip())
+    if not m:
+        raise SystemExit(f&quot;error: not a SemVer core version: {v!r}&quot;)
+    return {k: m.group(k) for k in (&quot;major&quot;, &quot;minor&quot;, &quot;patch&quot;, &quot;pre&quot;, &quot;build&quot;)}
+
+
+def classify_line(line: str) -&gt; tuple[str, str]:
+    raw = line.strip()
+    if not raw or raw.startswith(&quot;#&quot;):
+        return &quot;skip&quot;, raw
+    lower = raw.lower()
+    if lower.startswith(&quot;breaking change:&quot;) or lower.startswith(&quot;breaking-change:&quot;):
+        return &quot;major&quot;, raw
+    m = COMMIT_RE.match(raw)
+    if m:
+        if m.group(&quot;breaking&quot;):
+            return &quot;major&quot;, raw
+        t = m.group(&quot;type&quot;).lower()
+        if t in TYPE_MINOR:
+            return &quot;minor&quot;, raw
+        if t in TYPE_PATCH:
+            return &quot;patch&quot;, raw
+        return &quot;unknown&quot;, raw
+    if &quot;breaking&quot; in lower:
+        return &quot;major&quot;, raw
+    if lower.startswith(&quot;feat&quot;) or &quot;new feature&quot; in lower or lower.startswith(&quot;add &quot;):
+        return &quot;minor&quot;, raw
+    if lower.startswith(&quot;fix&quot;) or &quot;bug&quot; in lower:
+        return &quot;patch&quot;, raw
+    return &quot;unknown&quot;, raw
+
+
+def read_lines(path: str) -&gt; list[str]:
+    if path == &quot;-&quot;:
+        return sys.stdin.read().splitlines()
+    with open(path, encoding=&quot;utf-8&quot;) as f:
+        return f.read().splitlines()
+
+
+def bump(ver: dict, level: str, pre10_soft: bool) -&gt; str:
+    major, minor, patch = int(ver[&quot;major&quot;]), int(ver[&quot;minor&quot;]), int(ver[&quot;patch&quot;])
+    if level == &quot;none&quot;:
+        core = f&quot;{major}.{minor}.{patch}&quot;
+    elif level == &quot;major&quot;:
+        if pre10_soft and major == 0:
+            minor += 1
+            patch = 0
+        else:
+            major += 1
+            minor = 0
+            patch = 0
+        core = f&quot;{major}.{minor}.{patch}&quot;
+    elif level == &quot;minor&quot;:
+        minor += 1
+        patch = 0
+        core = f&quot;{major}.{minor}.{patch}&quot;
+    else:
+        patch += 1
+        core = f&quot;{major}.{minor}.{patch}&quot;
+    return core
+
+
+def main(argv: list[str]) -&gt; int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument(&quot;version&quot;, help=&quot;Current SemVer, e.g. 1.4.2 or 0.9.1-rc.1&quot;)
+    ap.add_argument(&quot;--commits&quot;, default=&quot;-&quot;, help=&quot;File of commit subjects (default: stdin)&quot;)
+    ap.add_argument(&quot;--pre-1-0-major-as-minor&quot;, action=&quot;store_true&quot;,
+                    help=&quot;In 0.x, treat breaking as minor bump&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;, help=&quot;Machine-readable JSON output&quot;)
+    args = ap.parse_args(argv)
+
+    ver = parse_version(args.version)
+    lines = read_lines(args.commits)
+    tallies = {&quot;major&quot;: [], &quot;minor&quot;: [], &quot;patch&quot;: [], &quot;unknown&quot;: []}
+    best = &quot;none&quot;
+    for line in lines:
+        level, raw = classify_line(line)
+        if level == &quot;skip&quot;:
+            continue
+        tallies[level].append(raw)
+        if LEVELS[level] &gt; LEVELS[best]:
+            best = level
+
+    if best == &quot;none&quot;:
+        print(&quot;error: no usable change lines&quot;, file=sys.stderr)
+        return 1
+
+    next_v = bump(ver, best, args.pre_1_0_major_as_minor)
+    decisive = (tallies[best][0] if tallies[best] else &quot;&quot;)
+    note = None
+    if args.pre_1_0_major_as_minor and int(ver[&quot;major&quot;]) == 0 and best == &quot;major&quot;:
+        note = &quot;pre-1.0 soft major: breaking treated as minor bump&quot;
+        # best label stays major for tally, but version used soft path
+    result = {
+        &quot;current&quot;: args.version,
+        &quot;bump&quot;: best,
+        &quot;next&quot;: next_v,
+        &quot;decisive&quot;: decisive,
+        &quot;tally&quot;: {k: len(v) for k, v in tallies.items()},
+        &quot;examples&quot;: {k: v[:5] for k, v in tallies.items() if v},
+        &quot;note&quot;: note,
+    }
+    if args.json:
+        json.dump(result, sys.stdout, indent=2)
+        sys.stdout.write(&quot;\n&quot;)
+    else:
+        print(f&quot;current: {args.version}&quot;)
+        print(f&quot;bump:    {best}&quot;)
+        print(f&quot;next:    {next_v}&quot;)
+        if note:
+            print(f&quot;note:    {note}&quot;)
+        print(f&quot;decisive:{decisive}&quot;)
+        print(&quot;tally:&quot;)
+        for k in (&quot;major&quot;, &quot;minor&quot;, &quot;patch&quot;, &quot;unknown&quot;):
+            print(f&quot;  {k}: {len(tallies[k])}&quot;)
+            for ex in tallies[k][:5]:
+                print(f&quot;    - {ex}&quot;)
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/semver-bump-advisor',TI="SemVer Bump Advisor";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Markdown Link Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: markdown-link-checker description: Checks a Markdown docs folder for links that break readers - relative links to missing or renamed files, ">
+<meta property="og:title" content="Markdown Link Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: markdown-link-checker description: Checks a Markdown docs folder for links that break readers - relative links to missing or renamed files, ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/markdown-link-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/markdown-link-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Markdown Link Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: markdown-link-checker
+description: Checks a Markdown docs folder for links that break readers - relative links to missing or renamed files, anchors that match no heading, duplicate heading anchors, file-name case that only works on macOS, local absolute paths, reference-style links with missing, unused or duplicate definitions, images without alt text and bare URLs. Works offline and lists external URLs to check separately. Includes a stdlib Python checker with --self-test.
+---
+
+# Markdown Link Checker
+
+You help maintainers, technical writers and developers keep documentation navigable. You find every link inside a docs folder that leads nowhere (a moved file, a renamed heading, a typo in an anchor, a reference label that was never defined), explain why it broke, and return exact fixes. You work offline first: internal links and anchors are checked from the files themselves, and external URLs are only listed, so a docs check never depends on the network or hammers other people&#x27;s servers.
+
+## Files in this skill
+
+- `scripts/check_md_links.py` - walks a folder of .md/.markdown/.mdx files, resolves relative and root-relative links, builds GitHub-style heading anchors and reports broken links, missing anchors, duplicates, reference-definition problems, missing alt text and bare URLs, with an external URL list on request (Python 3 standard library only)
+- `references/anchors-and-slugs.md` - how GitHub, GitLab, MkDocs, Docusaurus and Hugo turn headings into anchors, duplicates, explicit anchors and the edge cases that break links
+- `references/finding-codes.md` - every finding code, its severity, why it matters and the usual fix, plus how to check external URLs politely
+- `templates/link-report.md` - the report to hand back
+- `examples/README.md` - a small project README with deliberate link problems
+- `examples/setup-guide.md` - the guide it links to, with more problems (wrong-case file name, anchor case, missing reference, local path)
+
+## Workflow
+
+### 1. Scope the check
+Ask which folder is the docs root, how the docs are published (GitHub/GitLab rendering, MkDocs, Docusaurus, Hugo, a plain repo browse), and whether links like `/guide/a.md` mean &quot;from the repo root&quot; or &quot;from the site root&quot;. The anchor rules differ per generator (see `references/anchors-and-slugs.md`); default to GitHub rules and say so.
+
+### 2. Run the checker
+```
+python3 scripts/check_md_links.py examples --external
+python3 scripts/check_md_links.py docs README.md --root . --min-severity MEDIUM
+python3 scripts/check_md_links.py docs --ignore BARE_URL,UNUSED_REF_DEF --json &gt; links.json
+python3 scripts/check_md_links.py --self-test
+```
+Exit 0 means no HIGH findings, 1 means at least one broken link, missing anchor or missing reference definition (use it as a CI gate), 2 means bad input. Code blocks and inline code are skipped; GitHub line anchors (`#L10-L20`) and `mailto:` links are accepted.
+
+### 3. Triage and fix
+Work HIGH first. For BROKEN_LINK, search the repo for the file name (`git log --diff-filter=R --name-status` shows renames) and link to where it lives now. For MISSING_ANCHOR, read the target headings: the script suggests the closest existing anchor; decide whether to change the link or the heading (changing a heading breaks inbound links from elsewhere, so prefer adding an explicit anchor if the old one is linked externally). For DUPLICATE_ANCHOR, make the headings unique. For CASE_MISMATCH, use the exact file name. Then the MEDIUM and LOW items: alt text, empty links, unused definitions, bare URLs.
+
+### 4. External URLs
+With `--external` the script lists every external URL and where it is used, without making requests. If the user wants them checked, do it separately and politely (HEAD then GET, a few requests per host, a timeout, treat 429/403 as &quot;check by hand&quot;, not as broken). See `references/finding-codes.md`.
+
+### 5. Deliver
+Fill `templates/link-report.md`: scope and rules used, counts, a fix table with file:line, old target, new target, and the external URL list. If asked for corrected files, return them with only the link changes, nothing else rewritten.
+
+## Example result
+`examples/` (2 files): 13 findings, 6 HIGH. README.md links `setup-guide.md#configuration`, but the heading is &quot;Configure the team folder&quot; (#configure-the-team-folder, suggested by the script); CHANGELOG.md, ../CONTRIBUTING.md, docs/style.md and the diagram image do not exist; &quot;Usage&quot; appears twice so the second is #usage-1; [roadmap] is defined but unused. setup-guide.md links `readme.md` (only README.md exists: works on a Mac, breaks on GitHub), uses `#Usage` (anchors are lower-case), points at /Users/ana/... and uses [support] without a definition. 4 external URLs listed, none fetched.
+
+## Rules
+
+- Never fetch external URLs unless the user asks; when you do, rate-limit and do not report 403/429 as broken.
+- Fix the link, not the content: do not rewrite prose while fixing paths.
+- Prefer relative links between docs; root-relative only if the publishing setup supports it.
+- When a heading must change, keep the old anchor working with an explicit `&lt;a id=&quot;old-anchor&quot;&gt;&lt;/a&gt;` if other sites link to it.
+- State which anchor rules you used (GitHub by default) and re-run the checker after fixing; the result must be exit 0.
+- Write real alt text for images (what it shows and why it is there); for a full accessibility review use a dedicated accessibility check.
+FILE:references/anchors-and-slugs.md
+# Heading anchors and slugs
+
+A link like `guide.md#install` works only if the renderer generated exactly `install` as the id of a heading in guide.md. Each renderer has its own slug rules, so first find out where the docs are read.
+
+## GitHub (default used by the script)
+1. Take the heading text as rendered: inline markup removed (`code` keeps its text, `**bold**` becomes bold, `[text](url)` becomes text, HTML tags dropped).
+2. Lower-case it.
+3. Remove every character that is not a letter, digit, space, hyphen or underscore (letters include accented and non-Latin letters; emoji and punctuation go).
+4. Turn each space into a hyphen. Spaces are NOT collapsed: &quot;C++ &amp; Rust&quot; becomes `c--rust`.
+5. Duplicates get `-1`, `-2`, ... in order of appearance: the second &quot;Usage&quot; is `#usage-1`.
+
+| Heading | Anchor |
+|---|---|
+| `## What&#x27;s new? (v2.0)` | `#whats-new-v20` |
+| ``## The `--dry-run` flag`` | `#the---dry-run-flag` |
+| `## Über uns` | `#über-uns` (GitHub also accepts the percent-encoded form) |
+| `## C++ &amp; Rust: 100% safe?` | `#c--rust-100-safe` |
+| `## snake_case_name` | `#snake_case_name` |
+| `## Usage` (second time) | `#usage-1` |
+
+The script&#x27;s slug function matches the github-slugger library on these cases.
+
+## Other renderers
+- **GitLab**: like GitHub, but consecutive hyphens are collapsed into one (`#c-rust-100-safe`), so links copied between GitHub and GitLab can break.
+- **MkDocs (Python-Markdown toc)**: drops non-ASCII by default, collapses separators; `{#custom-id}` is available with attr_list. Check `markdown_extensions: toc: slugify` in mkdocs.yml.
+- **Docusaurus**: GitHub-like slugs; supports `## Heading {#custom-id}`.
+- **Hugo (goldmark)**: GitHub-like by default; `autoHeadingIDType` can be `github`, `github-ascii` or `blackfriday`.
+- **VS Code preview / most IDEs**: GitHub-like.
+
+If the published site and the repo view disagree, prefer explicit anchors for anything linked from outside.
+
+## Explicit anchors
+- `&lt;a id=&quot;install&quot;&gt;&lt;/a&gt;` or `&lt;a name=&quot;install&quot;&gt;&lt;/a&gt;` just before the heading (works everywhere HTML is allowed).
+- `## Install {#install}` where the renderer supports attribute lists (MkDocs attr_list, Docusaurus, Hugo, Pandoc). On GitHub the `{#...}` shows up as literal text.
+
+## What breaks anchors
+- Renaming a heading (&quot;Configuration&quot; -&gt; &quot;Configure the team folder&quot;).
+- Duplicates: links to `#usage` always land on the first one.
+- Capital letters in the link (`#Usage`): GitHub anchors are lower-case; some browsers forgive it, many renderers do not.
+- Copying the anchor from another renderer (GitLab vs GitHub hyphens).
+- Headings generated by includes or templates the checker cannot see; mark these with `--ignore MISSING_ANCHOR` for that folder only, and say so.
+- Line anchors (`#L10`, `#L10-L20`) are GitHub file-view features; they are accepted but break if the file moves or lines shift.
+FILE:references/finding-codes.md
+# Finding codes
+
+| Code | Severity | Why it matters | Usual fix |
+|---|---|---|---|
+| BROKEN_LINK | HIGH | relative link to a file or folder that does not exist (moved, renamed, typo) | link to the current path; `git log --diff-filter=R --name-status -- docs/` shows renames |
+| BROKEN_IMAGE | HIGH | image path does not exist; readers see a broken icon | fix the path or commit the image |
+| MISSING_ANCHOR | HIGH | #fragment matches no heading or explicit anchor in the target file | use the suggested anchor, or add an explicit anchor |
+| MISSING_REF_DEF | HIGH | `[text][label]` has no `[label]: url` definition; it renders as plain bracketed text | add the definition or fix the label (labels are case-insensitive) |
+| DUPLICATE_ANCHOR | MEDIUM | two headings produce the same slug; the second gets `-1` and links land on the first | make headings unique, e.g. &quot;Usage (CLI)&quot; and &quot;Usage (API)&quot; |
+| DUPLICATE_REF_DEF | MEDIUM | the same label is defined twice; only the first counts | delete or rename one |
+| CASE_MISMATCH | MEDIUM | file exists only with different case; fine on macOS/Windows, broken on Linux, GitHub Pages and most CI | use the exact name |
+| ANCHOR_CASE | MEDIUM | anchor only matches when lower-cased | write anchors in lower case |
+| LOCAL_ABSOLUTE_PATH | MEDIUM | link to /Users/..., /home/..., C:\ or file:// works only on the author&#x27;s machine | relative path, or remove |
+| EMPTY_LINK | MEDIUM | `[text]()` or empty href | fill in or remove |
+| EMPTY_LINK_TEXT | MEDIUM | `[](url)`: nothing to click or read aloud | add link text |
+| MISSING_ALT | MEDIUM | image without alt text; screen readers say &quot;image&quot; or the file name | describe what it shows and why it is there |
+| UNUSED_REF_DEF | LOW | definition never used; usually left over after an edit | delete, or link to it if the link was lost |
+| BARE_URL | LOW | raw URL in text; not clickable in some renderers, read character by character | `[descriptive text](url)` or `&lt;url&gt;` |
+| OUTSIDE_ROOT | LOW | relative link leaves the docs root; breaks if docs are published alone | link to the published URL |
+
+Exit codes: 0 = no HIGH, 1 = HIGH present, 2 = bad input. Use `--min-severity` and `--ignore` to tune a CI gate, and record any ignore in the repo with a reason.
+
+## Link forms the script understands
+- Inline: `[text](path.md#anchor &quot;title&quot;)`, `[text](&lt;path with spaces.md&gt;)`, `[text](my%20notes.md)`
+- Images: `![alt](img.png)`, `&lt;img src=&quot;img.png&quot; alt=&quot;...&quot;&gt;`
+- Reference: `[text][label]`, `[label][]`, `[label]` with `[label]: url &quot;title&quot;` anywhere in the same file
+- Autolinks `&lt;https://...&gt;`, HTML `&lt;a href=&quot;...&quot;&gt;`, explicit anchors `&lt;a id&gt;`, `&lt;a name&gt;`, `{#id}`
+- Root-relative `/guide/a.md` resolves from `--root` (default: the first folder argument)
+- Skipped: fenced and indented code blocks, inline code, `mailto:`/`tel:`, GitHub line anchors, task list boxes `[ ]` `[x]`
+
+## Checking external URLs (only when asked)
+- Deduplicate first: `--external` lists each URL once with every place it is used.
+- Use HEAD, fall back to GET when the server rejects HEAD (405) or lies about it.
+- One or two requests per host at a time, a 10 s timeout, a clear User-Agent.
+- 200-299 OK; 301/308 update the link to the new location; 404/410 broken; 403, 429 and timeouts are &quot;check by hand&quot; (bot protection, rate limits).
+- Anchors on external pages cannot be checked reliably offline; note them, do not guess.
+- Prefer links to stable, versioned pages (tagged docs, permalinks) over &quot;latest&quot;.
+FILE:templates/link-report.md
+# Docs link check: &lt;repo or folder&gt;, &lt;date&gt;
+
+**Scope:** &lt;docs/ and README.md, 42 files&gt;   **Anchor rules:** &lt;GitHub&gt;   **Root for /links:** &lt;repo root&gt;
+**Command:** `python3 scripts/check_md_links.py &lt;docs README.md --root . --external&gt;`
+**Result:** &lt;13 findings: HIGH 6, MEDIUM 5, LOW 2 -&gt; after fixes: exit 0&gt;
+
+## Must fix (HIGH)
+| # | File:Line | Code | Link as written | Problem | Fix (new target) |
+|---|---|---|---|---|---|
+| 1 | &lt;README.md:11&gt; | &lt;MISSING_ANCHOR&gt; | &lt;setup-guide.md#configuration&gt; | &lt;heading renamed to &quot;Configure the team folder&quot;&gt; | &lt;setup-guide.md#configure-the-team-folder&gt; |
+
+## Should fix (MEDIUM)
+| # | File:Line | Code | Problem | Fix |
+|---|---|---|---|---|
+| 1 | &lt;setup-guide.md:25&gt; | &lt;CASE_MISMATCH&gt; | &lt;readme.md vs README.md&gt; | &lt;README.md#contents&gt; |
+
+## Clean-up (LOW)
+- &lt;unused [roadmap] definition in README.md:42 - delete or link it&gt;
+- &lt;bare URL README.md:21 -&gt; [Tidepool documentation](https://docs.example.com/tidepool)&gt;
+
+## Images and alt text
+| File:Line | Image | Alt text to use |
+|---|---|---|
+| &lt;README.md:5&gt; | &lt;images/sync-diagram.png (missing)&gt; | &lt;&quot;Diagram: phone app sends notes to the sync server, which writes them to the team folder&quot;&gt; |
+
+## External URLs (not fetched)
+| URL | Used at | Status (if checked) |
+|---|---|---|
+| &lt;https://docs.example.com/tidepool&gt; | &lt;README.md:21&gt; | &lt;not checked&gt; |
+
+## Prevent it next time
+- &lt;run the checker in CI on every docs change (exit 1 fails the build)&gt;
+- &lt;when renaming a heading that others link to, keep an explicit anchor with the old id&gt;
+FILE:examples/README.md
+# Tidepool
+
+Tidepool syncs field notes from a phone to a shared team folder.
+
+![](images/sync-diagram.png)
+
+## Contents
+
+- [Quick start](#quick-start)
+- [Install](setup-guide.md#install)
+- [Configuration](setup-guide.md#configuration)
+- [Troubleshooting](setup-guide.md#troubleshooting)
+- [FAQ](#faq)
+
+## Quick start
+
+1. Install the app (see [the setup guide][setup]).
+2. Sign in and pick a team folder.
+3. Read the [release notes](CHANGELOG.md) before upgrading.
+
+Full documentation lives at https://docs.example.com/tidepool and the API
+reference is at &lt;https://api.example.com/tidepool/v2&gt;.
+
+## Usage
+
+Run `tidepool sync` to push new notes. Links inside code are not checked:
+
+```
+[not a link](missing.md)
+```
+
+## Usage
+
+See [Contributing](../CONTRIBUTING.md) and the [style guide][style].
+
+## Faq
+
+**Can I sync offline?** Notes queue until the phone is online again.
+
+[setup]: setup-guide.md
+[style]: docs/style.md
+[roadmap]: https://example.com/tidepool/roadmap
+FILE:examples/setup-guide.md
+# Setup guide
+
+## Install
+
+Download the installer from the [releases page](https://github.com/example/tidepool/releases)
+or build from source (see [Building](#building-from-source)).
+
+![Settings screen with the Team folder field highlighted](https://example.com/tidepool/img/settings.png)
+
+## Configure the team folder
+
+Open **Settings &gt; Team folder** and paste the folder link. The folder must
+already be shared with you (see [Sharing](./README.md#Usage)).
+
+## Building from source
+
+Clone the repository and run `make build`, then continue with the
+[Quick start](README.md#quick-start).
+
+## Troubleshooting
+
+If sync stalls, check the log at [/Users/ana/tidepool/logs/sync.log](/Users/ana/tidepool/logs/sync.log)
+or ask in the [support channel][support].
+
+Back to the [README](readme.md#contents).
+FILE:scripts/check_md_links.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Markdown link checker (Python 3 standard library only, fully offline).
+
+Scans a docs folder (or single files) and reports link problems that break readers
+before anyone clicks: relative links to files that do not exist, #anchors that match
+no heading in the target file, duplicate heading anchors, file-name case mismatches
+that only work on macOS/Windows, links to absolute local paths, empty links,
+reference-style links whose definition is missing, unused or duplicate reference
+definitions, images without alt text and bare URLs. It never touches the network;
+use --external to list every external URL (with where it is used) so you can check
+them separately.
+
+Anchors follow GitHub&#x27;s slug rules: heading text with inline markup removed,
+lower-cased, punctuation dropped (letters, digits, spaces, &quot;-&quot; and &quot;_&quot; kept), each
+space turned into &quot;-&quot;, duplicates suffixed -1, -2, ... Explicit anchors from
+&lt;a name=&quot;x&quot;&gt;, &lt;a id=&quot;x&quot;&gt;, id=&quot;x&quot; on HTML tags and {#x} heading attributes count too.
+
+Usage:
+  python3 check_md_links.py PATH [PATH ...] [--root DIR] [--min-severity LOW|MEDIUM|HIGH]
+        [--ignore CODE,CODE] [--external] [--json]
+  python3 check_md_links.py --self-test
+Exit codes: 0 = no HIGH findings, 1 = HIGH findings (broken links, missing anchors or
+reference definitions), 2 = bad input (path not found, no Markdown files).
+&quot;&quot;&quot;
+import argparse, json, os, re, sys, tempfile, unicodedata
+from urllib.parse import unquote
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+MD_EXT = (&quot;.md&quot;, &quot;.markdown&quot;, &quot;.mdx&quot;)
+SKIP_DIRS = {&quot;.git&quot;, &quot;node_modules&quot;, &quot;.venv&quot;, &quot;venv&quot;, &quot;__pycache__&quot;, &quot;_site&quot;, &quot;site&quot;, &quot;build&quot;, &quot;dist&quot;}
+
+FENCE_RE = re.compile(r&quot;^ {0,3}(`{3,}|~{3,})&quot;)
+ATX_RE = re.compile(r&quot;^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$&quot;)
+SETEXT_RE = re.compile(r&quot;^ {0,3}(=+|-+)[ \t]*$&quot;)
+REFDEF_RE = re.compile(r&quot;^ {0,3}\[([^\]]+)\]:[ \t]*(&lt;[^&gt;]*&gt;|\S+)(?:[ \t]+(\&quot;[^\&quot;]*\&quot;|&#x27;[^&#x27;]*&#x27;|\([^)]*\)))?[ \t]*$&quot;)
+INLINE_RE = re.compile(r&quot;(!?)\[((?:[^\[\]\\]|\\.|\[[^\]]*\])*)\]\(\s*(&lt;[^&gt;]*&gt;|[^\s()]*(?:\([^\s()]*\)[^\s()]*)*)(?:\s+(\&quot;[^\&quot;]*\&quot;|&#x27;[^&#x27;]*&#x27;|\([^)]*\)))?\s*\)&quot;)
+REFLINK_RE = re.compile(r&quot;(!?)\[((?:[^\[\]\\]|\\.)*)\]\[([^\]]*)\]&quot;)
+SHORTCUT_RE = re.compile(r&quot;(?&lt;![\]\\!])\[([^\[\]]+)\](?![\[(:])&quot;)
+AUTOLINK_RE = re.compile(r&quot;&lt;((?:https?|ftp)://[^&gt;\s]+|mailto:[^&gt;\s]+)&gt;&quot;)
+BARE_URL_RE = re.compile(r&quot;(?&lt;![&lt;(\&quot;&#x27;=\w/])(https?://[^\s&lt;&gt;)\]\&quot;&#x27;]+)&quot;)
+HTML_ANCHOR_RE = re.compile(r&quot;&lt;[a-zA-Z][^&gt;]*?\b(?:id|name)\s*=\s*[\&quot;&#x27;]([^\&quot;&#x27;]+)[\&quot;&#x27;]&quot;)
+HTML_HREF_RE = re.compile(r&quot;&lt;a\b[^&gt;]*?\bhref\s*=\s*[\&quot;&#x27;]([^\&quot;&#x27;]*)[\&quot;&#x27;]&quot;, re.I)
+HTML_IMG_RE = re.compile(r&quot;&lt;img\b([^&gt;]*)&gt;&quot;, re.I)
+ATTR_ID_RE = re.compile(r&quot;\s*\{#([\w\-:.]+)[^}]*\}\s*$&quot;)
+SCHEME_RE = re.compile(r&quot;^[a-zA-Z][a-zA-Z0-9+.\-]*:&quot;)
+WIN_ABS_RE = re.compile(r&quot;^[a-zA-Z]:[\\/]&quot;)
+
+
+def finding(sev, code, path, line, snippet, problem, fix):
+    return {&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;file&quot;: path, &quot;line&quot;: line,
+            &quot;snippet&quot;: snippet.strip()[:120], &quot;problem&quot;: problem, &quot;fix&quot;: fix}
+
+
+def strip_inline_markup(text):
+    t = re.sub(r&quot;`([^`]*)`&quot;, r&quot;\1&quot;, text)
+    t = re.sub(r&quot;!\[([^\]]*)\]\([^)]*\)&quot;, r&quot;\1&quot;, t)
+    t = re.sub(r&quot;\[([^\]]*)\]\([^)]*\)&quot;, r&quot;\1&quot;, t)
+    t = re.sub(r&quot;\[([^\]]*)\]\[[^\]]*\]&quot;, r&quot;\1&quot;, t)
+    t = re.sub(r&quot;&lt;[^&gt;]+&gt;&quot;, &quot;&quot;, t)
+    t = re.sub(r&quot;(\*\*|\*|~~)(?=\S)(.+?)(?&lt;=\S)\1&quot;, r&quot;\2&quot;, t)
+    t = re.sub(r&quot;(?&lt;!\w)(__|_)(?=\S)(.+?)(?&lt;=\S)\1(?!\w)&quot;, r&quot;\2&quot;, t)  # _x_ only at word edges
+    return t
+
+
+def github_slug(text):
+    t = strip_inline_markup(text).strip().lower()
+    out = []
+    for ch in t:
+        cat = unicodedata.category(ch)
+        if ch in &quot;-_ &quot; or cat[0] in &quot;LN&quot; or cat == &quot;Mn&quot;:
+            out.append(&quot;-&quot; if ch == &quot; &quot; else ch)
+    return &quot;&quot;.join(out)
+
+
+def mask_code(lines):
+    &quot;&quot;&quot;Return (block-masked lines, fully masked lines): fenced/indented code blocks blanked;
+    the second list also masks inline code spans (headings keep their code text).&quot;&quot;&quot;
+    out, fence = [], None
+    prev_blank = True
+    for line in lines:
+        m = FENCE_RE.match(line)
+        if fence:
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) &gt;= len(fence) and not line.strip()[len(m.group(1)):].strip():
+                fence = None
+            out.append(&quot;&quot;)
+            continue
+        if m:
+            fence = m.group(1)
+            out.append(&quot;&quot;)
+            continue
+        if prev_blank and (line.startswith(&quot;    &quot;) or line.startswith(&quot;\t&quot;)) and line.strip():
+            out.append(&quot;&quot;)
+            continue
+        prev_blank = not line.strip()
+        out.append(line)
+    inline = [re.sub(r&quot;(`+)(.+?)\1&quot;, lambda mm: mm.group(1) + &quot;x&quot; * len(mm.group(2)) + mm.group(1), l) for l in out]
+    return out, inline
+
+
+def parse_file(text):
+    &quot;&quot;&quot;Return dict with anchors (slug-&gt;line), duplicates, headings, links, refdefs, images, bare urls.&quot;&quot;&quot;
+    raw = text.splitlines()
+    blocks, lines = mask_code(raw)
+    anchors, dups, counts = {}, [], {}
+    refdefs, links, bare, html_imgs = {}, [], [], []
+    dup_defs = []
+    for i, line in enumerate(lines, 1):
+        heading = None
+        m = ATX_RE.match(blocks[i - 1])
+        if m:
+            heading = m.group(2)
+        elif i &gt;= 2 and SETEXT_RE.match(line) and blocks[i - 2].strip() and not ATX_RE.match(blocks[i - 2]) \
+                and not blocks[i - 2].lstrip().startswith((&quot;-&quot;, &quot;*&quot;, &quot;&gt;&quot;, &quot;|&quot;)) and not REFDEF_RE.match(blocks[i - 2]):
+            if line.strip().startswith(&quot;=&quot;) or (i &gt;= 3 and not blocks[i - 3].strip()) or i == 2:
+                heading = blocks[i - 2].strip()
+        if heading is not None:
+            am = ATTR_ID_RE.search(heading)
+            if am:
+                anchors.setdefault(am.group(1), i)
+                heading = heading[:am.start()]
+            base = github_slug(heading)
+            n = counts.get(base, 0)
+            counts[base] = n + 1
+            slug = base if n == 0 else f&quot;{base}-{n}&quot;
+            if n &gt; 0:
+                dups.append((i, heading.strip(), base, slug))
+            anchors.setdefault(slug, i)
+        for am in HTML_ANCHOR_RE.finditer(blocks[i - 1]):
+            anchors.setdefault(am.group(1), i)
+        d = REFDEF_RE.match(line)
+        if d:
+            label = norm_label(d.group(1))
+            target = d.group(2).strip(&quot;&lt;&gt;&quot;)
+            if label in refdefs:
+                dup_defs.append((i, d.group(1), refdefs[label][1]))
+            else:
+                refdefs[label] = (target, i, d.group(1))
+            continue
+        spans = []
+        for lm in INLINE_RE.finditer(line):
+            target = lm.group(3).strip()
+            if target.startswith(&quot;&lt;&quot;) and target.endswith(&quot;&gt;&quot;):
+                target = target[1:-1]
+            links.append({&quot;kind&quot;: &quot;image&quot; if lm.group(1) else &quot;link&quot;, &quot;text&quot;: lm.group(2), &quot;target&quot;: target,
+                          &quot;line&quot;: i, &quot;snippet&quot;: lm.group(0), &quot;ref&quot;: None})
+            spans.append(lm.span())
+        for rm in REFLINK_RE.finditer(line):
+            if any(a &lt;= rm.start() &lt; b for a, b in spans):
+                continue
+            label = rm.group(3) or rm.group(2)
+            links.append({&quot;kind&quot;: &quot;image&quot; if rm.group(1) else &quot;link&quot;, &quot;text&quot;: rm.group(2), &quot;target&quot;: None,
+                          &quot;line&quot;: i, &quot;snippet&quot;: rm.group(0), &quot;ref&quot;: norm_label(label), &quot;explicit&quot;: True})
+            spans.append(rm.span())
+        for sm in SHORTCUT_RE.finditer(line):
+            if any(a &lt;= sm.start() &lt; b for a, b in spans):
+                continue
+            if re.match(r&quot;^[ xX]$&quot;, sm.group(1)) or line[sm.end():sm.end() + 1] == &quot;]&quot;:
+                continue  # task list box or nested
+            links.append({&quot;kind&quot;: &quot;image&quot; if sm.start() &gt; 0 and line[sm.start() - 1] == &quot;!&quot; else &quot;link&quot;,
+                          &quot;text&quot;: sm.group(1), &quot;target&quot;: None, &quot;line&quot;: i, &quot;snippet&quot;: sm.group(0),
+                          &quot;ref&quot;: norm_label(sm.group(1)), &quot;explicit&quot;: False})
+            spans.append(sm.span())
+        for hm in HTML_HREF_RE.finditer(line):
+            links.append({&quot;kind&quot;: &quot;link&quot;, &quot;text&quot;: &quot;&quot;, &quot;target&quot;: hm.group(1), &quot;line&quot;: i, &quot;snippet&quot;: hm.group(0), &quot;ref&quot;: None, &quot;html&quot;: True})
+        for im in HTML_IMG_RE.finditer(line):
+            attrs = im.group(1)
+            src = re.search(r&quot;\bsrc\s*=\s*[\&quot;&#x27;]([^\&quot;&#x27;]*)[\&quot;&#x27;]&quot;, attrs, re.I)
+            alt = re.search(r&quot;\balt\s*=\s*[\&quot;&#x27;]([^\&quot;&#x27;]*)[\&quot;&#x27;]&quot;, attrs, re.I)
+            links.append({&quot;kind&quot;: &quot;image&quot;, &quot;text&quot;: alt.group(1) if alt else None, &quot;target&quot;: src.group(1) if src else &quot;&quot;,
+                          &quot;line&quot;: i, &quot;snippet&quot;: im.group(0), &quot;ref&quot;: None, &quot;html&quot;: True})
+        cleaned = AUTOLINK_RE.sub(&quot; &quot;, line)
+        cleaned = INLINE_RE.sub(&quot; &quot;, cleaned)
+        cleaned = re.sub(r&quot;&lt;[^&gt;]+&gt;&quot;, &quot; &quot;, cleaned)
+        for bm in BARE_URL_RE.finditer(cleaned):
+            bare.append((i, bm.group(1).rstrip(&quot;.,;:!?&quot;)))
+        for am in AUTOLINK_RE.finditer(line):
+            links.append({&quot;kind&quot;: &quot;autolink&quot;, &quot;text&quot;: am.group(1), &quot;target&quot;: am.group(1), &quot;line&quot;: i, &quot;snippet&quot;: am.group(0), &quot;ref&quot;: None})
+    return {&quot;anchors&quot;: anchors, &quot;dups&quot;: dups, &quot;refdefs&quot;: refdefs, &quot;dup_defs&quot;: dup_defs, &quot;links&quot;: links, &quot;bare&quot;: bare}
+
+
+def norm_label(s):
+    return re.sub(r&quot;\s+&quot;, &quot; &quot;, s.strip()).casefold()
+
+
+def is_external(target):
+    return bool(SCHEME_RE.match(target)) and not WIN_ABS_RE.match(target)
+
+
+def exists_exact_case(path):
+    &quot;&quot;&quot;True/False for exact-case existence, plus the real name if only a case-insensitive match exists.&quot;&quot;&quot;
+    if os.path.exists(path):
+        head, tail = os.path.split(os.path.abspath(path))
+        try:
+            names = os.listdir(head or &quot;.&quot;)
+        except OSError:
+            return True, None
+        if tail in names or not tail:
+            return True, None
+        for n in names:
+            if n.lower() == tail.lower():
+                return False, n
+        return True, None
+    head, tail = os.path.split(os.path.abspath(path))
+    try:
+        for n in os.listdir(head):
+            if n.lower() == tail.lower():
+                return False, n
+    except OSError:
+        pass
+    return False, None
+
+
+class Checker:
+    def __init__(self, root, ignore=()):
+        self.root = os.path.abspath(root)
+        self.ignore = set(ignore)
+        self.cache = {}
+        self.findings = []
+        self.external = {}
+
+    def parsed(self, path):
+        path = os.path.abspath(path)
+        if path not in self.cache:
+            with open(path, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as fh:
+                self.cache[path] = parse_file(fh.read())
+        return self.cache[path]
+
+    def add(self, *a):
+        f = finding(*a)
+        if f[&quot;code&quot;] not in self.ignore:
+            self.findings.append(f)
+
+    def rel(self, p):
+        return os.path.relpath(p, self.root)
+
+    def check_file(self, path):
+        info = self.parsed(path)
+        rp = self.rel(path)
+        for line, heading, base, slug in info[&quot;dups&quot;]:
+            self.add(&quot;MEDIUM&quot;, &quot;DUPLICATE_ANCHOR&quot;, rp, line, heading,
+                     f&quot;heading &#x27;{heading}&#x27; repeats an earlier anchor #{base}; this one becomes #{slug}, so links to #{base} land on the first one&quot;,
+                     &quot;make the heading unique (add context) or add an explicit anchor&quot;)
+        for line, label, first in info[&quot;dup_defs&quot;]:
+            self.add(&quot;MEDIUM&quot;, &quot;DUPLICATE_REF_DEF&quot;, rp, line, f&quot;[{label}]:&quot;,
+                     f&quot;reference [{label}] is defined again (first definition on line {first}); only the first one is used&quot;,
+                     &quot;delete or rename the duplicate definition&quot;)
+        used = set()
+        for ln in info[&quot;links&quot;]:
+            if ln[&quot;ref&quot;] is not None:
+                d = info[&quot;refdefs&quot;].get(ln[&quot;ref&quot;])
+                if d is None:
+                    if ln.get(&quot;explicit&quot;):
+                        self.add(&quot;HIGH&quot;, &quot;MISSING_REF_DEF&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                                 f&quot;reference-style link uses [{ln[&#x27;ref&#x27;]}] but no &#x27;[{ln[&#x27;ref&#x27;]}]: URL&#x27; definition exists, so it renders as plain text&quot;,
+                                 &quot;add the definition at the bottom of the file or fix the label&quot;)
+                    continue
+                used.add(ln[&quot;ref&quot;])
+                target = d[0]
+            else:
+                target = ln[&quot;target&quot;]
+            self.check_link(path, rp, ln, target)
+        for label, (target, line, orig) in info[&quot;refdefs&quot;].items():
+            if label not in used:
+                self.add(&quot;LOW&quot;, &quot;UNUSED_REF_DEF&quot;, rp, line, f&quot;[{orig}]: {target}&quot;,
+                         f&quot;reference definition [{orig}] is never used&quot;, &quot;delete it or link to it&quot;)
+        for line, url in info[&quot;bare&quot;]:
+            self.add(&quot;LOW&quot;, &quot;BARE_URL&quot;, rp, line, url,
+                     &quot;bare URL: not clickable in some renderers and read out character by character by screen readers&quot;,
+                     f&quot;use [descriptive text]({url}) or &lt;{url}&gt;&quot;)
+            self.external.setdefault(url, []).append(f&quot;{rp}:{line}&quot;)
+
+    def check_link(self, path, rp, ln, target):
+        kind = ln[&quot;kind&quot;]
+        if kind == &quot;image&quot;:
+            alt = ln[&quot;text&quot;]
+            if alt is None or not alt.strip():
+                self.add(&quot;MEDIUM&quot;, &quot;MISSING_ALT&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                         &quot;image has no alt text&quot;, &quot;describe what the image shows or why it is there (alt=\&quot;\&quot; only for purely decorative images in HTML)&quot;)
+        if target is None:
+            return
+        if not target.strip():
+            self.add(&quot;MEDIUM&quot;, &quot;EMPTY_LINK&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;], f&quot;{kind} has an empty target&quot;, &quot;add the URL or path, or remove the brackets&quot;)
+            return
+        if kind == &quot;link&quot; and not ln.get(&quot;html&quot;) and not strip_inline_markup(ln[&quot;text&quot;]).strip():
+            self.add(&quot;MEDIUM&quot;, &quot;EMPTY_LINK_TEXT&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;], &quot;link has no visible text&quot;, &quot;put words inside the [ ]&quot;)
+        if target.startswith(&quot;mailto:&quot;) or target.startswith(&quot;tel:&quot;):
+            return
+        if target.startswith(&quot;file:&quot;) or WIN_ABS_RE.match(target) or re.match(r&quot;^/(home|Users|tmp|var|mnt|opt)/&quot;, target):
+            self.add(&quot;MEDIUM&quot;, &quot;LOCAL_ABSOLUTE_PATH&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                     f&quot;&#x27;{target}&#x27; points at a path on the author&#x27;s machine; it is broken for everyone else&quot;,
+                     &quot;use a path relative to this file&quot;)
+            return
+        if is_external(target):
+            if target.startswith((&quot;http://&quot;, &quot;https://&quot;, &quot;ftp://&quot;)):
+                self.external.setdefault(target, []).append(f&quot;{rp}:{ln[&#x27;line&#x27;]}&quot;)
+            return
+        target_path, _, frag = target.partition(&quot;#&quot;)
+        target_path = unquote(target_path.split(&quot;?&quot;)[0])
+        frag = unquote(frag)
+        if target_path:
+            if target_path.startswith(&quot;/&quot;):
+                full = os.path.normpath(os.path.join(self.root, target_path.lstrip(&quot;/&quot;)))
+            else:
+                full = os.path.normpath(os.path.join(os.path.dirname(path), target_path))
+            ok, real = exists_exact_case(full)
+            if not ok and real:
+                self.add(&quot;MEDIUM&quot;, &quot;CASE_MISMATCH&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                         f&quot;&#x27;{target_path}&#x27; only matches &#x27;{real}&#x27; with different letter case; works on macOS/Windows, breaks on Linux and GitHub Pages&quot;,
+                         f&quot;use the exact name &#x27;{real}&#x27;&quot;)
+                full = os.path.join(os.path.dirname(full), real)
+            elif not ok:
+                code = &quot;BROKEN_IMAGE&quot; if kind == &quot;image&quot; else &quot;BROKEN_LINK&quot;
+                self.add(&quot;HIGH&quot;, code, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                         f&quot;&#x27;{target_path}&#x27; does not exist&quot; + (f&quot; (resolved to {self.rel(full)})&quot; if self.rel(full) != os.path.normpath(target_path) else &quot;&quot;),
+                         &quot;fix the path (moved or renamed file?) or remove the link&quot;)
+                return
+            if not os.path.abspath(full).startswith(self.root + os.sep) and os.path.abspath(full) != self.root:
+                self.add(&quot;LOW&quot;, &quot;OUTSIDE_ROOT&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                         f&quot;&#x27;{target_path}&#x27; leaves the docs root; it breaks if the docs are published on their own&quot;,
+                         &quot;link to the published URL or copy the file into the docs&quot;)
+        else:
+            full = path
+        if frag:
+            if os.path.isdir(full) or not full.lower().endswith(MD_EXT):
+                return
+            info = self.parsed(full)
+            if frag in info[&quot;anchors&quot;]:
+                return
+            if frag.lower() in info[&quot;anchors&quot;]:
+                self.add(&quot;MEDIUM&quot;, &quot;ANCHOR_CASE&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                         f&quot;#{frag} only matches #{frag.lower()} case-insensitively; GitHub anchors are lower-case&quot;,
+                         f&quot;use #{frag.lower()}&quot;)
+                return
+            if re.match(r&quot;^L\d+(-L\d+)?$&quot;, frag):
+                return  # GitHub line anchors
+            key = frag.lower().replace(&quot;-&quot;, &quot;&quot;)
+            close = [a for a in info[&quot;anchors&quot;] if a.replace(&quot;-&quot;, &quot;&quot;) == key] or \
+                    [a for a in info[&quot;anchors&quot;] if len(key) &gt;= 5 and key[:6] in a.replace(&quot;-&quot;, &quot;&quot;)]
+            hint = f&quot; Did you mean #{close[0]}?&quot; if close else &quot;&quot;
+            self.add(&quot;HIGH&quot;, &quot;MISSING_ANCHOR&quot;, rp, ln[&quot;line&quot;], ln[&quot;snippet&quot;],
+                     f&quot;#{frag} matches no heading or anchor in {self.rel(full)}.{hint}&quot;,
+                     &quot;link to an existing heading slug, or add the heading / an explicit anchor&quot;)
+
+
+def collect(paths):
+    files = []
+    for p in paths:
+        if os.path.isdir(p):
+            for dirpath, dirnames, filenames in os.walk(p):
+                dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not d.startswith(&quot;.&quot;))
+                files += [os.path.join(dirpath, f) for f in sorted(filenames) if f.lower().endswith(MD_EXT)]
+        elif os.path.isfile(p):
+            files.append(p)
+        else:
+            raise FileNotFoundError(p)
+    return files
+
+
+def run(paths, root=None, ignore=(), min_sev=&quot;LOW&quot;):
+    files = collect(paths)
+    if root is None:
+        root = paths[0] if os.path.isdir(paths[0]) else os.path.dirname(os.path.abspath(paths[0]))
+    ck = Checker(root, ignore)
+    for f in files:
+        ck.check_file(os.path.abspath(f))
+    lim = SEV_ORDER[min_sev]
+    found = [f for f in ck.findings if SEV_ORDER[f[&quot;severity&quot;]] &lt;= lim]
+    found.sort(key=lambda f: (f[&quot;file&quot;], f[&quot;line&quot;], SEV_ORDER[f[&quot;severity&quot;]]))
+    return files, found, ck.external
+
+
+def report(files, found, external, show_external, roots):
+    counts = {s: sum(1 for f in found if f[&quot;severity&quot;] == s) for s in SEV_ORDER}
+    out = [f&quot;# Markdown link check: {&#x27;, &#x27;.join(roots)}&quot;, &quot;&quot;,
+           f&quot;Files: {len(files)}   Findings: {len(found)} (HIGH {counts[&#x27;HIGH&#x27;]}, MEDIUM {counts[&#x27;MEDIUM&#x27;]}, LOW {counts[&#x27;LOW&#x27;]})   External URLs: {len(external)} (not checked, offline)&quot;, &quot;&quot;]
+    if not found:
+        out.append(&quot;No findings.&quot;)
+    else:
+        out += [&quot;| Sev | Code | File:Line | Problem | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in found:
+            out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | {f[&#x27;file&#x27;]}:{f[&#x27;line&#x27;]} | {f[&#x27;problem&#x27;].replace(&#x27;|&#x27;, &#x27;/&#x27;)} | {f[&#x27;fix&#x27;].replace(&#x27;|&#x27;, &#x27;/&#x27;)} |&quot;)
+    if show_external and external:
+        out += [&quot;&quot;, &quot;## External URLs to check (no network calls were made)&quot;, &quot;&quot;, &quot;| URL | Used at |&quot;, &quot;|---|---|&quot;]
+        for url in sorted(external):
+            out.append(f&quot;| {url} | {&#x27;, &#x27;.join(external[url])} |&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    cases = []
+
+    def case(name, files, expect, absent=(), target=&quot;README.md&quot;):
+        cases.append((name, files, expect, absent, target))
+
+    case(&quot;clean file&quot;, {&quot;README.md&quot;: &quot;# Title\n\nSee [setup](setup.md#install).\n&quot;, &quot;setup.md&quot;: &quot;# Setup\n\n## Install\n&quot;}, [], [&quot;BROKEN_LINK&quot;, &quot;MISSING_ANCHOR&quot;])
+    case(&quot;broken relative link&quot;, {&quot;README.md&quot;: &quot;[x](docs/missing.md)\n&quot;}, [&quot;BROKEN_LINK&quot;])
+    case(&quot;broken image&quot;, {&quot;README.md&quot;: &quot;![logo](img/logo.png)\n&quot;}, [&quot;BROKEN_IMAGE&quot;])
+    case(&quot;missing anchor other file&quot;, {&quot;README.md&quot;: &quot;[x](a.md#nope)\n&quot;, &quot;a.md&quot;: &quot;# Yes\n&quot;}, [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;missing anchor same file&quot;, {&quot;README.md&quot;: &quot;# Intro\n[x](#usage)\n&quot;}, [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;anchor with punctuation&quot;, {&quot;README.md&quot;: &quot;## What&#x27;s new? (v2.0)\n[x](#whats-new-v20)\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;anchor with inline code&quot;, {&quot;README.md&quot;: &quot;## The `--dry-run` flag\n[x](#the---dry-run-flag)\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;underscores inside words kept&quot;, {&quot;README.md&quot;: &quot;## snake_case_name and _emphasis_\n[x](#snake_case_name-and-emphasis)\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;unicode heading anchor&quot;, {&quot;README.md&quot;: &quot;## Über uns\n[x](#über-uns)\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;duplicate heading&quot;, {&quot;README.md&quot;: &quot;## Usage\n## Usage\n[x](#usage-1)\n&quot;}, [&quot;DUPLICATE_ANCHOR&quot;], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;setext heading&quot;, {&quot;README.md&quot;: &quot;Install\n=======\n[x](#install)\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;explicit html anchor&quot;, {&quot;README.md&quot;: &#x27;&lt;a id=&quot;faq&quot;&gt;&lt;/a&gt;\n[x](#faq)\n&#x27;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;attribute id anchor&quot;, {&quot;README.md&quot;: &quot;## Setup {#custom-setup}\n[x](#custom-setup)\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;anchor case&quot;, {&quot;README.md&quot;: &quot;## Usage\n[x](#Usage)\n&quot;}, [&quot;ANCHOR_CASE&quot;], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;near-miss hint&quot;, {&quot;README.md&quot;: &quot;## Getting Started\n[x](#gettingstarted)\n&quot;}, [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;missing ref def&quot;, {&quot;README.md&quot;: &quot;See [the guide][guide].\n&quot;}, [&quot;MISSING_REF_DEF&quot;])
+    case(&quot;unused ref def&quot;, {&quot;README.md&quot;: &quot;Text.\n\n[old]: https://example.com\n&quot;}, [&quot;UNUSED_REF_DEF&quot;])
+    case(&quot;used ref def shortcut&quot;, {&quot;README.md&quot;: &quot;See [guide].\n\n[guide]: setup.md\n&quot;, &quot;setup.md&quot;: &quot;# S\n&quot;}, [], [&quot;UNUSED_REF_DEF&quot;, &quot;BROKEN_LINK&quot;])
+    case(&quot;ref def case-insensitive&quot;, {&quot;README.md&quot;: &quot;See [Guide][G].\n\n[g]: setup.md\n&quot;, &quot;setup.md&quot;: &quot;# S\n&quot;}, [], [&quot;MISSING_REF_DEF&quot;, &quot;UNUSED_REF_DEF&quot;])
+    case(&quot;ref def broken target&quot;, {&quot;README.md&quot;: &quot;See [g][].\n\n[g]: nope.md\n&quot;}, [&quot;BROKEN_LINK&quot;])
+    case(&quot;duplicate ref def&quot;, {&quot;README.md&quot;: &quot;[a][x]\n\n[x]: https://a.example\n[x]: https://b.example\n&quot;}, [&quot;DUPLICATE_REF_DEF&quot;])
+    case(&quot;image without alt&quot;, {&quot;README.md&quot;: &quot;![](shot.png)\n&quot;, &quot;shot.png&quot;: &quot;png&quot;}, [&quot;MISSING_ALT&quot;], [&quot;BROKEN_IMAGE&quot;])
+    case(&quot;html img without alt&quot;, {&quot;README.md&quot;: &#x27;&lt;img src=&quot;shot.png&quot; width=&quot;300&quot;&gt;\n&#x27;, &quot;shot.png&quot;: &quot;png&quot;}, [&quot;MISSING_ALT&quot;])
+    case(&quot;bare url&quot;, {&quot;README.md&quot;: &quot;Docs at https://example.com/docs today.\n&quot;}, [&quot;BARE_URL&quot;])
+    case(&quot;autolink is not bare&quot;, {&quot;README.md&quot;: &quot;Docs at &lt;https://example.com/docs&gt;.\n&quot;}, [], [&quot;BARE_URL&quot;])
+    case(&quot;code block ignored&quot;, {&quot;README.md&quot;: &quot;```\n[x](missing.md) https://x.example\n```\n&quot;}, [], [&quot;BROKEN_LINK&quot;, &quot;BARE_URL&quot;])
+    case(&quot;inline code ignored&quot;, {&quot;README.md&quot;: &quot;Use `[x](missing.md)` syntax.\n&quot;}, [], [&quot;BROKEN_LINK&quot;])
+    case(&quot;case mismatch&quot;, {&quot;README.md&quot;: &quot;[c](CONTRIBUTING.MD)\n&quot;, &quot;CONTRIBUTING.md&quot;: &quot;# C\n&quot;}, [&quot;CASE_MISMATCH&quot;], [&quot;BROKEN_LINK&quot;])
+    case(&quot;local absolute path&quot;, {&quot;README.md&quot;: &quot;[x](/Users/ana/repo/docs/a.md)\n&quot;}, [&quot;LOCAL_ABSOLUTE_PATH&quot;])
+    case(&quot;empty target&quot;, {&quot;README.md&quot;: &quot;[todo]()\n&quot;}, [&quot;EMPTY_LINK&quot;])
+    case(&quot;url-encoded path&quot;, {&quot;README.md&quot;: &quot;[x](my%20notes.md)\n&quot;, &quot;my notes.md&quot;: &quot;# N\n&quot;}, [], [&quot;BROKEN_LINK&quot;])
+    case(&quot;angle-bracket path with spaces&quot;, {&quot;README.md&quot;: &quot;[x](&lt;my notes.md&gt;)\n&quot;, &quot;my notes.md&quot;: &quot;# N\n&quot;}, [], [&quot;BROKEN_LINK&quot;])
+    case(&quot;directory link ok&quot;, {&quot;README.md&quot;: &quot;[api](api/)\n&quot;, &quot;api/index.md&quot;: &quot;# API\n&quot;}, [], [&quot;BROKEN_LINK&quot;])
+    case(&quot;root-relative link&quot;, {&quot;README.md&quot;: &quot;[x](/guide/a.md)\n&quot;, &quot;guide/a.md&quot;: &quot;# A\n&quot;}, [], [&quot;BROKEN_LINK&quot;])
+    case(&quot;github line anchor&quot;, {&quot;README.md&quot;: &quot;[x](setup.md#L10)\n&quot;, &quot;setup.md&quot;: &quot;# S\n&quot;}, [], [&quot;MISSING_ANCHOR&quot;])
+    case(&quot;task list not a link&quot;, {&quot;README.md&quot;: &quot;- [ ] write docs\n- [x] done\n&quot;}, [], [&quot;MISSING_REF_DEF&quot;])
+    case(&quot;mailto ignored&quot;, {&quot;README.md&quot;: &quot;[mail](mailto:team@example.com)\n&quot;}, [], [&quot;BROKEN_LINK&quot;])
+    case(&quot;nested subdir relative&quot;, {&quot;README.md&quot;: &quot;x&quot;, &quot;guide/a.md&quot;: &quot;[b](../b.md#top)\n&quot;, &quot;b.md&quot;: &quot;# Top\n&quot;}, [], [&quot;BROKEN_LINK&quot;, &quot;MISSING_ANCHOR&quot;], &quot;guide/a.md&quot;)
+
+    passed = 0
+    for name, files, expect, absent, target in cases:
+        with tempfile.TemporaryDirectory() as d:
+            for rel, body in files.items():
+                p = os.path.join(d, rel)
+                os.makedirs(os.path.dirname(p), exist_ok=True)
+                with open(p, &quot;w&quot;, encoding=&quot;utf-8&quot;) as fh:
+                    fh.write(body)
+            _, found, _ = run([d], root=d)
+            codes = {f[&quot;code&quot;] for f in found if f[&quot;file&quot;] == target}
+            ok = all(c in codes for c in expect) and not any(c in codes for c in absent)
+            if name == &quot;clean file&quot;:
+                ok = ok and not found
+            if name == &quot;near-miss hint&quot;:
+                ok = ok and any(&quot;Did you mean #getting-started&quot; in f[&quot;problem&quot;] for f in found)
+        passed += ok
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name + (&quot;&quot; if ok else f&quot; -&gt; got {sorted(codes)}&quot;))
+    # external URL listing and report rendering
+    with tempfile.TemporaryDirectory() as d:
+        with open(os.path.join(d, &quot;a.md&quot;), &quot;w&quot;) as fh:
+            fh.write(&quot;[x](https://example.com/a) and [y](https://example.com/a)\n&quot;)
+        files, found, ext = run([d])
+        ok = list(ext) == [&quot;https://example.com/a&quot;] and len(ext[&quot;https://example.com/a&quot;]) == 2
+        text = report(files, found, ext, True, [d])
+        ok = ok and &quot;External URLs to check&quot; in text and &quot;No findings.&quot; in text
+        passed += ok
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + &quot;external URLs listed once with locations, no network&quot;)
+    total = len(cases) + 1
+    print(f&quot;{passed}/{total} passed&quot;)
+    return 0 if passed == total else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Offline Markdown link and anchor checker&quot;)
+    ap.add_argument(&quot;paths&quot;, nargs=&quot;*&quot;)
+    ap.add_argument(&quot;--root&quot;, help=&quot;docs root for /absolute links and the OUTSIDE_ROOT check (default: first folder)&quot;)
+    ap.add_argument(&quot;--min-severity&quot;, default=&quot;LOW&quot;, choices=list(SEV_ORDER))
+    ap.add_argument(&quot;--ignore&quot;, default=&quot;&quot;, help=&quot;comma-separated finding codes to skip&quot;)
+    ap.add_argument(&quot;--external&quot;, action=&quot;store_true&quot;, help=&quot;list external URLs to check separately&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.paths:
+        ap.print_usage(sys.stderr)
+        return 2
+    try:
+        files, found, ext = run(a.paths, a.root, [c.strip() for c in a.ignore.split(&quot;,&quot;) if c.strip()], a.min_severity)
+    except FileNotFoundError as e:
+        print(f&quot;error: path not found: {e}&quot;, file=sys.stderr)
+        return 2
+    if not files:
+        print(&quot;error: no Markdown files found&quot;, file=sys.stderr)
+        return 2
+    if a.json:
+        print(json.dumps({&quot;files&quot;: len(files), &quot;findings&quot;: found, &quot;external&quot;: ext if a.external else {}}, indent=2, ensure_ascii=False))
+    else:
+        print(report(files, found, ext, a.external, a.paths))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for f in found) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/markdown-link-checker',TI="Markdown Link Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

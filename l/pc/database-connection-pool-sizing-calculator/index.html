@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Database Connection Pool Sizing Calculator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: database-connection-pool-sizing-calculator description: Sizes database connection pools for Postgres/MySQL apps from a short JSON of service">
+<meta property="og:title" content="Database Connection Pool Sizing Calculator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: database-connection-pool-sizing-calculator description: Sizes database connection pools for Postgres/MySQL apps from a short JSON of service">
+<meta property="og:url" content="https://claudebomb.com/l/pc/database-connection-pool-sizing-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/database-connection-pool-sizing-calculator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Database Connection Pool Sizing Calculator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: database-connection-pool-sizing-calculator
+description: Sizes database connection pools for Postgres/MySQL apps from a short JSON of services, pods, workers, threads and pool settings - worst-case connections at autoscale max and during deploy surges vs max_connections, busy connections from rps x hold time, per-process wait odds (Erlang C), CPU and memory limits, PgBouncer client and server limits. Recommends pool sizes or proxy settings. Includes an offline stdlib Python calculator with --self-test.
+---
+
+# Database Connection Pool Sizing Calculator
+
+You work out how many database connections an application really needs and whether its pool settings can take the database down. Most &quot;too many clients already&quot; outages are arithmetic: pods x worker processes x (pool_size + max_overflow), multiplied again by autoscaling and rolling deploys, against a max_connections that also has to cover admin sessions, migrations and monitoring. You do that arithmetic for every service, compare it with how many connections are actually busy at peak, and return pool sizes (or proxy settings) that fit with headroom.
+
+## Files in this skill
+
+- `scripts/pool_sizer.py` - reads the JSON description, computes open connections today / at autoscaling maximum / during a deploy surge, busy connections (Little&#x27;s law), the chance a request waits for a connection and the mean wait per process (Erlang C), CPU sweet spot and memory, PgBouncer limits, and recommends pool sizes; `--set` runs what-ifs (Python 3.8+ standard library only)
+- `references/sizing-model.md` - the formulas, where each input comes from, and the limits of the model
+- `references/pool-settings-by-stack.md` - what pool_size, max_overflow, threads and timeouts are called in SQLAlchemy, Django, HikariCP, node-postgres, Prisma, Rails, Go database/sql, Celery/Sidekiq, PgBouncer and RDS Proxy
+- `templates/pool-sizing-review.md` - the review to hand back
+- `examples/shop-pools.json` - a shop with an API (6-12 pods x 4 gthread workers, pool 10 + overflow 20), Celery workers, an admin app and a nightly report job on a 200-connection Postgres
+- `examples/pool-report.md` - the real report on that file
+- `examples/shop-pools-pgbouncer.json` - the fixed setup: right-sized fixed pools, API and workers through PgBouncer in transaction mode, admin and reports direct
+
+## Workflow
+
+### 1. Collect the inputs
+For the database: engine, `max_connections`, `superuser_reserved_connections` (Postgres default 3), connections used by everything that is not an app service (admin tools, monitoring, replication, migrations, BI), vCPUs and RAM. For each service: instances now and autoscaling maximum, worker processes per instance, threads or concurrency per process (async or not), pool size and overflow, pool timeout, request timeout, and load: peak requests or jobs per second and how long one keeps a connection checked out (`conn_hold_ms`; frameworks with a session per request hold it for the whole request). If there is no hold time, use queries per request x average query time, or the pool&#x27;s &quot;checked out&quot; gauge as `busy_connections`. Ask for the deploy strategy (maxSurge) and any proxy (PgBouncer, RDS Proxy, ProxySQL, Supavisor). Write it as JSON like `examples/shop-pools.json`.
+
+### 2. Run the calculator
+```
+python3 scripts/pool_sizer.py examples/shop-pools.json
+python3 scripts/pool_sizer.py pools.json --set api.max_instances=20 --set database.max_connections=400
+python3 scripts/pool_sizer.py pools.json --json
+python3 scripts/pool_sizer.py --self-test
+```
+Exit 0 = no HIGH finding, 1 = HIGH findings, 2 = the JSON is invalid (the message names the field). Without a shell, do the same sums by hand with `references/sizing-model.md`: open = instances x processes x (pool_size + max_overflow) per service; busy = rps x hold seconds; compare both with max_connections - reserved - other.
+
+### 3. Read the result
+- HIGH findings first: limits exceeded today, at autoscaling maximum or during a deploy surge, pools or proxies too small for the load, workers saturated by database time.
+- Compare &quot;busy at peak&quot; with &quot;open&quot;: a large gap means idle connections hold memory and slots; a transaction-mode proxy or smaller fixed pools close it.
+- &quot;Busy at peak&quot; above the CPU sweet spot (cores x 2 + 1) means the database itself is the bottleneck: more connections make it slower, not faster. Fix hold time (short transactions, no HTTP calls inside them, indexes) or capacity.
+- Treat the Erlang C numbers as a guide: they assume evenly spread, random arrivals. Check them against the pool&#x27;s wait-time and checked-out metrics.
+
+### 4. Recommend
+- Prefer fixed pools (`max_overflow` 0, min idle = max) sized per process from the recommendation, never more than the threads that can use them.
+- Keep at least 10% of usable connections free at max scale + deploy surge for admin sessions, failover and migrations.
+- When direct connections cannot fit, put the busy services behind a transaction-mode proxy with the server pool the report suggests; keep migrations, `LISTEN/NOTIFY`, advisory locks and session settings on a direct connection.
+- Raise `max_connections` only when RAM allows it, and say what it costs.
+- Set pool timeouts well below the request timeout so overload fails fast instead of piling up.
+- Rerun with `--set` for the next traffic peak or the next autoscaling change.
+
+### 5. Deliver
+Fill `templates/pool-sizing-review.md`: verdict, the connection budget table, findings with fixes, the new settings per service in that stack&#x27;s own names, proxy settings, and what to monitor after the change.
+
+## Example result
+On `examples/shop-pools.json` the services can open 1,230 connections today, 2,430 at autoscaling maximum and 3,050 during a deploy, against 185 usable, while only about 28 are busy at peak. The API pool (10 + 20 per process) is larger than its 8 threads can ever use, and every Celery process keeps 15 connections for 1 thread. Right-sized fixed pools still need 400 direct connections, so the report suggests a transaction-mode PgBouncer with about 53 server connections. `examples/shop-pools-pgbouncer.json` applies that and fits in 80 of 185 with no HIGH finding; the remaining MEDIUM says the 8-core database is already busy at peak (28 active vs a sweet spot of 17).
+
+## Rules
+
+- Never guess max_connections, autoscaling limits or hold times; ask, or label the number as an assumption in the review.
+- Size for the worst case the platform allows (autoscaling max + deploy surge), not today&#x27;s pod count.
+- Count every client of the database, including cron jobs, BI tools, migrations and replicas&#x27; replication slots.
+- Do not recommend raising max_connections as the first fix; idle connections cost memory and CPU on the database.
+- Give settings in the names of the user&#x27;s own framework (see `references/pool-settings-by-stack.md`).
+- Say clearly that the queueing numbers are a model and name the metric that confirms them.
+FILE:references/sizing-model.md
+# Sizing model
+
+## Connection budget
+- Usable = `max_connections - reserved - other`. Postgres keeps `superuser_reserved_connections` (default 3) for admins; managed services reserve more (RDS rdsadmin, Cloud SQL, Azure). &quot;Other&quot; = monitoring agents, admin tools, BI, migrations, logical replication.
+- Open connections per service = `instances x processes x (pool_size + max_overflow)`.
+- Autoscaling: use `max_instances`. Rolling deploy: old and new pods overlap, `ceil(max_instances x (1 + maxSurge)) x processes x pool max`.
+- Via a proxy the database sees only the proxy&#x27;s server connections: `min(default_pool_size x db/user pairs, max_db_connections) + reserve_pool_size`, per proxy instance.
+- Headroom: keep &gt;= 10% of usable free at max scale + surge.
+
+## Busy connections (Little&#x27;s law)
+- `busy = arrival rate x time each arrival holds a connection`. 1,200 requests/s x 15 ms = 18 connections busy on average.
+- Hold time is checkout to return, not query time: a framework that opens a transaction or session for the whole request holds the connection for the whole request, including template rendering and external HTTP calls.
+- Without measurements: `queries per request x average query time + ~1 ms overhead`; better, read the pool&#x27;s checked-out gauge at peak.
+- Peaks inside a minute are higher than the per-minute average; the calculator multiplies load by `burst_factor` (default 1.3).
+
+## Waiting for a connection (Erlang C)
+- Per process, offered load `a = busy x burst / processes` (in Erlangs). With `c` connections in the pool, the probability that a checkout has to wait is Erlang C(c, a); mean wait = `C(c, a) x hold / (c - a)`.
+- `a &gt;= c` means the pool is saturated: requests queue until `pool_timeout` and then fail.
+- Recommended pool = smallest `c` with C(c, a) &lt;= target (default 1%) and utilization `a / c` &lt;= 0.7, never more than the threads that can use connections (sync workers) and at least 2 (or the thread count if lower).
+- A sync process with N threads never uses more than N connections. If `pool &gt;= threads`, nothing waits for a connection; requests wait for a thread instead (WORKERS_SATURATED when `a` approaches `threads`).
+- Assumptions: random (Poisson) arrivals, exponential hold times, load spread evenly over processes. Real traffic is burstier; use the numbers to compare options, then confirm with pool wait metrics.
+
+## The database&#x27;s own limit
+- A database runs about `cores x 2 + effective spindles` queries at once efficiently (the HikariCP / PostgreSQL wiki rule of thumb; SSD -&gt; spindles about 1). More active connections queue inside the database and add context switching and lock contention.
+- So `busy at peak` above that number is a capacity or query problem, not a pool problem.
+- Each Postgres backend costs roughly 5-10 MB plus `work_mem` per sort/hash node; MySQL threads about 1-3 MB plus buffers. The calculator flags open connections x MB above 25% of RAM.
+
+## Proxies
+- Transaction mode multiplexes many client connections over few server connections; session mode pins one server connection per client and saves nothing.
+- Client connections to PgBouncer are cheap (~2 kB); `max_client_conn` must cover all client pools at max scale + surge, per proxy instance.
+- Transaction mode loses session state between transactions: `SET`, temp tables, advisory locks, `LISTEN/NOTIFY`, `WITH HOLD` cursors; protocol-level prepared statements need PgBouncer 1.21+ (`max_prepared_statements`). Run migrations directly.
+- RDS Proxy &quot;pins&quot; connections that use session state, which silently turns it into session mode for those clients.
+
+## What to monitor after a change
+- Pool: checked-out connections, wait time / wait count, timeouts (SQLAlchemy `QueuePool limit ... reached`, HikariCP `Connection is not available, request timed out`).
+- Database: `SELECT count(*), state FROM pg_stat_activity GROUP BY state;` (`idle in transaction` = held but unused), `max_connections` usage, CPU, `wait_event` types.
+- Proxy: `SHOW POOLS;` (`cl_waiting`, `maxwait`), `SHOW STATS;`.
+FILE:references/pool-settings-by-stack.md
+# Pool settings by stack
+
+| Stack | Pool size | Overflow / max | Idle min | Wait timeout | Concurrency per process |
+|---|---|---|---|---|---|
+| SQLAlchemy (QueuePool) | `pool_size` (5) | `max_overflow` (10) | - | `pool_timeout` (30 s) | gunicorn `--threads`, uvicorn = async |
+| Django | no pool before 5.1; persistent `CONN_MAX_AGE` = 1 connection per thread; 5.1+ psycopg pool `OPTIONS[&quot;pool&quot;]` `min_size`/`max_size` | - | `min_size` | `timeout` | gunicorn workers x threads |
+| HikariCP (Java/Spring) | `maximumPoolSize` (10) | - | `minimumIdle` (= max) | `connectionTimeout` (30 s) | Tomcat `server.tomcat.threads.max` (200) |
+| node-postgres (pg.Pool) | `max` (10) | - | - | `connectionTimeoutMillis` (0 = forever) | async: one process, many requests |
+| Prisma | `connection_limit` in the URL (cores x 2 + 1) | - | - | `pool_timeout` (10 s) | async |
+| Rails ActiveRecord | `pool` in database.yml (5) | - | - | `checkout_timeout` (5 s) | Puma threads (`RAILS_MAX_THREADS`) x workers |
+| Go database/sql | `SetMaxOpenConns` (0 = unlimited) | - | `SetMaxIdleConns` (2) | context deadline | goroutines: async |
+| Celery | 1 connection per worker process (Django) or the SQLAlchemy pool per process | - | - | - | `--concurrency` processes, 1 task each (prefork) |
+| Sidekiq | ActiveRecord `pool` &gt;= Sidekiq `concurrency` | - | - | - | `concurrency` threads |
+| PgBouncer | `default_pool_size` (20) per db/user pair, `max_db_connections` | `reserve_pool_size` | `min_pool_size` | `query_wait_timeout` (120 s) | `max_client_conn` (100) |
+| RDS Proxy | `MaxConnectionsPercent` of max_connections | - | `MaxIdleConnectionsPercent` | `ConnectionBorrowTimeout` (120 s) | - |
+
+## Mapping to the calculator&#x27;s JSON
+- `processes`: gunicorn/Puma workers, Celery `--concurrency` (prefork), uWSGI processes, Node cluster workers.
+- `threads`: gunicorn `--threads`, Puma threads, Tomcat threads, Sidekiq concurrency. Set `async: true` for asyncio, Node, Go, reactive Java; then the pool size is the only concurrency limit.
+- `pool_size` + `max_overflow`: the most connections one process can open.
+- `pool_timeout_ms`, `request_timeout_ms`: the pool&#x27;s wait timeout and the HTTP/load balancer timeout.
+- Serverless functions (Lambda, Cloud Run with concurrency 1): each instance is one process; use the account/function concurrency limit as `max_instances` and almost always a proxy.
+
+## Common traps
+- Django `CONN_MAX_AGE` with many threads or ASGI opens one connection per thread/task and never shares them.
+- Celery/RQ workers that import the web app&#x27;s SQLAlchemy engine get the web pool size (e.g. 10 + 20) for a process that runs one task at a time.
+- Node `pg.Pool` per request handler (a new pool on every request) instead of one per process.
+- Go without `SetMaxOpenConns`: unlimited connections under load.
+- Rails: Puma threads &gt; `pool` gives `ActiveRecord::ConnectionTimeoutError`; Sidekiq needs its own pool &gt;= concurrency.
+- Health checks and readiness probes that open a new connection every few seconds per pod.
+FILE:templates/pool-sizing-review.md
+# Connection pool sizing review: &lt;system&gt;
+
+**Database:** &lt;engine, size, max_connections, reserved, other -&gt; usable&gt;   **Proxy:** &lt;none / PgBouncer transaction mode ...&gt;
+**Verdict:** &lt;will run out / works but wasteful / OK&gt; - &lt;n&gt; HIGH, &lt;n&gt; MEDIUM, &lt;n&gt; LOW
+**Inputs measured vs assumed:** &lt;rps and hold time from APM for api; worker hold time assumed 200 ms ...&gt;
+
+## Connection budget
+| Scenario | Open now (current settings) | With recommended settings | Usable |
+|---|---|---|---|
+| Today | &lt;1,230&gt; | &lt;...&gt; | &lt;185&gt; |
+| Autoscaling max | &lt;2,430&gt; | &lt;...&gt; | &lt;185&gt; |
+| Max + deploy surge | &lt;3,050&gt; | &lt;80 via PgBouncer&gt; | &lt;185&gt; |
+| Busy at peak | &lt;~28&gt; | &lt;~28&gt; | CPU sweet spot &lt;~17&gt; |
+
+## Findings
+| Sev | What | Why it matters | Fix |
+|---|---|---|---|
+| &lt;HIGH&gt; | &lt;pools can open 1,230 of 185&gt; | &lt;&#x27;too many clients&#x27; during a traffic spike or deploy&gt; | &lt;fixed pools + PgBouncer&gt; |
+
+## New settings
+| Service | Setting (in its own stack) | Old | New |
+|---|---|---|---|
+| &lt;api (SQLAlchemy)&gt; | &lt;pool_size / max_overflow / pool_timeout&gt; | &lt;10 / 20 / 30 s&gt; | &lt;5 / 0 / 2 s&gt; |
+| &lt;celery-worker&gt; | &lt;pool_size / max_overflow&gt; | &lt;5 / 10&gt; | &lt;1 / 0&gt; |
+
+## Proxy
+- &lt;pgbouncer.ini: pool_mode = transaction, default_pool_size = 27, reserve_pool_size = 3, max_db_connections = 27, max_client_conn = 1000; 2 instances&gt;
+- &lt;Keep direct: migrations, admin, nightly-reports (session features)&gt;
+
+## Database
+- &lt;max_connections stays 200; ~80 used at max + surge&gt;
+- &lt;Busy at peak (28) above sweet spot (17): look at the slowest queries / long transactions first&gt;
+
+## Roll-out and monitoring
+1. &lt;deploy pool changes to workers first, then API&gt;
+2. &lt;watch: pool wait time, timeouts, pg_stat_activity by state, PgBouncer SHOW POOLS cl_waiting/maxwait&gt;
+3. &lt;rerun the calculator with the measured hold time after a week&gt;
+
+## Open questions
+- &lt;real autoscaling max for api?&gt;
+FILE:examples/shop-pools.json
+{
+  &quot;database&quot;: {
+    &quot;name&quot;: &quot;shop-orders (Postgres 16, 8 vCPU / 32 GB)&quot;,
+    &quot;engine&quot;: &quot;postgres&quot;,
+    &quot;max_connections&quot;: 200,
+    &quot;reserved_connections&quot;: 3,
+    &quot;other_connections&quot;: 12,
+    &quot;cpu_cores&quot;: 8,
+    &quot;ram_gb&quot;: 32,
+    &quot;mb_per_connection&quot;: 10
+  },
+  &quot;deploy&quot;: {&quot;surge_percent&quot;: 25},
+  &quot;settings&quot;: {&quot;target_wait_probability&quot;: 0.01, &quot;burst_factor&quot;: 1.3},
+  &quot;services&quot;: [
+    {
+      &quot;name&quot;: &quot;api&quot;,
+      &quot;instances&quot;: 6,
+      &quot;max_instances&quot;: 12,
+      &quot;processes&quot;: 4,
+      &quot;threads&quot;: 8,
+      &quot;pool_size&quot;: 10,
+      &quot;max_overflow&quot;: 20,
+      &quot;peak_rps&quot;: 1200,
+      &quot;conn_hold_ms&quot;: 15,
+      &quot;pool_timeout_ms&quot;: 30000,
+      &quot;request_timeout_ms&quot;: 10000
+    },
+    {
+      &quot;name&quot;: &quot;celery-worker&quot;,
+      &quot;instances&quot;: 4,
+      &quot;max_instances&quot;: 8,
+      &quot;processes&quot;: 8,
+      &quot;threads&quot;: 1,
+      &quot;pool_size&quot;: 5,
+      &quot;max_overflow&quot;: 10,
+      &quot;peak_rps&quot;: 40,
+      &quot;conn_hold_ms&quot;: 200
+    },
+    {
+      &quot;name&quot;: &quot;admin&quot;,
+      &quot;instances&quot;: 2,
+      &quot;processes&quot;: 2,
+      &quot;threads&quot;: 4,
+      &quot;pool_size&quot;: 5,
+      &quot;max_overflow&quot;: 0,
+      &quot;peak_rps&quot;: 5,
+      &quot;conn_hold_ms&quot;: 30
+    },
+    {
+      &quot;name&quot;: &quot;nightly-reports&quot;,
+      &quot;instances&quot;: 1,
+      &quot;processes&quot;: 1,
+      &quot;threads&quot;: 4,
+      &quot;pool_size&quot;: 5,
+      &quot;max_overflow&quot;: 5,
+      &quot;busy_connections&quot;: 2
+    }
+  ]
+}
+FILE:examples/pool-report.md
+# Connection pool sizing report
+
+Database: **shop-orders (Postgres 16, 8 vCPU / 32 GB)** (postgres), max_connections 200, reserved 3, other 12 -&gt; **185 usable**, 8 cores (sweet spot ~17 active)
+Deploy surge: 25%   Burst factor: 1.3   Target P(wait): 1.0%
+
+**Verdict: will run out of connections or queue** - 1 HIGH, 8 MEDIUM, 3 LOW finding(s).
+
+## Services
+
+| Service | Path | Procs now / max | Pool (size+overflow) | Busy at peak | Per proc load | P(wait) | Mean wait | Open now | Open max | Deploy surge |
+|---|---|---|---|---|---|---|---|---|---|---|
+| api | direct | 24 / 48 | 10+20 | 18 (1200 rps x 15 ms) | 0.98 | 0% | 0 ms | 720 | 1440 | 1800 |
+| celery-worker | direct | 32 / 64 | 5+10 | 8 (40 rps x 200 ms) | 0.33 | 0% | 0 ms | 480 | 960 | 1200 |
+| admin | direct | 4 / 4 | 5+0 | 0.15 (5 rps x 30 ms) | 0.05 | 0% | 0 ms | 20 | 20 | 30 |
+| nightly-reports | direct | 1 / 1 | 5+5 | 2 (given) | 2.6 | 0% | 0 ms | 10 | 10 | 20 |
+
+## Totals against the database
+
+| Scenario | Direct | Via proxy (server side) | Database total | Usable | Headroom |
+|---|---|---|---|---|---|
+| today | 1230 | 0 | 1230 | 185 | -1045 |
+| autoscaling max | 2430 | 0 | 2430 | 185 | -2245 |
+| max + deploy surge | 3050 | 0 | 3050 | 185 | -2865 |
+
+Busy at peak (all services): ~28.15 connections vs ~17 the CPUs run efficiently.
+
+## Findings
+
+| Sev | Code | Where | What | Fix |
+|---|---|---|---|---|
+| HIGH | POOL_EXCEEDS_DB_LIMIT | shop-orders (Postgres 16, 8 vCPU / 32 GB) (max_connections 200 - reserved 3 - other 12 = 185 usable) | pools can open 1230 connections at today&#x27;s size; the database accepts 185 - new connections fail with &#x27;too many clients&#x27; / &#x27;Too many connections&#x27; under load | shrink pools to the recommendation below, drop max_overflow, or put the services behind a proxy |
+| MEDIUM | DB_ACTIVE_OVER_CORES | shop-orders (Postgres 16, 8 vCPU / 32 GB) | about 28.1 connections are busy at peak but 8 cores run about 17 at once efficiently (cores x 2 + spindles); the rest queue inside the database | cut connection hold time (shorter transactions, no network calls inside them), add read replicas, or scale the database |
+| MEDIUM | TOO_MANY_CONNECTIONS_FOR_CORES | shop-orders (Postgres 16, 8 vCPU / 32 GB) | up to 2430 open connections for 8 cores (304 per core); idle backends cost memory, snapshot and lock-table overhead | fewer, busier connections: smaller pools or a transaction-mode proxy |
+| MEDIUM | CONNECTION_MEMORY | shop-orders (Postgres 16, 8 vCPU / 32 GB) | 2430 connections x ~10 MB = 23.7 GB of 32 GB RAM before work_mem/sort buffers | reduce open connections; keep that memory for cache (shared_buffers / page cache) |
+| MEDIUM | PROXY_RECOMMENDED | shop-orders (Postgres 16, 8 vCPU / 32 GB) | only ~28 connections are busy at peak but up to 2430 are open; a transaction-mode pooler multiplexes them | PgBouncer/RDS Proxy/ProxySQL in front of the database (see recommendation) |
+| MEDIUM | POOL_LARGER_THAN_CONCURRENCY | api | pool max 30 per process but only 8 thread(s) can use a connection at a time; the extra 22 can never be used | pool_size &lt;= threads; max_overflow 0 |
+| MEDIUM | POOL_LARGER_THAN_CONCURRENCY | celery-worker | pool max 15 per process but only 1 thread(s) can use a connection at a time; the extra 14 can never be used | pool_size &lt;= threads; max_overflow 0 |
+| MEDIUM | POOL_LARGER_THAN_CONCURRENCY | admin | pool max 5 per process but only 4 thread(s) can use a connection at a time; the extra 1 can never be used | pool_size &lt;= threads; max_overflow 0 |
+| MEDIUM | POOL_LARGER_THAN_CONCURRENCY | nightly-reports | pool max 10 per process but only 4 thread(s) can use a connection at a time; the extra 6 can never be used | pool_size &lt;= threads; max_overflow 0 |
+| LOW | LARGE_OVERFLOW | api | max_overflow 20 &gt;= pool_size 10 across 48 processes makes the worst case 1440 instead of 480 | fixed pools (max_overflow 0) keep the total predictable |
+| LOW | POOL_TIMEOUT_LONG | api | pool_timeout 30000 ms &gt;= request timeout 10000 ms: a request can time out while still waiting for a connection | pool_timeout around 10-30% of the request timeout so overload fails fast |
+| LOW | LARGE_OVERFLOW | celery-worker | max_overflow 10 &gt;= pool_size 5 across 64 processes makes the worst case 960 instead of 320 | fixed pools (max_overflow 0) keep the total predictable |
+
+## Recommended pools
+
+| Service | pool_size | max_overflow | P(wait) per proc | Open at max | With deploy surge |
+|---|---|---|---|---|---|
+| api | 5 | 0 | 0.3% | 240 | 300 |
+| celery-worker | 1 | 0 | 0% | 64 | 80 |
+| admin | 2 | 0 | 0.1% | 8 | 12 |
+| nightly-reports | 4 | 0 | 0% | 4 | 8 |
+
+Database connections needed with these pools at max scale + deploy surge: **400** (direct 400 + proxy 0) of 185 usable -&gt; still does NOT fit.
+
+Direct connections cannot fit. Put the services behind a transaction-mode proxy: about **53** server connections (default_pool_size / max_db_connections) cover peak x burst with P(wait) under 1.0%; keep client pools as above and set max_client_conn above the client total.
+Or raise max_connections to at least 457 (check RAM: ~10 MB per connection).
+
+Model: Little&#x27;s law for busy connections, Erlang C (M/M/c) per process with load spread evenly; peak load x burst factor. Validate with the pool&#x27;s checked-out and wait metrics.
+FILE:examples/shop-pools-pgbouncer.json
+{
+  &quot;database&quot;: {
+    &quot;name&quot;: &quot;shop-orders (Postgres 16, 8 vCPU / 32 GB)&quot;,
+    &quot;engine&quot;: &quot;postgres&quot;,
+    &quot;max_connections&quot;: 200,
+    &quot;reserved_connections&quot;: 3,
+    &quot;other_connections&quot;: 12,
+    &quot;cpu_cores&quot;: 8,
+    &quot;ram_gb&quot;: 32,
+    &quot;mb_per_connection&quot;: 10
+  },
+  &quot;proxy&quot;: {
+    &quot;type&quot;: &quot;pgbouncer&quot;,
+    &quot;pool_mode&quot;: &quot;transaction&quot;,
+    &quot;instances&quot;: 2,
+    &quot;default_pool_size&quot;: 27,
+    &quot;max_db_connections&quot;: 27,
+    &quot;reserve_pool_size&quot;: 3,
+    &quot;max_client_conn&quot;: 1000
+  },
+  &quot;deploy&quot;: {&quot;surge_percent&quot;: 25},
+  &quot;settings&quot;: {&quot;target_wait_probability&quot;: 0.01, &quot;burst_factor&quot;: 1.3},
+  &quot;services&quot;: [
+    {
+      &quot;name&quot;: &quot;api&quot;,
+      &quot;via_proxy&quot;: true,
+      &quot;instances&quot;: 6,
+      &quot;max_instances&quot;: 12,
+      &quot;processes&quot;: 4,
+      &quot;threads&quot;: 8,
+      &quot;pool_size&quot;: 5,
+      &quot;max_overflow&quot;: 0,
+      &quot;peak_rps&quot;: 1200,
+      &quot;conn_hold_ms&quot;: 15,
+      &quot;pool_timeout_ms&quot;: 2000,
+      &quot;request_timeout_ms&quot;: 10000
+    },
+    {
+      &quot;name&quot;: &quot;celery-worker&quot;,
+      &quot;via_proxy&quot;: true,
+      &quot;instances&quot;: 4,
+      &quot;max_instances&quot;: 8,
+      &quot;processes&quot;: 8,
+      &quot;threads&quot;: 1,
+      &quot;pool_size&quot;: 1,
+      &quot;max_overflow&quot;: 0,
+      &quot;peak_rps&quot;: 40,
+      &quot;conn_hold_ms&quot;: 200
+    },
+    {
+      &quot;name&quot;: &quot;admin&quot;,
+      &quot;instances&quot;: 2,
+      &quot;processes&quot;: 2,
+      &quot;threads&quot;: 4,
+      &quot;pool_size&quot;: 2,
+      &quot;max_overflow&quot;: 0,
+      &quot;peak_rps&quot;: 5,
+      &quot;conn_hold_ms&quot;: 30
+    },
+    {
+      &quot;name&quot;: &quot;nightly-reports&quot;,
+      &quot;instances&quot;: 1,
+      &quot;processes&quot;: 1,
+      &quot;threads&quot;: 4,
+      &quot;pool_size&quot;: 4,
+      &quot;max_overflow&quot;: 0,
+      &quot;busy_connections&quot;: 2
+    }
+  ]
+}
+FILE:scripts/pool_sizer.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Database connection pool sizing calculator (Python 3.8+ standard library only).
+
+Reads a JSON description of a database, an optional PgBouncer-style proxy and the services
+that connect to it, then answers:
+  - worst-case open connections at normal size, at autoscaling maximum and during a rolling
+    deploy surge, against what the database really allows (max_connections - reserved - other)
+  - how many connections are actually busy at peak (Little&#x27;s law: rate x hold time)
+  - per process: chance a request waits for a free connection and the mean wait (Erlang C),
+    and the smallest pool that keeps waiting under the target
+  - database side: busy connections against the CPU sweet spot (cores x 2 + 1), memory used by
+    open connections, proxy client/server limits and pool-mode caveats
+  - a recommended pool_size / max_overflow per service and, when direct connections cannot fit,
+    proxy settings that do
+
+Input (JSON):
+  {&quot;database&quot;: {&quot;name&quot;: &quot;orders-db&quot;, &quot;engine&quot;: &quot;postgres&quot;, &quot;max_connections&quot;: 200,
+                &quot;reserved_connections&quot;: 3, &quot;other_connections&quot;: 12, &quot;cpu_cores&quot;: 8,
+                &quot;ram_gb&quot;: 32, &quot;mb_per_connection&quot;: 10},
+   &quot;proxy&quot;: {&quot;type&quot;: &quot;pgbouncer&quot;, &quot;pool_mode&quot;: &quot;transaction&quot;, &quot;default_pool_size&quot;: 30,
+             &quot;max_db_connections&quot;: 60, &quot;max_client_conn&quot;: 2000, &quot;instances&quot;: 1},      (optional)
+   &quot;deploy&quot;: {&quot;surge_percent&quot;: 25},
+   &quot;settings&quot;: {&quot;target_wait_probability&quot;: 0.01, &quot;burst_factor&quot;: 1.3},                (optional)
+   &quot;services&quot;: [{&quot;name&quot;: &quot;api&quot;, &quot;instances&quot;: 6, &quot;max_instances&quot;: 12, &quot;processes&quot;: 4,
+                 &quot;threads&quot;: 8, &quot;pool_size&quot;: 10, &quot;max_overflow&quot;: 20, &quot;peak_rps&quot;: 1200,
+                 &quot;conn_hold_ms&quot;: 15, &quot;pool_timeout_ms&quot;: 30000, &quot;request_timeout_ms&quot;: 10000,
+                 &quot;via_proxy&quot;: false, &quot;async&quot;: false}]}
+  conn_hold_ms = how long one request/job keeps a connection checked out (session-per-request
+  frameworks hold it for the whole request); or give queries_per_request + avg_query_ms.
+  For jobs without a rate, give busy_connections (average connections in use).
+
+Usage:
+  python3 pool_sizer.py pools.json [--set api.max_instances=16] [--json]
+  python3 pool_sizer.py --self-test
+
+Exit codes: 0 = no HIGH finding, 1 = HIGH findings (limits exceeded, pools that queue),
+2 = bad input.
+&quot;&quot;&quot;
+import argparse
+import copy
+import json
+import math
+import sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+DEFAULTS = {&quot;target_wait_probability&quot;: 0.01, &quot;burst_factor&quot;: 1.3, &quot;max_utilization&quot;: 0.7}
+ENGINE_MB = {&quot;postgres&quot;: 10, &quot;postgresql&quot;: 10, &quot;mysql&quot;: 3, &quot;mariadb&quot;: 3}
+
+
+class InputError(ValueError):
+    pass
+
+
+def erlang_c(c, a):
+    &quot;&quot;&quot;Probability that an arrival waits (all c servers busy), offered load a Erlangs.&quot;&quot;&quot;
+    if c &lt;= 0:
+        return 1.0
+    if a &lt;= 0:
+        return 0.0
+    if a &gt;= c:
+        return 1.0
+    b = 1.0
+    for k in range(1, c + 1):
+        b = a * b / (k + a * b)
+    return c * b / (c - a * (1 - b))
+
+
+def mean_wait_ms(c, a, hold_ms):
+    &quot;&quot;&quot;Mean wait for a connection in ms (M/M/c).&quot;&quot;&quot;
+    if a &lt;= 0:
+        return 0.0
+    if a &gt;= c:
+        return float(&quot;inf&quot;)
+    return erlang_c(c, a) * hold_ms / (c - a)
+
+
+def smallest_pool(a, target, max_util, cap=None, floor=1):
+    c = max(floor, 1)
+    while True:
+        if erlang_c(c, a) &lt;= target and a / c &lt;= max_util:
+            return c if cap is None else min(c, cap)
+        if cap is not None and c &gt;= cap:
+            return cap
+        c += 1
+        if c &gt; 10000:
+            return c
+
+
+def num(d, key, default=None, kind=float, minimum=0, where=&quot;&quot;):
+    v = d.get(key, default)
+    if v is None:
+        return None
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        raise InputError(&quot;%s%s must be a number, got %r&quot; % (where, key, v))
+    if v &lt; minimum:
+        raise InputError(&quot;%s%s must be &gt;= %s, got %r&quot; % (where, key, minimum, v))
+    return kind(v)
+
+
+def apply_set(cfg, expr):
+    &quot;&quot;&quot;--set api.max_instances=16 | database.max_connections=300 | proxy.default_pool_size=40&quot;&quot;&quot;
+    if &quot;=&quot; not in expr or &quot;.&quot; not in expr.split(&quot;=&quot;)[0]:
+        raise InputError(&quot;--set needs &lt;service|database|proxy|deploy|settings&gt;.&lt;key&gt;=&lt;value&gt;, got %r&quot; % expr)
+    path, val = expr.split(&quot;=&quot;, 1)
+    target, key = path.split(&quot;.&quot;, 1)
+    try:
+        value = json.loads(val)
+    except ValueError:
+        value = val
+    if target in (&quot;database&quot;, &quot;proxy&quot;, &quot;deploy&quot;, &quot;settings&quot;):
+        cfg.setdefault(target, {})[key] = value
+        return
+    for s in cfg.get(&quot;services&quot;, []):
+        if s.get(&quot;name&quot;) == target:
+            s[key] = value
+            return
+    raise InputError(&quot;--set: no service named %r&quot; % target)
+
+
+class Plan:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.findings = []
+        self.settings = dict(DEFAULTS)
+        self.settings.update(cfg.get(&quot;settings&quot;) or {})
+        self._db()
+        self._proxy()
+        self.surge = num(cfg.get(&quot;deploy&quot;) or {}, &quot;surge_percent&quot;, 25, where=&quot;deploy.&quot;) / 100.0
+        self.services = [self._service(s, i) for i, s in enumerate(cfg.get(&quot;services&quot;) or [])]
+        if not self.services:
+            raise InputError(&quot;no services given&quot;)
+        names = [s[&quot;name&quot;] for s in self.services]
+        if len(set(names)) != len(names):
+            raise InputError(&quot;service names must be unique&quot;)
+        self._totals()
+        self._check()
+
+    def add(self, code, sev, where, what, fix):
+        self.findings.append({&quot;code&quot;: code, &quot;sev&quot;: sev, &quot;where&quot;: where, &quot;what&quot;: what, &quot;fix&quot;: fix})
+
+    def _db(self):
+        d = self.cfg.get(&quot;database&quot;)
+        if not isinstance(d, dict):
+            raise InputError(&quot;missing &#x27;database&#x27; object&quot;)
+        engine = str(d.get(&quot;engine&quot;, &quot;postgres&quot;)).lower()
+        self.db = {
+            &quot;name&quot;: d.get(&quot;name&quot;, &quot;database&quot;),
+            &quot;engine&quot;: engine,
+            &quot;max_connections&quot;: num(d, &quot;max_connections&quot;, 100 if engine.startswith(&quot;postgres&quot;) else 151, int, 1, &quot;database.&quot;),
+            &quot;reserved&quot;: num(d, &quot;reserved_connections&quot;, 3 if engine.startswith(&quot;postgres&quot;) else 0, int, 0, &quot;database.&quot;),
+            &quot;other&quot;: num(d, &quot;other_connections&quot;, 0, int, 0, &quot;database.&quot;),
+            &quot;cores&quot;: num(d, &quot;cpu_cores&quot;, None, float, 0.5, &quot;database.&quot;),
+            &quot;ram_gb&quot;: num(d, &quot;ram_gb&quot;, None, float, 0.1, &quot;database.&quot;),
+            &quot;mb_per_conn&quot;: num(d, &quot;mb_per_connection&quot;, ENGINE_MB.get(engine, 10), float, 0, &quot;database.&quot;),
+            &quot;spindles&quot;: num(d, &quot;effective_spindles&quot;, 1, float, 0, &quot;database.&quot;),
+        }
+        self.db[&quot;available&quot;] = self.db[&quot;max_connections&quot;] - self.db[&quot;reserved&quot;] - self.db[&quot;other&quot;]
+        if self.db[&quot;available&quot;] &lt;= 0:
+            raise InputError(&quot;database: reserved + other connections leave nothing for the services&quot;)
+
+    def _proxy(self):
+        p = self.cfg.get(&quot;proxy&quot;)
+        if not p:
+            self.proxy = None
+            return
+        mode = str(p.get(&quot;pool_mode&quot;, &quot;transaction&quot;)).lower()
+        if mode not in (&quot;session&quot;, &quot;transaction&quot;, &quot;statement&quot;):
+            raise InputError(&quot;proxy.pool_mode must be session, transaction or statement&quot;)
+        inst = num(p, &quot;instances&quot;, 1, int, 1, &quot;proxy.&quot;)
+        pool = num(p, &quot;default_pool_size&quot;, 20, int, 1, &quot;proxy.&quot;)
+        pairs = num(p, &quot;db_user_pairs&quot;, 1, int, 1, &quot;proxy.&quot;)
+        maxdb = num(p, &quot;max_db_connections&quot;, 0, int, 0, &quot;proxy.&quot;)
+        per_inst = pool * pairs if not maxdb else min(pool * pairs, maxdb)
+        self.proxy = {&quot;type&quot;: p.get(&quot;type&quot;, &quot;pgbouncer&quot;), &quot;mode&quot;: mode, &quot;instances&quot;: inst,
+                      &quot;default_pool_size&quot;: pool, &quot;pairs&quot;: pairs, &quot;max_db_connections&quot;: maxdb,
+                      &quot;reserve_pool_size&quot;: num(p, &quot;reserve_pool_size&quot;, 0, int, 0, &quot;proxy.&quot;),
+                      &quot;max_client_conn&quot;: num(p, &quot;max_client_conn&quot;, 100, int, 1, &quot;proxy.&quot;),
+                      &quot;server_conns&quot;: (per_inst + num(p, &quot;reserve_pool_size&quot;, 0, int, 0, &quot;proxy.&quot;)) * inst}
+
+    def _service(self, s, i):
+        w = &quot;services[%d].&quot; % i
+        name = s.get(&quot;name&quot;) or &quot;service%d&quot; % (i + 1)
+        r = {&quot;name&quot;: name, &quot;via_proxy&quot;: bool(s.get(&quot;via_proxy&quot;, False)), &quot;async&quot;: bool(s.get(&quot;async&quot;, False))}
+        r[&quot;instances&quot;] = num(s, &quot;instances&quot;, 1, int, 0, w)
+        r[&quot;max_instances&quot;] = max(num(s, &quot;max_instances&quot;, r[&quot;instances&quot;], int, 0, w), r[&quot;instances&quot;])
+        r[&quot;processes&quot;] = num(s, &quot;processes&quot;, 1, int, 1, w)
+        r[&quot;threads&quot;] = num(s, &quot;threads&quot;, None, int, 1, w)
+        r[&quot;pool_size&quot;] = num(s, &quot;pool_size&quot;, 5, int, 0, w)
+        r[&quot;max_overflow&quot;] = num(s, &quot;max_overflow&quot;, 0, int, 0, w)
+        r[&quot;pool_max&quot;] = r[&quot;pool_size&quot;] + r[&quot;max_overflow&quot;]
+        if r[&quot;pool_max&quot;] &lt; 1:
+            raise InputError(&quot;%s: pool_size + max_overflow must be at least 1&quot; % name)
+        r[&quot;pool_timeout_ms&quot;] = num(s, &quot;pool_timeout_ms&quot;, 30000, float, 0, w)
+        r[&quot;request_timeout_ms&quot;] = num(s, &quot;request_timeout_ms&quot;, None, float, 1, w)
+        hold = num(s, &quot;conn_hold_ms&quot;, None, float, 0, w)
+        if hold is None and s.get(&quot;queries_per_request&quot;) is not None:
+            hold = num(s, &quot;queries_per_request&quot;, 0, float, 0, w) * num(s, &quot;avg_query_ms&quot;, 0, float, 0, w) \
+                + num(s, &quot;overhead_ms&quot;, 1, float, 0, w)
+        r[&quot;hold_ms&quot;] = hold
+        r[&quot;rps&quot;] = num(s, &quot;peak_rps&quot;, None, float, 0, w)
+        r[&quot;busy_given&quot;] = num(s, &quot;busy_connections&quot;, None, float, 0, w)
+        procs_now = r[&quot;instances&quot;] * r[&quot;processes&quot;]
+        procs_max = r[&quot;max_instances&quot;] * r[&quot;processes&quot;]
+        r[&quot;procs_now&quot;], r[&quot;procs_max&quot;] = procs_now, procs_max
+        r[&quot;procs_surge&quot;] = int(math.ceil(r[&quot;max_instances&quot;] * (1 + self.surge))) * r[&quot;processes&quot;] if r[&quot;max_instances&quot;] else 0
+        r[&quot;open_steady&quot;] = procs_now * r[&quot;pool_size&quot;]
+        r[&quot;open_now&quot;] = procs_now * r[&quot;pool_max&quot;]
+        r[&quot;open_max&quot;] = procs_max * r[&quot;pool_max&quot;]
+        r[&quot;open_surge&quot;] = r[&quot;procs_surge&quot;] * r[&quot;pool_max&quot;]
+        burst = float(self.settings[&quot;burst_factor&quot;])
+        if r[&quot;rps&quot;] is not None and r[&quot;hold_ms&quot;] is not None:
+            r[&quot;busy&quot;] = r[&quot;rps&quot;] * r[&quot;hold_ms&quot;] / 1000.0
+            r[&quot;load_source&quot;] = &quot;%g rps x %g ms&quot; % (r[&quot;rps&quot;], r[&quot;hold_ms&quot;])
+        elif r[&quot;busy_given&quot;] is not None:
+            r[&quot;busy&quot;] = r[&quot;busy_given&quot;]
+            r[&quot;load_source&quot;] = &quot;given&quot;
+        else:
+            r[&quot;busy&quot;] = None
+            r[&quot;load_source&quot;] = &quot;unknown&quot;
+        if r[&quot;busy&quot;] is not None and procs_now:
+            r[&quot;a_proc&quot;] = r[&quot;busy&quot;] * burst / procs_now  # offered load per process at peak x burst
+            cap = r[&quot;threads&quot;] if (r[&quot;threads&quot;] and not r[&quot;async&quot;]) else None
+            hold_ms = r[&quot;hold_ms&quot;] if r[&quot;hold_ms&quot;] else 100.0
+            # a sync process never runs more than `threads` queries at once: with pool &gt;= threads
+            # no request ever waits for a connection (it waits for a thread instead)
+            r[&quot;p_wait&quot;] = self.conn_wait(r[&quot;pool_max&quot;], r[&quot;a_proc&quot;], cap)
+            r[&quot;wait_ms&quot;] = 0.0 if (cap and r[&quot;pool_max&quot;] &gt;= cap) else mean_wait_ms(r[&quot;pool_max&quot;], r[&quot;a_proc&quot;], hold_ms)
+            floor = min(2, cap) if cap else 2
+            rec = smallest_pool(r[&quot;a_proc&quot;], float(self.settings[&quot;target_wait_probability&quot;]),
+                                float(self.settings[&quot;max_utilization&quot;]), cap, floor)
+            r[&quot;rec_pool&quot;] = rec
+            r[&quot;rec_p_wait&quot;] = self.conn_wait(rec, r[&quot;a_proc&quot;], cap)
+        else:
+            r[&quot;a_proc&quot;] = r[&quot;p_wait&quot;] = r[&quot;wait_ms&quot;] = r[&quot;rec_pool&quot;] = r[&quot;rec_p_wait&quot;] = None
+        return r
+
+    @staticmethod
+    def conn_wait(pool, a, cap):
+        if cap and pool &gt;= cap:
+            return 0.0
+        return erlang_c(pool, a)
+
+    def _totals(self):
+        direct = [s for s in self.services if not s[&quot;via_proxy&quot;]]
+        proxied = [s for s in self.services if s[&quot;via_proxy&quot;]]
+        t = {}
+        for k in (&quot;open_steady&quot;, &quot;open_now&quot;, &quot;open_max&quot;, &quot;open_surge&quot;):
+            t[&quot;direct_&quot; + k] = sum(s[k] for s in direct)
+            t[&quot;proxied_&quot; + k] = sum(s[k] for s in proxied)
+        server = self.proxy[&quot;server_conns&quot;] if (self.proxy and proxied) else 0
+        t[&quot;proxy_server&quot;] = server
+        for k in (&quot;open_now&quot;, &quot;open_max&quot;, &quot;open_surge&quot;):
+            t[&quot;db_&quot; + k] = t[&quot;direct_&quot; + k] + server
+        t[&quot;busy&quot;] = sum(s[&quot;busy&quot;] or 0 for s in self.services)
+        t[&quot;busy_proxied&quot;] = sum(s[&quot;busy&quot;] or 0 for s in proxied)
+        t[&quot;unknown_load&quot;] = [s[&quot;name&quot;] for s in self.services if s[&quot;busy&quot;] is None]
+        if self.db[&quot;cores&quot;]:
+            t[&quot;sweet_spot&quot;] = int(round(self.db[&quot;cores&quot;] * 2 + self.db[&quot;spindles&quot;]))
+        else:
+            t[&quot;sweet_spot&quot;] = None
+        self.t = t
+
+    def _check(self):
+        db, t = self.db, self.t
+        avail = db[&quot;available&quot;]
+        label = &quot;%s (max_connections %d - reserved %d - other %d = %d usable)&quot; % (
+            db[&quot;name&quot;], db[&quot;max_connections&quot;], db[&quot;reserved&quot;], db[&quot;other&quot;], avail)
+        if t[&quot;db_open_now&quot;] &gt; avail:
+            self.add(&quot;POOL_EXCEEDS_DB_LIMIT&quot;, &quot;HIGH&quot;, label,
+                     &quot;pools can open %d connections at today&#x27;s size; the database accepts %d - new connections &quot;
+                     &quot;fail with &#x27;too many clients&#x27; / &#x27;Too many connections&#x27; under load&quot; % (t[&quot;db_open_now&quot;], avail),
+                     &quot;shrink pools to the recommendation below, drop max_overflow, or put the services behind a proxy&quot;)
+        elif t[&quot;db_open_max&quot;] &gt; avail:
+            self.add(&quot;AUTOSCALE_EXCEEDS_DB_LIMIT&quot;, &quot;HIGH&quot;, label,
+                     &quot;fine today (%d) but %d at autoscaling maximum - the scale-out that should save a traffic &quot;
+                     &quot;spike is what exhausts the database&quot; % (t[&quot;db_open_now&quot;], t[&quot;db_open_max&quot;]),
+                     &quot;size pools for max_instances, cap max_instances, or use a proxy&quot;)
+        elif t[&quot;db_open_surge&quot;] &gt; avail:
+            self.add(&quot;DEPLOY_SURGE_EXCEEDS_LIMIT&quot;, &quot;HIGH&quot;, label,
+                     &quot;a rolling deploy at maximum scale runs %d%% extra pods for a while: %d connections &gt; %d&quot;
+                     % (round(self.surge * 100), t[&quot;db_open_surge&quot;], avail),
+                     &quot;lower maxSurge, deploy at lower scale, or leave this much headroom&quot;)
+        elif t[&quot;db_open_surge&quot;] &gt; 0.9 * avail:
+            self.add(&quot;LOW_CONNECTION_HEADROOM&quot;, &quot;MEDIUM&quot;, label,
+                     &quot;deploy surge at max scale reaches %d of %d usable (%.0f%%)&quot; % (
+                         t[&quot;db_open_surge&quot;], avail, 100.0 * t[&quot;db_open_surge&quot;] / avail),
+                     &quot;keep at least 10% free for admin sessions, migrations and failover&quot;)
+        if t[&quot;sweet_spot&quot;] and t[&quot;busy&quot;] &gt; t[&quot;sweet_spot&quot;]:
+            sev = &quot;HIGH&quot; if t[&quot;busy&quot;] &gt; 2 * t[&quot;sweet_spot&quot;] else &quot;MEDIUM&quot;
+            self.add(&quot;DB_ACTIVE_OVER_CORES&quot;, sev, db[&quot;name&quot;],
+                     &quot;about %.1f connections are busy at peak but %g cores run about %d at once efficiently &quot;
+                     &quot;(cores x 2 + spindles); the rest queue inside the database&quot; % (t[&quot;busy&quot;], db[&quot;cores&quot;], t[&quot;sweet_spot&quot;]),
+                     &quot;cut connection hold time (shorter transactions, no network calls inside them), add read &quot;
+                     &quot;replicas, or scale the database&quot;)
+        open_max = t[&quot;db_open_max&quot;]
+        if t[&quot;sweet_spot&quot;] and open_max &gt; max(5 * t[&quot;sweet_spot&quot;], 100):
+            self.add(&quot;TOO_MANY_CONNECTIONS_FOR_CORES&quot;, &quot;MEDIUM&quot;, db[&quot;name&quot;],
+                     &quot;up to %d open connections for %g cores (%.0f per core); idle backends cost memory, &quot;
+                     &quot;snapshot and lock-table overhead&quot; % (open_max, db[&quot;cores&quot;], open_max / db[&quot;cores&quot;]),
+                     &quot;fewer, busier connections: smaller pools or a transaction-mode proxy&quot;)
+        if db[&quot;ram_gb&quot;] and db[&quot;mb_per_conn&quot;]:
+            mem = open_max * db[&quot;mb_per_conn&quot;] / 1024.0
+            if mem &gt; 0.25 * db[&quot;ram_gb&quot;]:
+                self.add(&quot;CONNECTION_MEMORY&quot;, &quot;MEDIUM&quot;, db[&quot;name&quot;],
+                         &quot;%d connections x ~%g MB = %.1f GB of %g GB RAM before work_mem/sort buffers&quot;
+                         % (open_max, db[&quot;mb_per_conn&quot;], mem, db[&quot;ram_gb&quot;]),
+                         &quot;reduce open connections; keep that memory for cache (shared_buffers / page cache)&quot;)
+        if self.proxy:
+            self._check_proxy()
+        elif t[&quot;db_open_max&quot;] &gt; avail and t[&quot;busy&quot;] and t[&quot;busy&quot;] * 3 &lt; avail:
+            self.add(&quot;PROXY_RECOMMENDED&quot;, &quot;MEDIUM&quot;, db[&quot;name&quot;],
+                     &quot;only ~%.0f connections are busy at peak but up to %d are open; a transaction-mode &quot;
+                     &quot;pooler multiplexes them&quot; % (t[&quot;busy&quot;], t[&quot;db_open_max&quot;]),
+                     &quot;PgBouncer/RDS Proxy/ProxySQL in front of the database (see recommendation)&quot;)
+        for s in self.services:
+            self._check_service(s)
+
+    def _check_proxy(self):
+        p, t = self.proxy, self.t
+        proxied = [s for s in self.services if s[&quot;via_proxy&quot;]]
+        if not proxied:
+            self.add(&quot;PROXY_UNUSED&quot;, &quot;LOW&quot;, p[&quot;type&quot;], &quot;a proxy is configured but no service has via_proxy true&quot;,
+                     &quot;set via_proxy on the services that use it&quot;)
+            return
+        per_inst_clients = int(math.ceil(t[&quot;proxied_open_surge&quot;] / float(p[&quot;instances&quot;])))
+        if per_inst_clients &gt; p[&quot;max_client_conn&quot;]:
+            self.add(&quot;PROXY_CLIENT_LIMIT&quot;, &quot;HIGH&quot;, p[&quot;type&quot;],
+                     &quot;proxied pools can open %d client connections per proxy instance (deploy surge, max scale) &quot;
+                     &quot;but max_client_conn is %d&quot; % (per_inst_clients, p[&quot;max_client_conn&quot;]),
+                     &quot;raise max_client_conn (cheap: ~2 kB each) or shrink the client pools&quot;)
+        if p[&quot;mode&quot;] == &quot;session&quot; and t[&quot;proxied_open_max&quot;] &gt; p[&quot;server_conns&quot;]:
+            self.add(&quot;PROXY_SESSION_MODE&quot;, &quot;MEDIUM&quot;, p[&quot;type&quot;],
+                     &quot;session mode pins one server connection per client connection, so %d client connections &quot;
+                     &quot;cannot share %d server connections&quot; % (t[&quot;proxied_open_max&quot;], p[&quot;server_conns&quot;]),
+                     &quot;use transaction mode (check the caveats) or size like direct connections&quot;)
+        if p[&quot;mode&quot;] in (&quot;transaction&quot;, &quot;statement&quot;):
+            self.add(&quot;PROXY_TRANSACTION_MODE_CAVEATS&quot;, &quot;LOW&quot;, p[&quot;type&quot;],
+                     &quot;%s mode: session state does not survive between transactions (SET, temp tables, advisory &quot;
+                     &quot;locks, LISTEN/NOTIFY, WITH HOLD cursors; prepared statements need PgBouncer 1.21+ &quot;
+                     &quot;max_prepared_statements)&quot; % p[&quot;mode&quot;],
+                     &quot;run migrations and session-level jobs on a direct connection&quot;)
+        busy = t[&quot;busy_proxied&quot;] * float(self.settings[&quot;burst_factor&quot;])
+        hold = [s[&quot;hold_ms&quot;] for s in proxied if s[&quot;hold_ms&quot;]]
+        if busy:
+            pw = erlang_c(p[&quot;server_conns&quot;], busy)
+            if busy &gt;= p[&quot;server_conns&quot;] or pw &gt; 0.2:
+                self.add(&quot;PROXY_POOL_TOO_SMALL&quot;, &quot;HIGH&quot;, p[&quot;type&quot;],
+                         &quot;~%.1f server connections busy at peak x burst but only %d exist (P(wait) %.0f%%)&quot;
+                         % (busy, p[&quot;server_conns&quot;], 100 * pw),
+                         &quot;raise default_pool_size/max_db_connections to %d&quot; % smallest_pool(
+                             busy, float(self.settings[&quot;target_wait_probability&quot;]), float(self.settings[&quot;max_utilization&quot;])))
+            elif pw &gt; float(self.settings[&quot;target_wait_probability&quot;]) * 5:
+                self.add(&quot;PROXY_POOL_TIGHT&quot;, &quot;MEDIUM&quot;, p[&quot;type&quot;],
+                         &quot;P(wait) for a server connection at peak x burst is %.1f%%&quot; % (100 * pw),
+                         &quot;add a reserve_pool_size of a few connections or raise default_pool_size&quot;)
+        if hold and max(hold) &gt; 1000 and p[&quot;mode&quot;] != &quot;session&quot;:
+            self.add(&quot;LONG_HOLD_THROUGH_PROXY&quot;, &quot;LOW&quot;, p[&quot;type&quot;],
+                     &quot;a proxied service holds connections for %g ms; long transactions block multiplexing&quot; % max(hold),
+                     &quot;move long reports/batches to their own pool or a replica&quot;)
+
+    def _check_service(self, s):
+        n = s[&quot;name&quot;]
+        if s[&quot;busy&quot;] is None:
+            self.add(&quot;MISSING_LOAD_DATA&quot;, &quot;LOW&quot;, n, &quot;no peak_rps + conn_hold_ms (or busy_connections): pool size &quot;
+                     &quot;cannot be checked against load&quot;, &quot;measure: pool checked-out gauge or rps x average hold time&quot;)
+            return
+        if s[&quot;procs_now&quot;] and s[&quot;a_proc&quot;] &gt;= s[&quot;pool_max&quot;]:
+            self.add(&quot;POOL_TOO_SMALL&quot;, &quot;HIGH&quot;, n,
+                     &quot;each process needs ~%.2f connections at peak x burst but its pool max is %d: requests queue &quot;
+                     &quot;until pool_timeout (%g ms)&quot; % (s[&quot;a_proc&quot;], s[&quot;pool_max&quot;], s[&quot;pool_timeout_ms&quot;]),
+                     &quot;pool %d per process (or more processes)&quot; % s[&quot;rec_pool&quot;])
+        elif s[&quot;p_wait&quot;] is not None and s[&quot;p_wait&quot;] &gt; 0.2:
+            self.add(&quot;POOL_TOO_SMALL&quot;, &quot;HIGH&quot;, n, &quot;P(wait for a connection) %.0f%% at peak x burst, mean wait %.1f ms&quot;
+                     % (100 * s[&quot;p_wait&quot;], s[&quot;wait_ms&quot;]), &quot;pool %d per process&quot; % s[&quot;rec_pool&quot;])
+        elif s[&quot;p_wait&quot;] is not None and s[&quot;p_wait&quot;] &gt; max(0.05, float(self.settings[&quot;target_wait_probability&quot;])):
+            self.add(&quot;POOL_TIGHT&quot;, &quot;MEDIUM&quot;, n, &quot;P(wait for a connection) %.1f%% at peak x burst&quot; % (100 * s[&quot;p_wait&quot;]),
+                     &quot;pool %d per process&quot; % s[&quot;rec_pool&quot;])
+        if s[&quot;threads&quot;] and not s[&quot;async&quot;] and s[&quot;a_proc&quot;] &gt; 0.7 * s[&quot;threads&quot;]:
+            self.add(&quot;WORKERS_SATURATED&quot;, &quot;HIGH&quot; if s[&quot;a_proc&quot;] &gt;= s[&quot;threads&quot;] else &quot;MEDIUM&quot;, n,
+                     &quot;each process spends ~%.2f of its %d thread(s) inside the database at peak x burst; requests &quot;
+                     &quot;queue for a thread, and a bigger pool cannot help&quot; % (s[&quot;a_proc&quot;], s[&quot;threads&quot;]),
+                     &quot;shorter connection hold time, or more processes/threads (then re-check the database totals)&quot;)
+        if s[&quot;threads&quot;] and not s[&quot;async&quot;] and s[&quot;pool_max&quot;] &gt; s[&quot;threads&quot;]:
+            self.add(&quot;POOL_LARGER_THAN_CONCURRENCY&quot;, &quot;MEDIUM&quot;, n,
+                     &quot;pool max %d per process but only %d thread(s) can use a connection at a time; the extra &quot;
+                     &quot;%d can never be used&quot; % (s[&quot;pool_max&quot;], s[&quot;threads&quot;], s[&quot;pool_max&quot;] - s[&quot;threads&quot;]),
+                     &quot;pool_size &lt;= threads; max_overflow 0&quot;)
+        elif s[&quot;rec_pool&quot;] and s[&quot;pool_max&quot;] &gt; max(2 * s[&quot;rec_pool&quot;], s[&quot;rec_pool&quot;] + 5):
+            self.add(&quot;POOL_OVERSIZED&quot;, &quot;LOW&quot;, n, &quot;pool max %d per process where %d keeps P(wait) under %.0f%%&quot;
+                     % (s[&quot;pool_max&quot;], s[&quot;rec_pool&quot;], 100 * float(self.settings[&quot;target_wait_probability&quot;])),
+                     &quot;pool %d per process frees %d connections at max scale&quot;
+                     % (s[&quot;rec_pool&quot;], (s[&quot;pool_max&quot;] - s[&quot;rec_pool&quot;]) * s[&quot;procs_max&quot;]))
+        if s[&quot;max_overflow&quot;] and s[&quot;max_overflow&quot;] &gt;= s[&quot;pool_size&quot;] and s[&quot;procs_max&quot;] &gt; 4:
+            self.add(&quot;LARGE_OVERFLOW&quot;, &quot;LOW&quot;, n, &quot;max_overflow %d &gt;= pool_size %d across %d processes makes the &quot;
+                     &quot;worst case %d instead of %d&quot; % (s[&quot;max_overflow&quot;], s[&quot;pool_size&quot;], s[&quot;procs_max&quot;],
+                                                       s[&quot;open_max&quot;], s[&quot;procs_max&quot;] * s[&quot;pool_size&quot;]),
+                     &quot;fixed pools (max_overflow 0) keep the total predictable&quot;)
+        if s[&quot;request_timeout_ms&quot;] and s[&quot;pool_timeout_ms&quot;] &gt;= s[&quot;request_timeout_ms&quot;]:
+            self.add(&quot;POOL_TIMEOUT_LONG&quot;, &quot;LOW&quot;, n, &quot;pool_timeout %g ms &gt;= request timeout %g ms: a request can time &quot;
+                     &quot;out while still waiting for a connection&quot; % (s[&quot;pool_timeout_ms&quot;], s[&quot;request_timeout_ms&quot;]),
+                     &quot;pool_timeout around 10-30% of the request timeout so overload fails fast&quot;)
+
+    def recommendation(self):
+        rec = []
+        tot_max = tot_surge = 0
+        for s in self.services:
+            p = s[&quot;rec_pool&quot;] if s[&quot;rec_pool&quot;] is not None else s[&quot;pool_max&quot;]
+            o_max = s[&quot;procs_max&quot;] * p
+            o_surge = s[&quot;procs_surge&quot;] * p
+            rec.append({&quot;name&quot;: s[&quot;name&quot;], &quot;pool_size&quot;: p, &quot;max_overflow&quot;: 0, &quot;per_process_p_wait&quot;: s[&quot;rec_p_wait&quot;],
+                        &quot;open_max&quot;: o_max, &quot;open_surge&quot;: o_surge, &quot;via_proxy&quot;: s[&quot;via_proxy&quot;]})
+            if not s[&quot;via_proxy&quot;]:
+                tot_max += o_max
+                tot_surge += o_surge
+        server = self.t[&quot;proxy_server&quot;]
+        need = tot_surge + server
+        out = {&quot;services&quot;: rec, &quot;direct_open_surge&quot;: tot_surge, &quot;proxy_server&quot;: server, &quot;db_needed&quot;: need,
+               &quot;fits&quot;: need &lt;= self.db[&quot;available&quot;]}
+        busy = self.t[&quot;busy&quot;] * float(self.settings[&quot;burst_factor&quot;])
+        if busy:
+            out[&quot;proxy_pool_if_all_proxied&quot;] = smallest_pool(busy, float(self.settings[&quot;target_wait_probability&quot;]),
+                                                             float(self.settings[&quot;max_utilization&quot;]))
+        out[&quot;max_connections_needed&quot;] = int(math.ceil((need + self.db[&quot;reserved&quot;] + self.db[&quot;other&quot;]) * 1.1))
+        return out
+
+    def worst(self):
+        return min((f[&quot;sev&quot;] for f in self.findings), key=lambda x: SEV_ORDER[x]) if self.findings else None
+
+
+def f1(x):
+    if x is None:
+        return &quot;-&quot;
+    if x == float(&quot;inf&quot;):
+        return &quot;inf&quot;
+    return (&quot;%.2f&quot; % x).rstrip(&quot;0&quot;).rstrip(&quot;.&quot;) if abs(x) &lt; 100 else &quot;%.0f&quot; % x
+
+
+def pct(x):
+    if x is None:
+        return &quot;-&quot;
+    return &quot;%.1f%%&quot; % (100 * x) if x &gt;= 0.001 else (&quot;&lt;0.1%&quot; if x &gt; 0 else &quot;0%&quot;)
+
+
+def render(pl):
+    db, t, p = pl.db, pl.t, pl.proxy
+    w = pl.worst()
+    o = [&quot;# Connection pool sizing report&quot;, &quot;&quot;]
+    o.append(&quot;Database: **%s** (%s), max_connections %d, reserved %d, other %d -&gt; **%d usable**%s&quot; % (
+        db[&quot;name&quot;], db[&quot;engine&quot;], db[&quot;max_connections&quot;], db[&quot;reserved&quot;], db[&quot;other&quot;], db[&quot;available&quot;],
+        (&quot;, %g cores (sweet spot ~%d active)&quot; % (db[&quot;cores&quot;], t[&quot;sweet_spot&quot;])) if db[&quot;cores&quot;] else &quot;&quot;))
+    if p:
+        o.append(&quot;Proxy: %s, %s mode, %d instance(s), %d server connections to the database, max_client_conn %d&quot;
+                 % (p[&quot;type&quot;], p[&quot;mode&quot;], p[&quot;instances&quot;], p[&quot;server_conns&quot;], p[&quot;max_client_conn&quot;]))
+    o.append(&quot;Deploy surge: %d%%   Burst factor: %g   Target P(wait): %s&quot; % (
+        round(pl.surge * 100), float(pl.settings[&quot;burst_factor&quot;]), pct(float(pl.settings[&quot;target_wait_probability&quot;]))))
+    o.append(&quot;&quot;)
+    if not w:
+        o.append(&quot;**Verdict: OK** - pools fit the database at max scale and deploy surge, and requests rarely wait.&quot;)
+    else:
+        n = {s: sum(1 for f in pl.findings if f[&quot;sev&quot;] == s) for s in SEV_ORDER}
+        o.append(&quot;**Verdict: %s** - %d HIGH, %d MEDIUM, %d LOW finding(s).&quot; % (
+            {&quot;HIGH&quot;: &quot;will run out of connections or queue&quot;, &quot;MEDIUM&quot;: &quot;works, but wasteful or tight&quot;,
+             &quot;LOW&quot;: &quot;fine, minor tuning&quot;}[w], n[&quot;HIGH&quot;], n[&quot;MEDIUM&quot;], n[&quot;LOW&quot;]))
+    o += [&quot;&quot;, &quot;## Services&quot;, &quot;&quot;,
+          &quot;| Service | Path | Procs now / max | Pool (size+overflow) | Busy at peak | Per proc load | P(wait) | Mean wait | Open now | Open max | Deploy surge |&quot;,
+          &quot;|---|---|---|---|---|---|---|---|---|---|---|&quot;]
+    for s in pl.services:
+        o.append(&quot;| %s | %s | %d / %d | %d+%d | %s (%s) | %s | %s | %s | %d | %d | %d |&quot; % (
+            s[&quot;name&quot;], &quot;proxy&quot; if s[&quot;via_proxy&quot;] else &quot;direct&quot;, s[&quot;procs_now&quot;], s[&quot;procs_max&quot;], s[&quot;pool_size&quot;],
+            s[&quot;max_overflow&quot;], f1(s[&quot;busy&quot;]), s[&quot;load_source&quot;], f1(s[&quot;a_proc&quot;]), pct(s[&quot;p_wait&quot;]),
+            (&quot;%s ms&quot; % f1(s[&quot;wait_ms&quot;])) if s[&quot;wait_ms&quot;] is not None else &quot;-&quot;, s[&quot;open_now&quot;], s[&quot;open_max&quot;], s[&quot;open_surge&quot;]))
+    o += [&quot;&quot;, &quot;## Totals against the database&quot;, &quot;&quot;, &quot;| Scenario | Direct | Via proxy (server side) | Database total | Usable | Headroom |&quot;, &quot;|---|---|---|---|---|---|&quot;]
+    for k, lab in ((&quot;open_now&quot;, &quot;today&quot;), (&quot;open_max&quot;, &quot;autoscaling max&quot;), (&quot;open_surge&quot;, &quot;max + deploy surge&quot;)):
+        tot = t[&quot;db_&quot; + k]
+        o.append(&quot;| %s | %d | %d | %d | %d | %d |&quot; % (lab, t[&quot;direct_&quot; + k], t[&quot;proxy_server&quot;], tot,
+                                                       db[&quot;available&quot;], db[&quot;available&quot;] - tot))
+    o.append(&quot;&quot;)
+    o.append(&quot;Busy at peak (all services): ~%s connections%s.&quot; % (
+        f1(t[&quot;busy&quot;]), (&quot; vs ~%d the CPUs run efficiently&quot; % t[&quot;sweet_spot&quot;]) if t[&quot;sweet_spot&quot;] else &quot;&quot;))
+    if t[&quot;unknown_load&quot;]:
+        o.append(&quot;No load data for: %s.&quot; % &quot;, &quot;.join(t[&quot;unknown_load&quot;]))
+    if pl.findings:
+        o += [&quot;&quot;, &quot;## Findings&quot;, &quot;&quot;, &quot;| Sev | Code | Where | What | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in sorted(pl.findings, key=lambda f: SEV_ORDER[f[&quot;sev&quot;]]):
+            o.append(&quot;| %s | %s | %s | %s | %s |&quot; % (f[&quot;sev&quot;], f[&quot;code&quot;], f[&quot;where&quot;], f[&quot;what&quot;].replace(&quot;|&quot;, &quot;/&quot;), f[&quot;fix&quot;]))
+    r = pl.recommendation()
+    o += [&quot;&quot;, &quot;## Recommended pools&quot;, &quot;&quot;, &quot;| Service | pool_size | max_overflow | P(wait) per proc | Open at max | With deploy surge |&quot;, &quot;|---|---|---|---|---|---|&quot;]
+    for s in r[&quot;services&quot;]:
+        o.append(&quot;| %s | %d | 0 | %s | %d | %d%s |&quot; % (s[&quot;name&quot;], s[&quot;pool_size&quot;], pct(s[&quot;per_process_p_wait&quot;]),
+                                                       s[&quot;open_max&quot;], s[&quot;open_surge&quot;], &quot; (client side, via proxy)&quot; if s[&quot;via_proxy&quot;] else &quot;&quot;))
+    o.append(&quot;&quot;)
+    o.append(&quot;Database connections needed with these pools at max scale + deploy surge: **%d** (direct %d + proxy %d) &quot;
+             &quot;of %d usable -&gt; %s.&quot; % (r[&quot;db_needed&quot;], r[&quot;direct_open_surge&quot;], r[&quot;proxy_server&quot;], db[&quot;available&quot;],
+                                      &quot;fits&quot; if r[&quot;fits&quot;] else &quot;still does NOT fit&quot;))
+    if not r[&quot;fits&quot;]:
+        if r.get(&quot;proxy_pool_if_all_proxied&quot;):
+            o.append(&quot;&quot;)
+            o.append(&quot;Direct connections cannot fit. Put the services behind a transaction-mode proxy: about &quot;
+                     &quot;**%d** server connections (default_pool_size / max_db_connections) cover peak x burst with &quot;
+                     &quot;P(wait) under %s; keep client pools as above and set max_client_conn above the client total.&quot;
+                     % (r[&quot;proxy_pool_if_all_proxied&quot;], pct(float(pl.settings[&quot;target_wait_probability&quot;]))))
+        o.append(&quot;Or raise max_connections to at least %d (check RAM: ~%g MB per connection).&quot; % (
+            r[&quot;max_connections_needed&quot;], db[&quot;mb_per_conn&quot;]))
+    o += [&quot;&quot;, &quot;Model: Little&#x27;s law for busy connections, Erlang C (M/M/c) per process with load spread evenly; &quot;
+          &quot;peak load x burst factor. Validate with the pool&#x27;s checked-out and wait metrics.&quot;]
+    return &quot;\n&quot;.join(o) + &quot;\n&quot;
+
+
+def as_json(pl):
+    def clean(x):
+        if isinstance(x, float) and (math.isinf(x) or math.isnan(x)):
+            return None
+        if isinstance(x, dict):
+            return {k: clean(v) for k, v in x.items()}
+        if isinstance(x, list):
+            return [clean(v) for v in x]
+        return x
+    return clean({&quot;database&quot;: pl.db, &quot;proxy&quot;: pl.proxy, &quot;totals&quot;: pl.t, &quot;services&quot;: pl.services,
+                  &quot;findings&quot;: pl.findings, &quot;worst&quot;: pl.worst(), &quot;recommendation&quot;: pl.recommendation()})
+
+
+def self_test():
+    cases = []
+
+    def case(name, fn):
+        try:
+            ok, err = bool(fn()), &quot;&quot;
+        except Exception as e:  # noqa
+            ok, err = False, repr(e)
+        cases.append((name, ok, err))
+
+    def cfg(**kw):
+        c = {&quot;database&quot;: {&quot;name&quot;: &quot;db&quot;, &quot;max_connections&quot;: 100, &quot;reserved_connections&quot;: 3, &quot;other_connections&quot;: 7,
+                          &quot;cpu_cores&quot;: 4, &quot;ram_gb&quot;: 16},
+             &quot;deploy&quot;: {&quot;surge_percent&quot;: 25},
+             &quot;services&quot;: [{&quot;name&quot;: &quot;api&quot;, &quot;instances&quot;: 2, &quot;max_instances&quot;: 4, &quot;processes&quot;: 2, &quot;threads&quot;: 4,
+                           &quot;pool_size&quot;: 4, &quot;max_overflow&quot;: 0, &quot;peak_rps&quot;: 200, &quot;conn_hold_ms&quot;: 10}]}
+        for k, v in kw.items():
+            if k == &quot;svc&quot;:
+                c[&quot;services&quot;][0].update(v)
+            elif k == &quot;services&quot;:
+                c[&quot;services&quot;] = v
+            else:
+                c.setdefault(k, {}).update(v)
+        return c
+
+    def codes(c):
+        return {f[&quot;code&quot;]: f[&quot;sev&quot;] for f in Plan(c).findings}
+
+    def raises(fn):
+        try:
+            fn()
+        except InputError:
+            return True
+        return False
+
+    case(&quot;erlang C one server equals load&quot;, lambda: abs(erlang_c(1, 0.5) - 0.5) &lt; 1e-9)
+    case(&quot;erlang C textbook value (c=2, a=1 -&gt; 1/3)&quot;, lambda: abs(erlang_c(2, 1.0) - 1 / 3.0) &lt; 1e-9)
+    case(&quot;erlang C saturated -&gt; 1&quot;, lambda: erlang_c(3, 3.0) == 1.0 and erlang_c(3, 5) == 1.0)
+    case(&quot;erlang C decreases with servers&quot;, lambda: erlang_c(5, 3) &gt; erlang_c(6, 3) &gt; erlang_c(8, 3))
+    case(&quot;mean wait M/M/1&quot;, lambda: abs(mean_wait_ms(1, 0.5, 10) - 10.0) &lt; 1e-9)
+    case(&quot;smallest pool meets target&quot;, lambda: (lambda c: erlang_c(c, 2.0) &lt;= 0.01 and erlang_c(c - 1, 2.0) &gt; 0.01 or 2.0 / (c - 1) &gt; 0.7)(smallest_pool(2.0, 0.01, 0.7)))
+    case(&quot;smallest pool capped by threads&quot;, lambda: smallest_pool(9.0, 0.01, 0.7, cap=4) == 4)
+    case(&quot;usable connections&quot;, lambda: Plan(cfg()).db[&quot;available&quot;] == 90)
+    case(&quot;open totals&quot;, lambda: (lambda p: (p.t[&quot;db_open_now&quot;], p.t[&quot;db_open_max&quot;], p.t[&quot;db_open_surge&quot;]) == (16, 32, 40))(Plan(cfg())))
+    case(&quot;busy via Little&#x27;s law&quot;, lambda: abs(Plan(cfg()).services[0][&quot;busy&quot;] - 2.0) &lt; 1e-9)
+    case(&quot;queries x avg ms as hold&quot;, lambda: abs(Plan(cfg(svc={&quot;conn_hold_ms&quot;: None, &quot;queries_per_request&quot;: 4, &quot;avg_query_ms&quot;: 2, &quot;overhead_ms&quot;: 2})).services[0][&quot;hold_ms&quot;] - 10) &lt; 1e-9)
+    case(&quot;healthy config has no HIGH&quot;, lambda: Plan(cfg()).worst() in (None, &quot;LOW&quot;, &quot;MEDIUM&quot;))
+    case(&quot;exceeds limit today&quot;, lambda: codes(cfg(svc={&quot;pool_size&quot;: 30}))[&quot;POOL_EXCEEDS_DB_LIMIT&quot;] == &quot;HIGH&quot;)
+    case(&quot;autoscale exceeds&quot;, lambda: &quot;AUTOSCALE_EXCEEDS_DB_LIMIT&quot; in codes(cfg(svc={&quot;max_instances&quot;: 12})))
+    case(&quot;deploy surge exceeds&quot;, lambda: &quot;DEPLOY_SURGE_EXCEEDS_LIMIT&quot; in codes(cfg(svc={&quot;max_instances&quot;: 11, &quot;pool_size&quot;: 4}, deploy={&quot;surge_percent&quot;: 50})))
+    case(&quot;pool too small&quot;, lambda: codes(cfg(svc={&quot;pool_size&quot;: 1, &quot;peak_rps&quot;: 400}))[&quot;POOL_TOO_SMALL&quot;] == &quot;HIGH&quot;)
+    case(&quot;pool larger than threads&quot;, lambda: &quot;POOL_LARGER_THAN_CONCURRENCY&quot; in codes(cfg(svc={&quot;pool_size&quot;: 10, &quot;threads&quot;: 2})))
+    case(&quot;pool &gt;= threads never waits for a connection&quot;, lambda: Plan(cfg(svc={&quot;pool_size&quot;: 1, &quot;threads&quot;: 1, &quot;peak_rps&quot;: 20})).services[0][&quot;p_wait&quot;] == 0.0)
+    case(&quot;workers saturated&quot;, lambda: codes(cfg(svc={&quot;threads&quot;: 1, &quot;pool_size&quot;: 1, &quot;peak_rps&quot;: 400}))[&quot;WORKERS_SATURATED&quot;] == &quot;HIGH&quot;)
+    case(&quot;async services not capped by threads&quot;, lambda: &quot;POOL_LARGER_THAN_CONCURRENCY&quot; not in codes(cfg(svc={&quot;pool_size&quot;: 10, &quot;threads&quot;: 1, &quot;async&quot;: True})))
+    case(&quot;large overflow flagged&quot;, lambda: &quot;LARGE_OVERFLOW&quot; in codes(cfg(svc={&quot;pool_size&quot;: 2, &quot;max_overflow&quot;: 2, &quot;threads&quot;: 8})))
+    case(&quot;pool timeout longer than request&quot;, lambda: &quot;POOL_TIMEOUT_LONG&quot; in codes(cfg(svc={&quot;pool_timeout_ms&quot;: 30000, &quot;request_timeout_ms&quot;: 10000})))
+    case(&quot;db over cores&quot;, lambda: &quot;DB_ACTIVE_OVER_CORES&quot; in codes(cfg(svc={&quot;peak_rps&quot;: 1500, &quot;pool_size&quot;: 4, &quot;threads&quot;: 8, &quot;max_instances&quot;: 2}, database={&quot;max_connections&quot;: 500})))
+    case(&quot;connection memory&quot;, lambda: &quot;CONNECTION_MEMORY&quot; in codes(cfg(database={&quot;ram_gb&quot;: 0.5})))
+    case(&quot;missing load data&quot;, lambda: &quot;MISSING_LOAD_DATA&quot; in codes(cfg(svc={&quot;peak_rps&quot;: None})))
+    case(&quot;busy_connections accepted&quot;, lambda: Plan(cfg(svc={&quot;peak_rps&quot;: None, &quot;busy_connections&quot;: 1.5})).services[0][&quot;busy&quot;] == 1.5)
+    case(&quot;proxy server conns counted, not clients&quot;, lambda: (lambda p: p.t[&quot;db_open_max&quot;] == 20)(Plan(cfg(svc={&quot;via_proxy&quot;: True}, proxy={&quot;pool_mode&quot;: &quot;transaction&quot;, &quot;default_pool_size&quot;: 20, &quot;max_client_conn&quot;: 1000}))))
+    case(&quot;max_db_connections caps proxy&quot;, lambda: Plan(cfg(svc={&quot;via_proxy&quot;: True}, proxy={&quot;default_pool_size&quot;: 50, &quot;max_db_connections&quot;: 30})).proxy[&quot;server_conns&quot;] == 30)
+    case(&quot;proxy client limit&quot;, lambda: &quot;PROXY_CLIENT_LIMIT&quot; in codes(cfg(svc={&quot;via_proxy&quot;: True, &quot;max_instances&quot;: 40}, proxy={&quot;max_client_conn&quot;: 100})))
+    case(&quot;proxy pool too small&quot;, lambda: &quot;PROXY_POOL_TOO_SMALL&quot; in codes(cfg(svc={&quot;via_proxy&quot;: True, &quot;peak_rps&quot;: 1000}, proxy={&quot;default_pool_size&quot;: 5, &quot;max_client_conn&quot;: 1000})))
+    case(&quot;session mode warning&quot;, lambda: &quot;PROXY_SESSION_MODE&quot; in codes(cfg(svc={&quot;via_proxy&quot;: True, &quot;max_instances&quot;: 10}, proxy={&quot;pool_mode&quot;: &quot;session&quot;, &quot;default_pool_size&quot;: 10, &quot;max_client_conn&quot;: 1000})))
+    case(&quot;proxy recommended when direct cannot fit&quot;, lambda: &quot;PROXY_RECOMMENDED&quot; in codes(cfg(svc={&quot;max_instances&quot;: 30, &quot;pool_size&quot;: 4})))
+    case(&quot;--set overrides service&quot;, lambda: (lambda c: (apply_set(c, &quot;api.max_instances=9&quot;), c[&quot;services&quot;][0][&quot;max_instances&quot;] == 9)[1])(cfg()))
+    case(&quot;--set overrides database&quot;, lambda: (lambda c: (apply_set(c, &quot;database.max_connections=300&quot;), Plan(c).db[&quot;max_connections&quot;] == 300)[1])(cfg()))
+    case(&quot;--set unknown service rejected&quot;, lambda: raises(lambda: apply_set(cfg(), &quot;nope.pool_size=3&quot;)))
+    case(&quot;bad number rejected&quot;, lambda: raises(lambda: Plan(cfg(svc={&quot;pool_size&quot;: &quot;ten&quot;}))))
+    case(&quot;no services rejected&quot;, lambda: raises(lambda: Plan(cfg(services=[]))))
+    case(&quot;duplicate names rejected&quot;, lambda: raises(lambda: Plan(cfg(services=[{&quot;name&quot;: &quot;a&quot;}, {&quot;name&quot;: &quot;a&quot;}]))))
+    case(&quot;reserved too large rejected&quot;, lambda: raises(lambda: Plan(cfg(database={&quot;reserved_connections&quot;: 100}))))
+    case(&quot;recommendation fits for sane config&quot;, lambda: Plan(cfg()).recommendation()[&quot;fits&quot;])
+    case(&quot;render has tables&quot;, lambda: &quot;## Recommended pools&quot; in render(Plan(cfg())) and &quot;## Totals against the database&quot; in render(Plan(cfg())))
+    case(&quot;json output serializable&quot;, lambda: json.dumps(as_json(Plan(cfg(svc={&quot;pool_size&quot;: 1, &quot;peak_rps&quot;: 900})))) is not None)
+
+    passed = sum(1 for _, ok, _ in cases if ok)
+    for name, ok, err in cases:
+        print((&quot;PASS &quot; if ok else &quot;FAIL &quot;) + name + ((&quot; &quot; + err) if err else &quot;&quot;))
+    print(&quot;%d/%d passed&quot; % (passed, len(cases)))
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Size database connection pools against load and database limits.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;JSON description (&#x27;-&#x27; = stdin)&quot;)
+    ap.add_argument(&quot;--set&quot;, action=&quot;append&quot;, default=[], metavar=&quot;TARGET.KEY=VALUE&quot;,
+                    help=&quot;what-if override, e.g. api.max_instances=16 or database.max_connections=400 (repeatable)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.file:
+        ap.error(&quot;give a JSON file or --self-test&quot;)
+    try:
+        text = sys.stdin.read() if a.file == &quot;-&quot; else open(a.file, encoding=&quot;utf-8&quot;).read()
+        cfg = json.loads(text)
+        cfg = copy.deepcopy(cfg)
+        for e in a.set:
+            apply_set(cfg, e)
+        pl = Plan(cfg)
+    except (OSError, ValueError) as e:
+        print(&quot;error: %s&quot; % e, file=sys.stderr)
+        return 2
+    sys.stdout.write(json.dumps(as_json(pl), indent=2) + &quot;\n&quot; if a.json else render(pl))
+    return 1 if pl.worst() == &quot;HIGH&quot; else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/database-connection-pool-sizing-calculator',TI="Database Connection Pool Sizing Calculator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

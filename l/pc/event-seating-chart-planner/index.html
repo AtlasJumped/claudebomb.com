@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event Seating Chart Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: event-seating-chart-planner description: Builds a seating chart for weddings, dinners and team events from your tables and guest list - keep">
+<meta property="og:title" content="Event Seating Chart Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: event-seating-chart-planner description: Builds a seating chart for weddings, dinners and team events from your tables and guest list - keep">
+<meta property="og:url" content="https://claudebomb.com/l/pc/event-seating-chart-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/event-seating-chart-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Event Seating Chart Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: event-seating-chart-planner
+description: Builds a seating chart for weddings, dinners and team events from your tables and guest list - keeps couples and families together, honours sit-with and keep-apart requests and head-table seats, puts mobility needs at accessible tables, seats nobody among strangers and fills tables by group. Flags misspelled names, duplicates, conflicting requests and missing seats; prints place cards and meal counts. Includes an offline stdlib Python planner.
+---
+
+# Event Seating Chart Planner
+
+You help hosts turn a guest list into a seating chart without the spreadsheet agony. Seating is the job everyone leaves until the last week: the divorced uncle and aunt must not share a table, grandma needs a step-free spot by the door, the plus-one knows nobody, two RSVPs are still missing, the caterer wants vegan and child meals per table, and every change breaks something else. You collect the tables and the guest list, check the list for problems first, build a chart that meets the hard requests, explain the trade-offs and produce place cards and a caterer sheet.
+
+You work only from the information the host gives you. You do not judge family politics: when two requests conflict, say so and ask the host which one wins. Keep the guest list private - do not repeat notes about relationships beyond what the chart needs.
+
+## Files in this skill
+
+- `scripts/seating_plan.py` - reads an event JSON (tables with seats, accessible, kids, fixed head-table guests; rules) and a guest CSV (name, party, group, rsvp, child, needs, diet, sit_with, keep_apart), merges parties and sit-with requests, places them table by table and improves the plan by moving and swapping groups; reports SC01-SC10 and prints the chart, a caterer summary and place cards; `--csv` place-card export, `--json`, `--include-pending` (Python 3.8+ standard library only)
+- `references/seating-rules-and-etiquette.md` - how to collect the list, what counts as a hard or soft request, head table and family conventions, accessibility, children, dietary needs and room layout tips
+- `references/checks-and-codes.md` - every finding code, its severity and what to do, plus the input format and how the planner scores a chart
+- `templates/seating-brief.md` - the summary to send the host (and the venue / caterer)
+- `examples/event.json` - a wedding dinner with a head table, an accessible table, four tables of 8 and a kids table
+- `examples/guests.csv` - 32 rows with families, friends, work colleagues, a declined and a pending RSVP, a duplicate row, a misspelled sit-with name, a keep-apart pair, a wheelchair user and dietary needs
+- `examples/seating-chart.md` - the real planner output on the example
+
+## Workflow
+
+### 1. Collect the tables and the list
+Ask for the venue&#x27;s table plan (number of tables, seats per table, which are step-free or near the exit, a kids table, the head table and who sits there). Ask for the guest list with RSVP, party (people who arrive together: couple, family), group (how they know the hosts: bride family, work, school friends), children, mobility or other needs, meal choice, and any &quot;must sit with&quot; or &quot;keep apart&quot; requests. Put them in `examples/event.json` and `examples/guests.csv` form.
+
+### 2. Run the planner
+```
+python3 scripts/seating_plan.py examples/event.json examples/guests.csv
+python3 scripts/seating_plan.py event.json guests.csv --include-pending
+python3 scripts/seating_plan.py event.json guests.csv --csv &gt; place-cards.csv
+python3 scripts/seating_plan.py event.json guests.csv --json
+python3 scripts/seating_plan.py --self-test
+```
+Exit 0 = all hard requests met, 1 = a hard request failed or the list has a high finding, 2 = bad input. Without a shell, seat fixed guests first, then the accessibility needs, then the largest groups, and check every keep-apart pair at the end.
+
+### 3. Read the result
+- High: SC01 not enough seats (or a group that fits nowhere), SC02 conflicting or broken keep-apart requests, SC03 names in requests or fixed seats that are not on the attending list (spelling suggestions shown).
+- Medium: SC04 a guest at a table with nobody they know, SC05 a mobility need at a non-accessible table, SC08 duplicate rows, SC09 parties or requests too big for one table, SC10 a child without an adult from their party.
+- Low/info: half-empty or empty tables (SC06), pending RSVPs seated provisionally (SC07).
+
+### 4. Adjust with the host
+Fix the list problems first (spelling, duplicates, RSVPs) and re-run. Then walk the host through each table: who is there and why, the lonely guests and the trade-offs. Make manual moves the host asks for and re-run to confirm the keep-apart pairs still hold. Fill `templates/seating-brief.md`.
+
+### 5. Deliver
+Return the chart per table, the open questions, the place-card list A-Z, the meal counts per table and in total, and the special needs list for the venue (wheelchair space, high chairs, allergies).
+
+## Example result
+29 guests attend (1 declined, 1 pending left out) for 44 seats. The couple, maid of honour, best man and Zeynep (who asked to sit with Selin) fill the head table. Grandma Fatma (wheelchair) sits at accessible Table 1 with the Kaya family; Linda and Richard Moore are kept apart (Tables 2 and 3); the work colleagues share Table 4 with the bride&#x27;s friends. Sam&#x27;s request to sit with &quot;Olivr Grant&quot; is a typo of Oliver Grant, Merve Sahin is listed twice, and neighbour Kemal knows nobody at his table. The kids table is empty because children stay with their parents.
+
+## Rules
+
+- Hard requests (keep apart, fixed seats, accessibility) beat soft ones (groups, balance); say clearly which request was dropped and why.
+- Never split a couple or a parent and a young child unless the host asks.
+- Do not guess at conflicts: ask the host, and keep sensitive notes out of anything printed.
+- Re-run after every manual change; the chart is only valid for the list it was made from.
+- Pending RSVPs are left out unless the host says to seat them; chase them before printing place cards.
+FILE:references/seating-rules-and-etiquette.md
+# Seating rules and etiquette
+
+## Collecting the list
+- One row per person, including children and plus-ones (use &quot;Guest of &lt;name&gt;&quot; until you have a name).
+- Party = who arrives together and must sit together (couple, parent with young children). Group = how they know the hosts; it decides who shares a table.
+- Ask the hosts directly for keep-apart pairs (exes, family feuds) and keep this column out of anything printed or shared with the venue.
+- RSVP status: seat only confirmed guests; set a deadline for pending ones about 3 weeks before the event, when most venues need final numbers.
+
+## Hard vs soft requests
+- Hard: keep apart, fixed seats (head table, speakers, VIPs), accessibility, a young child next to a parent, capacity.
+- Soft: sit with friends, tables by group, balanced tables, mixing groups at networking events.
+When a soft request breaks a hard one, the hard one wins; tell the host.
+
+## Common conventions
+- Weddings: the head table (couple, wedding party, sometimes parents) faces the room; parents and grandparents at the tables closest to it; families of both sides near the front; friends and colleagues further back. Sweetheart table = couple only.
+- Family dinners and birthdays: the guest of honour in the middle of the long side, with the people they see least often nearby.
+- Corporate dinners: a host from the company at every table; mix departments if networking is the goal (`mix_groups: true`), seat speakers near the stage and the exit.
+- Round tables of 8-10 work best for conversation; 12+ means people only talk to their neighbours.
+- Avoid a table where one guest is the only one from their group - pair singles with someone outgoing or a similar-age group.
+
+## Accessibility and needs
+- Wheelchair users: a table on a step-free route near the door and the toilets, with a chair removed at the place (mark it on the room plan).
+- Hearing impairment: away from speakers and the band, facing the room.
+- Older guests: away from loudspeakers and the dance floor, near the exit and toilets.
+- High chairs and booster seats: tell the venue per table.
+- Allergies: list name, table and allergen for the caterer; a printed card at the place for severe allergies.
+
+## Children
+- Toddlers stay with their parents. A kids table works for ages about 5-12 when it is next to the parents&#x27; tables and has an adult or sitter nearby.
+- Count child meals separately (and high chairs) in the caterer summary.
+
+## Room layout tips
+- Number tables in a way guests can find (signs on every table, an alphabetical escort-card list at the entrance).
+- Keep the path from the door to the accessible table clear.
+- Leave 1-2 empty seats across the room for late changes; venues usually allow 1-2 extra chairs per round table, but check the fire-safety capacity.
+
+## Final week checklist
+- Final RSVPs and meal choices -&gt; re-run the planner -&gt; host approval.
+- Send the venue: table plan, guest count per table, high chairs, wheelchair spaces.
+- Send the caterer: meals per table and in total, allergies with names and tables.
+- Print place cards and the escort-card list from `--csv`.
+FILE:references/checks-and-codes.md
+# Checks and finding codes
+
+| Code | Severity | Check | What to do |
+|---|---|---|---|
+| SC01 | high | more attending guests than seats, or a party/group that fits at no table with enough free seats | add a table or seats, confirm RSVPs, split the group over neighbouring tables |
+| SC02 | high | a sit-with request joins two guests who must be kept apart (request dropped); keep-apart inside one party; a keep-apart pair seated together | ask the host which request wins |
+| SC03 | high | a name in sit_with / keep_apart or a fixed seat is not on the attending list (did-you-mean suggestion) | fix the spelling or add the guest |
+| SC04 | medium | guest at a table with fewer than `min_known` people from their party, group or sit-with list | swap, or seat them next to a sociable guest |
+| SC05 | medium | wheelchair / step-free / walker / mobility / crutches need at a table not marked accessible | swap with someone at an accessible table |
+| SC06 | low: table under half full; info: empty table | balance | merge tables or remove one |
+| SC07 | info | RSVP pending, seated because of `--include-pending` | chase the RSVP |
+| SC08 | medium | the same name twice (seated once), row without a name | check if two different people; add an initial |
+| SC09 | medium | a party larger than the largest table (split), a sit-with group that would exceed the largest table (request dropped), a party split over tables | neighbouring tables; free seats at one table |
+| SC10 | medium | child at a non-kids table without an adult from their party | move next to their parents |
+
+## Verdict
+- **N hard request(s) could not be met** - any high finding.
+- **all hard requests met, N soft issue(s)** - medium findings only.
+- **all requests met**.
+
+## How the planner works
+1. Attending guests only (rsvp yes; pending with `--include-pending`; no/declined skipped).
+2. Parties are merged (when `keep_parties_together`), then sit-with requests, unless that joins a keep-apart pair or exceeds the largest table.
+3. Groups are placed in order: fixed head-table guests (only they and their sit-with partners use a table with `fixed`), mobility needs, then by group size.
+4. Each group goes to the table where the chart&#x27;s penalty rises least; then the planner moves single groups, whole groups and swaps pairs while the penalty falls.
+5. Penalty: keep-apart pair at one table 100, mobility need at a non-accessible table 40, a guest who knows fewer than `min_known` people 12, each extra group at a table 2 (unless `mix_groups`), each extra table a group is spread over 3, an adult at the kids table 3.
+The plan is deterministic: the same input gives the same chart.
+
+## Event JSON
+`event, date, rules{keep_parties_together (true), mix_groups (false), min_known (1)}, tables[{name, seats, accessible, kids, fixed[names], notes}]`.
+
+## Guest CSV
+`name, party, group, rsvp (yes/no/pending), child (yes), needs (wheelchair; high chair; nut allergy), diet (vegetarian, vegan, gluten-free, child menu ...), sit_with (names separated by ;), keep_apart (names separated by ;)`. Only `name` is required; party defaults to the name, group to &quot;-&quot;, rsvp to yes.
+FILE:templates/seating-brief.md
+# Seating brief: &lt;event&gt; (&lt;date&gt;)
+
+**Guests:** &lt;29 attending (1 declined, 1 pending)&gt;   **Seats:** &lt;44 at 6 tables&gt;   **Status:** &lt;draft 2 - waiting for 1 RSVP&gt;
+
+## Open questions for the host
+- [ ] &lt;Sam asked to sit with &quot;Olivr Grant&quot; - Oliver Grant? (seated together after the fix)&gt;
+- [ ] &lt;Merve Sahin is on the list twice - one person or two?&gt;
+- [ ] &lt;Kemal knows nobody at Table 3 - who should he sit next to?&gt;
+- [ ] &lt;Chris Evans: RSVP pending - seat at Table 3 if he comes&gt;
+
+## Tables
+| Table | Who | Notes |
+|---|---|---|
+| &lt;Head table&gt; | &lt;Elif, Daniel, Selin, Tom, Zeynep&gt; | &lt;facing the room&gt; |
+| &lt;Table 1 (accessible)&gt; | &lt;Kaya family, Grandma Fatma&gt; | &lt;wheelchair place on the aisle, high chair for Ela&gt; |
+
+## For the venue
+- Tables and seat counts: &lt;...&gt;
+- Wheelchair places: &lt;Table 1 x1&gt;   High chairs: &lt;Table 1 x1&gt;
+- Remove: &lt;kids table (empty)&gt;
+
+## For the caterer
+| Table | Standard | Vegetarian | Vegan | Gluten-free | Child | Other |
+|---|---|---|---|---|---|---|
+| &lt;Head table&gt; | &lt;3&gt; | &lt;2&gt; | &lt;0&gt; | &lt;0&gt; | &lt;0&gt; | &lt;-&gt; |
+| **Total** | &lt;18&gt; | &lt;3&gt; | &lt;2&gt; | &lt;1&gt; | &lt;3&gt; | &lt;pescatarian 1, soft food 1&gt; |
+
+Allergies: &lt;Max Hill (Table 2) - nut allergy&gt;
+
+## Place cards
+&lt;attach place-cards.csv from `seating_plan.py --csv`&gt;
+FILE:examples/event.json
+{
+  &quot;event&quot;: &quot;Elif and Daniel&#x27;s wedding dinner&quot;,
+  &quot;date&quot;: &quot;2027-06-12&quot;,
+  &quot;rules&quot;: {&quot;keep_parties_together&quot;: true, &quot;mix_groups&quot;: false, &quot;min_known&quot;: 1},
+  &quot;tables&quot;: [
+    {&quot;name&quot;: &quot;Head table&quot;, &quot;seats&quot;: 6, &quot;fixed&quot;: [&quot;Elif Kaya&quot;, &quot;Daniel Moore&quot;], &quot;notes&quot;: &quot;facing the room&quot;},
+    {&quot;name&quot;: &quot;Table 1&quot;, &quot;seats&quot;: 8, &quot;accessible&quot;: true, &quot;notes&quot;: &quot;next to the terrace door, step-free&quot;},
+    {&quot;name&quot;: &quot;Table 2&quot;, &quot;seats&quot;: 8},
+    {&quot;name&quot;: &quot;Table 3&quot;, &quot;seats&quot;: 8},
+    {&quot;name&quot;: &quot;Table 4&quot;, &quot;seats&quot;: 8},
+    {&quot;name&quot;: &quot;Kids table&quot;, &quot;seats&quot;: 6, &quot;kids&quot;: true, &quot;notes&quot;: &quot;near Table 2, crayons and placemats&quot;}
+  ]
+}
+FILE:examples/guests.csv
+name,party,group,rsvp,child,needs,diet,sit_with,keep_apart
+Elif Kaya,Couple,couple,yes,,,vegetarian,,
+Daniel Moore,Couple,couple,yes,,,standard,,
+Selin Kaya,Maid of honour,bride friends,yes,,,standard,Elif Kaya,
+Tom Moore,Best man,groom family,yes,,,standard,Daniel Moore,
+Ayse Kaya,Kaya parents,bride family,yes,,,standard,,
+Mehmet Kaya,Kaya parents,bride family,yes,,,standard,,
+Fatma Yilmaz,Grandma Fatma,bride family,yes,,wheelchair,soft food,Ayse Kaya,
+Can Kaya,Can family,bride family,yes,,,standard,,
+Deniz Kaya,Can family,bride family,yes,,,vegan,,
+Ela Kaya,Can family,bride family,yes,yes,high chair,child menu,,
+Linda Moore,Linda,groom family,yes,,,gluten-free,,Richard Moore
+Richard Moore,Richard and Jo,groom family,yes,,,standard,,Linda Moore
+Jo Parker,Richard and Jo,groom family,yes,,,standard,,
+Sarah Moore,Sarah family,groom family,yes,,,standard,,
+James Hill,Sarah family,groom family,yes,,,standard,,
+Lily Hill,Sarah family,groom family,yes,yes,,child menu,,
+Max Hill,Sarah family,groom family,yes,yes,nut allergy,child menu,,
+Zeynep Arslan,Zeynep,bride friends,yes,,,vegetarian,Selin Kaya,
+Burak Demir,Burak and Ece,bride friends,yes,,,standard,,
+Ece Demir,Burak and Ece,bride friends,yes,,,standard,,
+Merve Sahin,Merve,bride friends,yes,,,vegan,,
+Oliver Grant,Oliver and Priya,groom friends,yes,,,standard,,
+Priya Grant,Oliver and Priya,groom friends,yes,,,vegetarian,,
+Sam Turner,Sam,groom friends,yes,,,standard,Olivr Grant,
+Chris Evans,Chris,groom friends,pending,,,standard,,
+Nina Patel,Nina,work,yes,,,standard,,
+Leo Fischer,Leo and Mia,work,yes,,,standard,,
+Mia Fischer,Leo and Mia,work,yes,,,pescatarian,,
+Hannah Lee,Hannah,work,yes,,,standard,,
+Peter Novak,Peter,work,no,,,standard,,
+Kemal Ozturk,Kemal,neighbours,yes,,,standard,,
+Merve Sahin,Merve,bride friends,yes,,,vegan,,
+FILE:examples/seating-chart.md
+# Seating chart: Elif and Daniel&#x27;s wedding dinner (2027-06-12)
+
+29 attending guest(s) (1 declined; 1 pending left out), 44 seat(s) at 6 table(s). Source: examples/guests.csv.
+
+**Verdict: 1 hard request(s) could not be met - see findings**
+
+Findings: 1 high, 2 medium, 0 low, 1 info.
+
+## Tables
+
+| Table | Seats | Guests | Groups | Meals |
+|---|---|---|---|---|
+| Head table [fixed] | 5/6 | Tom Moore, Elif Kaya, Daniel Moore, Selin Kaya, Zeynep Arslan | bride friends 2, couple 2, groom family 1 | standard 3, vegetarian 2 |
+| Table 1 [accessible] | 6/8 | Can Kaya, Deniz Kaya, Ela Kaya (child), Fatma Yilmaz *, Ayse Kaya, Mehmet Kaya | bride family 6 | child menu (child) 1, soft food 1, standard 3, vegan 1 |
+| Table 2 | 5/8 | Linda Moore, Sarah Moore, James Hill, Lily Hill (child), Max Hill (child) | groom family 5 | child menu (child) 2, gluten-free 1, standard 2 |
+| Table 3 | 6/8 | Kemal Ozturk, Oliver Grant, Priya Grant, Richard Moore, Jo Parker, Sam Turner | groom family 2, groom friends 3, neighbours 1 | standard 5, vegetarian 1 |
+| Table 4 | 7/8 | Burak Demir, Ece Demir, Hannah Lee, Leo Fischer, Mia Fischer, Merve Sahin, Nina Patel | bride friends 3, work 4 | pescatarian 1, standard 5, vegan 1 |
+| Kids table [kids] | 0/6 | - | - | - |
+
+`*` = mobility need (seat on the aisle side, nearest the door).
+
+## Findings
+
+| Sev | Code | Who | Finding | Fix |
+|---|---|---|---|---|
+| high | SC03 | Sam Turner | sit_with &#x27;Olivr Grant&#x27; is not on the (attending) guest list - did you mean Oliver Grant? | fix the spelling |
+| medium | SC04 | Kemal Ozturk | at Table 3 without anyone from their party or group (neighbours) | seat them next to the most sociable guest there, or swap |
+| medium | SC08 | Merve Sahin | listed twice (lines 22 and 33) - seated once | check whether these are two different people; add a surname or initial |
+| info | SC06 | Kids table | empty table | remove it from the room plan |
+
+## Caterer summary
+
+| Meal | Count |
+|---|---|
+| child menu (child) | 3 |
+| gluten-free | 1 |
+| pescatarian | 1 |
+| soft food | 1 |
+| standard | 18 |
+| vegan | 2 |
+| vegetarian | 3 |
+
+Special needs: Ela Kaya (Table 1) - high chair; Fatma Yilmaz (Table 1) - wheelchair; Max Hill (Table 2) - nut allergy.
+
+## Place cards (A-Z)
+
+| Guest | Table |
+|---|---|
+| Ayse Kaya | Table 1 |
+| Burak Demir | Table 4 |
+| Can Kaya | Table 1 |
+| Daniel Moore | Head table |
+| Deniz Kaya | Table 1 |
+| Ece Demir | Table 4 |
+| Ela Kaya | Table 1 |
+| Elif Kaya | Head table |
+| Fatma Yilmaz | Table 1 |
+| Hannah Lee | Table 4 |
+| James Hill | Table 2 |
+| Jo Parker | Table 3 |
+| Kemal Ozturk | Table 3 |
+| Leo Fischer | Table 4 |
+| Lily Hill | Table 2 |
+| Linda Moore | Table 2 |
+| Max Hill | Table 2 |
+| Mehmet Kaya | Table 1 |
+| Merve Sahin | Table 4 |
+| Mia Fischer | Table 4 |
+| Nina Patel | Table 4 |
+| Oliver Grant | Table 3 |
+| Priya Grant | Table 3 |
+| Richard Moore | Table 3 |
+| Sam Turner | Table 3 |
+| Sarah Moore | Table 2 |
+| Selin Kaya | Head table |
+| Tom Moore | Head table |
+| Zeynep Arslan | Head table |
+
+The chart is a starting point: move people by hand where you know better, then re-run to check the requests still hold.
+FILE:scripts/seating_plan.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Event seating chart planner (stdlib only, Python 3.8+).
+
+Reads an event file (tables with seat counts, accessible / kids / fixed head-table seats, rules)
+and a guest list CSV (name, party, group, RSVP, child, needs, diet, sit_with, keep_apart) and
+builds a seating chart: parties stay together, &quot;sit with&quot; requests share a table, &quot;keep apart&quot;
+pairs never share one, guests with mobility needs go to accessible tables, nobody is seated
+without someone they know, and tables are filled by group where possible. Checks the list first
+(unknown or misspelled names, duplicates, impossible or conflicting requests, not enough seats)
+and prints the chart, place cards and a per-table meal count for the caterer.
+
+Usage:
+  seating_plan.py EVENT.json GUESTS.csv [--include-pending] [--csv] [--json]
+  seating_plan.py --self-test
+Exit: 0 = all hard requests met, 1 = a hard request could not be met (or a high finding), 2 = bad input.
+&quot;&quot;&quot;
+import argparse, csv, difflib, io, json, sys
+
+SEV = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2, &quot;info&quot;: 3}
+EVENT_KEYS = {&quot;event&quot;, &quot;date&quot;, &quot;tables&quot;, &quot;rules&quot;}
+TABLE_KEYS = {&quot;name&quot;, &quot;seats&quot;, &quot;accessible&quot;, &quot;kids&quot;, &quot;fixed&quot;, &quot;notes&quot;}
+RULE_KEYS = {&quot;keep_parties_together&quot;, &quot;mix_groups&quot;, &quot;min_known&quot;}
+MOBILITY = (&quot;wheelchair&quot;, &quot;step-free&quot;, &quot;walker&quot;, &quot;mobility&quot;, &quot;crutches&quot;)
+W_APART, W_ACCESS, W_LONELY, W_GROUP, W_SPREAD = 100, 40, 12, 2, 3
+
+
+class InputError(Exception):
+    pass
+
+
+def norm(s):
+    return &quot; &quot;.join(str(s or &quot;&quot;).split()).lower()
+
+
+def split_list(s):
+    return [x.strip() for x in str(s or &quot;&quot;).replace(&quot;,&quot;, &quot;;&quot;).split(&quot;;&quot;) if x.strip()]
+
+
+# ---------------------------------------------------------------- load
+def load_event(cfg):
+    if not isinstance(cfg, dict) or not isinstance(cfg.get(&quot;tables&quot;), list) or not cfg[&quot;tables&quot;]:
+        raise InputError(&quot;event file must be a JSON object with a non-empty \&quot;tables\&quot; list&quot;)
+    bad = set(cfg) - EVENT_KEYS
+    if bad:
+        raise InputError(&quot;unknown key(s) in event file: %s&quot; % &quot;, &quot;.join(sorted(bad)))
+    rules = cfg.get(&quot;rules&quot;) or {}
+    badr = set(rules) - RULE_KEYS
+    if badr:
+        raise InputError(&quot;unknown rule(s): %s&quot; % &quot;, &quot;.join(sorted(badr)))
+    tables, names = [], set()
+    for i, t in enumerate(cfg[&quot;tables&quot;], 1):
+        badt = set(t) - TABLE_KEYS
+        if badt:
+            raise InputError(&quot;table #%d: unknown key(s) %s&quot; % (i, &quot;, &quot;.join(sorted(badt))))
+        name = str(t.get(&quot;name&quot;) or &quot;Table %d&quot; % i)
+        if name in names:
+            raise InputError(&quot;table name %r used twice&quot; % name)
+        names.add(name)
+        seats = t.get(&quot;seats&quot;)
+        if not isinstance(seats, int) or seats &lt; 1:
+            raise InputError(&quot;table %s: seats must be a positive whole number, got %r&quot; % (name, seats))
+        tables.append({&quot;name&quot;: name, &quot;seats&quot;: seats, &quot;accessible&quot;: bool(t.get(&quot;accessible&quot;)), &quot;kids&quot;: bool(t.get(&quot;kids&quot;)),
+                       &quot;fixed&quot;: [str(x) for x in t.get(&quot;fixed&quot;) or []], &quot;notes&quot;: t.get(&quot;notes&quot;, &quot;&quot;)})
+    return {&quot;event&quot;: cfg.get(&quot;event&quot;, &quot;Event&quot;), &quot;date&quot;: cfg.get(&quot;date&quot;, &quot;&quot;), &quot;tables&quot;: tables,
+            &quot;together&quot;: rules.get(&quot;keep_parties_together&quot;, True), &quot;mix&quot;: bool(rules.get(&quot;mix_groups&quot;, False)),
+            &quot;min_known&quot;: int(rules.get(&quot;min_known&quot;, 1))}
+
+
+def load_guests(text, include_pending=False):
+    rows = list(csv.DictReader(io.StringIO(text)))
+    if not rows:
+        raise InputError(&quot;guest list is empty&quot;)
+    cols = {c.strip().lower() for c in rows[0].keys() if c}
+    if &quot;name&quot; not in cols:
+        raise InputError(&quot;guest list needs a &#x27;name&#x27; column&quot;)
+    guests, skipped, F, seen = [], {&quot;no&quot;: 0, &quot;pending&quot;: 0}, [], {}
+    for ln, r in enumerate(rows, 2):
+        r = {(k or &quot;&quot;).strip().lower(): (v or &quot;&quot;).strip() for k, v in r.items()}
+        name = &quot; &quot;.join(r.get(&quot;name&quot;, &quot;&quot;).split())
+        if not name:
+            F.append((&quot;medium&quot;, &quot;SC08&quot;, &quot;line %d&quot; % ln, &quot;row without a name skipped&quot;, &quot;fill in the name or delete the row&quot;))
+            continue
+        rsvp = norm(r.get(&quot;rsvp&quot;) or &quot;yes&quot;)
+        if rsvp in (&quot;no&quot;, &quot;declined&quot;, &quot;n&quot;):
+            skipped[&quot;no&quot;] += 1
+            continue
+        if rsvp in (&quot;pending&quot;, &quot;maybe&quot;, &quot;?&quot;, &quot;invited&quot;, &quot;&quot;):
+            if not include_pending:
+                skipped[&quot;pending&quot;] += 1
+                continue
+        if norm(name) in seen:
+            F.append((&quot;medium&quot;, &quot;SC08&quot;, name, &quot;listed twice (lines %d and %d) - seated once&quot; % (seen[norm(name)], ln), &quot;check whether these are two different people; add a surname or initial&quot;))
+            continue
+        seen[norm(name)] = ln
+        needs = [norm(x) for x in split_list(r.get(&quot;needs&quot;))]
+        guests.append({&quot;name&quot;: name, &quot;party&quot;: r.get(&quot;party&quot;) or name, &quot;group&quot;: r.get(&quot;group&quot;) or &quot;-&quot;,
+                       &quot;child&quot;: norm(r.get(&quot;child&quot;)) in (&quot;yes&quot;, &quot;y&quot;, &quot;true&quot;, &quot;1&quot;, &quot;child&quot;),
+                       &quot;needs&quot;: needs, &quot;mobility&quot;: any(any(m in n for m in MOBILITY) for n in needs),
+                       &quot;diet&quot;: norm(r.get(&quot;diet&quot;)) or &quot;standard&quot;, &quot;sit_with&quot;: split_list(r.get(&quot;sit_with&quot;)),
+                       &quot;keep_apart&quot;: split_list(r.get(&quot;keep_apart&quot;)), &quot;line&quot;: ln, &quot;pending&quot;: rsvp != &quot;yes&quot; and rsvp not in (&quot;y&quot;, &quot;accepted&quot;)})
+    return guests, skipped, F
+
+
+# ---------------------------------------------------------------- plan
+class DSU:
+    def __init__(self, n):
+        self.p = list(range(n))
+    def find(self, a):
+        while self.p[a] != a:
+            self.p[a] = self.p[self.p[a]]
+            a = self.p[a]
+        return a
+    def union(self, a, b):
+        self.p[self.find(a)] = self.find(b)
+
+
+def plan(ev, guests, F=None):
+    F = list(F or [])
+    add = lambda sev, code, who, msg, fix: F.append((sev, code, who, msg, fix))
+    idx = {norm(g[&quot;name&quot;]): i for i, g in enumerate(guests)}
+    allnames = [g[&quot;name&quot;] for g in guests]
+    def resolve(who, ref, kind):
+        j = idx.get(norm(ref))
+        if j is None:
+            close = difflib.get_close_matches(ref, allnames, 1, 0.7)
+            add(&quot;high&quot;, &quot;SC03&quot;, who, &quot;%s %r is not on the (attending) guest list%s&quot; % (kind, ref, &quot; - did you mean %s?&quot; % close[0] if close else &quot;&quot;),
+                &quot;fix the spelling&quot; if close else &quot;add the guest or remove the request&quot;)
+        return j
+    n = len(guests)
+    seats = sum(t[&quot;seats&quot;] for t in ev[&quot;tables&quot;])
+    maxt = max(t[&quot;seats&quot;] for t in ev[&quot;tables&quot;])
+    if n &gt; seats:
+        add(&quot;high&quot;, &quot;SC01&quot;, &quot;-&quot;, &quot;%d guests but only %d seats (%d short)&quot; % (n, seats, n - seats), &quot;add a table or seats, or confirm the RSVPs&quot;)
+    dsu = DSU(n)
+    party_of = {}
+    for i, g in enumerate(guests):
+        party_of.setdefault(norm(g[&quot;party&quot;]), []).append(i)
+    if ev[&quot;together&quot;]:
+        for p, mem in party_of.items():
+            if len(mem) &gt; maxt:
+                add(&quot;medium&quot;, &quot;SC09&quot;, guests[mem[0]][&quot;party&quot;], &quot;party of %d is larger than the largest table (%d) - it is split&quot; % (len(mem), maxt), &quot;seat the party on neighbouring tables&quot;)
+                for a, b in zip(mem, mem[1:]):
+                    if (mem.index(b)) % maxt:
+                        dsu.union(a, b)
+            else:
+                for a, b in zip(mem, mem[1:]):
+                    dsu.union(a, b)
+    apart = set()
+    for i, g in enumerate(guests):
+        for ref in g[&quot;keep_apart&quot;]:
+            j = resolve(g[&quot;name&quot;], ref, &quot;keep_apart&quot;)
+            if j is not None and j != i:
+                apart.add(tuple(sorted((i, j))))
+    # sit_with links, refusing those that would exceed the largest table or join a keep-apart pair
+    for i, g in enumerate(guests):
+        for ref in g[&quot;sit_with&quot;]:
+            j = resolve(g[&quot;name&quot;], ref, &quot;sit_with&quot;)
+            if j is None or j == i:
+                continue
+            a, b = dsu.find(i), dsu.find(j)
+            if a == b:
+                continue
+            size = sum(1 for k in range(n) if dsu.find(k) in (a, b))
+            clash = [p for p in apart if {dsu.find(p[0]), dsu.find(p[1])} == {a, b}]
+            if clash:
+                x, y = clash[0]
+                add(&quot;high&quot;, &quot;SC02&quot;, g[&quot;name&quot;], &quot;asks to sit with %s, but %s and %s must be kept apart - the request is dropped&quot; % (guests[j][&quot;name&quot;], guests[x][&quot;name&quot;], guests[y][&quot;name&quot;]),
+                    &quot;ask the host which request wins&quot;)
+                continue
+            if size &gt; maxt:
+                add(&quot;medium&quot;, &quot;SC09&quot;, g[&quot;name&quot;], &quot;sitting with %s would make a group of %d (largest table %d) - request dropped&quot; % (guests[j][&quot;name&quot;], size, maxt), &quot;seat them on neighbouring tables&quot;)
+                continue
+            dsu.union(i, j)
+    for x, y in sorted(apart):
+        if dsu.find(x) == dsu.find(y):
+            add(&quot;high&quot;, &quot;SC02&quot;, guests[x][&quot;name&quot;], &quot;must be kept apart from %s but they are in the same party - cannot be met&quot; % guests[y][&quot;name&quot;], &quot;change the party or the request&quot;)
+    links = set()
+    for i, g in enumerate(guests):
+        for ref in g[&quot;sit_with&quot;]:
+            j = idx.get(norm(ref))
+            if j is not None:
+                links.add((i, j)); links.add((j, i))
+    def knows(a, b):
+        ga, gb = guests[a], guests[b]
+        return (norm(ga[&quot;party&quot;]) == norm(gb[&quot;party&quot;]) or (ga[&quot;group&quot;] == gb[&quot;group&quot;] and ga[&quot;group&quot;] != &quot;-&quot;) or (a, b) in links)
+    clusters = {}
+    for i in range(n):
+        clusters.setdefault(dsu.find(i), []).append(i)
+    cl = list(clusters.values())
+    T = ev[&quot;tables&quot;]
+    fixed_at = {}
+    for ti, t in enumerate(T):
+        for nm in t[&quot;fixed&quot;]:
+            j = idx.get(norm(nm))
+            if j is None:
+                close = difflib.get_close_matches(nm, allnames, 1, 0.7)
+                add(&quot;high&quot;, &quot;SC03&quot;, t[&quot;name&quot;], &quot;fixed seat for %r who is not on the attending list%s&quot; % (nm, &quot; - did you mean %s?&quot; % close[0] if close else &quot;&quot;), &quot;fix the name in the event file&quot;)
+            else:
+                fixed_at[j] = ti
+    assign = {}
+    load = [0] * len(T)
+    reserved = {ti for ti, t in enumerate(T) if t[&quot;fixed&quot;]}
+    def pen_table(ti, members):
+        p = 0
+        mem = set(members)
+        for x, y in apart:
+            if x in mem and y in mem:
+                p += W_APART
+        groups = {}
+        for m in members:
+            g = guests[m]
+            if g[&quot;mobility&quot;] and not T[ti][&quot;accessible&quot;]:
+                p += W_ACCESS
+            groups[g[&quot;group&quot;]] = groups.get(g[&quot;group&quot;], 0) + 1
+        if not ev[&quot;mix&quot;]:
+            p += W_GROUP * max(0, len(groups) - 1)
+        for m in members:
+            g = guests[m]
+            known = sum(1 for o in members if o != m and knows(m, o))
+            if known &lt; ev[&quot;min_known&quot;]:
+                p += W_LONELY
+        if T[ti][&quot;kids&quot;]:
+            p += sum(3 for m in members if not guests[m][&quot;child&quot;])
+        return p
+    def members_of(ti):
+        return [m for c, t in assign.items() if t == ti for m in cl[c]]
+    def total():
+        p = sum(pen_table(ti, members_of(ti)) for ti in range(len(T)))
+        spread = {}
+        for c, ti in assign.items():
+            for m in cl[c]:
+                if guests[m][&quot;group&quot;] != &quot;-&quot;:
+                    spread.setdefault(guests[m][&quot;group&quot;], set()).add(ti)
+        return p + W_SPREAD * sum(len(v) - 1 for v in spread.values())
+    gsize = {}
+    for g in guests:
+        gsize[g[&quot;group&quot;]] = gsize.get(g[&quot;group&quot;], 0) + 1
+    order = sorted(range(len(cl)), key=lambda c: (-any(i in fixed_at for i in cl[c]), -any(guests[i][&quot;mobility&quot;] for i in cl[c]),
+                                                  -gsize[guests[cl[c][0]][&quot;group&quot;]], guests[cl[c][0]][&quot;group&quot;], -len(cl[c]), cl[c][0]))
+    unseated = []
+    for c in order:
+        size = len(cl[c])
+        fx = [fixed_at[i] for i in cl[c] if i in fixed_at]
+        cands = [fx[0]] if fx else range(len(T))
+        best = None
+        for ti in cands:
+            if load[ti] + size &gt; T[ti][&quot;seats&quot;] or (T[ti][&quot;fixed&quot;] and not fx and ti in reserved):
+                continue
+            assign[c] = ti
+            delta = total()
+            del assign[c]
+            key = (delta, -(load[ti] &gt; 0), ti)
+            if best is None or key &lt; best[0]:
+                best = (key, ti)
+        if best is None:
+            unseated.append(c)
+            continue
+        assign[c] = best[1]
+        load[best[1]] += size
+    # local search: move or swap clusters while it lowers the penalty (deterministic)
+    fixed_cl = {c for c in assign if any(i in fixed_at for i in cl[c])}
+    improved, rounds = True, 0
+    while improved and rounds &lt; 50:
+        improved, rounds = False, rounds + 1
+        cur = total()
+        for c in sorted(assign):
+            if c in fixed_cl:
+                continue
+            for ti in range(len(T)):
+                if ti == assign[c] or load[ti] + len(cl[c]) &gt; T[ti][&quot;seats&quot;] or ti in reserved:
+                    continue
+                old = assign[c]
+                assign[c] = ti
+                new = total()
+                if new &lt; cur:
+                    load[old] -= len(cl[c]); load[ti] += len(cl[c]); cur = new; improved = True
+                else:
+                    assign[c] = old
+        # move every cluster of one group (from all tables) to one table
+        for gname in sorted({guests[cl[c][0]][&quot;group&quot;] for c in assign if c not in fixed_cl}):
+            block = [c for c in assign if c not in fixed_cl and guests[cl[c][0]][&quot;group&quot;] == gname]
+            for b in range(len(T)):
+                if b in reserved:
+                    continue
+                old = {c: assign[c] for c in block}
+                moving = sum(len(cl[c]) for c in block if old[c] != b)
+                if not moving or load[b] + moving &gt; T[b][&quot;seats&quot;]:
+                    continue
+                for c in block:
+                    assign[c] = b
+                new = total()
+                if new &lt; cur:
+                    for c in block:
+                        if old[c] != b:
+                            load[old[c]] -= len(cl[c]); load[b] += len(cl[c])
+                    cur = new; improved = True
+                    break
+                for c in block:
+                    assign[c] = old[c]
+        # move a whole group block (all clusters of one group at one table) to another table
+        for a in range(len(T)):
+            groups_here = sorted({guests[cl[c][0]][&quot;group&quot;] for c, x in assign.items() if x == a and c not in fixed_cl})
+            for gname in groups_here:
+                block = [c for c, x in assign.items() if x == a and c not in fixed_cl and guests[cl[c][0]][&quot;group&quot;] == gname]
+                bsize = sum(len(cl[c]) for c in block)
+                for b in range(len(T)):
+                    if b == a or b in reserved or load[b] + bsize &gt; T[b][&quot;seats&quot;]:
+                        continue
+                    for c in block:
+                        assign[c] = b
+                    new = total()
+                    if new &lt; cur:
+                        load[a] -= bsize; load[b] += bsize; cur = new; improved = True
+                        break
+                    for c in block:
+                        assign[c] = a
+        for c in sorted(assign):
+            for d in sorted(assign):
+                if d &lt;= c or c in fixed_cl or d in fixed_cl or assign[c] == assign[d] or assign[c] in reserved or assign[d] in reserved:
+                    continue
+                a, b = assign[c], assign[d]
+                if load[a] - len(cl[c]) + len(cl[d]) &gt; T[a][&quot;seats&quot;] or load[b] - len(cl[d]) + len(cl[c]) &gt; T[b][&quot;seats&quot;]:
+                    continue
+                assign[c], assign[d] = b, a
+                new = total()
+                if new &lt; cur:
+                    load[a] += len(cl[d]) - len(cl[c]); load[b] += len(cl[c]) - len(cl[d]); cur = new; improved = True
+                else:
+                    assign[c], assign[d] = a, b
+    seat = {}
+    for c, ti in assign.items():
+        for i in cl[c]:
+            seat[i] = ti
+    for c in unseated:
+        add(&quot;high&quot;, &quot;SC01&quot;, &quot;, &quot;.join(guests[i][&quot;name&quot;] for i in cl[c]), &quot;no table with %d free seats together - not seated&quot; % len(cl[c]), &quot;add seats or split the group across neighbouring tables&quot;)
+    # findings on the result
+    for x, y in sorted(apart):
+        if x in seat and y in seat and seat[x] == seat[y]:
+            add(&quot;high&quot;, &quot;SC02&quot;, guests[x][&quot;name&quot;], &quot;seated at %s together with %s although they must be kept apart&quot; % (T[seat[x]][&quot;name&quot;], guests[y][&quot;name&quot;]), &quot;move one of them by hand&quot;)
+    for i, g in enumerate(guests):
+        if i not in seat:
+            continue
+        ti = seat[i]
+        if g[&quot;mobility&quot;] and not T[ti][&quot;accessible&quot;]:
+            add(&quot;medium&quot;, &quot;SC05&quot;, g[&quot;name&quot;], &quot;needs %s but %s is not marked accessible&quot; % (&quot;/&quot;.join(g[&quot;needs&quot;]), T[ti][&quot;name&quot;]), &quot;swap with a guest at an accessible table&quot;)
+        mem = [m for m, t in seat.items() if t == ti and m != i]
+        known = [m for m in mem if knows(i, m)]
+        if len(known) &lt; ev[&quot;min_known&quot;]:
+            add(&quot;medium&quot;, &quot;SC04&quot;, g[&quot;name&quot;], &quot;at %s without anyone from their party or group (%s)&quot; % (T[ti][&quot;name&quot;], g[&quot;group&quot;]), &quot;seat them next to the most sociable guest there, or swap&quot;)
+        if g[&quot;child&quot;] and not T[ti][&quot;kids&quot;] and not any(norm(guests[m][&quot;party&quot;]) == norm(g[&quot;party&quot;]) and not guests[m][&quot;child&quot;] for m in mem):
+            add(&quot;medium&quot;, &quot;SC10&quot;, g[&quot;name&quot;], &quot;child seated without an adult from their party&quot;, &quot;move next to their parents or to the kids table&quot;)
+        if g[&quot;pending&quot;]:
+            add(&quot;info&quot;, &quot;SC07&quot;, g[&quot;name&quot;], &quot;RSVP still pending - seated provisionally&quot;, &quot;chase the RSVP before printing place cards&quot;)
+    for ti, t in enumerate(T):
+        used = sum(1 for i in seat if seat[i] == ti)
+        if 0 &lt; used &lt; t[&quot;seats&quot;] / 2:
+            add(&quot;low&quot;, &quot;SC06&quot;, t[&quot;name&quot;], &quot;only %d of %d seats used&quot; % (used, t[&quot;seats&quot;]), &quot;merge with another table or take it out&quot;)
+        if used == 0:
+            add(&quot;info&quot;, &quot;SC06&quot;, t[&quot;name&quot;], &quot;empty table&quot;, &quot;remove it from the room plan&quot;)
+    for p, mem in party_of.items():
+        ts = {seat[i] for i in mem if i in seat}
+        if len(ts) &gt; 1 and len(mem) &lt;= maxt:
+            add(&quot;medium&quot;, &quot;SC09&quot;, guests[mem[0]][&quot;party&quot;], &quot;party split over %s&quot; % &quot;, &quot;.join(T[x][&quot;name&quot;] for x in sorted(ts)), &quot;free seats at one table and move them together&quot;)
+    F.sort(key=lambda x: (SEV[x[0]], x[1], x[2]))
+    return {&quot;seat&quot;: seat, &quot;tables&quot;: T, &quot;guests&quot;: guests, &quot;findings&quot;: F, &quot;penalty&quot;: total(), &quot;seats&quot;: seats}
+
+
+# ---------------------------------------------------------------- output
+def report(ev, r, skipped, src):
+    G, T, seat = r[&quot;guests&quot;], r[&quot;tables&quot;], r[&quot;seat&quot;]
+    c = {s: 0 for s in SEV}
+    for f in r[&quot;findings&quot;]:
+        c[f[0]] += 1
+    hard = [f for f in r[&quot;findings&quot;] if f[0] == &quot;high&quot;]
+    out = [&quot;# Seating chart: %s%s&quot; % (ev[&quot;event&quot;], (&quot; (%s)&quot; % ev[&quot;date&quot;]) if ev[&quot;date&quot;] else &quot;&quot;), &quot;&quot;,
+           &quot;%d attending guest(s) (%d declined; %s), %d seat(s) at %d table(s). Source: %s.&quot; % (
+               len(G), skipped[&quot;no&quot;], (&quot;%d pending seated provisionally&quot; % sum(1 for g in G if g[&quot;pending&quot;])) if any(g[&quot;pending&quot;] for g in G)
+               else &quot;%d pending left out&quot; % skipped[&quot;pending&quot;], r[&quot;seats&quot;], len(T), src), &quot;&quot;]
+    v = (&quot;%d hard request(s) could not be met - see findings&quot; % len(hard)) if hard else (&quot;all hard requests met, %d soft issue(s) to look at&quot; % c[&quot;medium&quot;] if c[&quot;medium&quot;] else &quot;all requests met&quot;)
+    out += [&quot;**Verdict: %s**&quot; % v, &quot;&quot;, &quot;Findings: %d high, %d medium, %d low, %d info.&quot; % (c[&quot;high&quot;], c[&quot;medium&quot;], c[&quot;low&quot;], c[&quot;info&quot;]), &quot;&quot;]
+    out += [&quot;## Tables&quot;, &quot;&quot;, &quot;| Table | Seats | Guests | Groups | Meals |&quot;, &quot;|---|---|---|---|---|&quot;]
+    for ti, t in enumerate(T):
+        mem = sorted((i for i in seat if seat[i] == ti), key=lambda i: (norm(G[i][&quot;party&quot;]), G[i][&quot;child&quot;], G[i][&quot;line&quot;]))
+        tags = [x for x in (&quot;accessible&quot; if t[&quot;accessible&quot;] else &quot;&quot;, &quot;kids&quot; if t[&quot;kids&quot;] else &quot;&quot;, &quot;fixed&quot; if t[&quot;fixed&quot;] else &quot;&quot;) if x]
+        names = &quot;, &quot;.join(G[i][&quot;name&quot;] + (&quot; (child)&quot; if G[i][&quot;child&quot;] else &quot;&quot;) + (&quot; *&quot; if G[i][&quot;mobility&quot;] else &quot;&quot;) for i in mem) or &quot;-&quot;
+        groups = {}
+        meals = {}
+        for i in mem:
+            groups[G[i][&quot;group&quot;]] = groups.get(G[i][&quot;group&quot;], 0) + 1
+            k = G[i][&quot;diet&quot;] + (&quot; (child)&quot; if G[i][&quot;child&quot;] else &quot;&quot;)
+            meals[k] = meals.get(k, 0) + 1
+        out.append(&quot;| %s%s | %d/%d | %s | %s | %s |&quot; % (t[&quot;name&quot;], &quot; [%s]&quot; % &quot;, &quot;.join(tags) if tags else &quot;&quot;, len(mem), t[&quot;seats&quot;], names,
+                                                     &quot;, &quot;.join(&quot;%s %d&quot; % kv for kv in sorted(groups.items())) or &quot;-&quot;, &quot;, &quot;.join(&quot;%s %d&quot; % kv for kv in sorted(meals.items())) or &quot;-&quot;))
+    out += [&quot;&quot;, &quot;`*` = mobility need (seat on the aisle side, nearest the door).&quot;, &quot;&quot;]
+    out += [&quot;## Findings&quot;, &quot;&quot;, &quot;| Sev | Code | Who | Finding | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+    for s, code, who, msg, fix in r[&quot;findings&quot;]:
+        out.append(&quot;| %s | %s | %s | %s | %s |&quot; % (s, code, who, msg.replace(&quot;|&quot;, &quot;\\|&quot;), fix.replace(&quot;|&quot;, &quot;\\|&quot;)))
+    meals = {}
+    for i in seat:
+        k = G[i][&quot;diet&quot;] + (&quot; (child)&quot; if G[i][&quot;child&quot;] else &quot;&quot;)
+        meals[k] = meals.get(k, 0) + 1
+    out += [&quot;&quot;, &quot;## Caterer summary&quot;, &quot;&quot;, &quot;| Meal | Count |&quot;, &quot;|---|---|&quot;]
+    for k, v_ in sorted(meals.items()):
+        out.append(&quot;| %s | %d |&quot; % (k, v_))
+    notes = [(G[i][&quot;name&quot;], T[seat[i]][&quot;name&quot;], &quot;, &quot;.join(x for x in G[i][&quot;needs&quot;])) for i in sorted(seat, key=lambda i: G[i][&quot;name&quot;]) if G[i][&quot;needs&quot;]]
+    if notes:
+        out += [&quot;&quot;, &quot;Special needs: &quot; + &quot;; &quot;.join(&quot;%s (%s) - %s&quot; % n for n in notes) + &quot;.&quot;]
+    out += [&quot;&quot;, &quot;## Place cards (A-Z)&quot;, &quot;&quot;, &quot;| Guest | Table |&quot;, &quot;|---|---|&quot;]
+    for i in sorted(seat, key=lambda i: norm(G[i][&quot;name&quot;])):
+        out.append(&quot;| %s | %s |&quot; % (G[i][&quot;name&quot;], T[seat[i]][&quot;name&quot;]))
+    out += [&quot;&quot;, &quot;The chart is a starting point: move people by hand where you know better, then re-run to check the requests still hold.&quot;]
+    return &quot;\n&quot;.join(out) + &quot;\n&quot;
+
+
+def run(event_path, guests_path, include_pending=False):
+    try:
+        ev = load_event(json.load(open(event_path, encoding=&quot;utf-8&quot;)))
+        text = open(guests_path, encoding=&quot;utf-8-sig&quot;).read()
+    except (OSError, ValueError) as e:
+        raise InputError(&quot;cannot read input: %s&quot; % e)
+    guests, skipped, F = load_guests(text, include_pending)
+    return ev, plan(ev, guests, F), skipped
+
+
+# ---------------------------------------------------------------- self-test
+def self_test():
+    tests = []
+    def t(name, cond):
+        tests.append((name, bool(cond)))
+    H = &quot;name,party,group,rsvp,child,needs,diet,sit_with,keep_apart\n&quot;
+    def P(tables, rows, pending=False, **rules):
+        ev = load_event({&quot;tables&quot;: tables, &quot;rules&quot;: rules})
+        g, sk, F = load_guests(H + rows, pending)
+        return plan(ev, g, F), g
+    def codes(r):
+        return [(f[0], f[1]) for f in r[&quot;findings&quot;]]
+    def tab(r, g, name):
+        i = [k for k, x in enumerate(g) if x[&quot;name&quot;] == name][0]
+        return r[&quot;seat&quot;].get(i)
+    T2 = [{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4}]
+    rows = &quot;Ann,P1,work,yes\nBob,P1,work,yes\nCid,P2,family,yes\nDee,P2,family,yes\nEve,P3,work,yes\nFay,P4,family,yes\n&quot;
+    r, g = P(T2, rows)
+    t(&quot;parties stay together&quot;, tab(r, g, &quot;Ann&quot;) == tab(r, g, &quot;Bob&quot;) and tab(r, g, &quot;Cid&quot;) == tab(r, g, &quot;Dee&quot;))
+    t(&quot;groups fill tables&quot;, tab(r, g, &quot;Eve&quot;) == tab(r, g, &quot;Ann&quot;) and tab(r, g, &quot;Fay&quot;) == tab(r, g, &quot;Cid&quot;))
+    t(&quot;clean plan has no high/medium&quot;, not [f for f in r[&quot;findings&quot;] if f[0] in (&quot;high&quot;, &quot;medium&quot;)])
+    r, g = P(T2, &quot;Ann,P1,work,yes,,,,,Bob\nBob,P2,work,yes\nCid,P3,work,yes\nDee,P4,work,yes\n&quot;)
+    t(&quot;keep_apart respected&quot;, tab(r, g, &quot;Ann&quot;) != tab(r, g, &quot;Bob&quot;) and (&quot;high&quot;, &quot;SC02&quot;) not in codes(r))
+    r, g = P(T2, &quot;Ann,P1,work,yes,,,,Dee\nBob,P2,family,yes\nCid,P3,family,yes\nDee,P4,friends,yes\n&quot;)
+    t(&quot;sit_with respected&quot;, tab(r, g, &quot;Ann&quot;) == tab(r, g, &quot;Dee&quot;))
+    r, g = P(T2, &quot;Ann,P1,work,yes,,,,Bob,Bob\nBob,P2,work,yes\n&quot;)
+    t(&quot;sit_with vs keep_apart conflict -&gt; SC02 high&quot;, (&quot;high&quot;, &quot;SC02&quot;) in codes(r))
+    r, g = P(T2, &quot;Ann,P1,work,yes,,,,,Bob\nBob,P1,work,yes\n&quot;)
+    t(&quot;keep apart inside one party -&gt; SC02&quot;, (&quot;high&quot;, &quot;SC02&quot;) in codes(r))
+    r, g = P(T2, &quot;Ann,P1,work,yes,,,,Bobb\nBob,P2,work,yes\n&quot;)
+    t(&quot;misspelled name -&gt; SC03 with suggestion&quot;, any(f[1] == &quot;SC03&quot; and &quot;did you mean Bob&quot; in f[3] for f in r[&quot;findings&quot;]))
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 2}], &quot;Ann,P1,w,yes\nBob,P2,w,yes\nCid,P3,w,yes\n&quot;)
+    t(&quot;not enough seats -&gt; SC01 high&quot;, (&quot;high&quot;, &quot;SC01&quot;) in codes(r))
+    r, g = P(T2, &quot;Ann,P1,w,yes\nAnn,P1,w,yes\nBob,P1,w,yes\n&quot;)
+    t(&quot;duplicate -&gt; SC08 and seated once&quot;, (&quot;medium&quot;, &quot;SC08&quot;) in codes(r) and len(g) == 2)
+    r, g = P(T2, &quot;Ann,P1,w,no\nBob,P2,w,pending\nCid,P3,w,yes\nDee,P3,w,yes\n&quot;)
+    t(&quot;declined and pending excluded&quot;, len(g) == 2)
+    r, g = P(T2, &quot;Bob,P2,w,pending\nCid,P3,w,yes\n&quot;, pending=True)
+    t(&quot;--include-pending seats pending -&gt; SC07&quot;, len(g) == 2 and (&quot;info&quot;, &quot;SC07&quot;) in codes(r))
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4, &quot;accessible&quot;: True}], &quot;Ann,P1,w,yes\nBob,P2,x,yes,,wheelchair\n&quot;)
+    t(&quot;wheelchair -&gt; accessible table&quot;, tab(r, g, &quot;Bob&quot;) == 1)
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4}], &quot;Ann,P1,w,yes\nBob,P2,x,yes,,wheelchair\n&quot;)
+    t(&quot;no accessible table -&gt; SC05&quot;, (&quot;medium&quot;, &quot;SC05&quot;) in codes(r))
+    r, g = P(T2, &quot;Ann,P1,work,yes\nBob,P1,work,yes\nZed,P9,gym,yes\n&quot;)
+    t(&quot;lonely guest -&gt; SC04&quot;, (&quot;medium&quot;, &quot;SC04&quot;) in codes(r))
+    r, g = P([{&quot;name&quot;: &quot;Head&quot;, &quot;seats&quot;: 4, &quot;fixed&quot;: [&quot;Bride&quot;, &quot;Groom&quot;]}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4}], &quot;Bride,C,couple,yes\nGroom,C,couple,yes\nBest,Best,groom family,yes,,,,Groom\n&quot;)
+    t(&quot;sit_with partner counts as someone they know&quot;, (&quot;medium&quot;, &quot;SC04&quot;) not in codes(r) and tab(r, g, &quot;Best&quot;) == 0)
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;C&quot;, &quot;seats&quot;: 4}],
+             &quot;A1,a1,fam,yes\nA2,a1,fam,yes\nA3,a1,fam,yes\nW1,w1,work,yes\nB1,b1,fam,yes\nB2,b1,fam,yes\nB3,b1,fam,yes\nW2,w2,work,yes\n&quot;)
+    t(&quot;group split by greedy is pulled together&quot;, tab(r, g, &quot;W1&quot;) == tab(r, g, &quot;W2&quot;))
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 3}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 3}], &quot;A1,Big,w,yes\nA2,Big,w,yes\nA3,Big,w,yes\nA4,Big,w,yes\n&quot;)
+    t(&quot;party bigger than a table is split -&gt; SC09&quot;, (&quot;medium&quot;, &quot;SC09&quot;) in codes(r) and len(r[&quot;seat&quot;]) == 4)
+    r, g = P([{&quot;name&quot;: &quot;Head&quot;, &quot;seats&quot;: 2, &quot;fixed&quot;: [&quot;Cid&quot;]}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4}], &quot;Ann,P1,w,yes\nBob,P1,w,yes\nCid,P3,w,yes\n&quot;)
+    t(&quot;fixed seat honoured&quot;, tab(r, g, &quot;Cid&quot;) == 0)
+    r, g = P([{&quot;name&quot;: &quot;Head&quot;, &quot;seats&quot;: 2, &quot;fixed&quot;: [&quot;Cyd&quot;]}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 4}], &quot;Cid,P3,w,yes\n&quot;)
+    t(&quot;fixed seat typo -&gt; SC03&quot;, (&quot;high&quot;, &quot;SC03&quot;) in codes(r))
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 10}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 10}], &quot;Ann,P1,w,yes\nBob,P1,w,yes\n&quot;)
+    t(&quot;half-empty and empty tables -&gt; SC06&quot;, (&quot;low&quot;, &quot;SC06&quot;) in codes(r) and (&quot;info&quot;, &quot;SC06&quot;) in codes(r))
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;Kids&quot;, &quot;seats&quot;: 4, &quot;kids&quot;: True}], &quot;Mum,F,fam,yes\nTim,F,fam,yes,yes\nLia,G,fam,yes,yes\nDad,G,fam,yes\n&quot;)
+    t(&quot;children stay with their party by default&quot;, tab(r, g, &quot;Tim&quot;) == tab(r, g, &quot;Mum&quot;))
+    r, g = P(T2, &quot;Ann,P1,w,yes,,,vegetarian\nBob,P1,w,yes,,,\n&quot;)
+    t(&quot;diet counted&quot;, &quot;vegetarian 1&quot; in report({&quot;event&quot;: &quot;x&quot;, &quot;date&quot;: &quot;&quot;}, r, {&quot;no&quot;: 0, &quot;pending&quot;: 0}, &quot;x&quot;))
+    r, g = P([{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 2}, {&quot;name&quot;: &quot;B&quot;, &quot;seats&quot;: 2}], &quot;Ann,P1,w,yes,,,,Bob;Cid\nBob,P2,w,yes\nCid,P3,w,yes\n&quot;)
+    t(&quot;sit_with group larger than any table -&gt; SC09&quot;, (&quot;medium&quot;, &quot;SC09&quot;) in codes(r))
+    for bad, name in (({&quot;tables&quot;: []}, &quot;no tables&quot;), ({&quot;tables&quot;: [{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 0}]}, &quot;zero seats&quot;),
+                      ({&quot;tables&quot;: [{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}, {&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4}]}, &quot;duplicate table&quot;),
+                      ({&quot;tables&quot;: [{&quot;name&quot;: &quot;A&quot;, &quot;seats&quot;: 4, &quot;colour&quot;: &quot;red&quot;}]}, &quot;unknown table key&quot;)):
+        try:
+            load_event(bad); t(&quot;rejected: &quot; + name, False)
+        except InputError:
+            t(&quot;rejected: &quot; + name, True)
+    try:
+        load_guests(&quot;first,last\nA,B\n&quot;); t(&quot;rejected: no name column&quot;, False)
+    except InputError:
+        t(&quot;rejected: no name column&quot;, True)
+    r, g = P(T2, rows)
+    rep = report({&quot;event&quot;: &quot;x&quot;, &quot;date&quot;: &quot;&quot;}, r, {&quot;no&quot;: 0, &quot;pending&quot;: 0}, &quot;x&quot;)
+    t(&quot;report has verdict, tables and place cards&quot;, &quot;**Verdict:&quot; in rep and &quot;## Tables&quot; in rep and &quot;## Place cards&quot; in rep)
+    for n, ok in tests:
+        print(&quot;%s  %s&quot; % (&quot;PASS&quot; if ok else &quot;FAIL&quot;, n))
+    p = sum(ok for _, ok in tests)
+    print(&quot;%d/%d passed&quot; % (p, len(tests)))
+    return 0 if p == len(tests) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Build a seating chart from tables and a guest list.&quot;)
+    ap.add_argument(&quot;event&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;guests&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--include-pending&quot;, action=&quot;store_true&quot;, help=&quot;seat guests whose RSVP is pending&quot;)
+    ap.add_argument(&quot;--csv&quot;, action=&quot;store_true&quot;, help=&quot;print name,table CSV (place cards)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.event or not a.guests:
+        ap.error(&quot;give EVENT.json and GUESTS.csv&quot;)
+    try:
+        ev, r, skipped = run(a.event, a.guests, a.include_pending)
+    except InputError as e:
+        print(&quot;error: %s&quot; % e, file=sys.stderr)
+        return 2
+    G, T = r[&quot;guests&quot;], r[&quot;tables&quot;]
+    if a.json:
+        print(json.dumps({&quot;tables&quot;: [{&quot;name&quot;: t[&quot;name&quot;], &quot;seats&quot;: t[&quot;seats&quot;], &quot;guests&quot;: [G[i][&quot;name&quot;] for i in sorted(r[&quot;seat&quot;]) if r[&quot;seat&quot;][i] == ti]} for ti, t in enumerate(T)],
+                          &quot;unseated&quot;: [g[&quot;name&quot;] for i, g in enumerate(G) if i not in r[&quot;seat&quot;]],
+                          &quot;findings&quot;: [dict(zip((&quot;severity&quot;, &quot;code&quot;, &quot;who&quot;, &quot;finding&quot;, &quot;fix&quot;), f)) for f in r[&quot;findings&quot;]]}, indent=2))
+    elif a.csv:
+        w = csv.writer(sys.stdout, lineterminator=&quot;\n&quot;)
+        w.writerow([&quot;name&quot;, &quot;table&quot;, &quot;diet&quot;])
+        for i in sorted(r[&quot;seat&quot;], key=lambda i: norm(G[i][&quot;name&quot;])):
+            w.writerow([G[i][&quot;name&quot;], T[r[&quot;seat&quot;][i]][&quot;name&quot;], G[i][&quot;diet&quot;]])
+    else:
+        sys.stdout.write(report(ev, r, skipped, a.guests))
+    return 1 if any(f[0] == &quot;high&quot; for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/event-seating-chart-planner',TI="Event Seating Chart Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regex Pattern Explainer and Tester | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: regex-pattern-explainer-and-tester description: Explains Python regular expressions token by token, tests them on must-match and must-not-ma">
+<meta property="og:title" content="Regex Pattern Explainer and Tester | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: regex-pattern-explainer-and-tester description: Explains Python regular expressions token by token, tests them on must-match and must-not-ma">
+<meta property="og:url" content="https://claudebomb.com/l/pc/regex-pattern-explainer-and-tester/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/regex-pattern-explainer-and-tester/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Regex Pattern Explainer and Tester</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: regex-pattern-explainer-and-tester
+description: Explains Python regular expressions token by token, tests them on must-match and must-not-match samples with spans and named groups, and flags risky patterns: nested quantifiers that backtrack catastrophically, [A-z], unescaped dots, empty matches, and missing anchors, then proposes a safer rewrite. Use when a user asks &quot;what does this regex do?&quot;, &quot;why doesn&#x27;t it match?&quot;, or &quot;is this regex safe?&quot;. Includes a tested stdlib Python checker.
+---
+
+# Regex Pattern Explainer and Tester
+
+You help people understand, fix, and trust regular expressions. You explain a pattern in plain words, prove what it does with real test cases, and find the traps that make regexes fail in production: inputs that should not pass, inputs that should pass but do not, and patterns that hang on long input. You return a corrected pattern with a test table, not just an opinion.
+
+## Files in this skill
+
+- `scripts/regex_check.py` - explains a pattern from Python&#x27;s own regex parser, runs sample inputs with &quot;+&quot; (must match) and &quot;-&quot; (must not match) expectations, and reports HIGH, WARN, and INFO risks; `--probe` times the pattern on generated worst-case input in a subprocess (Python 3 standard library only)
+- `references/regex-pitfalls.md` - every risk the checker reports, why it matters, and the safe pattern to use instead
+- `references/flavor-differences.md` - how Python `re` differs from JavaScript, PCRE, Go RE2, .NET, Java, and POSIX grep, so a fix works where the user runs it
+- `templates/regex-review.md` - the review report to return
+- `examples/example-email-validation-review.md` - a worked review of an email check that hangs on long input
+
+## Workflow
+
+### 1. Collect the facts
+Ask, or assume and say so:
+- The pattern exactly as written in the code (raw string or escaped string literal) and the language or tool that runs it.
+- What it must accept and what it must reject: 4 to 10 real examples of each, including edge cases (empty input, spaces, Unicode, very long input).
+- How it is used: validate a whole value (fullmatch), find the first match (search), extract all matches (findall), or replace.
+- Where the input comes from. Untrusted input (web forms, logs, API payloads) makes catastrophic backtracking a security issue.
+
+### 2. Run the checker
+```bash
+python3 scripts/regex_check.py &#x27;PATTERN&#x27; -t &#x27;sample one&#x27; -t &#x27;sample two&#x27;
+python3 scripts/regex_check.py &#x27;PATTERN&#x27; --cases cases.txt --mode fullmatch --flags a
+python3 scripts/regex_check.py &#x27;PATTERN&#x27; --probe --no-explain         # confirm a backtracking risk
+python3 scripts/regex_check.py &#x27;PATTERN&#x27; --cases - --json &lt; cases.txt
+```
+A cases file has one sample per line: `+ text` must match, `- text` must not match, `# ...` is a comment. Always quote the pattern in single quotes in the shell. The checker uses Python&#x27;s `re`; for other flavors, read `references/flavor-differences.md` and translate the result. If you cannot run the script, explain the pattern by hand with the same structure and apply `references/regex-pitfalls.md`.
+
+### 3. Explain, then fix
+1. Explain the pattern top to bottom in plain words, one line per token or group, using the checker&#x27;s explanation as the base.
+2. Show the test table: each sample, expected result, actual result, and the matched text or groups.
+3. Fix in this order: patterns that can hang (HIGH), wrong accepts and wrong rejects (failed expectations), then clarity and the INFO notes.
+4. Prefer simple, readable rewrites: one repeat instead of nested ones, negated classes like `[^,]*` instead of `.*`, explicit anchors `\A...\Z` or `fullmatch`, and `re.VERBOSE` with comments for long patterns.
+5. Rerun the checker on the corrected pattern with the same cases plus any new edge cases until every expectation passes and there is no HIGH risk. Run `--probe` on the fix if the original had a HIGH risk.
+
+### 4. Deliver
+Fill in `templates/regex-review.md`: the plain-language explanation, the test table before and after, the risks found, the corrected pattern in the user&#x27;s language with correct escaping, and a short list of test cases to keep in their test suite. Follow the style of `examples/example-email-validation-review.md`.
+
+## Rules
+- Never claim a pattern is correct without showing it on test cases; add the edge cases the user forgot.
+- Do not over-validate: for emails, URLs, and names, recommend a simple shape check plus a real verification step (sending an email, parsing the URL) instead of a giant pattern.
+- Keep the user&#x27;s flavor: do not suggest lookbehind, possessive quantifiers, or atomic groups where their engine does not support them.
+- Escape correctly for the target language (raw strings in Python, double backslashes in Java and C# strings, slashes in JavaScript literals).
+- Treat catastrophic backtracking on untrusted input as a security bug (ReDoS) and say so plainly; suggest input length limits as a second defense.
+FILE:references/regex-pitfalls.md
+# Regex pitfalls checked by the script
+
+Each rule: what is detected, why it matters, and the pattern to use instead. Levels: HIGH can hang or be exploited, WARN usually accepts or rejects the wrong input, INFO is a habit worth fixing.
+
+## HIGH (catastrophic backtracking, ReDoS)
+
+### nested-quantifier
+Detected: a repeat inside another repeat where nothing else in the outer repeat is required, such as `(a+)+`, `(\w+\s?)+`, `([a-z0-9]+\.?)+`, `(\w+|\d+)+`.
+Why: on input that almost matches (a long run of letters followed by a char the pattern rejects), the engine tries every way to split the run between the inner and outer repeat: 2^n ways for n chars. 30 chars can take minutes. On a web form or API this is a denial-of-service bug.
+Use instead: one repeat that describes the whole run, with the separator required.
+```
+(\w+\s?)+$          -&gt;  \w+(?:\s\w+)*$
+([a-z0-9]+\.?)+@    -&gt;  [a-z0-9]+(?:\.[a-z0-9]+)*@
+```
+Python 3.11+ also supports atomic groups `(?&gt;...)` and possessive quantifiers `a++`, which never give back what they matched.
+
+### ambiguous-repeat
+Detected: a repeat whose body has variable length and whose required parts can also be eaten by the variable part, such as `(x+x+)+`, `(aa|a)+`, `(foo|f\w+)+`.
+Why: same as above, the iterations can be cut in many ways. Growth may be slower (Fibonacci instead of 2^n) but is still exponential.
+Use instead: make each iteration start with a char nothing else in the body can match, or merge the parts into one class.
+
+Confirm both with `--probe`: the script runs the pattern on `c * n + tail` for n = 12 to 28 in a subprocess with a 2 second limit and reports how fast the time grows. A growth of more than 3x per 4 extra chars, or a timeout, confirms the risk.
+
+## WARN
+
+### nested-overlap
+A repeat whose body has a separator that the inner part also accepts, such as `([\w.]+\.)+`. Make the inner class exclude the separator: `(?:[\w-]+\.)+`.
+
+### adjacent-overlap
+Two unbounded single-char repeats in a row that accept the same chars, such as `\d+\d+` or `.*.*`. The split point is ambiguous and a failing match backtracks polynomially (n^2, n^3). Keep one of them or make the boundary explicit.
+
+### range-A-z
+`[A-z]` covers ASCII 65 to 122, which includes `[ \ ] ^ _` and the backtick. Use `[A-Za-z]`, or `[^\W\d_]` for any Unicode letter.
+
+### unescaped-dot
+`.` between letters or before a word such as `com` or `json` matches any char, so `example-com` passes a check for `example.com`. Write `\.`.
+
+### matches-empty
+The pattern accepts the empty string. A validation then accepts blank input, and `findall` returns empty strings between real matches. Use `+` instead of `*` where at least one char is required.
+
+## INFO
+
+### not-anchored
+`re.search(r&quot;\d+&quot;, &quot;abc123xyz&quot;)` succeeds. For validating a whole value, use `re.fullmatch` or anchor with `\A ... \Z`.
+
+### dollar-newline
+`$` matches at the end of the string and also just before a final newline, so `^abc$` accepts `&quot;abc\n&quot;` with `re.search` or `re.match`. Use `\Z` or `re.fullmatch` for strict checks.
+
+### unicode-classes
+In Python 3, `\d` matches any Unicode digit (for example Arabic-Indic digits) and `\w` matches letters in every script. Good for names and free text; for IDs, card numbers, and codes use `re.ASCII` or `[0-9]`.
+
+### greedy-dotstar and many-dotstar
+`.*` takes everything and then gives back one char at a time. Three or more `.*` in one pattern make failures slow on long lines. Describe each field with a negated class: `&quot;[^&quot;]*&quot;` for a quoted string, `[^,]*` for a CSV field.
+
+## Not detected by the script (check by hand)
+
+- Wrong escaping in the host language (a Python string without `r&quot;&quot;`, a Java string with single backslashes).
+- Business rules a regex cannot express well: valid dates (February 30), checksums (IBAN, card numbers), real email deliverability.
+- Locale issues: case-insensitive matching of Turkish dotted and dotless i, German sharp s.
+- Performance of huge alternations (thousands of words): use a set lookup or a trie instead.
+FILE:references/flavor-differences.md
+# Regex flavor differences that break fixes
+
+The checker runs Python `re`. Before handing a pattern to another engine, check this table.
+
+| Feature | Python `re` | JavaScript | PCRE / PHP | Go (RE2) | .NET | Java | POSIX grep -E |
+|---|---|---|---|---|---|---|---|
+| Lookahead `(?=...)` | yes | yes | yes | no | yes | yes | no |
+| Lookbehind `(?&lt;=...)` | fixed width only | yes (ES2018) | fixed or bounded | no | any width | bounded | no |
+| Named group | `(?P&lt;name&gt;...)` only | `(?&lt;name&gt;...)` | both | `(?P&lt;name&gt;...)` (also `(?&lt;name&gt;...)` in Go 1.22+) | `(?&lt;name&gt;...)` | `(?&lt;name&gt;...)` | no |
+| Atomic group `(?&gt;...)` | 3.11+ | no | yes | no | yes | yes | no |
+| Possessive `a++` | 3.11+ | no | yes | no | no | yes | no |
+| Backreference `\1` | yes | yes | yes | no | yes | yes | yes (basic) |
+| `\d` matches non-ASCII digits | yes (unless re.ASCII) | no | no (unless UCP) | no | yes | no (unless UNICODE_CHARACTER_CLASS) | locale |
+| `$` before final newline | yes | no (without m flag) | yes | no | yes | yes | n/a (line based) |
+| Inline flags `(?i)` | yes, at start or scoped `(?i:...)` | flags after the literal (`/i`); scoped `(?i:...)` only in the newest engines | yes | yes | yes | yes | no |
+| Catastrophic backtracking | possible | possible | possible (has limits) | impossible (linear time) | possible (timeout option) | possible | engine dependent |
+| Full match helper | `re.fullmatch` | anchor with `^...$` | anchor | anchor | anchor | `String.matches()` | `-x` flag |
+
+## Translation notes
+
+- JavaScript: write the literal as `/pattern/flags`; escape `/` inside it. Use the `u` flag for Unicode and `v` for set operations in newer engines. `\Z` does not exist: use `$` without the `m` flag.
+- Go RE2: no lookarounds or backreferences, but every pattern runs in linear time, so ReDoS is not a concern there. Rewrite lookarounds as a second check in code.
+- Java and C#: every backslash doubles in a normal string literal (`&quot;\\d+&quot;`); C# verbatim strings `@&quot;\d+&quot;` and Java text blocks help.
+- .NET: set `RegexOptions.NonBacktracking` (.NET 7+) or a match timeout for untrusted input.
+- SQL: PostgreSQL `~` uses Tcl-style advanced regexes (lookahead, lookbehind since 9.6, no named groups); MySQL 8 uses ICU. Test in the database itself.
+- Shell: `grep -E` has no `\d` on many systems; use `[0-9]`. `grep -P` gives PCRE where available.
+
+## Safe defaults across flavors
+
+- `[0-9]` instead of `\d`, `[A-Za-z]` instead of `\w` when the format is ASCII by definition.
+- Anchors `^` and `$` without multiline mode, plus a separate length check (for example at most 254 chars for an email).
+- No nested quantifiers on untrusted input, whatever the engine.
+FILE:templates/regex-review.md
+# Regex review: ${purpose}
+
+**Pattern (original):** `${original_pattern}`
+**Engine:** ${language_and_engine} | **Used as:** ${usage: validate whole value / find first / find all / replace}
+**Checker:** HIGH ${high} / WARN ${warn} / INFO ${info} before; expectations ${pass_before}/${total} pass
+
+## What it does, in plain words
+
+1. (one line per token or group, top to bottom)
+
+## Test results
+
+| # | Input | Expected | Before | After | Notes |
+|---|---|---|---|---|---|
+| 1 | | match / no match | | | |
+
+## Risks found
+
+| Level | Rule | What it means here | Fix |
+|---|---|---|---|
+| HIGH | | | |
+
+Probe (if run): input `${probe_input}`, ${probe_result}
+
+## Corrected pattern
+
+```${language}
+(the corrected pattern, escaped for the user&#x27;s language, with a VERBOSE or commented version if it is longer than about 40 chars)
+```
+
+Why each change: (one line per change)
+
+## Keep these tests
+
+```
++ (must match)
+- (must not match)
+```
+
+## Notes
+
+- Limits of a regex for this job and the extra check to do in code (length limit, parsing, verification step).
+- Flavor caveats if the pattern will run outside Python.
+FILE:examples/example-email-validation-review.md
+# Example: review of a signup form email check that hangs
+
+## User request
+
+&quot;Our signup API sometimes times out and the profiler points at this line. Can you explain the regex and fix it? It runs in Python 3.12 on the email field of a public form.&quot;
+
+```python
+EMAIL = re.compile(r&quot;^([a-zA-Z0-9]+\.?)+@[A-z]+.com$&quot;)
+```
+
+## Cases used (cases.txt)
+
+The user&#x27;s 5 cases plus 3 edge cases added during the review (a dash instead of the dot, an underscore in the domain, and 30 letters with no `@`, the shape a bot sent):
+
+```
++ ann@example.com
++ first.last@mail.example.co
+- bob@@example.com
+- no-at-sign.example.com
+- trailing-dot@example.
+- ann@example-com
+- ann@exa_mple.com
+- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!
+```
+
+## Checker run (original)
+
+```
+$ python3 scripts/regex_check.py &#x27;^([a-zA-Z0-9]+\.?)+@[A-z]+.com$&#x27; --cases cases.txt --no-explain --probe
+Samples (search):
+  PASS     + &#x27;ann@example.com&#x27;  -&gt; [0:15] &#x27;ann@example.com&#x27; 1=&#x27;ann&#x27;
+  FAIL     + &#x27;first.last@mail.example.co&#x27;  -&gt; expected a match
+  PASS     - &#x27;bob@@example.com&#x27;
+  PASS     - &#x27;no-at-sign.example.com&#x27;
+  PASS     - &#x27;trailing-dot@example.&#x27;
+  FAIL     - &#x27;ann@example-com&#x27;  -&gt; [0:15] &#x27;ann@example-com&#x27; 1=&#x27;ann&#x27;  (expected no match)
+  FAIL     - &#x27;ann@exa_mple.com&#x27;  -&gt; [0:16] &#x27;ann@exa_mple.com&#x27; 1=&#x27;ann&#x27;  (expected no match)
+  TIMEOUT  - &#x27;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!&#x27;  -&gt; still running after 2 s (catastrophic backtracking)
+
+Risks and suggestions:
+  HIGH nested-quantifier       a quantifier sits inside another quantifier and nothing else in the outer repeat is required ...
+       probe &#x27;a&#x27; * n + &#x27;!&#x27;: n=12: 0.0002 s, n=16: 0.0031 s, n=20: 0.0593 s, n=24: 0.8419 s, n=28: timeout -&gt; TIMEOUT at length 29: exponential backtracking confirmed
+  WARN range-A-z               [A-z] also matches [ \ ] ^ _ and the backtick; use [A-Za-z]
+  WARN unescaped-dot           &#x27;.&#x27; before &#x27;com&#x27; matches any char (so a &#x27;-&#x27; or &#x27;x&#x27; passes there too); write \. for a literal dot
+  INFO dollar-newline          $ also matches before a trailing newline ...
+
+Summary: HIGH 1  WARN 2  INFO 1 | expectations 4/8 pass | 1 sample(s) timed out
+```
+
+## Review (filled template, shortened)
+
+**Checker:** HIGH 1 / WARN 2 / INFO 1 before; expectations 4/8 pass (one timeout). After: HIGH 0 / WARN 0, expectations 8/8 pass.
+
+What it does: start of string; one or more runs of letters or digits, each optionally followed by a dot; an `@`; one or more chars from A to z (including `[ \ ] ^ _` and the backtick); any single char; the text `com`; end of string or before a final newline.
+
+| # | Input | Expected | Before | After | Notes |
+|---|---|---|---|---|---|
+| 1 | ann@example.com | match | match | match | |
+| 2 | first.last@mail.example.co | match | no match | match | only `.com` and one domain label were allowed |
+| 3 | bob@@example.com | no match | no match | no match | |
+| 4 | no-at-sign.example.com | no match | no match | no match | |
+| 5 | trailing-dot@example. | no match | no match | no match | |
+| 6 | ann@example-com | no match | match | no match | added: the unescaped dot accepted `-` |
+| 7 | ann@exa_mple.com | no match | match | no match | added: `[A-z]` accepted `_` |
+| 8 | 30 x &quot;a&quot; then &quot;!&quot; | no match, fast | timeout after 2 s | no match, instant | added: the production hang |
+
+Risks: the `([a-zA-Z0-9]+\.?)+` group lets a run of letters be split in 2^n ways when the `@` is missing, so a 29-char junk input from a bot blocked a worker for more than 2 seconds; this is a ReDoS bug on a public endpoint.
+
+Corrected pattern:
+
+```python
+EMAIL = re.compile(r&quot;&quot;&quot;
+    [A-Za-z0-9._%+-]+          # local part: one run, dots allowed but not repeated in a nested group
+    @
+    (?:[A-Za-z0-9-]+\.)+       # one or more domain labels, each ending in a literal dot
+    [A-Za-z]{2,}               # top-level domain
+&quot;&quot;&quot;, re.VERBOSE | re.ASCII)
+
+def looks_like_email(value: str) -&gt; bool:
+    return len(value) &lt;= 254 and EMAIL.fullmatch(value) is not None
+```
+
+Why each change: one flat repeat for the local part removes the nested quantifier; `\.` makes the dot literal; `[A-Za-z]` replaces `[A-z]`; any top-level domain is accepted instead of only `com`; `fullmatch` replaces `^...$`; a 254-char limit is a second defense; `re.ASCII` keeps `[...]` classes predictable.
+
+Recheck: `python3 scripts/regex_check.py &#x27;[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}&#x27; --cases cases.txt --mode fullmatch --probe` reports no HIGH or WARN risks (the nested group is reported as INFO nested-separated, a safe shape) and 8/8 expectations pass.
+
+Keep these tests: all 8 rows above, plus a 300-char input to check the length limit. Note that a regex only checks the shape; confirm the address by sending a verification email.
+FILE:scripts/regex_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Explain a Python regular expression, test it on sample inputs, and warn about risky patterns.
+
+Usage:
+  python3 regex_check.py PATTERN [options]
+  python3 regex_check.py PATTERN -t &quot;text one&quot; -t &quot;text two&quot;
+  python3 regex_check.py PATTERN --cases cases.txt --mode fullmatch
+  python3 regex_check.py PATTERN --cases - &lt; cases.txt        (read cases from stdin)
+
+Options:
+  -t, --text TEXT     a sample input (repeatable)
+  --cases FILE        one sample per line; &quot;+ text&quot; must match, &quot;- text&quot; must not match,
+                      &quot;# ...&quot; is a comment, other lines are shown without an expectation
+  --mode MODE         search (default), match, fullmatch, or findall
+  --flags LETTERS     any of i m s x a (IGNORECASE, MULTILINE, DOTALL, VERBOSE, ASCII)
+  --probe             time the pattern on generated worst-case inputs (subprocess, 2 s limit)
+  --no-explain        skip the token-by-token explanation
+  --json              print the result as JSON
+  --fail-on LEVEL     exit 1 if any risk is at least LEVEL: high (default), warn, info, never
+  --timeout S         stop matching one sample after S seconds and report TIMEOUT (default 2)
+
+Risks: HIGH = nested quantifiers that can backtrack exponentially;
+WARN = overlapping alternatives or adjacent quantifiers, [A-z], unescaped dots, empty matches;
+INFO = anchoring, $ versus \\Z, Unicode \\d and \\w, greedy .*, flags that look missing.
+Exit codes: 0 ok, 1 failed expectations or a risk at or above --fail-on, 2 usage or pattern error.
+Python 3 standard library only (uses the re module&#x27;s own parser).
+&quot;&quot;&quot;
+import json
+import re
+import signal
+import string
+import subprocess
+import sys
+
+try:  # Python 3.11+
+    import re._parser as sre_parse
+except ImportError:  # pragma: no cover - older Python
+    import sre_parse  # type: ignore
+
+LEVELS = {&quot;info&quot;: 0, &quot;warn&quot;: 1, &quot;high&quot;: 2}
+FLAG_LETTERS = {&quot;i&quot;: re.IGNORECASE, &quot;m&quot;: re.MULTILINE, &quot;s&quot;: re.DOTALL, &quot;x&quot;: re.VERBOSE, &quot;a&quot;: re.ASCII}
+FLAG_NAMES = [(re.IGNORECASE, &quot;IGNORECASE&quot;), (re.MULTILINE, &quot;MULTILINE&quot;), (re.DOTALL, &quot;DOTALL&quot;),
+              (re.VERBOSE, &quot;VERBOSE&quot;), (re.ASCII, &quot;ASCII&quot;)]
+ALPHABET = string.ascii_letters + string.digits + string.punctuation + &quot; \t\n&quot; + &quot;\u00e9\u0663&quot;
+CATEGORY_RE = {&quot;CATEGORY_DIGIT&quot;: r&quot;\d&quot;, &quot;CATEGORY_NOT_DIGIT&quot;: r&quot;\D&quot;, &quot;CATEGORY_SPACE&quot;: r&quot;\s&quot;,
+               &quot;CATEGORY_NOT_SPACE&quot;: r&quot;\S&quot;, &quot;CATEGORY_WORD&quot;: r&quot;\w&quot;, &quot;CATEGORY_NOT_WORD&quot;: r&quot;\W&quot;}
+CATEGORY_TEXT = {&quot;CATEGORY_DIGIT&quot;: &quot;a digit&quot;, &quot;CATEGORY_NOT_DIGIT&quot;: &quot;a non-digit&quot;,
+                 &quot;CATEGORY_SPACE&quot;: &quot;whitespace&quot;, &quot;CATEGORY_NOT_SPACE&quot;: &quot;a non-whitespace char&quot;,
+                 &quot;CATEGORY_WORD&quot;: &quot;a word char (letter, digit, _)&quot;, &quot;CATEGORY_NOT_WORD&quot;: &quot;a non-word char&quot;}
+AT_TEXT = {&quot;AT_BEGINNING&quot;: &quot;^ start of string (start of each line with MULTILINE)&quot;,
+           &quot;AT_BEGINNING_STRING&quot;: &quot;\\A start of string only&quot;,
+           &quot;AT_END&quot;: &quot;$ end of string or before a final newline (end of each line with MULTILINE)&quot;,
+           &quot;AT_END_STRING&quot;: &quot;\\Z end of string only&quot;,
+           &quot;AT_BOUNDARY&quot;: &quot;\\b word boundary&quot;, &quot;AT_NON_BOUNDARY&quot;: &quot;\\B not a word boundary&quot;}
+MAXREPEAT = sre_parse.MAXREPEAT
+
+
+class UsageError(Exception):
+    pass
+
+
+class MatchTimeout(Exception):
+    pass
+
+
+def with_timeout(seconds, fn, *args):
+    &quot;&quot;&quot;Run fn with a wall-clock limit (SIGALRM on Unix; no limit elsewhere).&quot;&quot;&quot;
+    if not hasattr(signal, &quot;setitimer&quot;) or seconds &lt;= 0:
+        return fn(*args)
+    def handler(_sig, _frame):
+        raise MatchTimeout()
+    old = signal.signal(signal.SIGALRM, handler)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    try:
+        return fn(*args)
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, old)
+
+
+def op_name(op):
+    return str(op)
+
+
+def show_char(code):
+    ch = chr(code)
+    named = {&quot;\n&quot;: &quot;\\n&quot;, &quot;\t&quot;: &quot;\\t&quot;, &quot;\r&quot;: &quot;\\r&quot;, &quot; &quot;: &quot;space&quot;}
+    return named.get(ch, repr(ch) if ch.isprintable() else f&quot;U+{code:04X}&quot;)
+
+
+# ---------------------------------------------------------------- char sets
+
+def class_accepts(items, flags):
+    &quot;&quot;&quot;Set of ALPHABET chars accepted by an IN [...] item list.&quot;&quot;&quot;
+    negate = bool(items) and op_name(items[0][0]) == &quot;NEGATE&quot;
+    acc = set()
+    for op, av in items:
+        name = op_name(op)
+        if name == &quot;LITERAL&quot;:
+            acc.add(chr(av))
+        elif name == &quot;RANGE&quot;:
+            acc |= {c for c in ALPHABET if av[0] &lt;= ord(c) &lt;= av[1]}
+        elif name == &quot;CATEGORY&quot;:
+            rx = re.compile(CATEGORY_RE.get(op_name(av), &quot;.&quot;), flags &amp; re.ASCII)
+            acc |= {c for c in ALPHABET if rx.match(c)}
+    if flags &amp; re.IGNORECASE:
+        acc |= {c.swapcase() for c in acc}
+    return set(ALPHABET) - acc if negate else acc
+
+
+def first_info(seq, flags):
+    &quot;&quot;&quot;Return (first_chars, can_be_empty) for a token sequence.&quot;&quot;&quot;
+    first, empty = set(), True
+    for op, av in seq:
+        f, e = token_first(op, av, flags)
+        first |= f
+        if not e:
+            empty = False
+            break
+    return first, empty
+
+
+def token_first(op, av, flags):
+    name = op_name(op)
+    if name == &quot;LITERAL&quot;:
+        c = chr(av)
+        return ({c, c.swapcase()} if flags &amp; re.IGNORECASE else {c}), False
+    if name == &quot;NOT_LITERAL&quot;:
+        return set(ALPHABET) - {chr(av)}, False
+    if name == &quot;IN&quot;:
+        return class_accepts(av, flags), False
+    if name == &quot;ANY&quot;:
+        return (set(ALPHABET) if flags &amp; re.DOTALL else set(ALPHABET) - {&quot;\n&quot;}), False
+    if name in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;, &quot;POSSESSIVE_REPEAT&quot;):
+        lo, _hi, sub = av
+        f, e = first_info(sub, flags)
+        return f, e or lo == 0
+    if name == &quot;SUBPATTERN&quot;:
+        return first_info(av[3], flags_for(av, flags))
+    if name == &quot;ATOMIC_GROUP&quot;:
+        return first_info(av, flags)
+    if name == &quot;BRANCH&quot;:
+        first, empty = set(), False
+        for b in av[1]:
+            f, e = first_info(b, flags)
+            first |= f
+            empty = empty or e
+        return first, empty
+    if name == &quot;GROUPREF_EXISTS&quot;:
+        _g, yes, no = av
+        f1, e1 = first_info(yes, flags)
+        f2, e2 = first_info(no or [], flags)
+        return f1 | f2, e1 or e2
+    if name == &quot;GROUPREF&quot;:
+        return set(ALPHABET), True
+    return set(), True  # AT, ASSERT, ASSERT_NOT: zero width
+
+
+def flags_for(av, flags):
+    add, delete = av[1], av[2]
+    return (flags | add) &amp; ~delete
+
+
+# ---------------------------------------------------------------- explanation
+
+def quant_text(lo, hi, name):
+    mode = {&quot;MAX_REPEAT&quot;: &quot;greedy&quot;, &quot;MIN_REPEAT&quot;: &quot;lazy&quot;, &quot;POSSESSIVE_REPEAT&quot;: &quot;possessive&quot;}[name]
+    if hi == MAXREPEAT:
+        base = {0: &quot;zero or more&quot;, 1: &quot;one or more&quot;}.get(lo, f&quot;{lo} or more&quot;)
+    elif lo == hi:
+        return f&quot;exactly {lo}&quot;
+    elif (lo, hi) == (0, 1):
+        base = &quot;optional (zero or one)&quot;
+    else:
+        base = f&quot;{lo} to {hi}&quot;
+    return f&quot;{base} ({mode})&quot;
+
+
+def class_text(items):
+    negate = bool(items) and op_name(items[0][0]) == &quot;NEGATE&quot;
+    parts = []
+    for op, av in items:
+        name = op_name(op)
+        if name == &quot;LITERAL&quot;:
+            parts.append(show_char(av))
+        elif name == &quot;RANGE&quot;:
+            parts.append(f&quot;{show_char(av[0])}-{show_char(av[1])}&quot;)
+        elif name == &quot;CATEGORY&quot;:
+            parts.append(CATEGORY_TEXT.get(op_name(av), op_name(av)))
+    return (&quot;any char except &quot; if negate else &quot;one of: &quot;) + &quot;, &quot;.join(parts)
+
+
+def explain(seq, group_names, flags, depth=0, out=None):
+    out = [] if out is None else out
+    pad = &quot;  &quot; * depth
+    i = 0
+    while i &lt; len(seq):
+        op, av = seq[i]
+        name = op_name(op)
+        if name == &quot;LITERAL&quot;:  # merge runs of literals
+            j = i
+            while j &lt; len(seq) and op_name(seq[j][0]) == &quot;LITERAL&quot;:
+                j += 1
+            text = &quot;&quot;.join(chr(a) for _, a in seq[i:j])
+            out.append(f&quot;{pad}the text {text!r}&quot; if j - i &gt; 1 else f&quot;{pad}the char {show_char(av)}&quot;)
+            i = j
+            continue
+        if name == &quot;NOT_LITERAL&quot;:
+            out.append(f&quot;{pad}any char except {show_char(av)}&quot;)
+        elif name == &quot;IN&quot;:
+            out.append(f&quot;{pad}{class_text(av)}&quot;)
+        elif name == &quot;ANY&quot;:
+            out.append(f&quot;{pad}any char&quot; + (&quot;&quot; if flags &amp; re.DOTALL else &quot; except newline&quot;))
+        elif name == &quot;AT&quot;:
+            out.append(f&quot;{pad}{AT_TEXT.get(op_name(av), op_name(av))}&quot;)
+        elif name in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;, &quot;POSSESSIVE_REPEAT&quot;):
+            lo, hi, sub = av
+            out.append(f&quot;{pad}{quant_text(lo, hi, name)} of:&quot;)
+            explain(sub, group_names, flags, depth + 1, out)
+        elif name == &quot;SUBPATTERN&quot;:
+            g = av[0]
+            if g is None:
+                out.append(f&quot;{pad}non-capturing group:&quot;)
+            else:
+                label = f&#x27; &quot;{group_names[g]}&quot;&#x27; if g in group_names else &quot;&quot;
+                out.append(f&quot;{pad}capturing group {g}{label}:&quot;)
+            explain(av[3], group_names, flags_for(av, flags), depth + 1, out)
+        elif name == &quot;ATOMIC_GROUP&quot;:
+            out.append(f&quot;{pad}atomic group (no backtracking into it):&quot;)
+            explain(av, group_names, flags, depth + 1, out)
+        elif name == &quot;BRANCH&quot;:
+            out.append(f&quot;{pad}either:&quot;)
+            for k, b in enumerate(av[1]):
+                out.append(f&quot;{pad}  option {k + 1}:&quot;)
+                explain(b, group_names, flags, depth + 2, out)
+        elif name in (&quot;ASSERT&quot;, &quot;ASSERT_NOT&quot;):
+            direction, sub = av
+            kind = (&quot;lookbehind&quot; if direction &lt; 0 else &quot;lookahead&quot;)
+            neg = &quot;negative &quot; if name == &quot;ASSERT_NOT&quot; else &quot;&quot;
+            out.append(f&quot;{pad}{neg}{kind} (checks without consuming):&quot;)
+            explain(sub, group_names, flags, depth + 1, out)
+        elif name == &quot;GROUPREF&quot;:
+            out.append(f&quot;{pad}the same text as group {av} matched&quot;)
+        elif name == &quot;GROUPREF_EXISTS&quot;:
+            out.append(f&quot;{pad}if group {av[0]} matched:&quot;)
+            explain(av[1], group_names, flags, depth + 1, out)
+            if av[2]:
+                out.append(f&quot;{pad}otherwise:&quot;)
+                explain(av[2], group_names, flags, depth + 1, out)
+        else:
+            out.append(f&quot;{pad}{name}&quot;)
+        i += 1
+    return out
+
+
+# ---------------------------------------------------------------- risk analysis
+
+def walk_repeats(seq, flags, path=&quot;&quot;):
+    &quot;&quot;&quot;Yield (op, av, flags) for every repeat node, outside lookarounds too.&quot;&quot;&quot;
+    for op, av in seq:
+        name = op_name(op)
+        if name in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;, &quot;POSSESSIVE_REPEAT&quot;):
+            yield op, av, flags
+            yield from walk_repeats(av[2], flags)
+        elif name == &quot;SUBPATTERN&quot;:
+            yield from walk_repeats(av[3], flags_for(av, flags))
+        elif name == &quot;ATOMIC_GROUP&quot;:
+            yield from walk_repeats(av, flags)
+        elif name == &quot;BRANCH&quot;:
+            for b in av[1]:
+                yield from walk_repeats(b, flags)
+        elif name in (&quot;ASSERT&quot;, &quot;ASSERT_NOT&quot;):
+            yield from walk_repeats(av[1], flags)
+
+
+def flatten(seq):
+    &quot;&quot;&quot;Expand groups so the body of a repeat can be read as one token list.&quot;&quot;&quot;
+    out = []
+    for op, av in seq:
+        name = op_name(op)
+        if name == &quot;SUBPATTERN&quot; and av[1] == 0 and av[2] == 0:
+            out.extend(flatten(av[3]))
+        else:
+            out.append((op, av))
+    return out
+
+
+def token_width(tok, parsed):
+    return sre_parse.SubPattern(parsed.state, [tok]).getwidth()
+
+
+def all_chars(seq, flags):
+    &quot;&quot;&quot;Every ALPHABET char a token sequence can consume anywhere (not only first).&quot;&quot;&quot;
+    acc = set()
+    for op, av in seq:
+        name = op_name(op)
+        if name in (&quot;LITERAL&quot;, &quot;NOT_LITERAL&quot;, &quot;IN&quot;, &quot;ANY&quot;):
+            acc |= token_first(op, av, flags)[0]
+        elif name in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;, &quot;POSSESSIVE_REPEAT&quot;):
+            acc |= all_chars(av[2], flags)
+        elif name == &quot;SUBPATTERN&quot;:
+            acc |= all_chars(av[3], flags_for(av, flags))
+        elif name == &quot;ATOMIC_GROUP&quot;:
+            acc |= all_chars(av, flags)
+        elif name == &quot;BRANCH&quot;:
+            for b in av[1]:
+                acc |= all_chars(b, flags)
+        elif name == &quot;GROUPREF_EXISTS&quot;:
+            acc |= all_chars(av[1], flags) | all_chars(av[2] or [], flags)
+        elif name == &quot;GROUPREF&quot;:
+            acc |= set(ALPHABET)
+    return acc
+
+
+def has_unbounded(tok):
+    op, av = tok
+    name = op_name(op)
+    if name in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;):
+        return av[1] == MAXREPEAT or has_unbounded_seq(av[2])
+    if name == &quot;SUBPATTERN&quot;:
+        return has_unbounded_seq(av[3])
+    if name == &quot;BRANCH&quot;:
+        return any(has_unbounded_seq(b) for b in av[1])
+    return False
+
+
+def has_unbounded_seq(seq):
+    return any(has_unbounded(t) for t in seq)
+
+
+def sample_char(chars):
+    for pool in (string.ascii_lowercase, string.digits, string.ascii_uppercase, ALPHABET):
+        for c in pool:
+            if c in chars:
+                return c
+    return None
+
+
+def analyze(parsed, flags, pattern, modes_seen):
+    risks = []
+
+    def add(level, rule, msg, probe=None):
+        risks.append({&quot;level&quot;: level, &quot;rule&quot;: rule, &quot;message&quot;: msg, **({&quot;probe&quot;: probe} if probe else {})})
+
+    # nested quantifiers: a repeat whose body can match the same text in more than one way
+    for op, av, fl in walk_repeats(list(parsed), flags):
+        if op_name(op) == &quot;POSSESSIVE_REPEAT&quot; or av[1] &lt;= 1:
+            continue
+        body = flatten(av[2])
+        widths = [token_width(t, parsed) for t in body]
+        if sum(w[0] for w in widths) == sum(w[1] for w in widths):
+            continue  # fixed-width body such as (\d{4}-)+ cannot be split two ways
+        variable = [t for t, w in zip(body, widths) if w[0] != w[1]]
+        fixed = [t for t, w in zip(body, widths) if w[0] == w[1] and w[0] &gt; 0]
+        var_chars = set().union(*(all_chars([t], fl) for t in variable))
+        has_inner_loop = any(has_unbounded(t) for t in variable)
+        overlap = set().union(*(all_chars([t], fl) for t in fixed)) &amp; var_chars if fixed else set()
+        sample = sample_char(overlap) or sample_char(var_chars)
+        if not fixed and has_inner_loop:
+            add(&quot;high&quot;, &quot;nested-quantifier&quot;,
+                &quot;a quantifier sits inside another quantifier and nothing else in the outer repeat is &quot;
+                &quot;required (the classic (a+)+ or (\\w+\\s?)+ shape), so one string can be split in &quot;
+                &quot;exponentially many ways; rewrite as a single repeat, make the separator required, or use an &quot;
+                &quot;atomic group or possessive quantifier (Python 3.11+)&quot;, probe=sample)
+        elif any(not (all_chars([t], fl) &amp; var_chars) for t in fixed):
+            if has_inner_loop:
+                add(&quot;info&quot;, &quot;nested-separated&quot;,
+                    &quot;nested quantifier with a required separator that the inner repeat cannot match &quot;
+                    &quot;(like ([\\w-]+\\.)+); this shape is safe&quot;)
+        elif all(all_chars([t], fl) &lt;= var_chars for t in fixed):
+            add(&quot;high&quot;, &quot;ambiguous-repeat&quot;,
+                &quot;the body of a repeat has variable length and every required part can also be eaten by &quot;
+                &quot;the variable part (for example (x+x+)+, (aa|a)+, or (\\w+|\\d+)+), so the iterations &quot;
+                &quot;can be split in exponentially many ways; merge the parts into one class or make each &quot;
+                &quot;iteration start with a char the rest cannot match&quot;, probe=sample)
+        else:
+            add(&quot;warn&quot;, &quot;nested-overlap&quot;,
+                &quot;a repeat with a variable-length body whose separator is also accepted by the inner part &quot;
+                &quot;(for example ([\\w.]+\\.)+): long non-matching input can slow down sharply; make the inner &quot;
+                &quot;class exclude the separator&quot;, probe=sample)
+
+    # adjacent overlapping unbounded repeats in any sequence
+    seen_pairs = set()
+
+    def single_char_repeat(op, av):
+        return (op_name(op) in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;) and av[1] == MAXREPEAT and len(av[2]) == 1
+                and op_name(av[2][0][0]) in (&quot;LITERAL&quot;, &quot;NOT_LITERAL&quot;, &quot;IN&quot;, &quot;ANY&quot;))
+
+    def scan_adjacent(seq, fl):
+        toks = [t for t in flatten(seq) if op_name(t[0]) not in (&quot;AT&quot;, &quot;ASSERT&quot;, &quot;ASSERT_NOT&quot;)]
+        for (a_op, a_av), (b_op, b_av) in zip(toks, toks[1:]):
+            if single_char_repeat(a_op, a_av) and single_char_repeat(b_op, b_av):
+                if (id(a_av), id(b_av)) in seen_pairs:
+                    continue
+                seen_pairs.add((id(a_av), id(b_av)))
+                fa, _ = first_info(a_av[2], fl)
+                fb, _ = first_info(b_av[2], fl)
+                if fa &amp; fb:
+                    add(&quot;warn&quot;, &quot;adjacent-overlap&quot;,
+                        &quot;two unbounded quantifiers in a row accept the same chars (for example \\d+\\d+ or &quot;
+                        &quot;.*.*), so the split between them is ambiguous and failures backtrack polynomially; &quot;
+                        &quot;keep one of them&quot;)
+        for op, av in seq:
+            name = op_name(op)
+            if name == &quot;SUBPATTERN&quot;:
+                scan_adjacent(av[3], flags_for(av, fl))
+            elif name in (&quot;MAX_REPEAT&quot;, &quot;MIN_REPEAT&quot;, &quot;POSSESSIVE_REPEAT&quot;):
+                scan_adjacent(av[2], fl)
+            elif name == &quot;BRANCH&quot;:
+                for b in av[1]:
+                    scan_adjacent(b, fl)
+
+    scan_adjacent(list(parsed), flags)
+
+    # text-level checks
+    if re.search(r&quot;\[[^\]]*A-z&quot;, pattern):
+        add(&quot;warn&quot;, &quot;range-A-z&quot;, &quot;[A-z] also matches [ \\ ] ^ _ and the backtick; use [A-Za-z]&quot;)
+    seq = list(parsed)
+    flat = flatten(seq)
+    for k, (op, _av) in enumerate(flat):
+        if op_name(op) != &quot;ANY&quot;:
+            continue
+        before = flat[k - 1] if k else None
+        after = [chr(a) for o, a in flat[k + 1:k + 4] if op_name(o) == &quot;LITERAL&quot;]
+        lit_before = before is not None and op_name(before[0]) == &quot;LITERAL&quot; and chr(before[1]).isalnum()
+        word_after = len(after) &gt;= 2 and all(c.isalpha() for c in after[:2])
+        if (lit_before and after and after[0].isalnum()) or word_after:
+            add(&quot;warn&quot;, &quot;unescaped-dot&quot;,
+                f&quot;&#x27;.&#x27; before {&#x27;&#x27;.join(after) or &#x27;the next token&#x27;!r} matches any char (so a &#x27;-&#x27; or &#x27;x&#x27; passes there too); &quot;
+                &quot;write \\. for a literal dot&quot;)
+            break
+    try:
+        if re.compile(pattern, flags).fullmatch(&quot;&quot;):
+            add(&quot;warn&quot;, &quot;matches-empty&quot;,
+                &quot;the pattern matches the empty string, so findall/finditer return empty matches and &quot;
+                &quot;validation accepts blank input; require at least one char where it matters&quot;)
+    except re.error:
+        pass
+    count_dotstar = len(re.findall(r&quot;(?&lt;!\\)\.\*&quot;, pattern))
+    if count_dotstar &gt;= 3:
+        add(&quot;info&quot;, &quot;many-dotstar&quot;, f&quot;{count_dotstar} &#x27;.*&#x27; in one pattern: failures are slow on long lines; &quot;
+            &quot;use negated classes like [^,]* to describe each field&quot;)
+    elif count_dotstar and not re.search(r&quot;\.\*\?&quot;, pattern):
+        add(&quot;info&quot;, &quot;greedy-dotstar&quot;, &quot;greedy .* grabs as much as possible and then backs off; use .*? or a &quot;
+            &quot;negated class such as [^\&quot;]* when you mean &#x27;up to the next ...&#x27;&quot;)
+    first_ops = [op_name(op) for op, _ in seq[:1]]
+    last = seq[-1] if seq else None
+    anchored_start = first_ops == [&quot;AT&quot;]
+    anchored_end = last is not None and op_name(last[0]) == &quot;AT&quot; and op_name(last[1]) in (&quot;AT_END&quot;, &quot;AT_END_STRING&quot;)
+    if &quot;fullmatch&quot; not in modes_seen and not (anchored_start and anchored_end) and modes_seen != {&quot;findall&quot;}:
+        add(&quot;info&quot;, &quot;not-anchored&quot;, &quot;for validation, anchor both ends (\\A ... \\Z) or use re.fullmatch; &quot;
+            &quot;otherwise &#x27;abc123xyz&#x27; passes a search for \\d+&quot;)
+    if anchored_end and op_name(last[1]) == &quot;AT_END&quot; and not flags &amp; re.MULTILINE and &quot;fullmatch&quot; not in modes_seen:
+        add(&quot;info&quot;, &quot;dollar-newline&quot;, &quot;$ also matches before a trailing newline (&#x27;abc\\n&#x27; passes ^abc$); &quot;
+            &quot;use \\Z or fullmatch for strict validation&quot;)
+    if re.search(r&quot;(?&lt;!\\)\\[dw]&quot;, pattern) and not flags &amp; re.ASCII:
+        add(&quot;info&quot;, &quot;unicode-classes&quot;, &quot;\\d and \\w match Unicode digits and letters too (for example &quot;
+            &quot;Arabic-Indic digits); add re.ASCII or use [0-9] / [A-Za-z0-9_] for strict input formats&quot;)
+    return risks
+
+
+# ---------------------------------------------------------------- probe
+
+PROBE_CODE = r&quot;&quot;&quot;
+import re, sys, time
+pat, flags, s = sys.argv[1], int(sys.argv[2]), sys.argv[3]
+rx = re.compile(pat, flags)
+t = time.perf_counter(); rx.search(s); print(f&quot;{time.perf_counter() - t:.6f}&quot;)
+&quot;&quot;&quot;
+
+
+def run_probe(pattern, flags, ch, compiled):
+    tail = next((t for t in &quot;!#\x00~ \n&quot; if not compiled.search(ch * 3 + t)), &quot;!&quot;)
+    results, verdict = [], &quot;no slowdown seen&quot;
+    for n in (12, 16, 20, 24, 28):
+        s = ch * n + tail
+        try:
+            r = subprocess.run([sys.executable, &quot;-c&quot;, PROBE_CODE, pattern, str(flags), s],
+                               capture_output=True, text=True, timeout=2)
+            secs = float(r.stdout.strip() or &quot;nan&quot;)
+        except subprocess.TimeoutExpired:
+            results.append({&quot;n&quot;: n, &quot;seconds&quot;: None})
+            verdict = f&quot;TIMEOUT at length {n + 1}: exponential backtracking confirmed&quot;
+            break
+        results.append({&quot;n&quot;: n, &quot;seconds&quot;: round(secs, 4)})
+        prev = results[-2][&quot;seconds&quot;] if len(results) &gt;= 2 else None
+        if prev and secs &gt; 0.01 and secs / prev &gt; 3:
+            verdict = (f&quot;time grows about {secs / prev:.0f}x per +4 chars: exponential backtracking confirmed&quot;)
+        elif secs &gt; 0.5:
+            verdict = f&quot;slow ({secs:.2f} s at length {n + 1}) but not clearly exponential&quot;
+    return {&quot;input&quot;: f&quot;{ch!r} * n + {tail!r}&quot;, &quot;timings&quot;: results, &quot;verdict&quot;: verdict}
+
+
+# ---------------------------------------------------------------- matching
+
+def read_cases(path):
+    text = sys.stdin.read() if path == &quot;-&quot; else open(path, encoding=&quot;utf-8&quot;).read()
+    cases = []
+    for raw in text.splitlines():
+        if not raw.strip() or raw.lstrip().startswith(&quot;#&quot;):
+            continue
+        if raw.startswith(&quot;+ &quot;) or raw.startswith(&quot;- &quot;):
+            cases.append({&quot;text&quot;: raw[2:], &quot;expect&quot;: raw[0] == &quot;+&quot;})
+        else:
+            cases.append({&quot;text&quot;: raw, &quot;expect&quot;: None})
+    return cases
+
+
+def match_case(rx, text, mode):
+    fn = {&quot;search&quot;: rx.search, &quot;match&quot;: rx.match, &quot;fullmatch&quot;: rx.fullmatch}.get(mode)
+    names = {v: k for k, v in rx.groupindex.items()}
+    def groups(m):
+        out = []
+        for g in range(1, rx.groups + 1):
+            out.append({&quot;group&quot;: g, &quot;name&quot;: names.get(g), &quot;value&quot;: m.group(g),
+                        &quot;span&quot;: list(m.span(g)) if m.group(g) is not None else None})
+        return out
+    if mode == &quot;findall&quot;:
+        ms = list(rx.finditer(text))
+        return {&quot;matched&quot;: bool(ms), &quot;matches&quot;: [{&quot;text&quot;: m.group(0), &quot;span&quot;: list(m.span()), &quot;groups&quot;: groups(m)}
+                                                for m in ms]}
+    m = fn(text)
+    if not m:
+        return {&quot;matched&quot;: False, &quot;matches&quot;: []}
+    return {&quot;matched&quot;: True, &quot;matches&quot;: [{&quot;text&quot;: m.group(0), &quot;span&quot;: list(m.span()), &quot;groups&quot;: groups(m)}]}
+
+
+def describe_flags(flags):
+    names = [n for f, n in FLAG_NAMES if flags &amp; f]
+    return &quot;, &quot;.join(names) if names else &quot;none&quot;
+
+
+# ---------------------------------------------------------------- main
+
+def parse_args(argv):
+    opts = {&quot;texts&quot;: [], &quot;cases&quot;: None, &quot;mode&quot;: &quot;search&quot;, &quot;flags&quot;: 0, &quot;probe&quot;: False, &quot;explain&quot;: True,
+            &quot;json&quot;: False, &quot;fail_on&quot;: &quot;high&quot;, &quot;pattern&quot;: None, &quot;timeout&quot;: 2.0}
+    i = 0
+    while i &lt; len(argv):
+        a = argv[i]
+        def val():
+            if i + 1 &gt;= len(argv):
+                raise UsageError(f&quot;{a} needs a value&quot;)
+            return argv[i + 1]
+        if a in (&quot;-t&quot;, &quot;--text&quot;):
+            opts[&quot;texts&quot;].append(val()); i += 2
+        elif a == &quot;--cases&quot;:
+            opts[&quot;cases&quot;] = val(); i += 2
+        elif a == &quot;--mode&quot;:
+            opts[&quot;mode&quot;] = val(); i += 2
+            if opts[&quot;mode&quot;] not in (&quot;search&quot;, &quot;match&quot;, &quot;fullmatch&quot;, &quot;findall&quot;):
+                raise UsageError(&quot;--mode must be search, match, fullmatch, or findall&quot;)
+        elif a == &quot;--flags&quot;:
+            letters = val(); i += 2
+            bad = [c for c in letters.lower() if c not in FLAG_LETTERS]
+            if bad:
+                raise UsageError(f&quot;unknown flag letter(s) {&#x27;&#x27;.join(bad)!r}; use any of i m s x a&quot;)
+            for c in letters.lower():
+                opts[&quot;flags&quot;] |= FLAG_LETTERS[c]
+        elif a == &quot;--fail-on&quot;:
+            opts[&quot;fail_on&quot;] = val().lower(); i += 2
+            if opts[&quot;fail_on&quot;] not in (&quot;high&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;never&quot;):
+                raise UsageError(&quot;--fail-on must be high, warn, info, or never&quot;)
+        elif a == &quot;--timeout&quot;:
+            try:
+                opts[&quot;timeout&quot;] = float(val())
+            except ValueError:
+                raise UsageError(&quot;--timeout needs a number of seconds, for example --timeout 2&quot;)
+            i += 2
+        elif a == &quot;--probe&quot;:
+            opts[&quot;probe&quot;] = True; i += 1
+        elif a == &quot;--no-explain&quot;:
+            opts[&quot;explain&quot;] = False; i += 1
+        elif a == &quot;--json&quot;:
+            opts[&quot;json&quot;] = True; i += 1
+        elif a in (&quot;-h&quot;, &quot;--help&quot;):
+            print(__doc__); sys.exit(0)
+        elif a.startswith(&quot;--&quot;) and opts[&quot;pattern&quot;] is not None:
+            raise UsageError(f&quot;unknown option {a}&quot;)
+        elif opts[&quot;pattern&quot;] is None:
+            opts[&quot;pattern&quot;] = a; i += 1
+        else:
+            raise UsageError(f&quot;unexpected argument {a!r} (quote the pattern; use -t for sample inputs)&quot;)
+    if opts[&quot;pattern&quot;] is None:
+        raise UsageError(&quot;give a PATTERN (quote it in single quotes in the shell)&quot;)
+    return opts
+
+
+def main(argv):
+    try:
+        opts = parse_args(argv)
+        cases = [{&quot;text&quot;: t, &quot;expect&quot;: None} for t in opts[&quot;texts&quot;]]
+        if opts[&quot;cases&quot;]:
+            try:
+                cases += read_cases(opts[&quot;cases&quot;])
+            except OSError as e:
+                raise UsageError(f&quot;cannot read cases file: {e.strerror}: {opts[&#x27;cases&#x27;]}&quot;)
+    except UsageError as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    pattern, flags, mode = opts[&quot;pattern&quot;], opts[&quot;flags&quot;], opts[&quot;mode&quot;]
+    try:
+        rx = re.compile(pattern, flags)
+        parsed = sre_parse.parse(pattern, flags)
+    except re.error as e:
+        pos = f&quot; at position {e.pos}&quot; if e.pos is not None else &quot;&quot;
+        print(f&quot;error: pattern does not compile: {e.msg}{pos}&quot;, file=sys.stderr)
+        if e.pos is not None:
+            print(f&quot;  {pattern}\n  {&#x27; &#x27; * e.pos}^&quot;, file=sys.stderr)
+        return 2
+    flags = int(rx.flags) &amp; ~int(re.UNICODE)
+    names = {v: k for k, v in rx.groupindex.items()}
+    risks = analyze(parsed, flags, pattern, {mode})
+    if opts[&quot;probe&quot;]:
+        for r in risks:
+            if r.get(&quot;probe&quot;):
+                r[&quot;probe_result&quot;] = run_probe(pattern, flags, r[&quot;probe&quot;], rx)
+    results = []
+    for c in cases:
+        try:
+            res = with_timeout(opts[&quot;timeout&quot;], match_case, rx, c[&quot;text&quot;], mode)
+            status = None if c[&quot;expect&quot;] is None else (&quot;PASS&quot; if res[&quot;matched&quot;] == c[&quot;expect&quot;] else &quot;FAIL&quot;)
+        except MatchTimeout:
+            res, status = {&quot;matched&quot;: None, &quot;matches&quot;: []}, &quot;TIMEOUT&quot;
+        results.append({**c, **res, &quot;status&quot;: status})
+    fails = sum(1 for r in results if r[&quot;status&quot;] in (&quot;FAIL&quot;, &quot;TIMEOUT&quot;))
+    counts = {lvl: sum(1 for r in risks if r[&quot;level&quot;] == lvl) for lvl in (&quot;high&quot;, &quot;warn&quot;, &quot;info&quot;)}
+    report = {&quot;pattern&quot;: pattern, &quot;flags&quot;: describe_flags(flags), &quot;mode&quot;: mode, &quot;groups&quot;: rx.groups,
+              &quot;group_names&quot;: {str(k): v for k, v in names.items()},
+              &quot;explanation&quot;: explain(list(parsed), names, flags) if opts[&quot;explain&quot;] else [],
+              &quot;cases&quot;: results, &quot;failed_expectations&quot;: fails, &quot;risks&quot;: risks, &quot;risk_counts&quot;: counts}
+    threshold = LEVELS.get(opts[&quot;fail_on&quot;], 99)
+    risky = any(LEVELS[r[&quot;level&quot;]] &gt;= threshold for r in risks)
+    if opts[&quot;json&quot;]:
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+        return 1 if fails or risky else 0
+
+    print(f&quot;Pattern: {pattern}&quot;)
+    named = &quot;, &quot;.join(f&#x27;{g} &quot;{n}&quot;&#x27; for g, n in sorted(names.items()))
+    print(f&quot;Flags: {describe_flags(flags)} | mode: {mode} | groups: {rx.groups}&quot; + (f&quot; ({named})&quot; if named else &quot;&quot;))
+    if opts[&quot;explain&quot;]:
+        print(&quot;\nExplanation:&quot;)
+        for line in report[&quot;explanation&quot;]:
+            print(&quot;  &quot; + line)
+    if results:
+        print(f&quot;\nSamples ({mode}):&quot;)
+        for r in results:
+            mark = {True: &quot;+&quot;, False: &quot;-&quot;, None: &quot; &quot;}[r[&quot;expect&quot;]]
+            tag = r[&quot;status&quot;] or (&quot;match&quot; if r[&quot;matched&quot;] else &quot;no match&quot;)
+            line = f&quot;  {tag:&lt;8} {mark} {r[&#x27;text&#x27;]!r}&quot;
+            if r[&quot;matched&quot;]:
+                parts = []
+                for m in r[&quot;matches&quot;][:5]:
+                    g = &quot; &quot;.join(f&quot;{x[&#x27;name&#x27;] or x[&#x27;group&#x27;]}={x[&#x27;value&#x27;]!r}&quot; for x in m[&quot;groups&quot;])
+                    parts.append(f&quot;[{m[&#x27;span&#x27;][0]}:{m[&#x27;span&#x27;][1]}] {m[&#x27;text&#x27;]!r}&quot; + (f&quot; {g}&quot; if g else &quot;&quot;))
+                more = f&quot; (+{len(r[&#x27;matches&#x27;]) - 5} more)&quot; if len(r[&quot;matches&quot;]) &gt; 5 else &quot;&quot;
+                line += &quot;  -&gt; &quot; + &quot;; &quot;.join(parts) + more
+            elif r[&quot;status&quot;] == &quot;TIMEOUT&quot;:
+                line += f&quot;  -&gt; still running after {opts[&#x27;timeout&#x27;]:g} s (catastrophic backtracking)&quot;
+            elif r[&quot;status&quot;] == &quot;FAIL&quot;:
+                line += &quot;  -&gt; expected a match&quot;
+            if r[&quot;status&quot;] == &quot;FAIL&quot; and r[&quot;matched&quot;]:
+                line += &quot;  (expected no match)&quot;
+            print(line)
+    print(&quot;\nRisks and suggestions:&quot;)
+    if not risks:
+        print(&quot;  none found&quot;)
+    for r in risks:
+        print(f&quot;  {r[&#x27;level&#x27;].upper():&lt;4} {r[&#x27;rule&#x27;]:&lt;23} {r[&#x27;message&#x27;]}&quot;)
+        pr = r.get(&quot;probe_result&quot;)
+        if pr:
+            times = &quot;, &quot;.join(f&quot;n={t[&#x27;n&#x27;]}: {&#x27;timeout&#x27; if t[&#x27;seconds&#x27;] is None else str(t[&#x27;seconds&#x27;]) + &#x27; s&#x27;}&quot;
+                              for t in pr[&quot;timings&quot;])
+            print(f&quot;       probe {pr[&#x27;input&#x27;]}: {times} -&gt; {pr[&#x27;verdict&#x27;]}&quot;)
+    summary = f&quot;\nSummary: HIGH {counts[&#x27;high&#x27;]}  WARN {counts[&#x27;warn&#x27;]}  INFO {counts[&#x27;info&#x27;]}&quot;
+    if any(r[&quot;expect&quot;] is not None for r in results):
+        n = sum(1 for r in results if r[&quot;expect&quot;] is not None)
+        summary += f&quot; | expectations {n - fails}/{n} pass&quot;
+    timeouts = sum(1 for r in results if r[&quot;status&quot;] == &quot;TIMEOUT&quot;)
+    if timeouts:
+        summary += f&quot; | {timeouts} sample(s) timed out&quot;
+    print(summary)
+    return 1 if fails or risky else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/regex-pattern-explainer-and-tester',TI="Regex Pattern Explainer and Tester";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

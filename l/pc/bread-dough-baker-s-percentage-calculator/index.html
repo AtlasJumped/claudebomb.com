@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bread Dough Baker&#x27;s Percentage Calculator | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: bread-dough-bakers-percentage-calculator description: Turns any bread recipe into true baker&#x27;s percentages and scales it to the loaves or do">
+<meta property="og:title" content="Bread Dough Baker&#x27;s Percentage Calculator | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: bread-dough-bakers-percentage-calculator description: Turns any bread recipe into true baker&#x27;s percentages and scales it to the loaves or do">
+<meta property="og:url" content="https://claudebomb.com/l/pc/bread-dough-baker-s-percentage-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/bread-dough-baker-s-percentage-calculator/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Bread Dough Baker&#x27;s Percentage Calculator</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: bread-dough-bakers-percentage-calculator
+description: Turns any bread recipe into true baker&#x27;s percentages and scales it to the loaves or dough balls you want. Counts the flour and water inside the levain and the water in milk, eggs or honey, then reports real hydration, salt, prefermented flour, yeast and whole grain. Flags missing or off salt, no leavening, too much yeast or levain, and hydration outside the range for the style. Includes a stdlib Python calculator with --self-test.
+---
+
+# Bread Dough Baker&#x27;s Percentage Calculator
+
+You help home bakers understand, fix and scale bread recipes. From a recipe in grams (or converted to grams), you calculate true baker&#x27;s percentages, compare them with what the bread style usually needs, explain what each number does to the dough, and give a scaled ingredient list for the exact number and size of loaves, rolls or pizza balls they want to bake.
+
+## Files in this skill
+
+- `scripts/dough_calc.py` - reads a recipe JSON and prints totals, a baker&#x27;s percentage table, a scaled recipe and findings (Python 3 standard library only)
+- `references/bakers-math.md` - baker&#x27;s percentages, true vs recipe percentages, levain and extras water, key ranges, yeast conversions, hydration by style and scaling
+- `references/fermentation-and-troubleshooting.md` - timelines, dough temperature, what each finding means for the dough, symptoms and fixes, doneness
+- `templates/bake-sheet.md` - a bake sheet with the formula, timeline and notes for the next bake
+- `examples/weekend-whole-wheat-sourdough.json` - a whole wheat and rye sourdough with a levain, a little instant yeast, honey and olive oil, scaled to two 1 kg loaves
+
+## Workflow
+
+### 1. Get the recipe in grams
+Ask for every ingredient by weight. Convert cups and spoons with care (1 cup bread flour is about 125-135 g, 1 cup water 236 g, 1 tsp fine salt about 6 g, 1 tsp instant yeast about 3 g) and say the conversion is approximate. Ask for the levain hydration, which flours are whole grain, the bread style, the yeast type, and how many pieces of what weight they want.
+
+### 2. Run the calculator
+```
+python3 scripts/dough_calc.py examples/weekend-whole-wheat-sourdough.json
+python3 scripts/dough_calc.py recipe.json --pieces 6 --piece-weight 270 --json
+python3 scripts/dough_calc.py --self-test
+```
+Styles: bagel, pizza_neapolitan, sandwich_loaf, enriched_brioche, baguette, sourdough_boule, whole_wheat_loaf, ciabatta, focaccia. Exit code 1 means HIGH findings, 2 means bad input.
+
+### 3. Explain and adjust
+Give the key numbers first (hydration, salt, leavening), then each finding with the reason and a concrete gram change from `references/bakers-math.md`. Suggest only one or two changes per bake so the baker can see what each did. Use `references/fermentation-and-troubleshooting.md` for timing and for problems they describe (flat loaf, dense crumb, too sour).
+
+### 4. Deliver
+Give the scaled recipe and fill `templates/bake-sheet.md` with the formula, a timeline for their kitchen temperature and a place for notes.
+
+## Example result
+For `examples/weekend-whole-wheat-sourdough.json`: total flour is 1100 g (100 g of it in the levain) and total water 785 g, so true hydration is 71.4%, salt 1.4%, prefermented flour 9.1%, instant yeast 0.27% and whole grain 38.2%. Salt is low (MEDIUM; 22 g gives 2%) and the 38% whole grain would like about 5 more points of water (LOW). Scaled to 2 x 1000 g plus 2% loss (factor 1.047): 628 g bread flour, 314 g whole wheat, 105 g rye, 712 g water, 15.7 g salt (raise to about 23 g), 209 g levain, 3.1 g yeast, 31 g honey, 21 g olive oil.
+
+## Rules
+
+- Work in grams; say when a volume-to-weight conversion is approximate.
+- Always state whether percentages are true (including levain and extras) or recipe percentages.
+- Change one or two things at a time and explain the effect on taste, texture and timing.
+- Fermentation times depend on temperature and starter strength; give ranges and the signs to watch, not exact minutes.
+FILE:references/bakers-math.md
+# Baker&#x27;s Math
+
+## Baker&#x27;s percentages
+Every ingredient is written as a percentage of the **total flour weight**, which is always 100%. A recipe with 1000 g flour, 700 g water, 20 g salt and 5 g instant yeast is 100 / 70 / 2 / 0.5. Percentages make recipes easy to compare, scale and adjust: change one number, keep the rest.
+
+## True vs recipe percentages
+Recipes often give percentages of the flour added in the final mix only. True (overall) percentages also count:
+- the flour and water inside the levain or preferment
+- the water inside wet extras
+
+`scripts/dough_calc.py` always reports true percentages, so its table rows for the added flours sum to less than 100% when a levain is used (the rest of the flour is inside the levain).
+
+| Levain hydration | Flour in 100 g levain | Water in 100 g levain |
+|---|---|---|
+| 50% (stiff) | 66.7 g | 33.3 g |
+| 75% | 57.1 g | 42.9 g |
+| 100% (liquid) | 50 g | 50 g |
+| 125% | 44.4 g | 55.6 g |
+
+Formula: flour = levain / (1 + hydration / 100); water = levain - flour.
+
+## Water in common extras
+| Ingredient | Water content |
+|---|---|
+| Whole milk | 87% |
+| Whole egg (without shell, ~50 g) | 75% |
+| Egg yolk | 50% |
+| Butter | 16% |
+| Honey | 17% |
+| Yogurt | 85% |
+| Mashed potato | 80% |
+| Olive oil, sugar, seeds | 0% (fat and sugar still soften dough) |
+
+## Key numbers
+| Measure | Typical | Notes |
+|---|---|---|
+| Salt | 1.8-2.2% | under 1.6% bland and slack; over 2.5% salty, slows fermentation |
+| Instant yeast (straight dough) | 0.5-1.5% | 0.1-0.3% for overnight cold rise |
+| Levain, as prefermented flour | 10-25% | more = faster and more sour |
+| Sugar (enriched) | 5-15% | over ~10% use osmotolerant yeast or more yeast |
+| Fat (enriched) | 3-50% | brioche 40-60% butter |
+
+Yeast conversions (same rising power): instant 1 g = active dry 1.25 g = fresh about 3 g. The script expresses all yeast as the instant equivalent.
+
+## Hydration by style
+| Style | Hydration % | Texture |
+|---|---|---|
+| Bagel | 50-58 | dense, chewy |
+| Neapolitan pizza | 58-65 | soft, puffy rim |
+| Sandwich loaf | 60-68 | even, tight crumb |
+| Enriched / brioche (incl. milk and eggs) | 55-70 | soft, rich |
+| Baguette | 65-75 | open, crisp crust |
+| Sourdough boule | 68-80 | open crumb |
+| Whole wheat loaf | 70-85 | whole grain absorbs more |
+| Ciabatta | 75-85 | very open, holes |
+| Focaccia | 75-90 | airy, oily |
+
+Flour matters: high-protein bread flour and whole grain take more water; low-protein all-purpose or many European T55/Type 550 flours take less. Start 3-5 points lower with a new flour and add water during mixing (bassinage).
+
+## Scaling
+1. Decide pieces and weight per piece (loaf, roll, pizza ball).
+2. Add 1-3% for losses in the bowl and on the bench.
+3. Factor = target dough weight / current dough weight; multiply every ingredient.
+4. Round grams sensibly: 1 g for flour and water, 0.1 g for salt and yeast (use a 0.1 g scale for small amounts).
+
+Pan loaves: dough weight is about 0.55-0.6 g per cm3 of tin volume (a 900 g / 2 lb tin takes about 850-950 g dough).
+FILE:references/fermentation-and-troubleshooting.md
+# Fermentation and Troubleshooting
+
+## Timeline for a typical lean dough
+| Step | Yeasted (1% instant) | Sourdough (15-20% levain) |
+|---|---|---|
+| Mix and rest | 20-30 min autolyse optional | 30-60 min autolyse optional |
+| Bulk fermentation at 24-26 C | 1.5-2 h, rise ~75-100% | 4-6 h, rise ~50-75% |
+| Folds | 1-2 sets | 3-4 sets in the first 2 h |
+| Shape, final proof | 45-75 min | 1-3 h, or 8-16 h in the fridge |
+| Bake | 220-230 C | 240-250 C covered 20 min, then 220-230 C uncovered |
+
+Aim for a dough temperature of 24-26 C after mixing. Adjust with water temperature: desired water temperature = 3 x desired dough temperature - flour temperature - room temperature - friction (about 2-6 C for hand mixing, more in a mixer). With a levain use 4 x and subtract the levain temperature as well.
+
+## Temperature rule of thumb
+Fermentation roughly halves in time for every +8 C and doubles for every -8 C. A sourdough bulk of 5 h at 24 C takes about 8 h at 20 C.
+
+## Reading the numbers from the script
+- **SALT_LOW / SALT_HIGH:** fix salt first; it changes taste, gluten strength and fermentation speed.
+- **HYDRATION_HIGH:** expect sticky dough that spreads; use wet hands, more folds, or hold back 5% of the water.
+- **HYDRATION_LOW:** tight crumb and a stiff mix; add water in small additions.
+- **YEAST_HIGH:** shorten bulk, or cut yeast to fit your schedule (0.2-0.5% for a long cold rise).
+- **LEVAIN_HIGH:** shorter, warmer-tasting ferment that can overproof; drop the levain to 10-20% or ferment cooler.
+- **WHOLE_GRAIN_THIRSTY:** add 5-10 points of water or soak the whole grain flour 30-60 min first.
+
+## Symptoms and fixes
+| Problem | Likely cause | Fix |
+|---|---|---|
+| Flat, spreading loaf | overproofed, too wet for the flour, weak shaping | shorter proof, 3-5 points less water, tighter shaping, use a banneton |
+| Dense, tight crumb | underproofed, too little water, weak starter | longer bulk, warmer dough, feed starter until it doubles in 4-6 h |
+| Big hole under crust (flying crust) | underproofed or poor shaping | longer final proof, degas gently while shaping |
+| Pale crust | oven not hot enough, overproofed, no steam | preheat 45-60 min, steam the first 15-20 min |
+| Gummy crumb | cut too early, underbaked | bake to 96-98 C inside, cool 1-2 h before slicing |
+| Very sour | long warm ferment, levain past peak | use a younger levain, less levain, shorter or cooler bulk |
+| Tastes bland | salt under 1.8%, too fast | weigh salt, use less yeast and a longer, cooler rise |
+
+## Doneness and food safety
+- Bake lean bread to 93-98 C in the centre and enriched bread to 85-90 C (instant-read thermometer).
+- Raw flour can carry bacteria: do not taste raw dough.
+- A starter with pink, orange or fuzzy mould is unsafe; discard it.
+FILE:templates/bake-sheet.md
+# Bake Sheet - &lt;recipe name&gt; - &lt;date&gt;
+
+**Style:** &lt;sourdough boule&gt;  **Pieces:** &lt;2 x 1000 g&gt;  **Kitchen temperature:** &lt;22 C&gt;
+
+## Formula (true baker&#x27;s percentages)
+| Ingredient | % | Grams (this bake) |
+|---|---|---|
+| Flour total | 100 | |
+| Water total | | |
+| Salt | | |
+| Levain / yeast | | |
+| Extras | | |
+
+Hydration &lt;..&gt;% | salt &lt;..&gt;% | prefermented flour &lt;..&gt;% | whole grain &lt;..&gt;%
+
+## Changes from last time
+- &lt;e.g. +15 g salt to reach 2%, +50 g water for the whole grain&gt;
+
+## Timeline
+| Step | Planned | Actual | Notes (dough temperature, rise %) |
+|---|---|---|---|
+| Feed levain | | | |
+| Mix | | | |
+| Bulk end | | | |
+| Shape | | | |
+| Proof end | | | |
+| Bake | | | |
+
+## Result
+- Crumb: &lt;open / tight / gummy&gt;  - Crust: &lt;colour, thickness&gt;  - Taste: &lt;salt, sourness&gt;
+- Next time: &lt;one change only&gt;
+FILE:examples/weekend-whole-wheat-sourdough.json
+{
+  &quot;name&quot;: &quot;Weekend whole wheat sourdough&quot;,
+  &quot;style&quot;: &quot;sourdough_boule&quot;,
+  &quot;flours&quot;: [
+    {&quot;name&quot;: &quot;bread flour (12.5% protein)&quot;, &quot;grams&quot;: 600},
+    {&quot;name&quot;: &quot;whole wheat flour&quot;, &quot;grams&quot;: 300, &quot;whole_grain&quot;: true},
+    {&quot;name&quot;: &quot;whole rye flour&quot;, &quot;grams&quot;: 100, &quot;whole_grain&quot;: true}
+  ],
+  &quot;water_g&quot;: 680,
+  &quot;salt_g&quot;: 15,
+  &quot;levain&quot;: {&quot;grams&quot;: 200, &quot;hydration_pct&quot;: 100, &quot;whole_grain_pct&quot;: 20},
+  &quot;yeast&quot;: {&quot;type&quot;: &quot;instant&quot;, &quot;grams&quot;: 3},
+  &quot;extras&quot;: [
+    {&quot;name&quot;: &quot;honey&quot;, &quot;grams&quot;: 30, &quot;water_pct&quot;: 17},
+    {&quot;name&quot;: &quot;olive oil&quot;, &quot;grams&quot;: 20, &quot;water_pct&quot;: 0}
+  ],
+  &quot;target&quot;: {&quot;pieces&quot;: 2, &quot;piece_weight_g&quot;: 1000},
+  &quot;loss_pct&quot;: 2
+}
+FILE:scripts/dough_calc.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Bread dough baker&#x27;s percentage calculator (Python 3 standard library only).
+
+Input JSON:
+  {&quot;name&quot;: &quot;...&quot;, &quot;style&quot;: &quot;sourdough_boule&quot;,
+   &quot;flours&quot;: [{&quot;name&quot;: &quot;bread flour&quot;, &quot;grams&quot;: 800}, {&quot;name&quot;: &quot;whole wheat&quot;, &quot;grams&quot;: 200, &quot;whole_grain&quot;: true}],
+   &quot;water_g&quot;: 700, &quot;salt_g&quot;: 20,
+   &quot;levain&quot;: {&quot;grams&quot;: 200, &quot;hydration_pct&quot;: 100, &quot;whole_grain_pct&quot;: 0},      (optional)
+   &quot;yeast&quot;: {&quot;type&quot;: &quot;instant|active_dry|fresh&quot;, &quot;grams&quot;: 0},                 (optional)
+   &quot;extras&quot;: [{&quot;name&quot;: &quot;milk&quot;, &quot;grams&quot;: 100, &quot;water_pct&quot;: 87}],               (optional)
+   &quot;target&quot;: {&quot;pieces&quot;: 3, &quot;piece_weight_g&quot;: 900}, &quot;loss_pct&quot;: 2}            (optional)
+Totals count the flour and water inside the levain and the water inside extras (milk ~87%,
+whole egg ~75%, butter ~16%), so hydration and salt are the TRUE percentages of all flour.
+  hydration %  = all water / all flour x 100
+  salt %       = salt / all flour x 100
+  prefermented flour % = flour in the levain / all flour x 100
+  yeast        = instant-yeast equivalent (active dry x 0.8, fresh x 0.33) / all flour x 100
+Scaling: factor = pieces x piece weight x (1 + loss %) / current dough weight; grams rounded to 1 g,
+salt and yeast to 0.1 g.
+Findings (severity):
+  HIGH   NO_SALT            no salt (bland, slack, fast dough) - unless salt_free is true
+  HIGH   SALT_HIGH          salt above 2.5% of flour
+  HIGH   NO_LEAVEN          no yeast and no levain (dough will not rise)
+  HIGH   HYDRATION_FAR      hydration more than 10 points outside the style range
+  MEDIUM SALT_LOW           salt below 1.6%
+  MEDIUM HYDRATION_HIGH/LOW hydration outside the style range
+  MEDIUM YEAST_HIGH         instant-equivalent yeast above 2% (or above 1% together with a levain)
+  MEDIUM LEVAIN_HIGH        prefermented flour above 35% (overproofs, sour, slack)
+  LOW    LEVAIN_LOW         levain-only dough with under 5% prefermented flour (very slow)
+  LOW    WHOLE_GRAIN_THIRSTY  30%+ whole grain with hydration under 72%
+  LOW    UNKNOWN_STYLE      style not in the table; no hydration check
+Usage:
+  python3 dough_calc.py recipe.json
+  python3 dough_calc.py recipe.json --pieces 4 --piece-weight 250 --json
+  python3 dough_calc.py --self-test
+Exit code: 0 no HIGH findings, 1 HIGH findings, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import sys
+
+STYLES = {  # typical hydration range in % (true, incl. levain and extras water)
+    &quot;bagel&quot;: (50, 58),
+    &quot;pizza_neapolitan&quot;: (58, 65),
+    &quot;sandwich_loaf&quot;: (60, 68),
+    &quot;enriched_brioche&quot;: (55, 70),
+    &quot;baguette&quot;: (65, 75),
+    &quot;sourdough_boule&quot;: (68, 80),
+    &quot;whole_wheat_loaf&quot;: (70, 85),
+    &quot;ciabatta&quot;: (75, 85),
+    &quot;focaccia&quot;: (75, 90),
+}
+YEAST_FACTOR = {&quot;instant&quot;: 1.0, &quot;active_dry&quot;: 0.8, &quot;fresh&quot;: 0.33}
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+
+
+class DataError(ValueError):
+    pass
+
+
+def g(x, what):
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        raise DataError(f&quot;{what} must be a number, got {x!r}&quot;)
+    if v &lt; 0:
+        raise DataError(f&quot;{what} must be &gt;= 0&quot;)
+    return v
+
+
+def analyze(rec, pieces=None, piece_weight=None):
+    flours = rec.get(&quot;flours&quot;) or []
+    if not flours:
+        raise DataError(&quot;at least one flour is required&quot;)
+    lines = []  # (name, grams, kind)
+    added_flour = whole = 0.0
+    for i, fl in enumerate(flours):
+        w = g(fl.get(&quot;grams&quot;), f&quot;flours[{i}].grams&quot;)
+        added_flour += w
+        if fl.get(&quot;whole_grain&quot;):
+            whole += w
+        lines.append((fl.get(&quot;name&quot;) or f&quot;flour {i + 1}&quot;, w, &quot;flour&quot;))
+    water = g(rec.get(&quot;water_g&quot;, 0), &quot;water_g&quot;)
+    salt = g(rec.get(&quot;salt_g&quot;, 0), &quot;salt_g&quot;)
+    lines += [(&quot;water&quot;, water, &quot;water&quot;), (&quot;salt&quot;, salt, &quot;salt&quot;)]
+    lev = rec.get(&quot;levain&quot;) or {}
+    lev_g = g(lev.get(&quot;grams&quot;, 0), &quot;levain.grams&quot;)
+    lev_flour = lev_water = 0.0
+    if lev_g:
+        h = g(lev.get(&quot;hydration_pct&quot;, 100), &quot;levain.hydration_pct&quot;)
+        if h &lt;= 0:
+            raise DataError(&quot;levain.hydration_pct must be &gt; 0&quot;)
+        lev_flour = lev_g / (1 + h / 100)
+        lev_water = lev_g - lev_flour
+        whole += lev_flour * g(lev.get(&quot;whole_grain_pct&quot;, 0), &quot;levain.whole_grain_pct&quot;) / 100
+        lines.append((f&quot;levain ({h:g}% hydration)&quot;, lev_g, &quot;levain&quot;))
+    y = rec.get(&quot;yeast&quot;) or {}
+    y_g = g(y.get(&quot;grams&quot;, 0), &quot;yeast.grams&quot;)
+    y_type = y.get(&quot;type&quot;, &quot;instant&quot;)
+    if y_type not in YEAST_FACTOR:
+        raise DataError(f&quot;yeast.type must be one of {&#x27;, &#x27;.join(YEAST_FACTOR)}&quot;)
+    if y_g:
+        lines.append((f&quot;{y_type.replace(&#x27;_&#x27;, &#x27; &#x27;)} yeast&quot;, y_g, &quot;yeast&quot;))
+    extra_water = 0.0
+    for i, ex in enumerate(rec.get(&quot;extras&quot;) or []):
+        w = g(ex.get(&quot;grams&quot;), f&quot;extras[{i}].grams&quot;)
+        extra_water += w * g(ex.get(&quot;water_pct&quot;, 0), f&quot;extras[{i}].water_pct&quot;) / 100
+        lines.append((ex.get(&quot;name&quot;) or f&quot;extra {i + 1}&quot;, w, &quot;extra&quot;))
+    flour = added_flour + lev_flour
+    if flour &lt;= 0:
+        raise DataError(&quot;total flour must be &gt; 0&quot;)
+    total_water = water + lev_water + extra_water
+    dough = sum(w for _, w, _ in lines)
+    pct = lambda x: round(100 * x / flour, 1)
+    res = {
+        &quot;name&quot;: rec.get(&quot;name&quot;, &quot;recipe&quot;), &quot;style&quot;: rec.get(&quot;style&quot;),
+        &quot;total_flour_g&quot;: round(flour, 1), &quot;total_water_g&quot;: round(total_water, 1), &quot;dough_weight_g&quot;: round(dough, 1),
+        &quot;hydration_pct&quot;: pct(total_water), &quot;salt_pct&quot;: pct(salt), &quot;prefermented_flour_pct&quot;: pct(lev_flour),
+        &quot;yeast_instant_pct&quot;: round(100 * y_g * YEAST_FACTOR[y_type] / flour, 2), &quot;whole_grain_pct&quot;: pct(whole),
+        &quot;table&quot;: [{&quot;ingredient&quot;: n, &quot;grams&quot;: round(w, 1), &quot;bakers_pct&quot;: pct(w)} for n, w, _ in lines],
+    }
+    findings = []
+
+    def f(sev, code, msg):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;message&quot;: msg})
+
+    hyd, sp, pf, yp = res[&quot;hydration_pct&quot;], res[&quot;salt_pct&quot;], res[&quot;prefermented_flour_pct&quot;], res[&quot;yeast_instant_pct&quot;]
+    if salt == 0 and not rec.get(&quot;salt_free&quot;):
+        f(&quot;HIGH&quot;, &quot;NO_SALT&quot;, f&quot;no salt: add about 2% of the flour weight ({0.02 * flour:.0f} g)&quot;)
+    elif sp &gt; 2.5:
+        f(&quot;HIGH&quot;, &quot;SALT_HIGH&quot;, f&quot;salt {sp}% (usual 1.8-2.2%, {0.02 * flour:.0f} g at 2%); slows yeast and tastes salty&quot;)
+    elif 0 &lt; sp &lt; 1.6:
+        f(&quot;MEDIUM&quot;, &quot;SALT_LOW&quot;, f&quot;salt {sp}% (usual 1.8-2.2%, {0.02 * flour:.0f} g at 2%); bland and slack dough&quot;)
+    if y_g == 0 and lev_g == 0:
+        f(&quot;HIGH&quot;, &quot;NO_LEAVEN&quot;, &quot;no yeast and no levain: the dough will not rise&quot;)
+    if yp &gt; 2 or (lev_g and yp &gt; 1):
+        f(&quot;MEDIUM&quot;, &quot;YEAST_HIGH&quot;, f&quot;instant-yeast equivalent {yp}%{&#x27; on top of a levain&#x27; if lev_g else &#x27;&#x27;}; expect a fast, yeasty rise&quot;)
+    if pf &gt; 35:
+        f(&quot;MEDIUM&quot;, &quot;LEVAIN_HIGH&quot;, f&quot;prefermented flour {pf}% (usual 10-25%); faster, more sour and slacker&quot;)
+    elif lev_g and y_g == 0 and pf &lt; 5:
+        f(&quot;LOW&quot;, &quot;LEVAIN_LOW&quot;, f&quot;prefermented flour {pf}%: bulk fermentation will be very long&quot;)
+    style = rec.get(&quot;style&quot;)
+    if style in STYLES:
+        lo, hi = STYLES[style]
+        if hyd &lt; lo or hyd &gt; hi:
+            gap = lo - hyd if hyd &lt; lo else hyd - hi
+            sev = &quot;HIGH&quot; if gap &gt; 10 else &quot;MEDIUM&quot;
+            code = &quot;HYDRATION_FAR&quot; if gap &gt; 10 else (&quot;HYDRATION_LOW&quot; if hyd &lt; lo else &quot;HYDRATION_HIGH&quot;)
+            f(sev, code, f&quot;hydration {hyd}% vs {lo}-{hi}% typical for {style}; target water {round(flour * (lo + hi) / 200 - (total_water - water))} g&quot;)
+    elif style:
+        f(&quot;LOW&quot;, &quot;UNKNOWN_STYLE&quot;, f&quot;style {style!r} not known ({&#x27;, &#x27;.join(STYLES)}); no hydration check&quot;)
+    if res[&quot;whole_grain_pct&quot;] &gt;= 30 and hyd &lt; 72:
+        f(&quot;LOW&quot;, &quot;WHOLE_GRAIN_THIRSTY&quot;, f&quot;{res[&#x27;whole_grain_pct&#x27;]}% whole grain at {hyd}% hydration; whole grain absorbs more, consider +5 points&quot;)
+    findings.sort(key=lambda x: SEV_ORDER[x[&quot;severity&quot;]])
+    res[&quot;findings&quot;] = findings
+    tgt = rec.get(&quot;target&quot;) or {}
+    pieces = pieces or tgt.get(&quot;pieces&quot;)
+    piece_weight = piece_weight or tgt.get(&quot;piece_weight_g&quot;)
+    if pieces and piece_weight:
+        loss = g(rec.get(&quot;loss_pct&quot;, 2), &quot;loss_pct&quot;)
+        want = g(pieces, &quot;pieces&quot;) * g(piece_weight, &quot;piece_weight_g&quot;) * (1 + loss / 100)
+        k = want / dough
+        res[&quot;scaled&quot;] = {&quot;pieces&quot;: int(pieces), &quot;piece_weight_g&quot;: float(piece_weight), &quot;loss_pct&quot;: loss,
+                         &quot;factor&quot;: round(k, 3), &quot;dough_weight_g&quot;: round(want),
+                         &quot;ingredients&quot;: [{&quot;ingredient&quot;: n, &quot;grams&quot;: round(w * k, 1) if kind in (&quot;salt&quot;, &quot;yeast&quot;) else round(w * k)}
+                                         for n, w, kind in lines]}
+    return res
+
+
+def report(r):
+    L = [f&quot;# {r[&#x27;name&#x27;]}&quot; + (f&quot; ({r[&#x27;style&#x27;]})&quot; if r.get(&quot;style&quot;) else &quot;&quot;), &quot;&quot;,
+         f&quot;Total flour {r[&#x27;total_flour_g&#x27;]:g} g, total water {r[&#x27;total_water_g&#x27;]:g} g, dough {r[&#x27;dough_weight_g&#x27;]:g} g&quot;,
+         f&quot;Hydration {r[&#x27;hydration_pct&#x27;]}% | salt {r[&#x27;salt_pct&#x27;]}% | prefermented flour {r[&#x27;prefermented_flour_pct&#x27;]}% | &quot;
+         f&quot;yeast (instant eq.) {r[&#x27;yeast_instant_pct&#x27;]}% | whole grain {r[&#x27;whole_grain_pct&#x27;]}%&quot;, &quot;&quot;,
+         &quot;| Ingredient | Grams | Baker&#x27;s % |&quot;, &quot;|---|---|---|&quot;]
+    L += [f&quot;| {t[&#x27;ingredient&#x27;]} | {t[&#x27;grams&#x27;]:g} | {t[&#x27;bakers_pct&#x27;]} |&quot; for t in r[&quot;table&quot;]]
+    if &quot;scaled&quot; in r:
+        s = r[&quot;scaled&quot;]
+        L += [&quot;&quot;, f&quot;## Scaled to {s[&#x27;pieces&#x27;]} x {s[&#x27;piece_weight_g&#x27;]:g} g (+{s[&#x27;loss_pct&#x27;]:g}% loss, factor {s[&#x27;factor&#x27;]}): {s[&#x27;dough_weight_g&#x27;]} g dough&quot;,
+              &quot;| Ingredient | Grams |&quot;, &quot;|---|---|&quot;]
+        L += [f&quot;| {t[&#x27;ingredient&#x27;]} | {t[&#x27;grams&#x27;]:g} |&quot; for t in s[&quot;ingredients&quot;]]
+    L += [&quot;&quot;, &quot;## Findings&quot;]
+    L += [f&quot;- {x[&#x27;severity&#x27;]} {x[&#x27;code&#x27;]}: {x[&#x27;message&#x27;]}&quot; for x in r[&quot;findings&quot;]] or [&quot;- none&quot;]
+    return &quot;\n&quot;.join(L) + &quot;\n&quot;
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append(bool(cond))
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    def codes(r):
+        return {x[&quot;code&quot;] for x in r[&quot;findings&quot;]}
+
+    base = {&quot;style&quot;: &quot;sourdough_boule&quot;, &quot;flours&quot;: [{&quot;grams&quot;: 1000}], &quot;water_g&quot;: 700, &quot;salt_g&quot;: 20,
+            &quot;yeast&quot;: {&quot;type&quot;: &quot;instant&quot;, &quot;grams&quot;: 5}}
+    r = analyze(base)
+    ok(&quot;hydration 70%, salt 2%&quot;, r[&quot;hydration_pct&quot;] == 70 and r[&quot;salt_pct&quot;] == 2)
+    ok(&quot;dough weight sums ingredients (1725)&quot;, r[&quot;dough_weight_g&quot;] == 1725)
+    ok(&quot;clean recipe has no findings&quot;, r[&quot;findings&quot;] == [])
+    lev = dict(base, flours=[{&quot;grams&quot;: 900}], water_g=600, levain={&quot;grams&quot;: 200, &quot;hydration_pct&quot;: 100}, yeast=None)
+    r = analyze(lev)
+    ok(&quot;levain 100%: flour 1000, water 700&quot;, r[&quot;total_flour_g&quot;] == 1000 and r[&quot;total_water_g&quot;] == 700)
+    ok(&quot;prefermented flour 10%&quot;, r[&quot;prefermented_flour_pct&quot;] == 10)
+    r = analyze(dict(lev, levain={&quot;grams&quot;: 150, &quot;hydration_pct&quot;: 50}))
+    ok(&quot;stiff levain 50%: 100 g flour + 50 g water&quot;, r[&quot;total_flour_g&quot;] == 1000 and r[&quot;total_water_g&quot;] == 650)
+    ok(&quot;yeast conversion fresh 15 g ~ 0.5% instant&quot;, analyze(dict(base, yeast={&quot;type&quot;: &quot;fresh&quot;, &quot;grams&quot;: 15}))[&quot;yeast_instant_pct&quot;] == 0.49)
+    ok(&quot;active dry x 0.8&quot;, analyze(dict(base, yeast={&quot;type&quot;: &quot;active_dry&quot;, &quot;grams&quot;: 10}))[&quot;yeast_instant_pct&quot;] == 0.8)
+    milk = analyze(dict(base, water_g=600, extras=[{&quot;name&quot;: &quot;milk&quot;, &quot;grams&quot;: 100, &quot;water_pct&quot;: 87}]))
+    ok(&quot;milk water counted (87 g)&quot;, milk[&quot;total_water_g&quot;] == 687)
+    ok(&quot;no salt HIGH&quot;, &quot;NO_SALT&quot; in codes(analyze(dict(base, salt_g=0))))
+    ok(&quot;salt_free suppresses NO_SALT&quot;, &quot;NO_SALT&quot; not in codes(analyze(dict(base, salt_g=0, salt_free=True))))
+    ok(&quot;salt 3% HIGH&quot;, &quot;SALT_HIGH&quot; in codes(analyze(dict(base, salt_g=30))))
+    ok(&quot;salt 1.2% MEDIUM&quot;, &quot;SALT_LOW&quot; in codes(analyze(dict(base, salt_g=12))))
+    ok(&quot;no leaven HIGH&quot;, &quot;NO_LEAVEN&quot; in codes(analyze(dict(base, yeast=None))))
+    ok(&quot;yeast 2.5% MEDIUM&quot;, &quot;YEAST_HIGH&quot; in codes(analyze(dict(base, yeast={&quot;type&quot;: &quot;instant&quot;, &quot;grams&quot;: 25}))))
+    ok(&quot;yeast 1.2% plus levain MEDIUM&quot;, &quot;YEAST_HIGH&quot; in codes(analyze(dict(lev, yeast={&quot;type&quot;: &quot;instant&quot;, &quot;grams&quot;: 12}))))
+    ok(&quot;levain 40% flour MEDIUM&quot;, &quot;LEVAIN_HIGH&quot; in codes(analyze(dict(lev, flours=[{&quot;grams&quot;: 600}], water_g=300, levain={&quot;grams&quot;: 800, &quot;hydration_pct&quot;: 100}))))
+    ok(&quot;tiny levain LOW&quot;, &quot;LEVAIN_LOW&quot; in codes(analyze(dict(lev, flours=[{&quot;grams&quot;: 980}], water_g=680, levain={&quot;grams&quot;: 40, &quot;hydration_pct&quot;: 100}))))
+    ok(&quot;hydration 64% for boule MEDIUM LOW&quot;, &quot;HYDRATION_LOW&quot; in codes(analyze(dict(base, water_g=640))))
+    ok(&quot;hydration 84% for boule MEDIUM HIGH&quot;, &quot;HYDRATION_HIGH&quot; in codes(analyze(dict(base, water_g=840))))
+    ok(&quot;hydration 92% for bagel HIGH FAR&quot;, &quot;HYDRATION_FAR&quot; in codes(analyze(dict(base, style=&quot;bagel&quot;, water_g=920))))
+    ok(&quot;unknown style LOW&quot;, &quot;UNKNOWN_STYLE&quot; in codes(analyze(dict(base, style=&quot;pretzel&quot;))))
+    wg = analyze(dict(base, flours=[{&quot;grams&quot;: 600}, {&quot;grams&quot;: 400, &quot;whole_grain&quot;: True}], water_g=690))
+    ok(&quot;whole grain 40% at 69% flagged&quot;, wg[&quot;whole_grain_pct&quot;] == 40 and &quot;WHOLE_GRAIN_THIRSTY&quot; in codes(wg))
+    s = analyze(base, pieces=2, piece_weight=900)[&quot;scaled&quot;]
+    ok(&quot;scale 2 x 900 + 2% = 1836 g, factor 1.064&quot;, s[&quot;dough_weight_g&quot;] == 1836 and s[&quot;factor&quot;] == 1.064)
+    ok(&quot;scaled flour 1064 g, salt 21.3 g&quot;, s[&quot;ingredients&quot;][0][&quot;grams&quot;] == 1064 and s[&quot;ingredients&quot;][2][&quot;grams&quot;] == 21.3)
+    ok(&quot;target from JSON&quot;, analyze(dict(base, target={&quot;pieces&quot;: 4, &quot;piece_weight_g&quot;: 250}, loss_pct=0))[&quot;scaled&quot;][&quot;dough_weight_g&quot;] == 1000)
+    for bad, label in (({&quot;flours&quot;: []}, &quot;no flours&quot;), ({&quot;flours&quot;: [{&quot;grams&quot;: &quot;x&quot;}]}, &quot;bad number&quot;),
+                       ({&quot;flours&quot;: [{&quot;grams&quot;: -5}]}, &quot;negative grams&quot;), ({&quot;flours&quot;: [{&quot;grams&quot;: 0}]}, &quot;zero flour&quot;),
+                       (dict(base, yeast={&quot;type&quot;: &quot;sourdough&quot;, &quot;grams&quot;: 5}), &quot;unknown yeast type&quot;),
+                       (dict(lev, levain={&quot;grams&quot;: 100, &quot;hydration_pct&quot;: 0}), &quot;zero levain hydration&quot;)):
+        try:
+            analyze(bad)
+            ok(label + &quot; rejected&quot;, False)
+        except DataError:
+            ok(label + &quot; rejected&quot;, True)
+    print(f&quot;{sum(cases)}/{len(cases)} passed&quot;)
+    return 0 if all(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Baker&#x27;s percentages, true hydration and scaling for bread dough.&quot;)
+    ap.add_argument(&quot;file&quot;, nargs=&quot;?&quot;, help=&quot;recipe JSON (see module docstring)&quot;)
+    ap.add_argument(&quot;--pieces&quot;, type=int, help=&quot;number of loaves or dough balls (overrides target)&quot;)
+    ap.add_argument(&quot;--piece-weight&quot;, type=float, help=&quot;dough weight per piece in grams (overrides target)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.file:
+        ap.error(&quot;give a recipe JSON file or --self-test&quot;)
+    try:
+        r = analyze(json.load(open(a.file, encoding=&quot;utf-8&quot;)), a.pieces, a.piece_weight)
+    except (OSError, ValueError, DataError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else report(r), end=&quot;\n&quot; if a.json else &quot;&quot;)
+    return 1 if any(x[&quot;severity&quot;] == &quot;HIGH&quot; for x in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/bread-dough-baker-s-percentage-calculator',TI="Bread Dough Baker's Percentage Calculator";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

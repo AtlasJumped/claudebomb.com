@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open library: 3,428 free prompts | claudebomb.com</title>
+<meta name="description" content="Search 3,428 free, openly licensed prompts from prompts.chat and Fabric, credited to their sources, and improve any of them with no account.">
+<meta property="og:title" content="Open library: 3,428 free prompts | claudebomb.com">
+<meta property="og:description" content="Search 3,428 free, openly licensed prompts from prompts.chat and Fabric, credited to their sources, and improve any of them with no account.">
+<meta property="og:url" content="https://claudebomb.com/library/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/library/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#lib">Skip to the prompts</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><span class="no">Free</span> Openly licensed, credited</p>
+  <h1 id="h1">Open library</h1>
+  <p class="lead">3,428 free prompts from other open galleries, in one place: 3,161 from <a href="https://prompts.chat">prompts.chat</a> (public domain) and 267 from <a href="https://github.com/danielmiessler/fabric">Fabric</a> (MIT licence). Each page credits its source. You can improve any of them with no account.</p>
+  <form class="find" role="search" onsubmit="return false">
+   <div><label for="q">Search the library</label><input id="q" type="search" placeholder="Try: interview, excel, summary, travel" autocomplete="off"></div>
+   <div><label for="src">Source</label><select id="src"><option value="">All sources</option><option value="pc">prompts.chat</option><option value="fb">Fabric</option><option value="dev">For developers</option></select></div>
+   <p class="count" id="count" aria-live="polite">Loading the library...</p>
+  </form>
+ </div>
+</section>
+<section class="sec bank" id="lib" aria-labelledby="lib-h">
+ <div class="wrap">
+  <h2 id="lib-h" class="sr">Results</h2>
+  <ul class="libl" id="list"></ul>
+  <div class="btns"><button class="btn ghost" type="button" id="more" hidden>Show more</button></div>
+  <p class="mut">These prompts have not been through <a href="/council/">the council</a> yet. Our own long prompts, with pitfalls and feature switches, are on the <a href="/#bank">home page</a>. We only copy free, openly licensed prompts. Paid galleries are linked from the home page, never copied.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,q=document.getElementById('q'),src=document.getElementById('src'),list=document.getElementById('list'),count=document.getElementById('count'),more=document.getElementById('more'),D=[],hits=[],shown=0,N={pc:'prompts.chat',fb:'Fabric'};
+function row(r){var li=C.el('li'),a=C.el('a',null,r[1]);a.href=r[0];li.appendChild(a);li.appendChild(C.el('span','tag',N[r[2]]));li.appendChild(C.el('p','mut',r[3]+(r[3].length>=150?'...':'')));return li}
+function page(){var end=Math.min(shown+50,hits.length);for(var i=shown;i<end;i++)list.appendChild(row(hits[i]));shown=end;more.hidden=shown>=hits.length}
+function run(){var t=q.value.trim().toLowerCase(),s=src.value,w=t?t.split(/\s+/):[];hits=D.filter(function(r){if(s==='dev'?!r[4]:(s&&r[2]!==s))return false;var h=(r[1]+' '+r[3]).toLowerCase();for(var i=0;i<w.length;i++)if(h.indexOf(w[i])<0)return false;return true});
+ if(t)hits.sort(function(a,b){var x=a[1].toLowerCase().indexOf(w[0])>=0?0:1,y=b[1].toLowerCase().indexOf(w[0])>=0?0:1;return x-y});
+ list.textContent='';shown=0;page();count.textContent=hits.length.toLocaleString()+(hits.length===1?' prompt':' prompts')+(t?' matching "'+q.value.trim()+'"':'');
+ try{var u=new URL(location.href);t?u.searchParams.set('q',q.value.trim()):u.searchParams.delete('q');s?u.searchParams.set('src',s):u.searchParams.delete('src');history.replaceState(null,'',u)}catch(e){}}
+try{var sp=new URLSearchParams(location.search);if(sp.get('q'))q.value=sp.get('q');if(sp.get('src'))src.value=sp.get('src')}catch(e){}
+fetch('/library/index.json?v=4').then(function(r){return r.json()}).then(function(d){D=d;run()},function(){count.textContent='The library could not load. Reload the page to try again.'});
+q.addEventListener('input',run);src.addEventListener('change',run);more.addEventListener('click',page);
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

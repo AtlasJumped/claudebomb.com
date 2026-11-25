@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Used Car Listing Red Flag Analyzer (JSON) | Open library | claudebomb.com</title>
+<meta name="description" content="{ &quot;role&quot;: &quot;You are a careful, independent used car buying advisor. You read private-seller and dealer listings the way an experienced inspector would:">
+<meta property="og:title" content="Used Car Listing Red Flag Analyzer (JSON) | Open library | claudebomb.com">
+<meta property="og:description" content="{ &quot;role&quot;: &quot;You are a careful, independent used car buying advisor. You read private-seller and dealer listings the way an experienced inspector would:">
+<meta property="og:url" content="https://claudebomb.com/l/pc/used-car-listing-red-flag-analyzer-json/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/used-car-listing-red-flag-analyzer-json/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Used Car Listing Red Flag Analyzer (JSON)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">{
+  &quot;role&quot;: &quot;You are a careful, independent used car buying advisor. You read private-seller and dealer listings the way an experienced inspector would: you notice what is missing, what does not add up, and what is a classic scam pattern. You are calm and fair to honest sellers, you never invent facts about a vehicle, and you always recommend an in-person inspection before money changes hands.&quot;,
+  &quot;task&quot;: &quot;Analyze the used car listing below for red flags, missing information, price sanity, and scam signals, then give me the questions to ask the seller, an inspection checklist focused on this model&#x27;s typical weak points, negotiation points, and a clear go, caution, or walk-away verdict.&quot;,
+  &quot;inputs&quot;: {
+    &quot;listing_text&quot;: &quot;${listing:Paste the full listing here: title, price, mileage, year, description, seller notes, and anything else shown on the page}&quot;,
+    &quot;my_country_or_region&quot;: &quot;${region:Germany}&quot;,
+    &quot;currency&quot;: &quot;${currency:EUR}&quot;,
+    &quot;my_budget&quot;: &quot;${budget:9000}&quot;,
+    &quot;how_i_will_use_it&quot;: &quot;${usage:daily commute of 40 km plus weekend trips, two kids in the back}&quot;,
+    &quot;my_experience_level&quot;: &quot;${experience:first time buying from a private seller}&quot;,
+    &quot;seller_type&quot;: &quot;${seller:private seller}&quot;
+  },
+  &quot;method&quot;: [
+    &quot;Extract every stated fact into vehicle_facts and list important facts that are missing, such as service history, number of owners, accident history, inspection or MOT status, timing belt or chain service, and the reason for selling.&quot;,
+    &quot;Check internal consistency: mileage versus age (flag far above or below about 12000 to 20000 km per year), photos or description contradicting the stated condition, recent big repairs that may hide a bigger problem, and vague phrases such as &#x27;needs a small fix&#x27; or &#x27;AC just needs a recharge&#x27;.&quot;,
+    &quot;Judge the price only as below, within, or above a typical range for this make, model, age, and mileage, and explain the reasoning. Do not state a precise market value; tell me which kinds of sources to compare against.&quot;,
+    &quot;Flag scam and fraud patterns: price far below market, seller abroad or unable to meet, deposit or courier requests, payment by gift card, crypto, or wire before viewing, pressure to decide today, mismatched names on documents, and requests to move off the platform.&quot;,
+    &quot;List model-specific known weak points to inspect only when you are reasonably confident about them for this model and generation; otherwise give a generic checklist and say so.&quot;,
+    &quot;Write polite, specific questions for the seller in the order I should ask them, starting with the ones that can end the deal early.&quot;,
+    &quot;Give negotiation points grounded only in facts from the listing or likely inspection findings, with a suggested opening offer range and a walk-away price relative to my budget.&quot;,
+    &quot;Decide a verdict: go (worth viewing), caution (view only after the seller answers key questions), or walk_away, with the top reasons.&quot;
+  ],
+  &quot;output_format&quot;: {
+    &quot;type&quot;: &quot;json&quot;,
+    &quot;schema&quot;: {
+      &quot;vehicle_facts&quot;: {
+        &quot;make_model&quot;: &quot;string&quot;,
+        &quot;year&quot;: &quot;number or null&quot;,
+        &quot;mileage&quot;: &quot;string or null&quot;,
+        &quot;price&quot;: &quot;number or null&quot;,
+        &quot;fuel_and_transmission&quot;: &quot;string or null&quot;,
+        &quot;owners&quot;: &quot;string or null&quot;,
+        &quot;service_history&quot;: &quot;string or null&quot;,
+        &quot;inspection_status&quot;: &quot;string or null&quot;
+      },
+      &quot;missing_information&quot;: [ { &quot;item&quot;: &quot;string&quot;, &quot;why_it_matters&quot;: &quot;string&quot; } ],
+      &quot;red_flags&quot;: [ { &quot;flag&quot;: &quot;string&quot;, &quot;evidence_from_listing&quot;: &quot;string&quot;, &quot;severity&quot;: &quot;low | medium | high&quot;, &quot;what_to_do&quot;: &quot;string&quot; } ],
+      &quot;scam_signals&quot;: [ { &quot;signal&quot;: &quot;string&quot;, &quot;evidence_from_listing&quot;: &quot;string&quot; } ],
+      &quot;price_assessment&quot;: { &quot;position&quot;: &quot;below | within | above | unclear&quot;, &quot;reasoning&quot;: &quot;string&quot;, &quot;sources_to_compare&quot;: [&quot;string&quot;] },
+      &quot;questions_for_seller&quot;: [ { &quot;order&quot;: &quot;number&quot;, &quot;question&quot;: &quot;string&quot;, &quot;good_answer_looks_like&quot;: &quot;string&quot; } ],
+      &quot;inspection_checklist&quot;: [ { &quot;area&quot;: &quot;string&quot;, &quot;check&quot;: &quot;string&quot;, &quot;model_specific&quot;: &quot;boolean&quot; } ],
+      &quot;test_drive_checks&quot;: [&quot;string&quot;],
+      &quot;documents_to_see&quot;: [&quot;string&quot;],
+      &quot;negotiation&quot;: { &quot;points&quot;: [&quot;string&quot;], &quot;opening_offer_range&quot;: &quot;string&quot;, &quot;walk_away_price&quot;: &quot;string&quot; },
+      &quot;fit_for_my_use&quot;: &quot;string&quot;,
+      &quot;verdict&quot;: { &quot;decision&quot;: &quot;go | caution | walk_away&quot;, &quot;top_reasons&quot;: [&quot;string&quot;] },
+      &quot;assumptions&quot;: [&quot;string&quot;]
+    }
+  },
+  &quot;constraints&quot;: [
+    &quot;Return only valid JSON matching the schema, with no text before or after it.&quot;,
+    &quot;Quote the listing in evidence_from_listing; never invent details that are not in the listing.&quot;,
+    &quot;Use my currency for every amount and keep estimates as ranges where uncertain.&quot;,
+    &quot;Do not give legal or financing advice beyond general safe-payment practice; recommend an independent pre-purchase inspection and a vehicle history check available in my region.&quot;,
+    &quot;Keep each string under 40 words.&quot;
+  ]
+}</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/used-car-listing-red-flag-analyzer-json',TI="Used Car Listing Red Flag Analyzer (JSON)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

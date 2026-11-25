@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSV Data Quality Profiler | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: csv-data-quality-profiler description: Profiles CSV and spreadsheet exports before they are trusted for analysis, imports, or dashboards - i">
+<meta property="og:title" content="CSV Data Quality Profiler | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: csv-data-quality-profiler description: Profiles CSV and spreadsheet exports before they are trusted for analysis, imports, or dashboards - i">
+<meta property="og:url" content="https://claudebomb.com/l/pc/csv-data-quality-profiler/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/csv-data-quality-profiler/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">CSV Data Quality Profiler</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: csv-data-quality-profiler
+description: Profiles CSV and spreadsheet exports before they are trusted for analysis, imports, or dashboards - infers column types, measures missing values, duplicates, mixed types, outliers, whitespace and encoding problems, and key candidates - then writes a prioritized data quality report with concrete fixes. Use when a user shares a CSV, asks &quot;is this data clean?&quot;, prepares a data import or migration, or sees numbers that look wrong in a report.
+---
+
+# CSV Data Quality Profiler
+
+You check a tabular dataset the way a careful analyst would before building anything on top of it. You measure first, then explain what matters for the user&#x27;s goal, then suggest the smallest safe fixes.
+
+## Files in this skill
+
+- `scripts/profile_csv.py` - column profiler and issue finder (Python 3 standard library only)
+- `references/quality-dimensions.md` - the six dimensions you score and what counts as a problem
+- `references/fix-playbook.md` - safe fixes per issue type, and what never to do automatically
+- `templates/quality-report.md` - report format
+- `examples/example-orders-report.md` - a worked report on a small orders export
+
+## Workflow
+
+### 1. Understand the purpose
+Ask (or infer) what the data is for: a one-off analysis, a recurring import, a dashboard, or a migration. Ask which column should be unique (the key) and which columns matter most. The same issue can be critical for an import and harmless for a rough analysis.
+
+### 2. Profile
+```bash
+python3 scripts/profile_csv.py data.csv
+python3 scripts/profile_csv.py data.csv --key order_id
+python3 scripts/profile_csv.py data.csv --delimiter &quot;;&quot; --json &gt; profile.json
+```
+The script reports per column: inferred type, missing count and percent, distinct count, top values, min and max, and issues (mixed types, leading or trailing spaces, outliers by the IQR rule, inconsistent date formats, inconsistent casing). It also reports duplicate rows, ragged rows, and whether the key is unique. Exit code is 1 when any HIGH issue is found.
+
+If the user cannot run scripts, read the first 200 rows yourself and apply the same checks by hand, and say the result is a sample.
+
+### 3. Interpret
+For each finding, use `references/quality-dimensions.md` to decide:
+1. Which dimension it affects (completeness, validity, uniqueness, consistency, accuracy signals, structure).
+2. Severity for this purpose: HIGH (wrong results or failed import), MEDIUM (misleading in some views), LOW (cosmetic).
+3. Whether it is a real problem or expected (for example, an optional &quot;coupon_code&quot; column is allowed to be mostly empty).
+
+### 4. Recommend fixes
+Use `references/fix-playbook.md`. Prefer fixes at the source system over cleaning downstream. Give each fix as a concrete step (a formula, a pandas or SQL snippet, or a source-system change) and say what it changes and how many rows.
+
+### 5. Write the report
+Fill `templates/quality-report.md` the way `examples/example-orders-report.md` does: verdict first, then the top issues, then the column table.
+
+## Verdicts
+- **READY** - no HIGH issues for the stated purpose.
+- **READY WITH CAVEATS** - usable if the listed caveats are accepted.
+- **NOT READY** - at least one HIGH issue that would produce wrong numbers or a failed import.
+
+## Rules
+- Never silently drop, impute, or deduplicate rows; always state the rule and the affected row count, and keep the original file.
+- Do not guess what a code or abbreviation means; ask or mark it as an assumption.
+- Treat personal data with care: show at most a few example values, and mask emails, phone numbers, and IDs in the report.
+- Outliers are leads, not errors. Ask before removing them.
+FILE:references/quality-dimensions.md
+# Data Quality Dimensions
+
+Score each dimension as OK, WATCH, or PROBLEM for the user&#x27;s purpose.
+
+## 1. Completeness
+Are required values present?
+- Missing markers to treat as empty: &quot;&quot;, &quot;NA&quot;, &quot;N/A&quot;, &quot;null&quot;, &quot;NULL&quot;, &quot;None&quot;, &quot;-&quot;, &quot;?&quot; (case-insensitive, after trimming spaces).
+- PROBLEM: a required column (key, amount, date) has any missing values for an import, or more than 5 percent for an analysis.
+- WATCH: an optional column is more than 50 percent empty (is it still used?).
+
+## 2. Validity
+Do values match the expected type and allowed range?
+- Mixed types in one column (numbers plus words such as &quot;TBD&quot;).
+- Numbers stored with thousands separators or currency symbols (&quot;1,200&quot;, &quot;$45&quot;).
+- Dates that do not parse, or impossible values (month 13, negative quantity, age 250).
+- PROBLEM when the column feeds a calculation or a typed database column.
+
+## 3. Uniqueness
+- Fully duplicated rows: often caused by double exports or re-run jobs.
+- Duplicate keys: two rows claim the same ID with different data. Always PROBLEM for imports.
+- Near-duplicates (same values after trimming and lowercasing) are WATCH.
+
+## 4. Consistency
+- Several date formats in one column (2026-03-01, 03/01/2026, 1 Mar 2026).
+- Same category spelled in different ways (&quot;Paid&quot;, &quot;paid&quot;, &quot;PAID &quot;).
+- Units mixed in one column (kg and lb, cents and dollars).
+- Leading or trailing spaces that break joins and filters.
+
+## 5. Accuracy signals
+The profiler cannot prove accuracy, but it can raise flags:
+- Outliers outside 1.5 x IQR from the quartiles.
+- Suspicious constants (every row has the same value).
+- Default-looking values (1970-01-01, 0, 999999, &quot;test&quot;).
+- Totals that do not match a known number from the user.
+
+## 6. Structure
+- Ragged rows (a different number of fields than the header): usually unquoted delimiters inside text.
+- Blank or duplicated header names.
+- Encoding problems (mojibake): accented letters shown as two odd characters, for example &quot;cafe&quot; with its accented e turned into an &quot;A&quot; with a tilde plus a symbol (UTF-8 read as Latin-1).
+- A byte order mark at the start of the first header.
+
+## Severity by purpose
+
+| Finding | Analysis | Recurring import | Dashboard |
+|---|---|---|---|
+| Duplicate keys | MEDIUM | HIGH | HIGH |
+| Mixed types in a numeric column | HIGH | HIGH | HIGH |
+| Several date formats | MEDIUM | HIGH | MEDIUM |
+| Trailing spaces in categories | LOW | MEDIUM | MEDIUM |
+| Outliers | MEDIUM | LOW | MEDIUM |
+| Ragged rows | HIGH | HIGH | HIGH |
+FILE:references/fix-playbook.md
+# Fix Playbook
+
+Always: keep the original file, write fixes as a repeatable script or documented steps, and report the number of rows each fix touches.
+
+## Missing values
+- Required field: fix at the source, or quarantine the rows into a separate file for review.
+- Optional field: leave empty; standardize all missing markers to one empty value.
+- Never fill amounts or dates with 0 or today&#x27;s date just to make an import pass.
+
+## Mixed types
+- Find the non-matching values first: `df[pd.to_numeric(df.col, errors=&quot;coerce&quot;).isna() &amp; df.col.notna()]`.
+- Decide per value: a real value written differently (&quot;1,200&quot; becomes 1200), a placeholder (&quot;TBD&quot; becomes empty), or a genuine error (send back to the owner).
+
+## Duplicates
+- Full duplicate rows: safe to drop after confirming they come from a double export; keep the first.
+- Duplicate keys with different data: do not pick one automatically. List both rows and ask which system is the source of truth, or keep the most recent by an updated_at column if the user agrees.
+
+## Inconsistent dates
+- Parse with an explicit format per pattern, never with a guessing parser across the whole column.
+- Ambiguous day/month values (03/04/2026) need a rule from the user; check whether any value has a day above 12 to infer the format.
+- Store the result as ISO 8601 (YYYY-MM-DD).
+
+## Inconsistent categories and spaces
+- Trim spaces in every text column used for joins or grouping.
+- Map spelling variants with an explicit mapping table that the user approves, not with fuzzy matching.
+
+## Outliers
+- Check them with the data owner. Typical real causes: bulk orders, refunds stored as negatives, test transactions.
+- If excluded from an analysis, say so in the results and show the numbers with and without them.
+
+## Structure
+- Ragged rows: re-export with proper quoting, or parse with the correct delimiter and quote character.
+- Encoding: re-read as UTF-8; if mojibake remains, the file was double-encoded at the source.
+- BOM: read with encoding &quot;utf-8-sig&quot;.
+
+## Never do automatically
+- Drop rows with missing values in bulk.
+- Impute values in key, amount, or date columns.
+- Merge near-duplicate customers or products.
+- Remove outliers.
+FILE:templates/quality-report.md
+# Data Quality Report: {{dataset_name}}
+
+**Purpose:** {{analysis | recurring import | dashboard | migration}}
+**File:** {{file_name}} ({{rows}} rows x {{columns}} columns, delimiter &quot;{{delimiter}}&quot;)
+**Key column:** {{key_column or &quot;none given&quot;}}
+**Verdict:** {{READY | READY WITH CAVEATS | NOT READY}}
+
+## Summary
+{{Two or three sentences: is the data fit for the purpose, and what must happen first.}}
+
+## Top issues (most severe first)
+
+| # | Severity | Dimension | Column | Finding | Rows affected | Recommended fix |
+|---|---|---|---|---|---|---|
+| 1 | {{HIGH}} | {{Uniqueness}} | {{col}} | {{finding}} | {{n}} | {{fix}} |
+
+## Dimension scores
+
+| Dimension | Score | Note |
+|---|---|---|
+| Completeness | {{OK / WATCH / PROBLEM}} | |
+| Validity | | |
+| Uniqueness | | |
+| Consistency | | |
+| Accuracy signals | | |
+| Structure | | |
+
+## Column profile
+
+| Column | Type | Missing % | Distinct | Range or top values | Issues |
+|---|---|---|---|---|---|
+
+## Questions for the data owner
+- {{question}}
+
+## Assumptions
+- {{assumption}}
+
+## Next steps
+1. {{step}}
+FILE:examples/example-orders-report.md
+# Data Quality Report: Online orders export (September)
+
+**Purpose:** recurring import into the finance database
+**File:** orders_sept.csv (8 rows x 6 columns, delimiter &quot;,&quot;)
+**Key column:** order_id
+**Verdict:** NOT READY
+
+## Summary
+The export cannot be imported as is: one order ID appears twice with different amounts, and the amount column mixes numbers with the placeholder &quot;TBD&quot;. Dates use two formats. After the three fixes below the file should be ready.
+
+## Top issues (most severe first)
+
+| # | Severity | Dimension | Column | Finding | Rows affected | Recommended fix |
+|---|---|---|---|---|---|---|
+| 1 | HIGH | Uniqueness | order_id | Key A-1003 appears twice (amounts 45.00 and 54.00) | 2 | Ask finance which row is correct; do not auto-pick |
+| 2 | HIGH | Validity | amount | Mixed types: 1 non-numeric value (&quot;TBD&quot;) | 1 | Replace with the real amount from the shop system, or quarantine the row |
+| 3 | MEDIUM | Consistency | order_date | Two date formats (YYYY-MM-DD and DD/MM/YYYY) | 2 | Parse each pattern explicitly, store as ISO 8601 |
+| 4 | MEDIUM | Consistency | status | Leading or trailing spaces (&quot;paid &quot;) | 1 | Trim all category columns before import |
+| 5 | LOW | Accuracy signals | amount | Outlier 1250.00 (IQR rule) | 1 | Confirm with the shop team; likely a bulk order |
+
+## Dimension scores
+
+| Dimension | Score | Note |
+|---|---|---|
+| Completeness | WATCH | coupon is 87.5 percent empty, expected for an optional field |
+| Validity | PROBLEM | &quot;TBD&quot; in amount |
+| Uniqueness | PROBLEM | duplicate key A-1003 |
+| Consistency | WATCH | date formats, trailing space in status |
+| Accuracy signals | WATCH | one large order |
+| Structure | OK | no ragged rows, clean header |
+
+## Column profile
+
+| Column | Type | Missing % | Distinct | Range or top values | Issues |
+|---|---|---|---|---|---|
+| order_id | string | 0.0 | 7 | A-1003 (2), A-1001 (1), A-1002 (1) | duplicate key |
+| order_date | date | 0.0 | 7 | 2026-09-01 to 2026-09-28 | 2 formats |
+| customer_email | string | 0.0 | 6 | (masked) | none |
+| amount | float | 0.0 | 8 | 18.5 to 1250.0 | mixed types, outlier |
+| status | string | 0.0 | 2 | paid (7), refunded (1) | surrounding spaces |
+| coupon | string | 87.5 | 1 | FALL10 (1) | mostly empty (expected) |
+
+## Questions for the data owner
+- Which A-1003 row is correct, and why was it exported twice?
+- What is the real amount for A-1006?
+
+## Assumptions
+- DD/MM/YYYY is used for the slash dates (one value has day 28, so it cannot be MM/DD).
+
+## Next steps
+1. Resolve A-1003 and A-1006 with finance.
+2. Add a trim and date-normalization step to the export job.
+3. Re-run `python3 scripts/profile_csv.py orders_sept.csv --key order_id` and import when it exits 0.
+FILE:scripts/profile_csv.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Profile a CSV file for data quality problems (Python 3 standard library only).
+
+Usage:
+  python3 profile_csv.py FILE.csv [--key COLUMN] [--delimiter &quot;,&quot;] [--json]
+  python3 profile_csv.py - &lt; FILE.csv          (read from stdin)
+
+Reports per column: inferred type (int, float, numtext = numbers stored with
+separators or currency symbols, date, bool, string), missing values, distinct count, top values,
+min/max, and issues (mixed types, surrounding spaces, IQR outliers, several
+date formats, inconsistent casing). Also reports ragged rows, duplicate rows,
+blank or duplicate headers, and key uniqueness when --key is given.
+Exit code: 0 = no HIGH issues, 1 = at least one HIGH issue, 2 = usage error.
+&quot;&quot;&quot;
+import argparse
+import csv
+import io
+import json
+import re
+import statistics
+import sys
+from collections import Counter
+
+MISSING = {&quot;&quot;, &quot;na&quot;, &quot;n/a&quot;, &quot;null&quot;, &quot;none&quot;, &quot;nan&quot;, &quot;-&quot;, &quot;?&quot;}
+DATE_PATTERNS = [
+    (&quot;YYYY-MM-DD&quot;, re.compile(r&quot;^\d{4}-\d{2}-\d{2}$&quot;)),
+    (&quot;YYYY-MM-DD HH:MM&quot;, re.compile(r&quot;^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$&quot;)),
+    (&quot;DD/MM/YYYY or MM/DD/YYYY&quot;, re.compile(r&quot;^\d{1,2}/\d{1,2}/\d{4}$&quot;)),
+    (&quot;DD.MM.YYYY&quot;, re.compile(r&quot;^\d{1,2}\.\d{1,2}\.\d{4}$&quot;)),
+    (&quot;D Mon YYYY&quot;, re.compile(r&quot;^\d{1,2} [A-Za-z]{3,9} \d{4}$&quot;)),
+]
+INT_RE = re.compile(r&quot;^[+-]?\d+$&quot;)
+FLOAT_RE = re.compile(r&quot;^[+-]?(\d+\.\d*|\.\d+|\d+)([eE][+-]?\d+)?$&quot;)
+FORMATTED_NUM_RE = re.compile(r&quot;^[+-]?[$\u20ac\u00a3]?\d{1,3}(,\d{3})+(\.\d+)?$|^[$\u20ac\u00a3]\d+(\.\d+)?$&quot;)
+BOOL_VALUES = {&quot;true&quot;, &quot;false&quot;, &quot;yes&quot;, &quot;no&quot;, &quot;y&quot;, &quot;n&quot;}
+
+
+def classify(value):
+    v = value.strip()
+    if INT_RE.match(v):
+        return &quot;int&quot;
+    if FLOAT_RE.match(v):
+        return &quot;float&quot;
+    if v.lower() in BOOL_VALUES:
+        return &quot;bool&quot;
+    for name, rx in DATE_PATTERNS:
+        if rx.match(v):
+            return &quot;date:&quot; + name
+    if FORMATTED_NUM_RE.match(v):
+        return &quot;formatted_number&quot;
+    return &quot;string&quot;
+
+
+def quartiles(nums):
+    q = statistics.quantiles(nums, n=4, method=&quot;inclusive&quot;)
+    return q[0], q[2]
+
+
+def profile(rows, header, key=None):
+    issues = []  # (severity, column, code, message)
+    ncols = len(header)
+    if header and header[0].startswith(&quot;\ufeff&quot;):
+        header[0] = header[0].lstrip(&quot;\ufeff&quot;)
+        issues.append((&quot;LOW&quot;, header[0], &quot;bom&quot;, &quot;File starts with a byte order mark; read with encoding utf-8-sig&quot;))
+    names = Counter(h.strip() for h in header)
+    for h in header:
+        if not h.strip():
+            issues.append((&quot;MEDIUM&quot;, &quot;(header)&quot;, &quot;blank-header&quot;, &quot;A header cell is blank&quot;))
+    for h, c in names.items():
+        if h and c &gt; 1:
+            issues.append((&quot;HIGH&quot;, h, &quot;duplicate-header&quot;, f&quot;Header &#x27;{h}&#x27; appears {c} times&quot;))
+
+    ragged = [i + 2 for i, r in enumerate(rows) if len(r) != ncols]
+    if ragged:
+        issues.append((&quot;HIGH&quot;, &quot;(rows)&quot;, &quot;ragged-rows&quot;,
+                       f&quot;{len(ragged)} row(s) have a field count different from the header ({ncols}); first at line(s) {ragged[:5]}&quot;))
+    good = [r for r in rows if len(r) == ncols]
+
+    dup_counter = Counter(tuple(c.strip() for c in r) for r in good)
+    dup_rows = sum(c - 1 for c in dup_counter.values() if c &gt; 1)
+    if dup_rows:
+        issues.append((&quot;MEDIUM&quot;, &quot;(rows)&quot;, &quot;duplicate-rows&quot;, f&quot;{dup_rows} fully duplicated row(s)&quot;))
+
+    columns = []
+    for idx, name in enumerate(header):
+        raw = [r[idx] for r in good]
+        present = [v for v in raw if v.strip().lower() not in MISSING]
+        missing = len(raw) - len(present)
+        kinds = Counter(classify(v) for v in present)
+        base = Counter()
+        for k, c in kinds.items():
+            base[&quot;date&quot; if k.startswith(&quot;date:&quot;) else k] += c
+        if base:
+            top_kind, top_n = base.most_common(1)[0]
+        else:
+            top_kind, top_n = &quot;empty&quot;, 0
+        if set(base) &lt;= {&quot;int&quot;, &quot;float&quot;} and base:
+            ctype = &quot;float&quot; if &quot;float&quot; in base else &quot;int&quot;
+        elif set(base) &lt;= {&quot;int&quot;, &quot;float&quot;, &quot;formatted_number&quot;} and base:
+            ctype = &quot;numtext&quot;
+        else:
+            ctype = top_kind
+        col = {
+            &quot;name&quot;: name, &quot;type&quot;: ctype, &quot;rows&quot;: len(raw), &quot;missing&quot;: missing,
+            &quot;missing_pct&quot;: round(100.0 * missing / len(raw), 1) if raw else 0.0,
+            &quot;distinct&quot;: len(set(v.strip() for v in present)),
+            &quot;top_values&quot;: Counter(v.strip() for v in present).most_common(3),
+            &quot;issues&quot;: [],
+        }
+
+        def add(sev, code, msg):
+            col[&quot;issues&quot;].append(code)
+            issues.append((sev, name, code, msg))
+
+        numeric_like = base.get(&quot;int&quot;, 0) + base.get(&quot;float&quot;, 0)
+        others = {k: c for k, c in kinds.items() if k not in (&quot;int&quot;, &quot;float&quot;)}
+        if numeric_like and others and numeric_like &gt;= sum(others.values()):
+            bad = [v.strip() for v in present if classify(v) not in (&quot;int&quot;, &quot;float&quot;)]
+            add(&quot;HIGH&quot;, &quot;mixed-types&quot;,
+                f&quot;Mostly numeric but {len(bad)} non-numeric value(s), e.g. {bad[:3]}&quot;)
+        elif base.get(&quot;formatted_number&quot;) and ctype in (&quot;numtext&quot;, &quot;formatted_number&quot;):
+            add(&quot;MEDIUM&quot;, &quot;formatted-numbers&quot;,
+                f&quot;{base[&#x27;formatted_number&#x27;]} value(s) use thousands separators or currency symbols&quot;)
+        date_formats = {k[5:] for k in kinds if k.startswith(&quot;date:&quot;)}
+        if len(date_formats) &gt; 1:
+            add(&quot;MEDIUM&quot;, &quot;date-formats&quot;, f&quot;Several date formats: {sorted(date_formats)}&quot;)
+        if ctype == &quot;date&quot; and &quot;DD/MM/YYYY or MM/DD/YYYY&quot; in date_formats:
+            add(&quot;LOW&quot;, &quot;ambiguous-dates&quot;, &quot;Slash dates are ambiguous (day/month order); confirm the format&quot;)
+        spaced = [v for v in present if v != v.strip()]
+        if spaced:
+            add(&quot;MEDIUM&quot;, &quot;surrounding-spaces&quot;, f&quot;{len(spaced)} value(s) have leading or trailing spaces&quot;)
+        if ctype == &quot;string&quot; and present:
+            groups = {}
+            for v in present:
+                groups.setdefault(v.strip().lower(), set()).add(v.strip())
+            variants = [sorted(s) for s in groups.values() if len(s) &gt; 1]
+            if variants:
+                add(&quot;LOW&quot;, &quot;case-variants&quot;, f&quot;Same value with different casing: {variants[:3]}&quot;)
+        if col[&quot;missing_pct&quot;] &gt; 50:
+            add(&quot;LOW&quot;, &quot;mostly-empty&quot;, f&quot;{col[&#x27;missing_pct&#x27;]}% missing (fine if optional)&quot;)
+        elif missing:
+            add(&quot;LOW&quot;, &quot;missing&quot;, f&quot;{missing} missing value(s)&quot;)
+        if ctype in (&quot;int&quot;, &quot;float&quot;):
+            nums = [float(v) for v in present if classify(v) in (&quot;int&quot;, &quot;float&quot;)]
+            if nums:
+                fmt = int if ctype == &quot;int&quot; else float
+                col[&quot;min&quot;], col[&quot;max&quot;] = fmt(min(nums)), fmt(max(nums))
+            if len(nums) &gt;= 4:
+                q1, q3 = quartiles(nums)
+                iqr = q3 - q1
+                lo, hi = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+                outliers = [n for n in nums if n &lt; lo or n &gt; hi]
+                if outliers:
+                    add(&quot;LOW&quot;, &quot;outliers&quot;, f&quot;{len(outliers)} outlier(s) outside [{lo:g}, {hi:g}]: {outliers[:3]}&quot;)
+        elif ctype == &quot;date&quot; and present:
+            iso = sorted(v.strip()[:10] for v in present if classify(v).startswith(&quot;date:YYYY&quot;))
+            if iso:
+                col[&quot;min&quot;], col[&quot;max&quot;] = iso[0], iso[-1]
+        if len(present) &gt; 1 and col[&quot;distinct&quot;] == 1:
+            add(&quot;LOW&quot;, &quot;constant&quot;, &quot;Every non-missing value is the same&quot;)
+        columns.append(col)
+
+    key_report = None
+    if key:
+        names_clean = [h.strip() for h in header]
+        if key not in names_clean:
+            issues.append((&quot;HIGH&quot;, key, &quot;key-missing&quot;, f&quot;Key column &#x27;{key}&#x27; not found in header&quot;))
+        else:
+            k = names_clean.index(key)
+            vals = [r[k].strip() for r in good]
+            empty = sum(1 for v in vals if v.lower() in MISSING)
+            dups = {v: c for v, c in Counter(vals).items() if c &gt; 1 and v.lower() not in MISSING}
+            key_report = {&quot;column&quot;: key, &quot;empty&quot;: empty, &quot;duplicate_keys&quot;: dups}
+            if empty:
+                issues.append((&quot;HIGH&quot;, key, &quot;key-empty&quot;, f&quot;{empty} row(s) have an empty key&quot;))
+            if dups:
+                issues.append((&quot;HIGH&quot;, key, &quot;key-duplicate&quot;, f&quot;{len(dups)} key value(s) repeat: {dict(list(dups.items())[:5])}&quot;))
+    return {&quot;rows&quot;: len(rows), &quot;columns&quot;: len(header), &quot;column_profiles&quot;: columns,
+            &quot;key&quot;: key_report, &quot;issues&quot;: [dict(zip((&quot;severity&quot;, &quot;column&quot;, &quot;code&quot;, &quot;message&quot;), i)) for i in issues]}
+
+
+def render(report):
+    out = [f&quot;Rows: {report[&#x27;rows&#x27;]}  Columns: {report[&#x27;columns&#x27;]}&quot;, &quot;&quot;,
+           &quot;Column            Type     Missing%  Distinct  Range / top values&quot;]
+    for c in report[&quot;column_profiles&quot;]:
+        rng = f&quot;{c[&#x27;min&#x27;]} .. {c[&#x27;max&#x27;]}&quot; if &quot;min&quot; in c else &quot;, &quot;.join(f&quot;{v} ({n})&quot; for v, n in c[&quot;top_values&quot;])
+        out.append(f&quot;{c[&#x27;name&#x27;][:17]:&lt;17} {c[&#x27;type&#x27;][:8]:&lt;8} {c[&#x27;missing_pct&#x27;]:&gt;8}  {c[&#x27;distinct&#x27;]:&gt;8}  {rng[:60]}&quot;)
+    out.append(&quot;&quot;)
+    order = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2}
+    for i in sorted(report[&quot;issues&quot;], key=lambda x: order[x[&quot;severity&quot;]]):
+        out.append(f&quot;[{i[&#x27;severity&#x27;]}] {i[&#x27;column&#x27;]}: {i[&#x27;code&#x27;]}: {i[&#x27;message&#x27;]}&quot;)
+    counts = Counter(i[&quot;severity&quot;] for i in report[&quot;issues&quot;])
+    out.append(&quot;&quot;)
+    out.append(f&quot;{counts.get(&#x27;HIGH&#x27;, 0)} HIGH, {counts.get(&#x27;MEDIUM&#x27;, 0)} MEDIUM, {counts.get(&#x27;LOW&#x27;, 0)} LOW&quot;)
+    out.append(&quot;Heuristic profile: confirm findings with references/quality-dimensions.md.&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Profile a CSV file for data quality problems.&quot;)
+    ap.add_argument(&quot;file&quot;, help=&quot;CSV path, or - for stdin&quot;)
+    ap.add_argument(&quot;--key&quot;, help=&quot;column that should be unique and non-empty&quot;)
+    ap.add_argument(&quot;--delimiter&quot;, default=None, help=&quot;field delimiter (default: sniffed)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;, help=&quot;print JSON instead of text&quot;)
+    a = ap.parse_args(argv)
+    try:
+        text = sys.stdin.read() if a.file == &quot;-&quot; else open(a.file, encoding=&quot;utf-8&quot;, newline=&quot;&quot;).read()
+    except (OSError, UnicodeDecodeError) as e:
+        print(f&quot;error: cannot read {a.file}: {e}&quot;, file=sys.stderr)
+        return 2
+    if not text.strip():
+        print(&quot;error: file is empty&quot;, file=sys.stderr)
+        return 2
+    delim = a.delimiter
+    if delim is None:
+        try:
+            delim = csv.Sniffer().sniff(text[:4096], delimiters=&quot;,;\t|&quot;).delimiter
+        except csv.Error:
+            delim = &quot;,&quot;
+    all_rows = [r for r in csv.reader(io.StringIO(text), delimiter=delim) if any(c.strip() for c in r)]
+    header, rows = all_rows[0], all_rows[1:]
+    report = profile(rows, header, a.key)
+    report[&quot;delimiter&quot;] = delim
+    print(json.dumps(report, indent=2) if a.json else render(report))
+    return 1 if any(i[&quot;severity&quot;] == &quot;HIGH&quot; for i in report[&quot;issues&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/csv-data-quality-profiler',TI="CSV Data Quality Profiler";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

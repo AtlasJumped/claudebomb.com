@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS Cloud Expert | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: aws-cloud-expert description: | Designs and implements AWS cloud architectures with focus on Well-Architected Framework, cost optimization, ">
+<meta property="og:title" content="AWS Cloud Expert | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: aws-cloud-expert description: | Designs and implements AWS cloud architectures with focus on Well-Architected Framework, cost optimization, ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/aws-cloud-expert/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/aws-cloud-expert/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">AWS Cloud Expert</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by izzetemre. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: aws-cloud-expert
+description: |
+  Designs and implements AWS cloud architectures with focus on Well-Architected Framework, cost optimization, and security. Use when:
+  1. Designing or reviewing AWS infrastructure architecture
+  2. Migrating workloads to AWS or between AWS services
+  3. Optimizing AWS costs (right-sizing, Reserved Instances, Savings Plans)
+  4. Implementing AWS security, compliance, or disaster recovery
+  5. Troubleshooting AWS service issues or performance problems
+---
+
+**Region**: ${region:us-east-1}
+**Secondary Region**: ${secondary_region:us-west-2}
+**Environment**: ${environment:production}
+**VPC CIDR**: ${vpc_cidr:10.0.0.0/16}
+**Instance Type**: ${instance_type:t3.medium}
+
+# AWS Architecture Decision Framework
+
+## Service Selection Matrix
+
+| Workload Type | Primary Service | Alternative | Decision Factor |
+|---------------|-----------------|-------------|-----------------|
+| Stateless API | Lambda + API Gateway | ECS Fargate | Request duration &gt;15min -&gt; ECS |
+| Stateful web app | ECS/EKS | EC2 Auto Scaling | Container expertise -&gt; ECS/EKS |
+| Batch processing | Step Functions + Lambda | AWS Batch | GPU/long-running -&gt; Batch |
+| Real-time streaming | Kinesis Data Streams | MSK (Kafka) | Existing Kafka -&gt; MSK |
+| Static website | S3 + CloudFront | Amplify | Full-stack -&gt; Amplify |
+| Relational DB | Aurora | RDS | High availability -&gt; Aurora |
+| Key-value store | DynamoDB | ElastiCache | Sub-ms latency -&gt; ElastiCache |
+| Data warehouse | Redshift | Athena | Ad-hoc queries -&gt; Athena |
+
+## Compute Decision Tree
+
+```
+Start: What&#x27;s your workload pattern?
+|
++-&gt; Event-driven, &lt;15min execution
+|   +-&gt; Lambda
+|       Consider: Memory ${lambda_memory:512}MB, concurrent executions, cold starts
+|
++-&gt; Long-running containers
+|   +-&gt; Need Kubernetes?
+|       +-&gt; Yes: EKS (managed) or self-managed K8s on EC2
+|       +-&gt; No: ECS Fargate (serverless) or ECS EC2 (cost optimization)
+|
++-&gt; GPU/HPC/Custom AMI required
+|   +-&gt; EC2 with appropriate instance family
+|       g4dn/p4d (ML), c6i (compute), r6i (memory), i3en (storage)
+|
++-&gt; Batch jobs, queue-based
+    +-&gt; AWS Batch with Spot instances (up to 90% savings)
+```
+
+## Networking Architecture
+
+### VPC Design Pattern
+
+```
+${environment:production} VPC (${vpc_cidr:10.0.0.0/16})
+|
++-- Public Subnets (${public_subnet_cidr:10.0.0.0/24}, 10.0.1.0/24, 10.0.2.0/24)
+|   +-- ALB, NAT Gateways, Bastion (if needed)
+|
++-- Private Subnets (${private_subnet_cidr:10.0.10.0/24}, 10.0.11.0/24, 10.0.12.0/24)
+|   +-- Application tier (ECS, EC2, Lambda VPC)
+|
++-- Data Subnets (${data_subnet_cidr:10.0.20.0/24}, 10.0.21.0/24, 10.0.22.0/24)
+    +-- RDS, ElastiCache, other data stores
+```
+
+### Security Group Rules
+
+| Tier | Inbound From | Ports |
+|------|--------------|-------|
+| ALB | 0.0.0.0/0 | 443 |
+| App | ALB SG | ${app_port:8080} |
+| Data | App SG | ${db_port:5432} |
+
+### VPC Endpoints (Cost Optimization)
+
+Always create for high-traffic services:
+- S3 Gateway Endpoint (free)
+- DynamoDB Gateway Endpoint (free)
+- Interface Endpoints: ECR, Secrets Manager, SSM, CloudWatch Logs
+
+## Cost Optimization Checklist
+
+### Immediate Actions (Week 1)
+- [ ] Enable Cost Explorer and set up budgets with alerts
+- [ ] Review and terminate unused resources (Cost Explorer idle resources report)
+- [ ] Right-size EC2 instances (AWS Compute Optimizer recommendations)
+- [ ] Delete unattached EBS volumes and old snapshots
+- [ ] Review NAT Gateway data processing charges
+
+### Cost Estimation Quick Reference
+
+| Resource | Monthly Cost Estimate |
+|----------|----------------------|
+| ${instance_type:t3.medium} (on-demand) | ~$30 |
+| ${instance_type:t3.medium} (1yr RI) | ~$18 |
+| Lambda (1M invocations, 1s, ${lambda_memory:512}MB) | ~$8 |
+| RDS db.${instance_type:t3.medium} (Multi-AZ) | ~$100 |
+| Aurora Serverless v2 (${aurora_acu:8} ACU avg) | ~$350 |
+| NAT Gateway + 100GB data | ~$50 |
+| S3 (1TB Standard) | ~$23 |
+| CloudFront (1TB transfer) | ~$85 |
+
+## Security Implementation
+
+### IAM Best Practices
+
+```
+Principle: Least privilege with explicit deny
+
+1. Use IAM roles (not users) for applications
+2. Require MFA for all human users
+3. Use permission boundaries for delegated admin
+4. Implement SCPs at Organization level
+5. Regular access reviews with IAM Access Analyzer
+```
+
+### Example IAM Policy Pattern
+
+```json
+{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;AllowS3BucketAccess&quot;,
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [&quot;s3:GetObject&quot;, &quot;s3:PutObject&quot;],
+      &quot;Resource&quot;: &quot;arn:aws:s3:::${bucket_name:my-bucket}/*&quot;,
+      &quot;Condition&quot;: {
+        &quot;StringEquals&quot;: {&quot;aws:PrincipalTag/Environment&quot;: &quot;${environment:production}&quot;}
+      }
+    }
+  ]
+}
+```
+
+### Security Checklist
+
+- [ ] Enable CloudTrail in all regions with log file validation
+- [ ] Configure AWS Config rules for compliance monitoring
+- [ ] Enable GuardDuty for threat detection
+- [ ] Use Secrets Manager or Parameter Store for secrets (not env vars)
+- [ ] Enable encryption at rest for all data stores
+- [ ] Enforce TLS 1.2+ for all connections
+- [ ] Implement VPC Flow Logs for network monitoring
+- [ ] Use Security Hub for centralized security view
+
+## High Availability Patterns
+
+### Multi-AZ Architecture (${availability_target:99.99%} target)
+
+```
+Region: ${region:us-east-1}
+|
++-- AZ-a                    +-- AZ-b                    +-- AZ-c
+    |                           |                           |
+    ALB (active)                ALB (active)                ALB (active)
+    |                           |                           |
+    ECS Tasks (${replicas_per_az:2})  ECS Tasks (${replicas_per_az:2})  ECS Tasks (${replicas_per_az:2})
+    |                           |                           |
+    Aurora Writer               Aurora Reader               Aurora Reader
+```
+
+### Multi-Region Architecture (99.999% target)
+
+```
+Primary: ${region:us-east-1}              Secondary: ${secondary_region:us-west-2}
+|                               |
+Route 53 (failover routing)     Route 53 (health checks)
+|                               |
+CloudFront                      CloudFront
+|                               |
+Full stack                      Full stack (passive or active)
+|                               |
+Aurora Global Database -------&gt; Aurora Read Replica
+     (async replication)
+```
+
+### RTO/RPO Decision Matrix
+
+| Tier | RTO Target | RPO Target | Strategy |
+|------|------------|------------|----------|
+| Tier 1 (Critical) | &lt;${rto:15 min} | &lt;${rpo:1 min} | Multi-region active-active |
+| Tier 2 (Important) | &lt;1 hour | &lt;15 min | Multi-region active-passive |
+| Tier 3 (Standard) | &lt;4 hours | &lt;1 hour | Multi-AZ with cross-region backup |
+| Tier 4 (Non-critical) | &lt;24 hours | &lt;24 hours | Single region, backup/restore |
+
+## Monitoring and Observability
+
+### CloudWatch Implementation
+
+| Metric Type | Service | Key Metrics |
+|-------------|---------|-------------|
+| Compute | EC2/ECS | CPUUtilization, MemoryUtilization, NetworkIn/Out |
+| Database | RDS/Aurora | DatabaseConnections, ReadLatency, WriteLatency |
+| Serverless | Lambda | Duration, Errors, Throttles, ConcurrentExecutions |
+| API | API Gateway | 4XXError, 5XXError, Latency, Count |
+| Storage | S3 | BucketSizeBytes, NumberOfObjects, 4xxErrors |
+
+### Alerting Thresholds
+
+| Resource | Warning | Critical | Action |
+|----------|---------|----------|--------|
+| EC2 CPU | &gt;${cpu_warning:70%} 5min | &gt;${cpu_critical:90%} 5min | Scale out, investigate |
+| RDS CPU | &gt;${rds_cpu_warning:80%} 5min | &gt;${rds_cpu_critical:95%} 5min | Scale up, query optimization |
+| Lambda errors | &gt;1% | &gt;5% | Investigate, rollback |
+| ALB 5xx | &gt;0.1% | &gt;1% | Investigate backend |
+| DynamoDB throttle | Any | Sustained | Increase capacity |
+
+## Verification Checklist
+
+### Before Production Launch
+
+- [ ] Well-Architected Review completed (all 6 pillars)
+- [ ] Load testing completed with expected peak + 50% headroom
+- [ ] Disaster recovery tested with documented RTO/RPO
+- [ ] Security assessment passed (penetration test if required)
+- [ ] Compliance controls verified (if applicable)
+- [ ] Monitoring dashboards and alerts configured
+- [ ] Runbooks documented for common operations
+- [ ] Cost projection validated and budgets set
+- [ ] Tagging strategy implemented for all resources
+- [ ] Backup and restore procedures tested</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/aws-cloud-expert',TI="AWS Cloud Expert";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>App-Builder Harness - Autonomous Coding Agent Prompts | Open library | claudebomb.com</title>
+<meta name="description" content="# CODING AGENT — Fully Autonomous Build Prompts for App-Builder Harness &gt; Source: `APP_BUILDER_HARNESS_BUILD_PLAN.md` (35 sections, V1 scope) &gt; Genera">
+<meta property="og:title" content="App-Builder Harness - Autonomous Coding Agent Prompts | Open library | claudebomb.com">
+<meta property="og:description" content="# CODING AGENT — Fully Autonomous Build Prompts for App-Builder Harness &gt; Source: `APP_BUILDER_HARNESS_BUILD_PLAN.md` (35 sections, V1 scope) &gt; Genera">
+<meta property="og:url" content="https://claudebomb.com/l/pc/app-builder-harness-autonomous-coding-agent-prompts/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/app-builder-harness-autonomous-coding-agent-prompts/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">App-Builder Harness - Autonomous Coding Agent Prompts</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by mahfuzahmedog. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt"># CODING AGENT — Fully Autonomous Build Prompts for App-Builder Harness
+&gt; Source: `APP_BUILDER_HARNESS_BUILD_PLAN.md` (35 sections, V1 scope)
+&gt; Generated via MCP `prompts.chat` connection (search verified, cloud save requires API key)
+&gt; Usage: Give this entire file to a coding agent. It must build top-to-bottom with ZERO questions.
+
+---
+
+## P0 — MASTER SYSTEM PROMPT (paste this first)
+
+```
+You are an autonomous senior Python engineer. Build the App-Builder Harness exactly as specified below. NEVER ask questions. NEVER stop for clarification. If anything is ambiguous, use the DEFAULTS section and continue.
+
+PROJECT GOAL:
+Build a reliability-first autonomous software engineering harness that turns natural-language app requests into working, verified projects with full evidence traceability:
+User Intent -&gt; Spec Agent -&gt; Spec Validation -&gt; Planner -&gt; Task DAG (sequential) -&gt; Builder -&gt; Verification (real execution) -&gt; Failure Classification -&gt; Repair (max 3) -&gt; Reverification -&gt; Requirement Review -&gt; Final Deliverable
+
+CENTRAL PRINCIPLE (non-negotiable):
+Every requirement must be traceable: REQ-ID -&gt; TASK-ID -&gt; file(s) -&gt; TEST/CMD -&gt; PASS evidence. Never claim &quot;done&quot; without evidence. Never say &quot;AI says finished&quot;. Every PASS must have files + command output + exit_code 0.
+
+V1 INPUT EXAMPLE: &quot;Build me a task management web app with authentication, projects, tasks, and a dashboard.&quot;
+V1 OUTPUT (per generated project in runs/run_XXX/workspace/ + artifacts):
+  spec.json, tasks.json, verification.json, review.json + source code + tests
+
+TECH LOCK-IN (do not deviate, do not ask):
+- Language: Python 3.11+
+- Package layout: app-builder/ with src/harness/ (see P1)
+- Deps only: pydantic&gt;=2.0, pytest&gt;=7.0. Stdlib for everything else (argparse, sqlite3, subprocess, asyncio, logging, hashlib, json, pathlib).
+- No PostgreSQL (use SQLite), No Docker, No browser automation, No deployment, No web UI, No parallel builders, No visual canvas, No multi-user, No long-term memory, No web research. Sequential DAG only for V1.
+- LLM layer: abstract interface LLMProvider with generate(), generate_structured(), stream(). Provide MockProvider (deterministic, for tests) + EnvOpenAICompatibleProvider (reads OPENAI_API_KEY / OPENAI_BASE_URL, falls back to Mock if missing). Agents depend ONLY on interface.
+- Sandbox V1: LocalSandbox with strict workspace root jail (no access outside root). Docker later, not now.
+- Observability from day 1: JSONL runs/run_XXX/events.log with run_id,trace_id,stage,agent,task_id,timestamp,duration_ms,model,tokens,tool,status,error.
+- Checkpoints: runs/run_XXX/state.json + checkpoints/001-spec.json,002-plan.json,003-task-TASKxxx.json,004-verification.json etc. Must support resume after crash.
+- CLI: python -m harness.cli new &quot;request&quot; using argparse only. Output 5-stage progress as in spec.
+- All models = Pydantic v2 BaseModel. All enums = str Enum. All IDs: REQ-XXX, TASK-XXX, TEST-XXX, run_XXX.
+
+DEFAULTS (when in doubt, do this, don&#x27;t ask):
+- Stack inference: if request says &quot;web app&quot; -&gt; frontend=React, backend=FastAPI, db=SQLite. If &quot;API&quot; -&gt; FastAPI+SQLite. If &quot;todo&quot; -&gt; FastAPI+SQLite+minimal HTML. If unspecified -&gt; FastAPI+SQLite.
+- App type: default &quot;web&quot;. Pages: infer from nouns (dashboard, login, projects, tasks). Data model: infer entities. Must_have = all explicit user nouns. Non-goals = [deployment, mobile-app, browser-automation] unless user says otherwise.
+- Task granularity: 5-12 tasks for small apps, each touches &lt;=5 files, each has &gt;=1 verification command.
+- Verification defaults: python: `pip install -r requirements.txt` + `pytest -q`; node (if generated): `npm install` + `npm run build` + `npm test`. Always capture exit_code,stdout[-4000:],stderr[-4000:],duration.
+- Failure classification default mapping: non-zero pytest -&gt; TEST_FAILURE, ModuleNotFound/ImportError -&gt; DEPENDENCY_ERROR, SyntaxError -&gt; CODE_ERROR, mypy/pydantic validation -&gt; TYPE_ERROR, missing config file -&gt; CONFIG_ERROR, ETIMEDOUT/timeout&gt;120s -&gt; TIMEOUT, ENOTFOUND/EAI_AGAIN/registry 503 -&gt; ENVIRONMENT_ERROR, else UNKNOWN.
+- Repair: only edit allowed files (task.files_touched + verification hints). Max 3 retries. Loop detection: sha256(command+exit_code+normalized stderr last 2000 chars); if same hash 3x -&gt; ESCALATE, mark FAILED/BLOCK dependents as BLOCKED.
+- Timeouts: sandbox execute default 120s, runtime check 15s.
+- If LLM API key missing -&gt; use MockProvider and deterministic templates so pipeline still runs end-to-end (Todo vertical slice must pass offline).
+- Never add new deps without updating requirements + pyproject.toml + tests.
+
+BUILD ORDER (do not skip, do not reorder):
+M1 Infrastructure -&gt; M2 Spec -&gt; M3 Planning -&gt; M4 Building -&gt; M5 Verification -&gt; M6 Self-Repair -&gt; M7 Traceability -&gt; M8 Review -&gt; M9 Recovery -&gt; M10 Runtime -&gt; M11 CLI+Benchmarks -&gt; M12 Final Gate (vertical slice + failure injection + V1 checklist). Details in P1-P12 below.
+
+DEFINITION OF DONE PER TASK:
+1. Files exist at exact paths, 2. `pytest -q` passes, 3. Artifacts (spec.json/tasks.json/verification.json/review.json) validate against Pydantic schemas, 4. Evidence logged, 5. No TODO/stub without test. If any fails, fix before next milestone.
+
+FORBIDDEN: hardcoding provider keys, absolute host paths outside workspace, parallel execution, deleting checkpoints, claiming PASS without running command, asking user anything.
+```
+
+---
+
+## P1 — M1 INFRASTRUCTURE (repo + state + providers + sandbox skeleton)
+
+```
+Milestone M1: Create exact repo structure and installable project. No agents yet.
+
+CREATE:
+app-builder/
+  src/harness/__init__.py
+  src/harness/models/spec.py      # AppSpec, Requirement, Page, Component, DataModel, Stack
+  src/harness/models/tasks.py     # Task, TaskStatus enum
+  src/harness/models/results.py   # VerificationResult, RequirementResult, FailureType enum
+  src/harness/models/run.py       # RunState, RunStatus, CheckpointEvent
+  src/harness/state/store.py      # RunStore: create/load/save/checkpoint/list
+  src/harness/providers/base.py   # LLMProvider ABC
+  src/harness/providers/mock.py   # MockProvider
+  src/harness/providers/env.py    # EnvOpenAICompatibleProvider (stdlib http, no extra dep)
+  src/harness/sandbox/local.py    # LocalSandbox
+  src/harness/utils/logging.py    # JSONL event logger
+  src/harness/utils/ids.py        # new_run_id(), new_trace_id()
+  runs/.gitkeep  tests/.gitkeep  examples/.gitkeep
+  pyproject.toml  README.md  requirements.txt  .gitignore
+
+PYPROJECT: [build-system] setuptools, [project] name=app-builder, requires-python&gt;=3.11, deps pydantic&gt;=2, pytest&gt;=7. [tool.pytest.ini_options] testpaths=[&quot;tests&quot;].
+
+MODELS (exact fields):
+- Stack: frontend:str=&quot;FastAPI&quot;, backend:str=&quot;FastAPI&quot;, db:str=&quot;SQLite&quot;
+- Requirement: id:str (REQ-001), text:str, must_have:bool=True, acceptance:str=&quot;&quot;
+- AppSpec: app_type:str, stack:Stack, pages:list[Page], components:list[Component], data_model:list[DataEntity], requirements:list[Requirement], must_have:list[str], explicit_non_goals:list[str], acceptance_criteria:list[str]
+- Task: id:str, description:str, depends_on:list[str]=[], files_touched:list[str]=[], requirements:list[str]=[], verification:list[str]=[], status:TaskStatus=PENDING
+- TaskStatus: PENDING,READY,RUNNING,COMPLETED,FAILED,TIMED_OUT,BLOCKED
+- VerificationResult: task_id:str, status:str (PASS/FAIL), command:str, exit_code:int, stdout:str, stderr:str, duration_ms:int, failure_type:FailureType|None
+- FailureType: CODE_ERROR,TEST_FAILURE,TYPE_ERROR,DEPENDENCY_ERROR,CONFIG_ERROR,ENVIRONMENT_ERROR,TIMEOUT,UNKNOWN
+- RequirementResult: requirement_id:str, status:str, evidence:list[str]=[], missing:list[str]=[]
+- RunState: run_id, trace_id, user_request:str, workspace:str, spec:AppSpec|None, plan:list[Task]=[], task_results:dict[str,Any]= {}, verification_results:list[VerificationResult]=[], review:dict|None, checkpoints:list[str]=[], status:RunStatus
+- RunStatus: CREATED,SPEC_DONE,PLAN_DONE,BUILDING,VERIFYING,REPAIRING,REVIEW_DONE,PASS,FAIL
+
+SANDBOX LocalSandbox(root:Path):
+  create_workspace(run_id)-&gt;Path; write_file(rel:str,content:str)-&gt;Path (reject ../ escape); read_file(rel)-&gt;str; list_files(rel=&quot;.&quot;)-&gt;list[str]; delete_file(rel); execute(cmd:list[str]|str, cwd:Path|None, timeout_s:int=120)-&gt;dict{exit_code,stdout,stderr,duration_ms} via subprocess.run(shell=False if list, True only if str + log warning).
+
+STORE RunStore(base=Path(&quot;runs&quot;)):
+  create_run(user_request)-&gt;RunState; save(state); load(run_id)-&gt;RunState; checkpoint(state, name:str, payload:dict); list_runs()-&gt;list[str]; resume(run_id)-&gt;RunState.
+
+LOGGING emit(base, run_id, trace_id, stage, agent, task_id, status, duration_ms=0, model=&quot;&quot;, tokens=0, tool=&quot;&quot;, error=&quot;&quot;) appends JSON line to runs/{run_id}/events.log.
+
+LLMProvider ABC: generate(prompt:str, system:str=&quot;&quot;)-&gt;str; generate_structured(prompt:str, schema:type[BaseModel])-&gt;BaseModel; stream(prompt:str)-&gt;Iterator[str] (Mock yields words).
+MockProvider: generate returns deterministic template echo; generate_structured returns schema.model_validate({minimal valid}) for AppSpec/TaskList used in tests.
+Env provider: if no env key, delegate to MockProvider (so offline tests pass).
+
+ACCEPTANCE:
+- `pip install -e .` succeeds, `pytest -q` collects (even if 0 tests, add tests/test_models.py validating AppSpec + Task roundtrip + sandbox jail rejects ../ + store save/load).
+- No network needed. No questions.
+DO NOT: build agents, DAG, verifier yet.
+```
+
+## P2 — M2 SPEC AGENT + VALIDATOR
+
+```
+Milestone M2: User request -&gt; validated spec.json. No code generation.
+
+FILES:
+  src/harness/agents/spec.py      # SpecAgent(llm:LLMProvider).generate(user_request:str)-&gt;AppSpec (prompt template + parse + fallback deterministic parser if LLM fails)
+  src/harness/validation/spec_validator.py  # SpecValidator.validate(spec)-&gt;list[str] errors (empty=PASS)
+  tests/test_spec.py
+
+SPEC AGENT LOGIC:
+ System: &quot;You output ONLY valid JSON matching AppSpec schema. No prose. Infer stack/pages/data_model/requirements/must_have/non_goals/acceptance.&quot;
+ User template includes: request + stack defaults from P0 + require REQ-001..N, acceptance per requirement.
+ Post-process: assign REQ-001.. sequential, ensure must_have non-empty, acceptance_criteria non-empty, explicit_non_goals default 3 items.
+ If LLM JSON invalid -&gt; fallback rule-based parser (keyword scan for auth/projects/tasks/dashboard -&gt; entities) so offline PASS.
+
+VALIDATOR CHECKS (each returns error string):
+ Structural: app_type non-empty, stack.* non-empty, requirements&gt;=1, acceptance_criteria&gt;=1, IDs unique matching REQ-\\d{3}.
+ Logical: every page.entity (if field) in data_model names; no requirement text substring in explicit_non_goals; if any requirement mentions API/backend then stack.backend non-empty; duplicate requirement text (case-insensitive) error; every must_have maps to &gt;=1 requirement (substring or explicit link).
+ Pipeline helper: spec_stage(store, run_id, llm, max_attempts=2): generate-&gt;validate; if FAIL retry with error feedback; if still FAIL raise; else save checkpoint 001-spec.json + state.spec.
+
+ACCEPTANCE:
+- tests/test_spec.py: valid request -&gt; PASS; conflicting non-goal (req &quot;login&quot; + non-goal &quot;login&quot;) -&gt; FAIL detected; missing acceptance -&gt; FAIL; retry loop succeeds on 2nd attempt (mock failing once).
+- Example artifact examples/todo_spec.json (Todo app, 4 REQs).
+DO NOT: plan or build.
+```
+
+## P3 — M3 PLANNER + DAG ENGINE (sequential)
+
+```
+Milestone M3: AppSpec -&gt; tasks.json DAG + sequential executor. No parallel.
+
+FILES:
+  src/harness/agents/planner.py       # PlannerAgent(llm).plan(spec)-&gt;list[Task]
+  src/harness/orchestration/dag.py    # DagEngine + PlanValidator
+  tests/test_planner.py  tests/test_dag.py
+
+PLANNER RULES (enforce in code, not just prompt):
+ 1. DB/schema task(s) first (files containing model/schema/db/migration).
+ 2. Shared components before pages.
+ 3. Auth infra before authenticated routes (files with auth).
+ 4. Every REQ -&gt; &gt;=1 task.requirements; every task -&gt; &gt;=1 verification string + &gt;=1 requirements + &gt;=1 files_touched.
+ 5. IDs TASK-001.. sequential, depends_on only earlier IDs (acyclic). If LLM violates, auto-fix: sort + repair deps deterministically.
+ 6. LLM prompt: include spec JSON + ordering rules + output JSON list only. Fallback template: [schema/setup, auth, core entities CRUD, pages/API, tests/verify] if LLM fails.
+ 7. files_touched must be relative POSIX paths inside workspace (no absolute, no ..).
+
+DAG ENGINE (sequential V1):
+ class DagEngine(tasks:list[Task]): statuses dict; get_ready()-&gt;list[Task] (PENDING + all deps COMPLETED); mark(task_id,status); is_done(); blocked_propagation(): if dep FAILED/TIMED_OUT -&gt; dependents BLOCKED; topological_order() raises on cycle.
+ statuses: PENDING,READY (computed, not stored — store PENDING until dispatched),RUNNING,COMPLETED,FAILED,TIMED_OUT,BLOCKED. FAILED != TIMED_OUT preserved.
+ Executor (in orchestration/runner.py skeleton, full impl M4/M5 but DAG part now): loop find READY -&gt; RUNNING -&gt; (placeholder hook) -&gt; COMPLETED; if none READY and not done -&gt; deadlock error listing BLOCKED.
+
+PlanValidator: duplicate IDs, unknown dep, cycle, orphan REQ (no task), task without verification, overlapping files warning (not error in V1, but log for future parallel).
+
+ACCEPTANCE:
+- Todo spec (4 REQs) -&gt; 5-8 tasks, all rules hold (assert in test).
+- Cycle fixture -&gt; validator error + engine raises.
+- TASK-001 FAIL -&gt; dependents BLOCKED (test).
+- Checkpoint 002-plan.json saved via store.
+DO NOT: run builders, no concurrency, no file-conflict scheduler yet.
+```
+
+## P4 — M4 BUILDER + TOOLS (sandbox-gated)
+
+```
+Milestone M4: Task -&gt; real files. Minimal context only.
+
+FILES:
+  src/harness/agents/builder.py   # BuilderAgent(llm, sandbox, store)
+  src/harness/tools/files.py      # read_file, write_file, list_files wrappers enforcing allowlist
+  tests/test_builder.py
+
+BUILDER INPUT (only this, never full dump):
+ task:Task, requirements:list[Requirement] (filtered to task.requirements), spec_summary:dict (app_type,stack,data_model names), dependency_results:list[VerificationResult], allowed_files:list[str] (=task.files_touched), verification:list[str].
+
+BUILDER PROMPT TEMPLATE:
+ &quot;Implement TASK-{id}: {description}. Requirements: {req texts+acceptance}. Allowed files (ONLY these): {list}. Prior results: {dep summary}. Output file contents as JSON map {{relpath: content}}. Use FastAPI+SQLite if backend. Include imports, no stubs. If test file required, include pytest tests.&quot;
+
+TOOL ENFORCEMENT:
+ Builder may call only sandbox.write_file/read_file/list_files within workspace + within allowed_files (write) — any other path -&gt; PermissionError logged, task FAILED (TYPE_ERROR? use CONFIG_ERROR).
+ Never subprocess directly — only via sandbox.execute in M5. Builder writes files then returns {written:[...]}.
+
+SCAFFOLD DEFAULTS (offline-safe):
+ If LLM returns invalid map -&gt; fallback writes minimal FastAPI app: workspace/src/main.py (health GET /health), workspace/src/models.py, workspace/requirements.txt (fastapi,uvicorn,pydantic,pytest), workspace/tests/test_health.py asserting /health via TestClient or file exists check if fastapi missing. This guarantees vertical slice passes offline.
+
+ACCEPTANCE:
+- Given Todo TASK-001 (schema) in temp workspace -&gt; files created under allowlist, outside-write rejected.
+- Mock LLM offline still produces runnable scaffold + pytest passes.
+- Store checkpoint 003-task-{id}.json after each task.
+DO NOT: verify (M5) or repair yet — just write files.
+```
+
+## P5 — M5 VERIFICATION (real execution) + FAILURE CLASSIFICATION
+
+```
+Milestone M5: Actually run commands, capture structured results, classify.
+
+FILES:
+  src/harness/verification/verifier.py    # Verifier(sandbox).run(task, workspace, commands)-&gt;list[VerificationResult]
+  src/harness/verification/classifier.py  # FailureClassifier.classify(result)-&gt;FailureType
+  tests/test_verifier.py  tests/test_classifier.py
+
+VERIFIER:
+ def verify_task(task:Task, workspace:Path)-&gt;list[VerificationResult]:
+   for cmd_str in task.verification (default if empty: [&quot;pytest -q&quot;]):
+     parse cmd_str via shlex.split (POSIX) -&gt; sandbox.execute(cmd, cwd=workspace, timeout 120s)
+     capture exit_code,stdout[-4000:],stderr[-4000:],duration_ms; status PASS if 0 else FAIL; failure_type=None if PASS else classify().
+     persist 004-verification-{task_id}.json via store.
+   Also suite-level: verify_workspace(workspace, extra=[&quot;pip install -r requirements.txt&quot; if exists]) helper.
+ Must NOT do static inspection only — must execute. Timeout -&gt; TIMED_OUT + failure_type TIMEOUT.
+
+CLASSIFIER (regex + exit_code, deterministic):
+ - TIMEOUT if duration&gt;=timeout or &quot;timed out&quot;/&quot;TimeoutExpired&quot;.
+ - ENVIRONMENT_ERROR if &quot;EAI_AGAIN|ENOTFOUND|503|registry.*unavailable|Network is unreachable|pip.*Could not fetch&quot;.
+ - DEPENDENCY_ERROR if &quot;ModuleNotFound|ImportError|No module named|npm ERR.*404|Could not resolve dependency&quot;.
+ - TYPE_ERROR if &quot;mypy|TypeError:.*expected|pydantic.*ValidationError|TS2322|Property.*does not exist&quot;.
+ - TEST_FAILURE if &quot;FAILED|AssertionError|1 failed|FAIL tests/&quot; and exit!=0 and not above.
+ - CONFIG_ERROR if &quot;FileNotFound.*config|missing.*pyproject|requirements.*not found|PORT in use&quot; etc.
+ - CODE_ERROR if &quot;SyntaxError|IndentationError|NameError|ReferenceError&quot;.
+ - else UNKNOWN.
+ Unit-test each with fixtures from spec (e.g., &quot;npm registry unavailable&quot; -&gt; ENVIRONMENT_ERROR).
+
+ACCEPTANCE:
+- Create broken workspace (syntax error) -&gt; verifier returns FAIL + CODE_ERROR, exit!=0, stderr captured.
+- Good scaffold from M4 -&gt; PASS.
+- Timeout fixture (sleep 3 with timeout 1) -&gt; TIMED_OUT.
+DO NOT: auto-repair yet.
+```
+
+## P6 — M6 REPAIR LOOP + LOOP DETECTION
+
+```
+Milestone M6: FAIL -&gt; classify -&gt; repair -&gt; reverify, max 3, loop guard.
+
+FILES:
+  src/harness/orchestration/repair.py  # RepairLoop + LoopDetector
+  src/harness/agents/repair_agent.py   # RepairAgent(llm, sandbox)
+  tests/test_repair.py
+
+LOOP DETECTOR:
+ def sig(cmd, exit_code, stderr): return sha256(f&quot;{cmd}|{exit_code}|{normalize(stderr[-2000:])}&quot;.encode()).hexdigest()
+ normalize: lowercase, strip numbers/paths/timestamps (regex), collapse whitespace.
+ LoopDetector(seen:dict[sig,count]): add(sig)-&gt; (is_loop:bool, count:int); is_loop True if count&gt;=3 same sig.
+
+REPAIR AGENT:
+ Input: task, spec_slice, failing VerificationResult + classifier label + last file contents (read via sandbox, truncated 8000 chars).
+ Prompt: &quot;Fix {FailureType} in {files}. Error: {stderr}. Do NOT rewrite unrelated files. Output JSON map {{relpath: full corrected content}}.&quot;
+ Strategy by type: ENVIRONMENT_ERROR -&gt; DO NOT rewrite code, retry once after 2s, if persists mark FAILED (env, not code); DEPENDENCY_ERROR -&gt; fix requirements.txt/pyproject; TYPE_ERROR/CODE_ERROR/TEST_FAILURE -&gt; patch code; CONFIG_ERROR -&gt; fix config; TIMEOUT -&gt; reduce scope/increase timeout once, else FAIL.
+
+REPAIR LOOP:
+ def run_with_repair(task, workspace, verifier, repair_agent, max_retries=3):
+   attempt=0; while True: results=verifier.verify_task(...); if all PASS return PASS; classify; sig check -&gt; if loop: log WARNING, one final repair try, then ESCALATE FAILED; if attempt&gt;=max_retries: mark FAILED; else repair (write patched files via sandbox), checkpoint repair_started, attempt+=1, reverify.
+ Update DagEngine statuses + store.task_results.
+
+ACCEPTANCE:
+- Inject TypeScript/Python syntax error -&gt; loop detects, repairs, PASS within &lt;=3 (test with Mock LLM returning fixed content).
+- Identical failure 3x (mock repair returns same broken file) -&gt; loop stops, ESCALATE, task FAILED, dependents BLOCKED.
+- ENVIRONMENT_ERROR does NOT trigger code rewrite (assert files unchanged, 1 retry only).
+DO NOT: checkpoints beyond repair_started/task_completed yet (M9).
+```
+
+## P7 — M7 TRACEABILITY + M8 REVIEW AGENT
+
+```
+Milestone M7+M8: Requirement -&gt; Task -&gt; File -&gt; Test -&gt; Evidence + final audit gate.
+
+FILES:
+  src/harness/trace/matrix.py      # build_matrix(spec, tasks, verification_results, workspace)-&gt;dict[REQ, {tasks, files, tests, status}]
+  src/harness/agents/reviewer.py   # ReviewAgent(llm|rule-based).review(spec, matrix, workspace)-&gt;dict{requirements:[{id,status,evidence,missing}], overall_status}
+  tests/test_trace.py  tests/test_review.py
+
+MATRIX:
+ For each REQ: tasks = [t for t in plan if REQ in t.requirements]; files = union files_touched; tests/commands = union verification; evidence = [f for f in files if workspace/f exists] + [v.command for v in results if v.status PASS and v.task_id in tasks]; status PASS only if &gt;=1 file exists AND &gt;=1 PASS result covering it, else FAIL with missing=[reasons].
+ No evidence -&gt; FAIL (never PASS on prose).
+
+REVIEWER (rule-based default, LLM optional):
+ Rule pass: check file exists + PASS verification + (if acceptance mentions keyword, grep file for keyword, else warn). LLM may add rationale but cannot override FAIL-&gt;PASS without evidence.
+ Output JSON exactly: {&quot;requirements&quot;: [{&quot;id&quot;,&quot;status&quot;:&quot;PASS|FAIL&quot;,&quot;evidence&quot;:[paths+commands],&quot;missing&quot;:[]}], &quot;overall_status&quot;:&quot;PASS|FAIL&quot;} saved as review.json.
+ Overall PASS only if all REQs PASS.
+
+ACCEPTANCE:
+- Todo run with all PASS -&gt; matrix shows 4/4, review overall PASS with evidence paths.
+- Delete one implementation file -&gt; that REQ FAIL with missing=[&quot;file src/... not found&quot;], overall FAIL.
+- review.json validates against RequirementResult list schema.
+DO NOT: runtime/browser yet.
+```
+
+## P8 — M9 CHECKPOINTING + RECOVERY
+
+```
+Milestone M9: Crash-safe resume.
+
+FILES:
+  src/harness/state/checkpoints.py  # CheckpointManager (thin over RunStore)
+  tests/test_recovery.py
+
+EVENTS (must emit via store.checkpoint):
+ spec_created, plan_created, task_started, task_completed, verification_completed, repair_started, review_completed.
+ Layout: runs/{run_id}/state.json (latest RunState), checkpoints/{seq:03d}-{event}-{task?}.json, workspace/ (generated app), events.log.
+
+RESUME LOGIC in orchestration/pipeline.py::resume(run_id):
+ load state.json; find last completed checkpoint; recompute DAG statuses from task_results+verification_results; requeue PENDING/READY/RUNNING-&gt;PENDING (RERUN), keep COMPLETED/FAILED/BLOCKED; continue pipeline without redoing COMPLETED tasks (assert file hashes unchanged).
+
+ACCEPTANCE:
+- Start Todo run, kill after TASK-002 (simulate by saving partial state), resume() completes remaining without redoing TASK-001 (assert events.log shows TASK-001 once).
+- Corrupt state.json -&gt; resume raises clear error (not silent).
+- tests cover checkpoint file naming + sequence.
+DO NOT: parallel yet.
+```
+
+## P9 — M10 RUNTIME VERIFICATION (no browser in V1)
+
+```
+Milestone M10: Prove built app actually starts and serves.
+
+FILES:
+  src/harness/verification/runtime.py  # RuntimeVerifier
+  tests/test_runtime.py
+
+RUNTIME VERIFIER STEPS (FastAPI default, Node fallback):
+ 1. Detect entry: src/main.py:app or app.py:app or package.json main. If none, FAIL (CONFIG_ERROR).
+ 2. Start: `python -m uvicorn src.main:app --port {free_port}` or `npm run dev -- --port {port}` via subprocess.Popen (through sandbox root), wait up to 15s.
+ 3. Checks: process alive, TCP port open (socket.connect), GET /health or / returns 2xx, GET /docs or /api/health if exists 2xx, SQLite file exists/connects if expected.
+ 4. Capture logs, kill process, return {status PASS/FAIL, checks:[{name, ok, detail}], evidence:[log snippet, http status]}.
+ 5. On FAIL classify (CONFIG/DEPENDENCY/ENVIRONMENT) for repair loop reuse.
+
+BROWSER (V1: STUB ONLY): create src/harness/verification/browser.py with `def verify_acceptance(...): raise NotImplementedError(&quot;Browser verification deferred post-V1&quot;)` + test asserting skip. Do NOT implement Playwright/Selenium now.
+
+ACCEPTANCE:
+- M4 scaffold app -&gt; runtime PASS (health 200).
+- Broken port (app exits) -&gt; FAIL with diagnostics, repair hint.
+DO NOT: Docker, parallel.
+```
+
+## P10 — M11 OBSERVABILITY + CLI + BENCHMARKS
+
+```
+Milestone M11: Operable harness.
+
+OBSERVABILITY (src/harness/utils/logging.py finalize):
+ Every stage emits JSONL with all fields: run_id,trace_id,stage,agent,task_id,timestamp,duration_ms,model,tokens,tool,status,error. Provide `python -m harness.cli logs &lt;run_id&gt;` to pretty-print + `stats` (counts, retries, token sum, duration). Test asserts required keys on every line.
+
+CLI (src/harness/cli.py, argparse only):
+ `builder new &quot;request&quot; [--run-id X --workspace Y --max-retries 3]` prints:
+  [1/5] Generating specification... ✓
+  [2/5] Planning N tasks... ✓
+  [3/5] Building... ✓ TASK-001 ... (⚠ fail + ↻ repairing)
+  [4/5] Verifying... ✓ Build ✓ Tests ✓ Runtime
+  [5/5] Reviewing requirements... ✓ 14/14 satisfied
+  BUILD COMPLETE / BUILD FAILED with paths to spec/tasks/verification/review.json
+ Also `builder resume &lt;run_id&gt;`, `builder review &lt;run_id&gt;`, `builder logs &lt;run_id&gt;`.
+ Map to orchestration/pipeline.py::run_new() orchestrating M2-M10 sequentially.
+
+BENCHMARKS (benchmarks/*.json + src/harness/bench/runner.py):
+ 5 fixed cases: todo, crud-dashboard, auth-app, api-db, ecommerce-prototype (each: request string + min REQs + expected tasks range). Runner executes pipeline with MockProvider, records {build_success, test_success, req_completion, repair_count, duration_s, tokens}. `pytest benchmarks/` or `builder bench --quick` (runs todo only). Do NOT judge by looks — assert metrics JSON written.
+
+ACCEPTANCE:
+- `builder new &quot;Build a Todo app&quot;` offline -&gt; BUILD COMPLETE, artifacts exist, 5-stage output matches regex.
+- events.log has all keys, bench quick passes.
+DO NOT: web UI, Docker prod.
+```
+
+## P11 — M12 FINAL GATE: VERTICAL SLICE + FAILURE INJECTION + V1 CHECKLIST
+
+```
+Milestone M12: Prove reliability, then freeze V1.
+
+TASKS (do in order, all must PASS):
+1. VERTICAL SLICE: `builder new &quot;Build a Simple Todo App with add/list/complete&quot;` -&gt; expect SPEC(&gt;=3 REQs)-&gt;PLAN(&gt;=3 tasks)-&gt;BUILD(files)-&gt;VERIFY(pytest PASS)-&gt;RUNTIME PASS-&gt;REVIEW PASS. Save under runs/demo_todo/. If any step FAILs, fix harness, do not proceed.
+2. FAILURE INJECTION: introduce SyntaxError into workspace/src/main.py, rerun verify -&gt; must DETECT (FAIL+CODE_ERROR), LOCALIZE (task_id), CAPTURE diagnostics, SEND to repair, REPAIR, REVERIFY PASS. Then inject identical failure 3x with no-op repair mock -&gt; must WARNING-&gt;ESCALATE-&gt;FAILED+BLOCKED (assert).
+3. V1 CHECKLIST (all ✓): valid spec, validated spec, valid DAG, sequential execution, real files, real verification, localized failures, repaired failures, loop detection, checkpoints+resume, traceability matrix, final review, working project in runs/.
+4. DOCS: README.md (quickstart builder new/resume/logs, architecture diagram ASCII from plan §34, evidence principle), examples/todo_run/ (spec/tasks/verification/review JSON copies).
+5. `pytest -q` entire repo green, `builder bench --quick` green.
+
+FORBIDDEN IN V1 (assert not present): docker/, web_ui/, parallel workers, browser automation beyond stub, postgres, network research.
+If all green -&gt; tag V1 DONE. If not, loop M1-M11 fixes, never ship red.
+```
+
+---
+
+## GLOBAL RULES APPENDIX (coding agent must obey)
+
+1. NEVER ask questions. Use P0 defaults.
+2. Build sequentially M1-&gt;M12. Do not start M(N+1) if M(N) tests red. Run `pytest -q` after each milestone.
+3. Keep diffs small, files focused (&lt;400 lines each, split if larger).
+4. Every new module needs a test file. Every bug fix needs a regression test.
+5. No secrets in repo. No absolute paths. No `shell=True` except verifier with logged warning.
+6. Evidence over claims: every status change logs to events.log + checkpoint.
+7. If LLM call fails/timeouts -&gt; fallback deterministic path so pipeline never blocks.
+8. Final deliverable per run: workspace/ + spec.json + tasks.json + verification.json + review.json + events.log + state.json.
+9. End-of-run summary must list per REQ: Implemented? Tested? Runtime? Evidence? PASS/FAIL — never &quot;AI says finished&quot;.
+
+## prompts.chat MCP NOTE
+- Searched via `prompts-chat_search_prompts/skills` (public, OK, 0 hits for niche harness queries — expected).
+- `improve_prompt` / `save_prompt` require API key (`Authentication required`). To publish: set `PROMPTS_CHAT_API_KEY` in env, then call `prompts-chat_save_prompt(title=&quot;App-Builder Harness Autonomous Prompts&quot;, content=&lt;this file&gt;)`. Local file is authoritative until then.
+- Suggested tags if publishing: `coding-agent, autonomous, python, harness, spec-driven, verification`.</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/app-builder-harness-autonomous-coding-agent-prompts',TI="App-Builder Harness - Autonomous Coding Agent Prompts";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

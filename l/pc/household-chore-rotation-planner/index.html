@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Household Chore Rotation Planner | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: household-chore-rotation-planner description: Plans a fair, rotating weekly chore schedule for a household: weighs each chore by minutes and">
+<meta property="og:title" content="Household Chore Rotation Planner | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: household-chore-rotation-planner description: Plans a fair, rotating weekly chore schedule for a household: weighs each chore by minutes and">
+<meta property="og:url" content="https://claudebomb.com/l/pc/household-chore-rotation-planner/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/household-chore-rotation-planner/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Household Chore Rotation Planner</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: household-chore-rotation-planner
+description: Plans a fair, rotating weekly chore schedule for a household: weighs each chore by minutes and frequency, respects capacity shares and &quot;cannot do&quot; limits, rotates jobs week to week, and reports each person&#x27;s load against a fair target. Use when roommates or families argue about chores or ask &quot;who does what this month?&quot;. Includes a stdlib Python planner with --self-test.
+---
+
+# Household Chore Rotation Planner
+
+You help households (roommates, couples, families with kids) split chores fairly and rotate them so nobody is stuck with the worst jobs forever. You measure fairness in minutes, not in number of tasks, adjust for each person&#x27;s capacity, respect real limits (age, allergies, health, skills), and produce a schedule people can stick on the fridge. You stay neutral and kind; you never take sides in a household argument.
+
+## Files in this skill
+
+- `scripts/chore_rotation.py` - builds a multi-week rotation from a JSON list of people and chores and reports minutes vs fair target per person (Python 3 standard library only)
+- `references/chore-time-estimates.md` - typical minutes for common chores to use as defaults
+- `references/fairness-and-agreements.md` - how to set shares, handle swaps, and run a short house meeting
+- `templates/rotation-chart.md` - printable weekly chart plus a house agreement section
+- `examples/household.json` - four-person sample household with constraints
+
+## Workflow
+
+### 1. Gather the household
+Ask for:
+- People and their capacity: full share (1.0), reduced share (for example 0.5 for a young child or someone working night shifts), or larger share by agreement
+- Hard limits: chores someone cannot do (`cannot`), or chores only certain people can do (`only`, for example cooking or driving)
+- Chores with realistic minutes per session and times per week; use `references/chore-time-estimates.md` when unsure
+- How many weeks to plan (4 is a good default) and any preferences (&quot;I would rather cook than clean the bathroom&quot;)
+
+### 2. Build the input and run the planner
+```
+python3 scripts/chore_rotation.py examples/household.json
+python3 scripts/chore_rotation.py my-house.json --weeks 6 --json
+python3 scripts/chore_rotation.py --self-test
+```
+Exit code 1 means a chore has no eligible person (fix the `cannot`/`only` lists); 2 means bad input.
+
+### 3. Check fairness
+Read the &quot;Overall fairness&quot; table. Within about 10% of target is good. If someone is far off, adjust minutes, split a big chore (for example &quot;Laundry - wash&quot; and &quot;Laundry - fold&quot;), or change shares by agreement, then rerun.
+
+### 4. Apply preferences
+The planner balances minutes; it does not know who hates what. Offer swaps of similar minutes between people, and keep the totals close. If a heavy chore lands on the same person every week because of constraints, say so and suggest splitting it.
+
+### 5. Deliver
+Fill `templates/rotation-chart.md` with the weekly tables, a short house agreement (swap rules, what &quot;done&quot; means, a monthly check-in), and a friendly group message under 80 words announcing the plan.
+
+## Rules
+
+- Fairness is measured in minutes weighted by agreed shares, not task counts.
+- Never assign unsafe chores to children (sharp tools, strong chemicals, ladders, hot ovens without supervision).
+- Keep the tone neutral; describe loads with numbers, not blame.
+- Invisible work counts: planning meals, booking repairs, and buying supplies can be added as chores with minutes.
+FILE:references/chore-time-estimates.md
+# Typical chore times (defaults, adjust to your home)
+
+| Chore | Minutes per session | Common frequency |
+|---|---|---|
+| Dishes / load and unload dishwasher | 15-25 | daily |
+| Cook dinner | 30-60 | 3-7 per week |
+| Meal planning and grocery list | 20-30 | weekly |
+| Grocery run | 45-75 | weekly |
+| Laundry (wash, dry, fold, put away) | 40-60 per load | 2-4 loads per week |
+| Bathroom clean (sink, toilet, shower, floor) | 30-45 | weekly |
+| Kitchen deep clean (counters, stovetop, fridge wipe) | 30-40 | weekly |
+| Vacuum and mop | 30-45 | 1-2 per week |
+| Dusting | 15-20 | weekly |
+| Trash and recycling out | 5-10 | 2-3 per week |
+| Change bed linens | 15 per bed | every 1-2 weeks |
+| Water plants | 5-15 | 2 per week |
+| Pet feeding | 5 | daily, often twice |
+| Litter box / pet cleanup | 5 | daily |
+| Dog walk | 20-30 | 1-3 per day |
+| Mow lawn | 40-60 | weekly in season |
+| Clean oven | 30-45 | monthly |
+| Pay bills and admin | 20-30 | weekly |
+
+Tips
+- Time one session with a phone timer if people disagree about how long a chore takes.
+- Split chores that are both long and unpopular so they can rotate more easily.
+- Seasonal chores (snow shoveling, gutters) can be added only for the weeks they apply.
+FILE:references/fairness-and-agreements.md
+# Fairness and house agreements
+
+## Setting shares
+- Start everyone at 1.0. Lower shares only by explicit agreement (age, health, very long work hours, exams).
+- Children: roughly 0.25-0.5 with age-appropriate chores only.
+- Someone who pays more rent or does more invisible work may get a lower chore share; write it down.
+
+## What &quot;done&quot; means
+Agree on a one-line definition per chore, for example &quot;Dishes: sink empty, counters wiped, dishwasher running&quot;.
+
+## Swaps
+- Swaps are fine if both people agree and minutes are similar.
+- Post swaps in the group chat so nobody is surprised.
+- A missed chore is made up within 48 hours or swapped, not silently skipped.
+
+## 15-minute monthly check-in
+1. Each person: one thing working, one thing not (2 minutes each).
+2. Look at the fairness table; adjust minutes or shares if reality changed.
+3. Decide on one improvement for next month.
+4. Regenerate the rotation.
+
+## Handling conflict
+- Talk about the system, not the person (&quot;Bathroom keeps slipping on Thursdays&quot; instead of &quot;You never clean&quot;).
+- If one person carries far more invisible work, add it to the chore list with minutes.
+FILE:templates/rotation-chart.md
+# Chore Rotation - &lt;household name&gt;
+
+**Period:** &lt;start date&gt; to &lt;end date&gt;  **People:** &lt;names and shares&gt;
+
+## Week 1 (&lt;dates&gt;)
+| Chore | Who | Done? |
+|---|---|---|
+| | | [ ] |
+
+## Week 2 (&lt;dates&gt;)
+| Chore | Who | Done? |
+|---|---|---|
+| | | [ ] |
+
+## Fairness (minutes)
+| Person | Share | Minutes | Target | Deviation |
+|---|---|---|---|---|
+
+## House agreement
+- &quot;Done&quot; means:
+- Swap rule:
+- Missed chore rule:
+- Monthly check-in date:
+
+## Group message
+&gt; Hi all! New chore rotation for &lt;period&gt; is on the fridge and pinned here. Loads are balanced by time. Swaps are fine, just post them. Check-in on &lt;date&gt;.
+FILE:examples/household.json
+{
+  &quot;weeks&quot;: 4,
+  &quot;people&quot;: [
+    {&quot;name&quot;: &quot;Leyla&quot;, &quot;share&quot;: 1.0},
+    {&quot;name&quot;: &quot;Tom&quot;, &quot;share&quot;: 1.0, &quot;cannot&quot;: [&quot;Litter box&quot;]},
+    {&quot;name&quot;: &quot;Deniz&quot;, &quot;share&quot;: 0.5, &quot;cannot&quot;: [&quot;Clean oven&quot;, &quot;Mow lawn&quot;]},
+    {&quot;name&quot;: &quot;Sam&quot;, &quot;share&quot;: 0.75}
+  ],
+  &quot;chores&quot;: [
+    {&quot;name&quot;: &quot;Dishes&quot;, &quot;minutes&quot;: 20, &quot;times_per_week&quot;: 7},
+    {&quot;name&quot;: &quot;Cook dinner&quot;, &quot;minutes&quot;: 45, &quot;times_per_week&quot;: 3, &quot;only&quot;: [&quot;Leyla&quot;, &quot;Tom&quot;, &quot;Sam&quot;]},
+    {&quot;name&quot;: &quot;Laundry&quot;, &quot;minutes&quot;: 40, &quot;times_per_week&quot;: 2},
+    {&quot;name&quot;: &quot;Bathroom clean&quot;, &quot;minutes&quot;: 40, &quot;times_per_week&quot;: 1},
+    {&quot;name&quot;: &quot;Vacuum and mop&quot;, &quot;minutes&quot;: 35, &quot;times_per_week&quot;: 2},
+    {&quot;name&quot;: &quot;Trash and recycling&quot;, &quot;minutes&quot;: 10, &quot;times_per_week&quot;: 3},
+    {&quot;name&quot;: &quot;Grocery run&quot;, &quot;minutes&quot;: 60, &quot;times_per_week&quot;: 1},
+    {&quot;name&quot;: &quot;Litter box&quot;, &quot;minutes&quot;: 5, &quot;times_per_week&quot;: 7},
+    {&quot;name&quot;: &quot;Water plants&quot;, &quot;minutes&quot;: 10, &quot;times_per_week&quot;: 2},
+    {&quot;name&quot;: &quot;Mow lawn&quot;, &quot;minutes&quot;: 50, &quot;times_per_week&quot;: 1},
+    {&quot;name&quot;: &quot;Clean oven&quot;, &quot;minutes&quot;: 30, &quot;times_per_week&quot;: 1}
+  ]
+}
+FILE:scripts/chore_rotation.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Fair household chore rotation planner (Python 3 standard library only).
+
+Input JSON:
+{
+  &quot;weeks&quot;: 4,
+  &quot;people&quot;: [{&quot;name&quot;: &quot;Ana&quot;, &quot;share&quot;: 1.0, &quot;cannot&quot;: [&quot;Mow lawn&quot;]}, ...],
+  &quot;chores&quot;: [{&quot;name&quot;: &quot;Dishes&quot;, &quot;minutes&quot;: 20, &quot;times_per_week&quot;: 7, &quot;only&quot;: [&quot;Ana&quot;, &quot;Ben&quot;]}, ...]
+}
+  share: relative capacity (1.0 = normal; 0.5 = half load, e.g. a child or someone with long shifts)
+  cannot / only: hard constraints (allergies, age, physical limits, skills)
+
+Algorithm per week: chores sorted by weekly minutes (largest first) go to the eligible person with the
+lowest (load / share); ties are broken in favor of someone who did NOT have that chore last week,
+so chores rotate. Reports per-person minutes, target minutes, and deviation.
+Exit code: 0 OK, 1 if a chore has no eligible person, 2 on bad input.
+&quot;&quot;&quot;
+import argparse
+import json
+import sys
+
+
+class PlanError(ValueError):
+    pass
+
+
+def validate(data):
+    people = data.get(&quot;people&quot;) or []
+    chores = data.get(&quot;chores&quot;) or []
+    if not people:
+        raise PlanError(&quot;need at least one person&quot;)
+    if not chores:
+        raise PlanError(&quot;need at least one chore&quot;)
+    names = [p[&quot;name&quot;] for p in people]
+    if len(set(names)) != len(names):
+        raise PlanError(&quot;duplicate person names&quot;)
+    for p in people:
+        if float(p.get(&quot;share&quot;, 1.0)) &lt;= 0:
+            raise PlanError(f&quot;share must be &gt; 0 for {p[&#x27;name&#x27;]}&quot;)
+    for c in chores:
+        if float(c.get(&quot;minutes&quot;, 0)) &lt;= 0 or float(c.get(&quot;times_per_week&quot;, 1)) &lt;= 0:
+            raise PlanError(f&quot;minutes and times_per_week must be &gt; 0 for {c.get(&#x27;name&#x27;)}&quot;)
+        for n in c.get(&quot;only&quot;, []):
+            if n not in names:
+                raise PlanError(f&quot;chore {c[&#x27;name&#x27;]} lists unknown person {n}&quot;)
+    return people, chores
+
+
+def weekly_minutes(chore):
+    return float(chore[&quot;minutes&quot;]) * float(chore.get(&quot;times_per_week&quot;, 1))
+
+
+def eligible(person, chore):
+    if chore.get(&quot;only&quot;) and person[&quot;name&quot;] not in chore[&quot;only&quot;]:
+        return False
+    return chore[&quot;name&quot;] not in person.get(&quot;cannot&quot;, [])
+
+
+def plan_week(people, chores, last_week=None):
+    &quot;&quot;&quot;Return (assignment {chore: person}, loads {person: minutes}, unassigned [chore]).&quot;&quot;&quot;
+    last_week = last_week or {}
+    loads = {p[&quot;name&quot;]: 0.0 for p in people}
+    assignment = {}
+    unassigned = []
+    order = sorted(chores, key=lambda c: (-weekly_minutes(c), c[&quot;name&quot;]))
+    for c in order:
+        cands = [p for p in people if eligible(p, c)]
+        if not cands:
+            unassigned.append(c[&quot;name&quot;])
+            continue
+        w = weekly_minutes(c)
+
+        def key(p):
+            share = float(p.get(&quot;share&quot;, 1.0))
+            after = (loads[p[&quot;name&quot;]] + w) / share
+            repeat = 1 if last_week.get(c[&quot;name&quot;]) == p[&quot;name&quot;] else 0
+            return (round(after, 6), repeat, p[&quot;name&quot;])
+
+        # prefer rotation when loads are close: compare within a 10% band of the best option
+        ranked = sorted(cands, key=key)
+        best = key(ranked[0])[0]
+        band = [p for p in ranked if key(p)[0] &lt;= best * 1.10 + 1e-9]
+        band.sort(key=lambda p: (key(p)[1], key(p)[0], p[&quot;name&quot;]))
+        chosen = band[0]
+        assignment[c[&quot;name&quot;]] = chosen[&quot;name&quot;]
+        loads[chosen[&quot;name&quot;]] += w
+    return assignment, loads, unassigned
+
+
+def fairness(people, loads):
+    total = sum(loads.values())
+    total_share = sum(float(p.get(&quot;share&quot;, 1.0)) for p in people)
+    rows = []
+    for p in people:
+        target = total * float(p.get(&quot;share&quot;, 1.0)) / total_share
+        got = loads[p[&quot;name&quot;]]
+        dev = (got - target) / target * 100 if target else 0.0
+        rows.append({&quot;name&quot;: p[&quot;name&quot;], &quot;minutes&quot;: round(got, 1), &quot;target&quot;: round(target, 1),
+                     &quot;deviation_pct&quot;: round(dev, 1)})
+    return rows
+
+
+def plan(data):
+    people, chores = validate(data)
+    weeks = int(data.get(&quot;weeks&quot;, 4))
+    result = []
+    cumulative = {p[&quot;name&quot;]: 0.0 for p in people}
+    last = None
+    for wk in range(1, weeks + 1):
+        assignment, loads, unassigned = plan_week(people, chores, last)
+        for k, v in loads.items():
+            cumulative[k] += v
+        result.append({&quot;week&quot;: wk, &quot;assignment&quot;: assignment, &quot;fairness&quot;: fairness(people, loads),
+                       &quot;unassigned&quot;: unassigned})
+        last = assignment
+    return {&quot;weeks&quot;: result, &quot;overall&quot;: fairness(people, cumulative)}
+
+
+def render(res):
+    out = []
+    for w in res[&quot;weeks&quot;]:
+        out.append(f&quot;## Week {w[&#x27;week&#x27;]}&quot;)
+        out.append(&quot;| Chore | Who |&quot;)
+        out.append(&quot;|---|---|&quot;)
+        for chore, who in sorted(w[&quot;assignment&quot;].items()):
+            out.append(f&quot;| {chore} | {who} |&quot;)
+        for u in w[&quot;unassigned&quot;]:
+            out.append(f&quot;| {u} | UNASSIGNED (no eligible person) |&quot;)
+        out.append(&quot;&quot;)
+    out.append(&quot;## Overall fairness (minutes across all weeks)&quot;)
+    out.append(&quot;| Person | Minutes | Target | Deviation |&quot;)
+    out.append(&quot;|---|---|---|---|&quot;)
+    for r in res[&quot;overall&quot;]:
+        out.append(f&quot;| {r[&#x27;name&#x27;]} | {r[&#x27;minutes&#x27;]} | {r[&#x27;target&#x27;]} | {r[&#x27;deviation_pct&#x27;]:+.1f}% |&quot;)
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    base = {
+        &quot;weeks&quot;: 4,
+        &quot;people&quot;: [{&quot;name&quot;: &quot;Ana&quot;}, {&quot;name&quot;: &quot;Ben&quot;}, {&quot;name&quot;: &quot;Cem&quot;, &quot;share&quot;: 0.5, &quot;cannot&quot;: [&quot;Mow lawn&quot;]}],
+        &quot;chores&quot;: [
+            {&quot;name&quot;: &quot;Dishes&quot;, &quot;minutes&quot;: 20, &quot;times_per_week&quot;: 7},
+            {&quot;name&quot;: &quot;Laundry&quot;, &quot;minutes&quot;: 60, &quot;times_per_week&quot;: 2},
+            {&quot;name&quot;: &quot;Bathroom&quot;, &quot;minutes&quot;: 45, &quot;times_per_week&quot;: 1},
+            {&quot;name&quot;: &quot;Vacuum&quot;, &quot;minutes&quot;: 30, &quot;times_per_week&quot;: 2},
+            {&quot;name&quot;: &quot;Trash&quot;, &quot;minutes&quot;: 5, &quot;times_per_week&quot;: 3},
+            {&quot;name&quot;: &quot;Mow lawn&quot;, &quot;minutes&quot;: 50, &quot;times_per_week&quot;: 1},
+            {&quot;name&quot;: &quot;Feed cat&quot;, &quot;minutes&quot;: 5, &quot;times_per_week&quot;: 14, &quot;only&quot;: [&quot;Cem&quot;, &quot;Ana&quot;]},
+        ],
+    }
+    res = plan(base)
+    w1 = res[&quot;weeks&quot;][0][&quot;assignment&quot;]
+    lawn_never_cem = all(w[&quot;assignment&quot;][&quot;Mow lawn&quot;] != &quot;Cem&quot; for w in res[&quot;weeks&quot;])
+    cat_ok = all(w[&quot;assignment&quot;][&quot;Feed cat&quot;] in (&quot;Cem&quot;, &quot;Ana&quot;) for w in res[&quot;weeks&quot;])
+    dishes_people = {w[&quot;assignment&quot;][&quot;Dishes&quot;] for w in res[&quot;weeks&quot;]}
+    overall = {r[&quot;name&quot;]: r for r in res[&quot;overall&quot;]}
+    max_dev = max(abs(r[&quot;deviation_pct&quot;]) for r in res[&quot;overall&quot;])
+    two = plan({&quot;weeks&quot;: 2, &quot;people&quot;: [{&quot;name&quot;: &quot;A&quot;}, {&quot;name&quot;: &quot;B&quot;}],
+                &quot;chores&quot;: [{&quot;name&quot;: &quot;X&quot;, &quot;minutes&quot;: 10}, {&quot;name&quot;: &quot;Y&quot;, &quot;minutes&quot;: 10}]})
+    rotated = two[&quot;weeks&quot;][0][&quot;assignment&quot;][&quot;X&quot;] != two[&quot;weeks&quot;][1][&quot;assignment&quot;][&quot;X&quot;]
+    orphan = plan({&quot;weeks&quot;: 1, &quot;people&quot;: [{&quot;name&quot;: &quot;A&quot;, &quot;cannot&quot;: [&quot;Z&quot;]}], &quot;chores&quot;: [{&quot;name&quot;: &quot;Z&quot;, &quot;minutes&quot;: 5}]})
+    errors = []
+    for bad in ({&quot;people&quot;: [], &quot;chores&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;minutes&quot;: 1}]},
+                {&quot;people&quot;: [{&quot;name&quot;: &quot;A&quot;}, {&quot;name&quot;: &quot;A&quot;}], &quot;chores&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;minutes&quot;: 1}]},
+                {&quot;people&quot;: [{&quot;name&quot;: &quot;A&quot;, &quot;share&quot;: 0}], &quot;chores&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;minutes&quot;: 1}]},
+                {&quot;people&quot;: [{&quot;name&quot;: &quot;A&quot;}], &quot;chores&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;minutes&quot;: 0}]},
+                {&quot;people&quot;: [{&quot;name&quot;: &quot;A&quot;}], &quot;chores&quot;: [{&quot;name&quot;: &quot;x&quot;, &quot;minutes&quot;: 1, &quot;only&quot;: [&quot;Q&quot;]}]}):
+        try:
+            plan(bad)
+            errors.append(False)
+        except PlanError:
+            errors.append(True)
+    cases = [
+        (&quot;all_chores_assigned_w1&quot;, len(w1), 7),
+        (&quot;weekly_minutes&quot;, weekly_minutes(base[&quot;chores&quot;][0]), 140.0),
+        (&quot;cannot_respected&quot;, lawn_never_cem, True),
+        (&quot;only_respected&quot;, cat_ok, True),
+        (&quot;dishes_rotate&quot;, len(dishes_people) &gt;= 2, True),
+        (&quot;half_share_lower_load&quot;, overall[&quot;Cem&quot;][&quot;minutes&quot;] &lt; overall[&quot;Ana&quot;][&quot;minutes&quot;], True),
+        (&quot;overall_fair_within_25pct&quot;, max_dev &lt;= 25.0, True),
+        (&quot;targets_sum_to_total&quot;, round(sum(r[&quot;target&quot;] for r in res[&quot;overall&quot;]), 0) == round(sum(r[&quot;minutes&quot;] for r in res[&quot;overall&quot;]), 0), True),
+        (&quot;equal_tie_rotates&quot;, rotated, True),
+        (&quot;orphan_reported&quot;, orphan[&quot;weeks&quot;][0][&quot;unassigned&quot;], [&quot;Z&quot;]),
+        (&quot;bad_inputs_rejected&quot;, errors, [True] * 5),
+        (&quot;render_has_header&quot;, render(res).startswith(&quot;## Week 1&quot;), True),
+    ]
+    failed = 0
+    for name, got, expected in cases:
+        ok = got == expected
+        failed += not ok
+        print(f&quot;{&#x27;PASS&#x27; if ok else &#x27;FAIL&#x27;}  {name}: got={got!r} expected={expected!r}&quot;)
+    print(f&quot;\n{len(cases) - failed}/{len(cases)} passed&quot;)
+    return 1 if failed else 0
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description=&quot;Plan a fair, rotating household chore schedule.&quot;)
+    p.add_argument(&quot;input&quot;, nargs=&quot;?&quot;, help=&quot;JSON file with weeks, people, chores&quot;)
+    p.add_argument(&quot;--weeks&quot;, type=int, help=&quot;override number of weeks&quot;)
+    p.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    p.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = p.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.input:
+        p.error(&quot;give an input JSON file, or --self-test&quot;)
+    try:
+        with open(a.input, encoding=&quot;utf-8&quot;) as fh:
+            data = json.load(fh)
+        if a.weeks:
+            data[&quot;weeks&quot;] = a.weeks
+        res = plan(data)
+    except (OSError, json.JSONDecodeError, PlanError, KeyError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(res, indent=2) if a.json else render(res))
+    return 1 if any(w[&quot;unassigned&quot;] for w in res[&quot;weeks&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/household-chore-rotation-planner',TI="Household Chore Rotation Planner";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TLS Certificate Expiry and Inventory Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: tls-certificate-expiry-and-inventory-checker description: Checks a JSON inventory of TLS certificates (plus optional PEM files) for expired ">
+<meta property="og:title" content="TLS Certificate Expiry and Inventory Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: tls-certificate-expiry-and-inventory-checker description: Checks a JSON inventory of TLS certificates (plus optional PEM files) for expired ">
+<meta property="og:url" content="https://claudebomb.com/l/pc/tls-certificate-expiry-and-inventory-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/tls-certificate-expiry-and-inventory-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">TLS Certificate Expiry and Inventory Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: tls-certificate-expiry-and-inventory-checker
+description: Checks a JSON inventory of TLS certificates (plus optional PEM files) for expired and soon-expiring certs, stuck auto-renewals, hosts missing from SANs, weak keys and SHA1 signatures, over-long lifetimes, incomplete chains, self-signed public certs, missing owners or runbooks, shared wildcards and renewal clusters. Ranks fixes. Offline stdlib Python checker.
+---
+
+# TLS Certificate Expiry and Inventory Checker
+
+You help engineers and IT admins stop certificate outages before they happen. An expired cert, a host that silently fell out of the SAN list, or a renewal job that has been failing for weeks takes a service down just as hard as a code bug, usually on a weekend. You take a JSON inventory of certificates (and optionally the PEM files) and produce a ranked list of what to renew, reissue or fix, with an owner for each item.
+
+You do not connect to servers, request certificates or handle private keys. Work only from the inventory and public certificate files the user provides. If someone pastes a private key, tell them to remove it and treat it as compromised.
+
+## Files in this skill
+
+- `scripts/check_certs.py` - reads `inventory.json` and any `pem_path` files; reports TC01-TC15 (expired, expiring within 14 or 30 days, stuck auto-renewal, host not in SANs, weak key, SHA1/MD5 signature, lifetime over 398 days, incomplete chain, self-signed public cert, no owner, manual renewal without runbook, wildcard shared across environments, renewal clusters, future not_before); text or `--json` output (Python 3.8+ standard library only)
+- `references/expiry-and-renewal.md` - renewal windows, ACME behaviour, why auto-renew still fails, shrinking lifetimes
+- `references/key-and-chain-rules.md` - SAN and wildcard matching, key sizes, signature algorithms, chains, self-signed and internal CAs
+- `templates/cert-report.md` - the report you hand back
+- `examples/inventory.json` - nine certificates for a fictional shop with several traps
+- `examples/certs/internal-api.pem` - a public self-signed test certificate decoded by the script (no private key)
+
+## Workflow
+
+### 1. Collect the inventory
+Ask for one entry per certificate: `name`, `hosts` served, `sans`, `issuer`, `not_before`, `not_after`, `key_type`, `key_bits`, `sig_alg`, `auto_renew`, `renew_method`, `chain_complete`, `environment`, `public`, `owner`, `renewal_runbook`. If they only have PEM files, set `pem_path` and the script fills dates, SANs and issuer. Useful one-liners for gathering data (run by the user, not you):
+```
+openssl x509 -in cert.pem -noout -subject -issuer -dates -ext subjectAltName
+openssl s_client -connect host:443 -servername host -showcerts &lt;/dev/null
+```
+
+### 2. Run the checker
+```
+python3 scripts/check_certs.py examples/inventory.json --today 2026-11-11
+python3 scripts/check_certs.py inventory.json --json --warn-days 45
+python3 scripts/check_certs.py --self-test
+```
+Exit 0 = no high findings, 1 = high findings, 2 = bad input. Without a shell, walk each entry with the two reference files and apply the same codes by hand.
+
+### 3. Read the result
+- High: TC01 expired, TC02 expires within 14 days, TC05 host not covered by SANs, TC06 weak key, TC07 SHA1/MD5 signature, TC09 incomplete chain, TC10 self-signed on a public endpoint, TC14 not_before in the future, TC00 missing expiry data.
+- Medium: TC03 manual renewal within 30 days, TC04 auto-renew on but under 20 days left (renewal is stuck), TC08 lifetime over 398 days on a public cert, TC11 no owner, TC13 wildcard shared between production and other environments.
+- Low: TC12 manual renewal without a runbook, TC15 three or more certs expiring in the same week.
+
+### 4. Deliver
+Fill `templates/cert-report.md`: verdict, a renewal calendar sorted by days left, findings with owners, and the three changes that remove the most risk (usually: automate renewal, add expiry monitoring at 30/14/7 days, fix SAN coverage). Re-run after fixes and attach the clean output.
+
+## Example result
+On the sample inventory (as of 11 Nov 2026), `legacy-vpn` expired 6 days ago and also has a 1024-bit RSA key, SHA1 signature and no owner; `checkout-api` expires in 10 days, misses `pay.example-shop.test` in its SANs and serves an incomplete chain; `wildcard-prod` has auto-renew on but only 19 days left, and its wildcard does not cover the two-level `img.cdn` host; `status-page` is self-signed on a public endpoint; the PEM-based `internal-api` lacks `metrics.corp.example`; and the same wildcard is used in production and staging. Result: 9 high, 5 medium, 3 low.
+
+## Rules
+
+- Base every finding on an inventory field or a decoded PEM value; never guess an expiry date.
+- Never ask for, print or store private keys or passwords.
+- Treat CA and browser policy numbers (398-day limit, shrinking lifetimes) as current guidance to confirm, not as legal requirements for private PKI.
+- Recommend monitoring that alerts a named owner, not a shared inbox nobody reads.
+
+FILE:references/expiry-and-renewal.md
+# Expiry and renewal
+
+## Windows the checker uses
+- Expired (TC01): `not_after` is before the as-of date. Browsers and most API clients refuse the connection.
+- Critical (TC02): 14 days or less left. Renew this week and confirm the new cert is actually being served.
+- Warning (TC03): 30 days or less left and renewal is manual. Put a dated task with an owner on the calendar.
+- Stuck renewal (TC04): `auto_renew` is true but 20 days or less are left. ACME clients such as certbot and acme.sh normally renew around 30 days before expiry (one third of a 90-day lifetime), so a cert this close usually means the job has been failing.
+
+## Why automatic renewal still fails
+- DNS-01 API token expired or lost permissions after a provider change.
+- HTTP-01 challenge blocked by a new redirect, WAF rule or CDN in front of the origin.
+- The renewal ran but the service was never reloaded, so the old cert is still in memory.
+- The cert renewed on one server but not on the load balancer, CDN or other replicas.
+- Rate limits after repeated failed attempts.
+Always check what is actually served (`openssl s_client -connect host:443 -servername host`), not just the file on disk.
+
+## Lifetimes are getting shorter
+- Publicly trusted certificates are limited to 398 days today (TC08), and CA/Browser Forum ballots schedule further reductions over the next few years toward much shorter lifetimes. Confirm the current limits with your CA.
+- Shorter lifetimes make manual renewal unsustainable: treat every manual public cert as an automation task.
+
+## Monitoring that works
+- Alert at 30, 14 and 7 days, sent to a named owner (TC11) and a team channel.
+- Monitor from outside, per hostname, so a missing SAN or a stale replica is caught.
+- Keep a renewal runbook link for every manual cert (TC12): CSR command, CA account, deploy targets, reload command, verification step.
+- Stagger renewals (TC15) so one broken week cannot take down several services.
+
+FILE:references/key-and-chain-rules.md
+# Keys, names and chains
+
+## Hostname coverage (TC05)
+- Clients check the subjectAltName (SAN) DNS entries; the Common Name alone is ignored by modern browsers.
+- A wildcard covers exactly one label: `*.example.com` matches `a.example.com` but NOT `example.com` and NOT `a.b.example.com`.
+- List every name a service answers to (apex, www, regional and legacy hostnames) in `hosts` so gaps show up.
+
+## Keys and signatures (TC06, TC07)
+| Key type | Minimum | Good default |
+|---|---|---|
+| RSA | 2048 bits | 2048 or 3072 |
+| ECDSA | P-256 | P-256 or P-384 |
+| Ed25519 | n/a | supported mainly for internal use |
+- SHA1 and MD5 signatures are rejected by browsers and many libraries; reissue with SHA-256 or stronger.
+- If a key may have leaked (shared over chat, committed to git), revoke and reissue; do not just renew with the same key.
+
+## Chains (TC09)
+- Servers must send the leaf plus intermediate certificates. Some browsers hide a missing intermediate by fetching it, but API clients, mobile apps and older devices fail.
+- Test with `openssl s_client -showcerts` or a fresh client container, not only a desktop browser.
+
+## Self-signed and internal CAs (TC10)
+- Self-signed or private-CA certs are fine for internal services if clients are configured to trust that CA. Mark them `public: false`.
+- On a public endpoint they produce warnings that teach users to click through security errors.
+
+## Blast radius (TC13)
+- A wildcard shared between production and staging means a key leaked from a less protected staging box can impersonate production. Prefer separate certs per environment and per sensitive service.
+
+FILE:templates/cert-report.md
+# TLS certificate review - {{organization}}
+
+As of: {{as_of_date}}  |  Certificates checked: {{count}}  |  Verdict: {{verdict: ACT NOW / SCHEDULE / HEALTHY}}
+
+## Renewal calendar
+| Certificate | Expires | Days left | Auto-renew | Owner |
+|---|---|---|---|---|
+| {{name}} | {{not_after}} | {{days_left}} | {{yes/no}} | {{owner}} |
+
+## High findings (fix first)
+| Code | Certificate | Problem | Fix | Owner | Due |
+|---|---|---|---|---|---|
+| {{TCxx}} | {{name}} | {{message}} | {{fix}} | {{owner}} | {{date}} |
+
+## Medium and low findings
+- {{TCxx}} {{name}}: {{message}} -&gt; {{fix}}
+
+## Three changes that remove the most risk
+1. {{e.g. automate renewal for the remaining manual public certs}}
+2. {{e.g. external expiry monitoring at 30/14/7 days to a named owner}}
+3. {{e.g. reissue with full SAN coverage and separate production/staging certs}}
+
+## Verification
+- Re-run: `python3 scripts/check_certs.py inventory.json --today {{date}}` -&gt; exit {{code}}
+- Served-cert check per host: `openssl s_client -connect {{host}}:443 -servername {{host}}`
+
+Notes: built from the inventory provided; no servers were contacted and no private keys were handled.
+
+FILE:examples/inventory.json
+{
+  &quot;organization&quot;: &quot;Example Shop (fictional)&quot;,
+  &quot;certificates&quot;: [
+    {
+      &quot;name&quot;: &quot;www-shop&quot;,
+      &quot;hosts&quot;: [&quot;www.example-shop.test&quot;, &quot;example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;www.example-shop.test&quot;, &quot;example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Let&#x27;s Encrypt&quot;,
+      &quot;not_before&quot;: &quot;2026-09-20&quot;,
+      &quot;not_after&quot;: &quot;2026-12-19&quot;,
+      &quot;key_type&quot;: &quot;ec&quot;,
+      &quot;key_bits&quot;: 256,
+      &quot;sig_alg&quot;: &quot;ecdsa-with-SHA384&quot;,
+      &quot;auto_renew&quot;: true,
+      &quot;renew_method&quot;: &quot;certbot on web-1, cron twice daily&quot;,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;owner&quot;: &quot;web-team&quot;
+    },
+    {
+      &quot;name&quot;: &quot;checkout-api&quot;,
+      &quot;hosts&quot;: [&quot;checkout.example-shop.test&quot;, &quot;pay.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;checkout.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Commercial CA&quot;,
+      &quot;not_before&quot;: &quot;2026-01-10&quot;,
+      &quot;not_after&quot;: &quot;2026-11-21&quot;,
+      &quot;key_type&quot;: &quot;rsa&quot;,
+      &quot;key_bits&quot;: 2048,
+      &quot;sig_alg&quot;: &quot;sha256WithRSAEncryption&quot;,
+      &quot;auto_renew&quot;: false,
+      &quot;chain_complete&quot;: false,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;owner&quot;: &quot;payments&quot;
+    },
+    {
+      &quot;name&quot;: &quot;wildcard-prod&quot;,
+      &quot;hosts&quot;: [&quot;blog.example-shop.test&quot;, &quot;img.cdn.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;*.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Let&#x27;s Encrypt&quot;,
+      &quot;not_before&quot;: &quot;2026-09-01&quot;,
+      &quot;not_after&quot;: &quot;2026-11-30&quot;,
+      &quot;key_type&quot;: &quot;rsa&quot;,
+      &quot;key_bits&quot;: 3072,
+      &quot;sig_alg&quot;: &quot;sha256WithRSAEncryption&quot;,
+      &quot;auto_renew&quot;: true,
+      &quot;renew_method&quot;: &quot;acme.sh DNS-01 via DNS API token&quot;,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;owner&quot;: &quot;platform&quot;
+    },
+    {
+      &quot;name&quot;: &quot;wildcard-staging&quot;,
+      &quot;hosts&quot;: [&quot;staging.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;*.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Let&#x27;s Encrypt&quot;,
+      &quot;not_before&quot;: &quot;2026-10-20&quot;,
+      &quot;not_after&quot;: &quot;2027-01-18&quot;,
+      &quot;key_type&quot;: &quot;rsa&quot;,
+      &quot;key_bits&quot;: 3072,
+      &quot;sig_alg&quot;: &quot;sha256WithRSAEncryption&quot;,
+      &quot;auto_renew&quot;: true,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;staging&quot;,
+      &quot;owner&quot;: &quot;platform&quot;
+    },
+    {
+      &quot;name&quot;: &quot;legacy-vpn&quot;,
+      &quot;hosts&quot;: [&quot;vpn.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;vpn.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Old Commercial CA&quot;,
+      &quot;not_before&quot;: &quot;2024-10-01&quot;,
+      &quot;not_after&quot;: &quot;2026-11-05&quot;,
+      &quot;key_type&quot;: &quot;rsa&quot;,
+      &quot;key_bits&quot;: 1024,
+      &quot;sig_alg&quot;: &quot;sha1WithRSAEncryption&quot;,
+      &quot;auto_renew&quot;: false,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;owner&quot;: &quot;&quot;
+    },
+    {
+      &quot;name&quot;: &quot;status-page&quot;,
+      &quot;hosts&quot;: [&quot;status.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;status.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;status-page.local&quot;,
+      &quot;self_signed&quot;: true,
+      &quot;not_before&quot;: &quot;2026-06-01&quot;,
+      &quot;not_after&quot;: &quot;2027-06-01&quot;,
+      &quot;key_type&quot;: &quot;ec&quot;,
+      &quot;key_bits&quot;: 256,
+      &quot;sig_alg&quot;: &quot;ecdsa-with-SHA256&quot;,
+      &quot;auto_renew&quot;: false,
+      &quot;renewal_runbook&quot;: &quot;https://wiki.example-shop.test/runbooks/status-cert&quot;,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;public&quot;: true,
+      &quot;owner&quot;: &quot;sre&quot;
+    },
+    {
+      &quot;name&quot;: &quot;internal-api&quot;,
+      &quot;pem_path&quot;: &quot;certs/internal-api.pem&quot;,
+      &quot;hosts&quot;: [&quot;internal-api.corp.example&quot;, &quot;api-admin.corp.example&quot;, &quot;metrics.corp.example&quot;],
+      &quot;key_type&quot;: &quot;rsa&quot;,
+      &quot;key_bits&quot;: 2048,
+      &quot;sig_alg&quot;: &quot;sha256WithRSAEncryption&quot;,
+      &quot;auto_renew&quot;: false,
+      &quot;renewal_runbook&quot;: &quot;https://wiki.example-shop.test/runbooks/internal-ca&quot;,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;public&quot;: false,
+      &quot;owner&quot;: &quot;platform&quot;
+    },
+    {
+      &quot;name&quot;: &quot;mail-relay&quot;,
+      &quot;hosts&quot;: [&quot;mail.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;mail.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Let&#x27;s Encrypt&quot;,
+      &quot;not_before&quot;: &quot;2026-10-05&quot;,
+      &quot;not_after&quot;: &quot;2027-01-03&quot;,
+      &quot;key_type&quot;: &quot;ec&quot;,
+      &quot;key_bits&quot;: 256,
+      &quot;sig_alg&quot;: &quot;ecdsa-with-SHA384&quot;,
+      &quot;auto_renew&quot;: true,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;owner&quot;: &quot;it-ops&quot;
+    },
+    {
+      &quot;name&quot;: &quot;partner-sftp&quot;,
+      &quot;hosts&quot;: [&quot;sftp.example-shop.test&quot;],
+      &quot;sans&quot;: [&quot;sftp.example-shop.test&quot;],
+      &quot;issuer&quot;: &quot;Commercial CA&quot;,
+      &quot;not_before&quot;: &quot;2026-01-05&quot;,
+      &quot;not_after&quot;: &quot;2026-12-08&quot;,
+      &quot;key_type&quot;: &quot;rsa&quot;,
+      &quot;key_bits&quot;: 2048,
+      &quot;sig_alg&quot;: &quot;sha256WithRSAEncryption&quot;,
+      &quot;auto_renew&quot;: false,
+      &quot;chain_complete&quot;: true,
+      &quot;environment&quot;: &quot;production&quot;,
+      &quot;owner&quot;: &quot;it-ops&quot;
+    }
+  ]
+}
+
+FILE:examples/certs/internal-api.pem
+-----BEGIN CERTIFICATE-----
+MIIDhTCCAm2gAwIBAgICEJIwDQYJKoZIhvcNAQELBQAwOzEiMCAGA1UEAwwZaW50
+ZXJuYWwtYXBpLmNvcnAuZXhhbXBsZTEVMBMGA1UECgwMRXhhbXBsZSBDb3JwMB4X
+DTI2MTExMTA3MDc0OFoXDTI3MTIxNjA3MDc0OFowOzEiMCAGA1UEAwwZaW50ZXJu
+YWwtYXBpLmNvcnAuZXhhbXBsZTEVMBMGA1UECgwMRXhhbXBsZSBDb3JwMIIBIjAN
+BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4oUJHnqdN4I9apnhjwPs7hVQbTO/
+vokjVcg4youOUoOEvGZnaNpEFqXL8msD7Xpfj8tkzhRsfxOAjzataIH/0vhJncPW
+YPdcV8bV6AjbT1DXD7NrcWzztnVVU69qctruVT2ir1ZX9kf60uT8LXwrC2xmGELR
+MmkIxu9yU2u8qa+5fuj+IPX3K2MaveQGpF8uWlklCRKTFdpLJpw/Gz4OPEVFn8zk
+uR6PGg0434aoF9oW9dJugLqfpqNDpbzQIi4Im3CsNSRgXDTiZTiP+zCBMGhpHvJT
+OpstU/9JSM9m78jAoA0rfyF/Fhl/Qrcb6gHtmswEuu9NBnIr7tbr5qyZxQIDAQAB
+o4GSMIGPMB0GA1UdDgQWBBQLC7n+evl0kJ5lrXrErQKoOEHYpDAfBgNVHSMEGDAW
+gBQLC7n+evl0kJ5lrXrErQKoOEHYpDAPBgNVHRMBAf8EBTADAQH/MDwGA1UdEQQ1
+MDOCGWludGVybmFsLWFwaS5jb3JwLmV4YW1wbGWCFmFwaS1hZG1pbi5jb3JwLmV4
+YW1wbGUwDQYJKoZIhvcNAQELBQADggEBANhJq+F8Ux8tYMJgH+TTZ2SnKr6lamzz
+0VmSvCYmRz0xIsDzPczvKoHnngxPObV6XwhkAg+mVUW04R2hpVsaLNxfj6zceTN7
+IrP75HT4zrthfWjXy1mXO4frMvKgJnS7GQ79CxVVj5CPTsovKGaXzaqC8mHTe+0C
+meOv7kglUD6CO35X9Lq8bnrWA771HpiFddK7+d5Y34uQaUbEmMrM5drjw7gn+hxh
+w2+tOOSIhOBqoU/tmtslbr+ZyJ4IuItpUDkeEk/n3K6TVMZ6eZHYqjQly2H4lJxE
+TsgyHYYiR286zwyr2sKmF7ZGtD9B5yJR6sorJhCAUJuv7EaU7XqOMcU=
+-----END CERTIFICATE-----
+
+FILE:scripts/check_certs.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;TLS certificate expiry and inventory checker (Python 3.8+ standard library only).
+
+Reads a JSON inventory of certificates (and optional PEM files referenced by &quot;pem_path&quot;)
+and reports TC01-TC14 findings: expiry, stuck renewals, hostname coverage, weak keys,
+weak signatures, long lifetimes, broken chains, self-signed public certs, ownership,
+shared wildcards and renewal clusters.
+
+Usage:
+  python3 scripts/check_certs.py examples/inventory.json --today 2026-11-11
+  python3 scripts/check_certs.py inventory.json --json
+  python3 scripts/check_certs.py --self-test
+Exit codes: 0 = no high findings, 1 = high findings, 2 = bad input.
+&quot;&quot;&quot;
+import argparse, datetime as dt, json, os, ssl, sys
+
+SEV_ORDER = {&quot;high&quot;: 0, &quot;medium&quot;: 1, &quot;low&quot;: 2}
+WEAK_SIG = (&quot;sha1&quot;, &quot;md5&quot;)
+MIN_BITS = {&quot;rsa&quot;: 2048, &quot;dsa&quot;: 2048, &quot;ec&quot;: 256, &quot;ecdsa&quot;: 256, &quot;ed25519&quot;: 0}
+
+
+def parse_date(s):
+    &quot;&quot;&quot;Accept YYYY-MM-DD, ISO timestamps, or OpenSSL style &#x27;Nov 11 10:00:00 2026 GMT&#x27;.&quot;&quot;&quot;
+    if not s:
+        return None
+    s = str(s).strip()
+    for fmt in (&quot;%Y-%m-%d&quot;, &quot;%Y-%m-%dT%H:%M:%SZ&quot;, &quot;%Y-%m-%dT%H:%M:%S&quot;, &quot;%b %d %H:%M:%S %Y %Z&quot;):
+        try:
+            return dt.datetime.strptime(s, fmt).date()
+        except ValueError:
+            pass
+    try:
+        return dt.datetime.utcfromtimestamp(ssl.cert_time_to_seconds(s)).date()
+    except (ValueError, TypeError):
+        raise ValueError(&quot;unparseable date: %r&quot; % s)
+
+
+def decode_pem(path):
+    &quot;&quot;&quot;Decode a PEM certificate with the stdlib test decoder; returns a partial cert dict.&quot;&quot;&quot;
+    info = ssl._ssl._test_decode_cert(path)  # stdlib, no third-party crypto needed
+    subject = {k: v for rdn in info.get(&quot;subject&quot;, ()) for k, v in rdn}
+    issuer = {k: v for rdn in info.get(&quot;issuer&quot;, ()) for k, v in rdn}
+    sans = [v for k, v in info.get(&quot;subjectAltName&quot;, ()) if k == &quot;DNS&quot;]
+    return {
+        &quot;subject_cn&quot;: subject.get(&quot;commonName&quot;, &quot;&quot;),
+        &quot;issuer&quot;: issuer.get(&quot;organizationName&quot;) or issuer.get(&quot;commonName&quot;, &quot;&quot;),
+        &quot;issuer_cn&quot;: issuer.get(&quot;commonName&quot;, &quot;&quot;),
+        &quot;not_before&quot;: info.get(&quot;notBefore&quot;),
+        &quot;not_after&quot;: info.get(&quot;notAfter&quot;),
+        &quot;sans&quot;: sans,
+        &quot;serial&quot;: info.get(&quot;serialNumber&quot;, &quot;&quot;),
+    }
+
+
+def host_covered(host, sans):
+    host = host.lower().rstrip(&quot;.&quot;)
+    for san in sans:
+        san = san.lower().rstrip(&quot;.&quot;)
+        if san == host:
+            return True
+        if san.startswith(&quot;*.&quot;):
+            base = san[2:]
+            # a wildcard matches exactly one label: *.example.com covers a.example.com, not a.b.example.com or example.com
+            if host.endswith(&quot;.&quot; + base) and host.count(&quot;.&quot;) == base.count(&quot;.&quot;) + 1:
+                return True
+    return False
+
+
+def load(path, base_dir):
+    with open(path, encoding=&quot;utf-8&quot;) as f:
+        data = json.load(f)
+    certs = data[&quot;certificates&quot;] if isinstance(data, dict) else data
+    if not isinstance(certs, list) or not certs:
+        raise ValueError(&quot;inventory must contain a non-empty &#x27;certificates&#x27; list&quot;)
+    out = []
+    for i, c in enumerate(certs):
+        c = dict(c)
+        c.setdefault(&quot;name&quot;, &quot;cert-%d&quot; % (i + 1))
+        if c.get(&quot;pem_path&quot;):
+            p = c[&quot;pem_path&quot;]
+            if not os.path.isabs(p):
+                p = os.path.join(base_dir, p)
+            pem = decode_pem(p)
+            for k, v in pem.items():
+                if not c.get(k):
+                    c[k] = v
+            c[&quot;_from_pem&quot;] = True
+        out.append(c)
+    return out
+
+
+def check(certs, today, warn_days=30, crit_days=14):
+    findings = []
+
+    def add(code, sev, cert, msg, fix):
+        findings.append({&quot;code&quot;: code, &quot;severity&quot;: sev, &quot;cert&quot;: cert[&quot;name&quot;], &quot;message&quot;: msg, &quot;fix&quot;: fix})
+
+    expiry_dates = []
+    wildcard_envs = {}
+    for c in certs:
+        na, nb = parse_date(c.get(&quot;not_after&quot;)), parse_date(c.get(&quot;not_before&quot;))
+        if na is None:
+            add(&quot;TC00&quot;, &quot;high&quot;, c, &quot;no not_after date&quot;, &quot;Add not_after or a pem_path so expiry can be checked.&quot;)
+            continue
+        left = (na - today).days
+        c[&quot;_days_left&quot;] = left
+        expiry_dates.append((na, c[&quot;name&quot;]))
+        auto = bool(c.get(&quot;auto_renew&quot;))
+        public = c.get(&quot;public&quot;, True)
+        if left &lt; 0:
+            add(&quot;TC01&quot;, &quot;high&quot;, c, &quot;expired %d days ago (%s)&quot; % (-left, na), &quot;Renew and deploy now; check every host in &#x27;hosts&#x27;.&quot;)
+        elif left &lt;= crit_days:
+            add(&quot;TC02&quot;, &quot;high&quot;, c, &quot;expires in %d days (%s)&quot; % (left, na), &quot;Renew this week; confirm the new cert is actually served.&quot;)
+        elif left &lt;= warn_days and not auto:
+            add(&quot;TC03&quot;, &quot;medium&quot;, c, &quot;expires in %d days with manual renewal&quot; % left, &quot;Schedule the renewal with an owner and a date.&quot;)
+        if auto and 0 &lt;= left &lt;= 20:
+            add(&quot;TC04&quot;, &quot;medium&quot;, c, &quot;auto_renew is on but only %d days left - renewal looks stuck&quot; % left,
+                &quot;Check the renewal job logs (ACME clients renew around 30 days left); fix DNS/HTTP challenge or permissions.&quot;)
+        if nb and nb &gt; today:
+            add(&quot;TC14&quot;, &quot;high&quot;, c, &quot;not_before %s is in the future&quot; % nb, &quot;Check server clock or wait; clients will reject it now.&quot;)
+        sans = c.get(&quot;sans&quot;) or []
+        for h in c.get(&quot;hosts&quot;) or []:
+            if not host_covered(h, sans):
+                add(&quot;TC05&quot;, &quot;high&quot;, c, &quot;host %s is not covered by SANs %s&quot; % (h, sans), &quot;Reissue with the host in subjectAltName (CN alone is ignored by browsers).&quot;)
+        kt = str(c.get(&quot;key_type&quot;, &quot;&quot;)).lower()
+        bits = c.get(&quot;key_bits&quot;)
+        if kt in MIN_BITS and bits is not None and int(bits) &lt; MIN_BITS[kt]:
+            add(&quot;TC06&quot;, &quot;high&quot;, c, &quot;%s key of %s bits is too small (min %d)&quot; % (kt.upper(), bits, MIN_BITS[kt]), &quot;Reissue with RSA 2048+/3072 or ECDSA P-256.&quot;)
+        sig = str(c.get(&quot;sig_alg&quot;, &quot;&quot;)).lower()
+        if any(w in sig for w in WEAK_SIG):
+            add(&quot;TC07&quot;, &quot;high&quot;, c, &quot;weak signature algorithm %s&quot; % c.get(&quot;sig_alg&quot;), &quot;Reissue with a SHA-256 based signature.&quot;)
+        if nb and na and public and (na - nb).days &gt; 398:
+            add(&quot;TC08&quot;, &quot;medium&quot;, c, &quot;lifetime %d days exceeds 398 days for a publicly trusted cert&quot; % (na - nb).days,
+                &quot;Publicly trusted certs must be &lt;=398 days and are getting shorter; automate renewal.&quot;)
+        if c.get(&quot;chain_complete&quot;) is False:
+            add(&quot;TC09&quot;, &quot;high&quot;, c, &quot;served chain is incomplete (missing intermediate)&quot;, &quot;Serve the full chain (leaf + intermediates); test with a fresh client.&quot;)
+        self_signed = c.get(&quot;self_signed&quot;)
+        if self_signed is None and c.get(&quot;subject_cn&quot;) and c.get(&quot;issuer_cn&quot;):
+            self_signed = c[&quot;subject_cn&quot;] == c[&quot;issuer_cn&quot;]
+        if self_signed and public:
+            add(&quot;TC10&quot;, &quot;high&quot;, c, &quot;self-signed certificate on a public endpoint&quot;, &quot;Use a publicly trusted CA cert, or mark public=false if internal-only.&quot;)
+        if not c.get(&quot;owner&quot;):
+            add(&quot;TC11&quot;, &quot;medium&quot;, c, &quot;no owner recorded&quot;, &quot;Name a team or person who gets the expiry alert.&quot;)
+        if any(str(s).startswith(&quot;*.&quot;) for s in sans):
+            for s in sans:
+                if str(s).startswith(&quot;*.&quot;):
+                    wildcard_envs.setdefault(s, set()).add(str(c.get(&quot;environment&quot;, &quot;unknown&quot;)))
+        if not auto and not c.get(&quot;renewal_runbook&quot;):
+            add(&quot;TC12&quot;, &quot;low&quot;, c, &quot;manual renewal without a runbook link&quot;, &quot;Add a short renewal runbook (CSR, CA, deploy targets, test).&quot;)
+    for wc, envs in wildcard_envs.items():
+        if &quot;production&quot; in envs and len(envs) &gt; 1:
+            findings.append({&quot;code&quot;: &quot;TC13&quot;, &quot;severity&quot;: &quot;medium&quot;, &quot;cert&quot;: wc,
+                             &quot;message&quot;: &quot;wildcard %s is used in production and %s&quot; % (wc, &quot;, &quot;.join(sorted(envs - {&quot;production&quot;}))),
+                             &quot;fix&quot;: &quot;Use separate certs per environment to shrink the blast radius of a leaked key.&quot;})
+    expiry_dates.sort()
+    for i in range(len(expiry_dates)):
+        window = [n for d, n in expiry_dates if 0 &lt;= (d - expiry_dates[i][0]).days &lt;= 7 and d &gt;= today]
+        if len(window) &gt;= 3:
+            findings.append({&quot;code&quot;: &quot;TC15&quot;, &quot;severity&quot;: &quot;low&quot;, &quot;cert&quot;: &quot;, &quot;.join(window),
+                             &quot;message&quot;: &quot;%d certs expire within the same 7-day window&quot; % len(window),
+                             &quot;fix&quot;: &quot;Stagger renewals so one bad week cannot take down several services.&quot;})
+            break
+    findings.sort(key=lambda f: (SEV_ORDER[f[&quot;severity&quot;]], f[&quot;code&quot;], f[&quot;cert&quot;]))
+    return findings
+
+
+def report(certs, findings, today):
+    lines = [&quot;TLS certificate check as of %s - %d certificates&quot; % (today, len(certs)), &quot;&quot;]
+    lines.append(&quot;%-24s %-12s %6s  %-10s %s&quot; % (&quot;NAME&quot;, &quot;EXPIRES&quot;, &quot;DAYS&quot;, &quot;AUTO&quot;, &quot;OWNER&quot;))
+    for c in sorted(certs, key=lambda c: c.get(&quot;_days_left&quot;, -10**6)):
+        na = parse_date(c.get(&quot;not_after&quot;))
+        lines.append(&quot;%-24s %-12s %6s  %-10s %s&quot; % (c[&quot;name&quot;][:24], na or &quot;?&quot;, c.get(&quot;_days_left&quot;, &quot;?&quot;),
+                                                  &quot;yes&quot; if c.get(&quot;auto_renew&quot;) else &quot;no&quot;, c.get(&quot;owner&quot;) or &quot;-&quot;))
+    counts = {s: sum(1 for f in findings if f[&quot;severity&quot;] == s) for s in SEV_ORDER}
+    lines += [&quot;&quot;, &quot;Findings: %d high, %d medium, %d low&quot; % (counts[&quot;high&quot;], counts[&quot;medium&quot;], counts[&quot;low&quot;]), &quot;&quot;]
+    for f in findings:
+        lines.append(&quot;[%s] %s %s: %s&quot; % (f[&quot;severity&quot;].upper(), f[&quot;code&quot;], f[&quot;cert&quot;], f[&quot;message&quot;]))
+        lines.append(&quot;    fix: %s&quot; % f[&quot;fix&quot;])
+    if not findings:
+        lines.append(&quot;No findings.&quot;)
+    return &quot;\n&quot;.join(lines)
+
+
+def self_test():
+    today = dt.date(2026, 11, 11)
+    base = {&quot;name&quot;: &quot;ok&quot;, &quot;hosts&quot;: [&quot;a.example.com&quot;], &quot;sans&quot;: [&quot;a.example.com&quot;], &quot;not_before&quot;: &quot;2026-09-01&quot;,
+            &quot;not_after&quot;: &quot;2027-01-20&quot;, &quot;key_type&quot;: &quot;ec&quot;, &quot;key_bits&quot;: 256, &quot;sig_alg&quot;: &quot;ecdsa-with-SHA256&quot;,
+            &quot;auto_renew&quot;: True, &quot;owner&quot;: &quot;web&quot;, &quot;chain_complete&quot;: True, &quot;environment&quot;: &quot;production&quot;}
+
+    def run(**kw):
+        c = dict(base); c.update(kw)
+        return {f[&quot;code&quot;] for f in check([c], today)}
+
+    cases = [
+        (&quot;clean&quot;, run(), set()),
+        (&quot;TC01 expired&quot;, run(not_after=&quot;2026-11-01&quot;) &gt;= {&quot;TC01&quot;}, True),
+        (&quot;TC02 critical&quot;, run(not_after=&quot;2026-11-20&quot;) &gt;= {&quot;TC02&quot;}, True),
+        (&quot;TC03 manual 30d&quot;, run(not_after=&quot;2026-12-05&quot;, auto_renew=False, renewal_runbook=&quot;x&quot;) &gt;= {&quot;TC03&quot;}, True),
+        (&quot;TC04 stuck renewal&quot;, &quot;TC04&quot; in run(not_after=&quot;2026-11-28&quot;), True),
+        (&quot;TC05 SAN miss&quot;, &quot;TC05&quot; in run(hosts=[&quot;b.example.com&quot;]), True),
+        (&quot;wildcard one label&quot;, host_covered(&quot;a.example.com&quot;, [&quot;*.example.com&quot;]) and not host_covered(&quot;x.a.example.com&quot;, [&quot;*.example.com&quot;]) and not host_covered(&quot;example.com&quot;, [&quot;*.example.com&quot;]), True),
+        (&quot;TC06 weak rsa&quot;, &quot;TC06&quot; in run(key_type=&quot;rsa&quot;, key_bits=1024), True),
+        (&quot;TC07 sha1&quot;, &quot;TC07&quot; in run(sig_alg=&quot;sha1WithRSAEncryption&quot;), True),
+        (&quot;TC08 long life&quot;, &quot;TC08&quot; in run(not_before=&quot;2025-01-01&quot;, not_after=&quot;2027-01-01&quot;), True),
+        (&quot;TC08 private ok&quot;, &quot;TC08&quot; in run(not_before=&quot;2025-01-01&quot;, not_after=&quot;2027-01-01&quot;, public=False), False),
+        (&quot;TC09 chain&quot;, &quot;TC09&quot; in run(chain_complete=False), True),
+        (&quot;TC10 self-signed&quot;, &quot;TC10&quot; in run(self_signed=True), True),
+        (&quot;TC11 owner&quot;, &quot;TC11&quot; in run(owner=&quot;&quot;), True),
+        (&quot;TC14 future&quot;, &quot;TC14&quot; in run(not_before=&quot;2026-12-01&quot;), True),
+    ]
+    two = [dict(base, name=&quot;w1&quot;, sans=[&quot;*.example.com&quot;], hosts=[&quot;a.example.com&quot;]),
+           dict(base, name=&quot;w2&quot;, sans=[&quot;*.example.com&quot;], hosts=[&quot;a.example.com&quot;], environment=&quot;staging&quot;)]
+    cases.append((&quot;TC13 shared wildcard&quot;, any(f[&quot;code&quot;] == &quot;TC13&quot; for f in check(two, today)), True))
+    three = [dict(base, name=&quot;c%d&quot; % i, not_after=&quot;2027-01-0%d&quot; % (i + 1)) for i in range(3)]
+    cases.append((&quot;TC15 cluster&quot;, any(f[&quot;code&quot;] == &quot;TC15&quot; for f in check(three, today)), True))
+    cases.append((&quot;date formats&quot;, parse_date(&quot;Nov 11 10:00:00 2026 GMT&quot;) == dt.date(2026, 11, 11), True))
+    ok = 0
+    for name, got, want in cases:
+        passed = got == want
+        ok += passed
+        print(&quot;%s  %s&quot; % (&quot;PASS&quot; if passed else &quot;FAIL&quot;, name))
+    print(&quot;%d/%d passed&quot; % (ok, len(cases)))
+    return 0 if ok == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument(&quot;inventory&quot;, nargs=&quot;?&quot;)
+    ap.add_argument(&quot;--today&quot;, help=&quot;as-of date YYYY-MM-DD (default: today)&quot;)
+    ap.add_argument(&quot;--warn-days&quot;, type=int, default=30)
+    ap.add_argument(&quot;--crit-days&quot;, type=int, default=14)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.inventory:
+        ap.print_usage(); return 2
+    try:
+        today = parse_date(a.today) if a.today else dt.date.today()
+        certs = load(a.inventory, os.path.dirname(os.path.abspath(a.inventory)))
+        findings = check(certs, today, a.warn_days, a.crit_days)
+    except (OSError, ValueError, KeyError, json.JSONDecodeError, ssl.SSLError) as e:
+        print(&quot;input error: %s&quot; % e, file=sys.stderr)
+        return 2
+    if a.json:
+        clean = [{k: v for k, v in c.items() if not k.startswith(&quot;_&quot;) or k == &quot;_days_left&quot;} for c in certs]
+        print(json.dumps({&quot;today&quot;: str(today), &quot;certificates&quot;: clean, &quot;findings&quot;: findings}, indent=2, default=str))
+    else:
+        print(report(certs, findings, today))
+    return 1 if any(f[&quot;severity&quot;] == &quot;high&quot; for f in findings) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/tls-certificate-expiry-and-inventory-checker',TI="TLS Certificate Expiry and Inventory Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

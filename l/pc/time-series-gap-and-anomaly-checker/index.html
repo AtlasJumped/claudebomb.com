@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Time Series Gap and Anomaly Checker | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: time-series-gap-anomaly-checker description: Checks CSV time series (metrics, sensor readings, sales by hour) for data problems before you c">
+<meta property="og:title" content="Time Series Gap and Anomaly Checker | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: time-series-gap-anomaly-checker description: Checks CSV time series (metrics, sensor readings, sales by hour) for data problems before you c">
+<meta property="og:url" content="https://claudebomb.com/l/pc/time-series-gap-and-anomaly-checker/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/time-series-gap-and-anomaly-checker/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Time Series Gap and Anomaly Checker</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: time-series-gap-anomaly-checker
+description: Checks CSV time series (metrics, sensor readings, sales by hour) for data problems before you chart or alert on them: missing intervals, duplicate or out-of-order timestamps, empty values, flatlines from stuck exporters, robust median/MAD spikes, and counter resets. Use when a dashboard looks wrong, before training a forecast, or when asking &quot;is this data complete?&quot;. Includes a stdlib Python checker with --self-test.
+---
+
+# Time Series Gap and Anomaly Checker
+
+You help analysts, SREs, and data engineers decide whether a time series can be trusted. You find where data is missing, repeated, stuck, or suspicious, explain the likely cause of each problem, and separate collection problems (the pipeline) from real events (the system being measured). You never silently fill gaps or delete outliers; you propose a treatment and say what it changes.
+
+## Files in this skill
+
+- `scripts/ts_check.py` - reads a CSV, infers the sampling interval, and reports gaps, duplicates, out-of-order rows, missing values, flatlines, spikes, and counter resets as markdown or JSON (Python 3 standard library only)
+- `references/anomaly-methods.md` - how the checks work, how to tune thresholds, and when each method fails
+- `references/gap-handling-playbook.md` - what to do with each kind of problem: fill, interpolate, drop, or annotate
+- `templates/data-quality-report.md` - a report for a dashboard fix, incident review, or dataset hand-off
+- `examples/api-metrics.csv` - three hours of 5-minute API metrics with a scrape outage, a duplicate, a stuck value, a latency spike, and a counter reset
+
+## Workflow
+
+### 1. Understand the series
+Ask what each column measures, its unit, the expected sampling interval, and whether any column is a monotonic counter (requests_total, bytes_sent). Ask which time zone naive timestamps use; the script treats them as UTC.
+
+### 2. Run the checker
+```
+python3 scripts/ts_check.py examples/api-metrics.csv --counter requests_total
+python3 scripts/ts_check.py data.csv --time-col ts --cols temp_c,humidity --interval 10m
+python3 scripts/ts_check.py data.csv --z 5 --window 12 --flatline-points 12 --json &gt; report.json
+python3 scripts/ts_check.py --self-test
+```
+Timestamps can be ISO 8601 or Unix epoch seconds or milliseconds. Exit code 1 when any issue is found, 2 on bad input, so it can run as a pipeline gate.
+
+### 3. Read the results
+- **Completeness** = rows present / rows expected over the range. Below 95% usually means aggregates and averages are biased.
+- **gap**: spacing over 1.5x the interval. Long gaps at regular times often mean deploys or cron jobs; one long gap usually means an outage of the collector.
+- **duplicate / out_of_order**: double scrapes, retries, or merged files.
+- **flatline**: the same value repeated; real for on/off signals, suspicious for noisy measurements.
+- **spike**: robust z-score against a rolling median. Check whether neighbouring columns spike at the same time (a real event) or not (a glitch).
+- **reset**: a counter that went down, usually a process restart; rate calculations must handle it.
+
+### 4. Recommend treatment
+Use `references/gap-handling-playbook.md`. Tune thresholds with `references/anomaly-methods.md` if the data is seasonal, bursty, or very sparse.
+
+### 5. Report
+Fill `templates/data-quality-report.md` with the summary numbers, the top issues with times in the user&#x27;s time zone, the suspected cause, and the agreed treatment.
+
+## Rules
+
+- Report problems; do not alter the source data. Write cleaned data to a new file and document every change.
+- Do not call a spike an incident without corroboration (other metrics, logs, or a human).
+- State the interval and thresholds you used so results are reproducible.
+- Convert UTC times to the user&#x27;s time zone when presenting them.
+FILE:references/anomaly-methods.md
+# Anomaly Methods and Tuning
+
+## Interval inference
+The expected interval is the median spacing between sorted unique timestamps. This survives a few gaps and jitter. Pass `--interval` when the series is mostly gaps (sparse events) or when you know the scrape interval.
+
+A gap is any spacing above 1.5x the interval, so 5-minute data with a 7-minute spacing is not a gap but a 10-minute spacing is (1 missing point).
+
+## Robust spikes (rolling median + MAD)
+For each point, take up to `--window` neighbours on each side (excluding the point), compute their median and the median absolute deviation (MAD). The robust z-score is:
+
+    z = |value - median| / (1.4826 * MAD)
+
+1.4826 makes MAD comparable to a standard deviation for normal data. Default threshold 4 is roughly a 1-in-15,000 event for normal noise. When more than half the neighbours are identical (MAD = 0), the mean absolute deviation is used, and for a perfectly flat neighbourhood 1% of the level.
+
+Why not mean and standard deviation? One large spike inflates the standard deviation and hides itself. The median and MAD ignore it.
+
+## Tuning
+| Data | Suggestion |
+|---|---|
+| Noisy metrics (latency, CPU) | `--z 5`, `--window 12` |
+| Daily or weekly seasonality | Check one season at a time, or compare to the same hour last week before trusting spikes |
+| Bursty business data (orders) | Higher `--z` (6-8); spikes are often real |
+| Integer or low-resolution values | Expect MAD = 0; raise `--z` or aggregate first |
+| On/off or status signals | Ignore flatline; check only gaps |
+| Counters | Always pass `--counter`; check rates after handling resets |
+
+## Known limits
+- Gradual drifts and level shifts are not spikes; plot the series or compare week-over-week medians.
+- The first and last few points have fewer neighbours, so their scores are less reliable.
+- Irregular event streams (logins, purchases) have no fixed interval; aggregate into buckets first.
+FILE:references/gap-handling-playbook.md
+# Gap and Anomaly Handling Playbook
+
+| Problem | Likely causes | Default treatment | Avoid |
+|---|---|---|---|
+| Short gap (1-2 points) | scrape timeout, network blip | Linear interpolation for smooth signals; leave null for counts | Filling counts with zero |
+| Long gap | collector down, deploy, host off | Leave null and annotate the chart; exclude from SLO math or count as unknown | Interpolating across hours |
+| Duplicate timestamps | double scrape, retried batch, merged files | Keep one row (first, or the one with most fields); check whether values differ | Summing duplicates |
+| Out-of-order rows | late-arriving data, file concatenation | Sort by time before any windowed calculation | Assuming file order is time order |
+| Missing values | sensor dropout, parse errors, &quot;N/A&quot; strings | Fix the parser first; then treat as a gap | Treating blank as 0 |
+| Flatline | stuck exporter, cached value, sensor freeze | Confirm with a second source; mark as suspect | Trusting it for alerts |
+| Spike (single point) | glitch, unit error, real burst | Check related columns and logs; cap or remove only with a documented reason | Deleting without a note |
+| Counter reset | process restart, overflow | Compute rates per segment (rate after reset = new value / interval) | Negative rates |
+
+## Before modeling or forecasting
+1. Sort, de-duplicate, and regularize to the expected interval (insert nulls for missing slots).
+2. Decide gap policy per column and record it.
+3. Keep a mask column (`is_imputed`) so models and readers know what was filled.
+4. Re-run the checker on the cleaned file and attach both reports.
+
+## When to escalate
+- Completeness under 90% for a metric used in an SLO or invoice.
+- Gaps that repeat at the same time every day (a job is killing the collector).
+- Spikes that appear in all hosts at once (a real incident, not a data issue).
+FILE:templates/data-quality-report.md
+# Time Series Data Quality - &lt;dataset or dashboard&gt;
+
+**Source:** &lt;file / query&gt;  **Range:** &lt;start&gt; to &lt;end&gt; (&lt;time zone&gt;)  **Interval:** &lt;expected&gt;
+**Rows:** &lt;n&gt;  **Completeness:** &lt;percent&gt;  **Thresholds:** z=&lt;z&gt;, window=&lt;w&gt;, flatline=&lt;n&gt;
+
+## Summary
+&lt;two sentences: can this data be trusted for the intended use, and what must change first&gt;
+
+## Issues
+| Kind | When (&lt;time zone&gt;) | Column | Detail | Suspected cause | Treatment |
+|---|---|---|---|---|---|
+| | | | | | |
+
+## Decisions
+- Gap policy: &lt;interpolate short gaps / leave null / exclude&gt;
+- Outlier policy: &lt;keep / cap / remove with note&gt;
+- Counter handling: &lt;segment rates at resets&gt;
+
+## Follow-ups
+- [ ] &lt;fix collector / parser / alert&gt; - owner &lt;name&gt; - due &lt;date&gt;
+
+Generated with scripts/ts_check.py. Source data was not modified.
+FILE:examples/api-metrics.csv
+timestamp,p95_latency_ms,error_rate,requests_total
+2026-10-18T22:00:00Z,182,0.4,1200
+2026-10-18T22:05:00Z,176,0.3,2435
+2026-10-18T22:10:00Z,190,0.5,3705
+2026-10-18T22:15:00Z,185,0.4,5010
+2026-10-18T22:20:00Z,179,0.3,6210
+2026-10-18T22:25:00Z,188,0.4,7445
+2026-10-18T22:30:00Z,181,0.5,8715
+2026-10-18T22:35:00Z,193,0.4,10020
+2026-10-18T22:35:00Z,193,0.4,10020
+2026-10-18T22:40:00Z,177,0.3,11220
+2026-10-18T22:45:00Z,184,0.4,12455
+2026-10-18T22:50:00Z,186,0.4,13725
+2026-10-18T22:55:00Z,180,0.4,15030
+2026-10-18T23:00:00Z,191,0.4,16230
+2026-10-18T23:05:00Z,,0.4,17465
+2026-10-18T23:10:00Z,178,0.4,18735
+2026-10-18T23:15:00Z,187,0.4,20040
+2026-10-18T23:20:00Z,182,0.4,21240
+2026-10-18T23:25:00Z,189,0.4,22475
+2026-10-18T23:30:00Z,612,2.1,23745
+2026-10-18T23:35:00Z,185,0.5,25050
+2026-10-18T23:40:00Z,180,0.3,26250
+2026-10-18T23:45:00Z,184,0.4,27485
+2026-10-19T00:10:00Z,188,0.5,28755
+2026-10-19T00:15:00Z,183,0.4,30060
+2026-10-19T00:20:00Z,177,0.3,31260
+2026-10-19T00:25:00Z,185,0.4,32495
+2026-10-19T00:30:00Z,182,0.5,1180
+2026-10-19T00:35:00Z,189,0.4,2485
+2026-10-19T00:40:00Z,184,0.3,3685
+2026-10-19T00:45:00Z,180,0.4,4920
+2026-10-19T00:50:00Z,186,0.5,6190
+2026-10-19T00:55:00Z,183,0.4,7495
+FILE:scripts/ts_check.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Time series gap and anomaly checker for CSV metrics (Python 3 standard library only).
+
+Reads a CSV with a timestamp column and one or more numeric columns, infers the sampling
+interval (median spacing) unless --interval is given, and reports:
+  gap          missing samples (spacing &gt; 1.5 x interval), with how many points are missing
+  duplicate    repeated timestamps
+  out_of_order timestamps that go backwards
+  missing      empty, NaN, or non-numeric values
+  flatline     the same value repeated for &gt;= --flatline-points samples (stuck sensor/exporter)
+  spike        robust outliers: |value - rolling median| / (1.4826 * MAD) &gt;= --z (default 4);
+               if MAD is 0 the mean absolute deviation is used instead
+  reset        a counter column that decreases (--counter col1,col2)
+
+Timestamps: ISO 8601 (with Z or offset; naive = UTC) or Unix epoch seconds/milliseconds.
+
+Usage:
+  python3 ts_check.py metrics.csv
+  python3 ts_check.py metrics.csv --time-col ts --cols cpu,latency_ms --interval 5m --z 5
+  python3 ts_check.py metrics.csv --counter requests_total --json
+  python3 ts_check.py --self-test
+Exit code: 0 clean, 1 issues found, 2 bad input.
+&quot;&quot;&quot;
+import argparse
+import csv
+import datetime as dt
+import io
+import json
+import math
+import re
+import statistics
+import sys
+
+
+class InputError(ValueError):
+    pass
+
+
+def parse_ts(raw):
+    s = (raw or &quot;&quot;).strip()
+    if not s:
+        raise InputError(&quot;empty timestamp&quot;)
+    if re.fullmatch(r&quot;-?\d+(\.\d+)?&quot;, s):
+        v = float(s)
+        return v / 1000.0 if v &gt; 1e11 else v
+    try:
+        t = dt.datetime.fromisoformat(s.replace(&quot;Z&quot;, &quot;+00:00&quot;).replace(&quot; &quot;, &quot;T&quot;, 1))
+    except ValueError:
+        raise InputError(f&quot;unparseable timestamp {s!r}&quot;)
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=dt.timezone.utc)
+    return t.timestamp()
+
+
+def parse_interval(s):
+    m = re.fullmatch(r&quot;(\d+(?:\.\d+)?)\s*(ms|s|m|h|d)?&quot;, s.strip())
+    if not m:
+        raise InputError(f&quot;bad interval {s!r}; use e.g. 30s, 5m, 1h&quot;)
+    mult = {&quot;ms&quot;: 0.001, &quot;s&quot;: 1, None: 1, &quot;m&quot;: 60, &quot;h&quot;: 3600, &quot;d&quot;: 86400}[m.group(2)]
+    return float(m.group(1)) * mult
+
+
+def fmt_ts(ts):
+    return dt.datetime.fromtimestamp(ts, dt.timezone.utc).strftime(&quot;%Y-%m-%dT%H:%M:%SZ&quot;)
+
+
+def fmt_dur(sec):
+    for unit, size in ((&quot;d&quot;, 86400), (&quot;h&quot;, 3600), (&quot;m&quot;, 60)):
+        if sec &gt;= size:
+            v = sec / size
+            return f&quot;{v:.0f}{unit}&quot; if v == int(v) else f&quot;{v:.1f}{unit}&quot;
+    return f&quot;{sec:g}s&quot;
+
+
+def to_float(raw):
+    s = (raw or &quot;&quot;).strip()
+    if s == &quot;&quot; or s.lower() in (&quot;nan&quot;, &quot;null&quot;, &quot;none&quot;, &quot;na&quot;, &quot;n/a&quot;, &quot;-&quot;):
+        return None
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return None if math.isnan(v) or math.isinf(v) else v
+
+
+def load(text, time_col=None, cols=None):
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames:
+        raise InputError(&quot;CSV has no header row&quot;)
+    fields = [f.strip() for f in reader.fieldnames]
+    reader.fieldnames = fields
+    if time_col is None:
+        cands = [f for f in fields if f.lower() in (&quot;timestamp&quot;, &quot;time&quot;, &quot;ts&quot;, &quot;date&quot;, &quot;datetime&quot;)]
+        time_col = cands[0] if cands else fields[0]
+    if time_col not in fields:
+        raise InputError(f&quot;time column {time_col!r} not in header {fields}&quot;)
+    value_cols = cols or [f for f in fields if f != time_col]
+    for c in value_cols:
+        if c not in fields:
+            raise InputError(f&quot;column {c!r} not in header {fields}&quot;)
+    rows = []
+    for i, r in enumerate(reader, start=2):
+        rows.append({&quot;line&quot;: i, &quot;ts&quot;: parse_ts(r.get(time_col)),
+                     &quot;raw&quot;: {c: r.get(c) for c in value_cols}})
+    if len(rows) &lt; 3:
+        raise InputError(&quot;need at least 3 data rows&quot;)
+    return time_col, value_cols, rows
+
+
+def rolling_robust(values, idx, window):
+    lo, hi = max(0, idx - window), min(len(values), idx + window + 1)
+    neigh = [values[j] for j in range(lo, hi) if j != idx and values[j] is not None]
+    if len(neigh) &lt; 4:
+        return None, None
+    med = statistics.median(neigh)
+    mad = statistics.median(abs(v - med) for v in neigh)
+    scale = 1.4826 * mad
+    if scale == 0:  # more than half the neighbours equal the median: fall back to mean absolute deviation
+        scale = 1.2533 * statistics.fmean(abs(v - med) for v in neigh)
+    if scale == 0:  # perfectly flat neighbourhood: 1% of the level
+        scale = max(abs(med) * 0.01, 1e-9)
+    return med, scale
+
+
+def check(text, time_col=None, cols=None, interval=None, z=4.0, window=6, flatline_points=6, counters=()):
+    time_col, value_cols, rows = load(text, time_col, cols)
+    issues = []
+
+    def add(kind, line, ts, col, detail):
+        issues.append({&quot;kind&quot;: kind, &quot;line&quot;: line, &quot;time&quot;: fmt_ts(ts), &quot;column&quot;: col, &quot;detail&quot;: detail})
+
+    # order and duplicates (in file order)
+    seen = {}
+    for prev, cur in zip(rows, rows[1:]):
+        if cur[&quot;ts&quot;] &lt; prev[&quot;ts&quot;]:
+            add(&quot;out_of_order&quot;, cur[&quot;line&quot;], cur[&quot;ts&quot;], time_col, f&quot;goes back {fmt_dur(prev[&#x27;ts&#x27;] - cur[&#x27;ts&#x27;])} from line {prev[&#x27;line&#x27;]}&quot;)
+    for r in rows:
+        if r[&quot;ts&quot;] in seen:
+            add(&quot;duplicate&quot;, r[&quot;line&quot;], r[&quot;ts&quot;], time_col, f&quot;same timestamp as line {seen[r[&#x27;ts&#x27;]]}&quot;)
+        else:
+            seen[r[&quot;ts&quot;]] = r[&quot;line&quot;]
+    srt = sorted({r[&quot;ts&quot;]: r for r in reversed(rows)}.values(), key=lambda r: r[&quot;ts&quot;])  # first occurrence wins
+    diffs = [b[&quot;ts&quot;] - a[&quot;ts&quot;] for a, b in zip(srt, srt[1:]) if b[&quot;ts&quot;] &gt; a[&quot;ts&quot;]]
+    if interval is None:
+        if not diffs:
+            raise InputError(&quot;cannot infer interval: all timestamps identical&quot;)
+        interval = statistics.median(diffs)
+    expected = int(round((srt[-1][&quot;ts&quot;] - srt[0][&quot;ts&quot;]) / interval)) + 1
+    missing_points = 0
+    for a, b in zip(srt, srt[1:]):
+        d = b[&quot;ts&quot;] - a[&quot;ts&quot;]
+        if d &gt; 1.5 * interval:
+            n = int(round(d / interval)) - 1
+            missing_points += n
+            add(&quot;gap&quot;, b[&quot;line&quot;], a[&quot;ts&quot;], time_col, f&quot;{fmt_dur(d)} without data after {fmt_ts(a[&#x27;ts&#x27;])} (~{n} missing)&quot;)
+
+    stats = {}
+    for c in value_cols:
+        vals = [to_float(r[&quot;raw&quot;][c]) for r in srt]
+        for r, v in zip(srt, vals):
+            if v is None:
+                add(&quot;missing&quot;, r[&quot;line&quot;], r[&quot;ts&quot;], c, f&quot;value {r[&#x27;raw&#x27;][c]!r} is empty or not numeric&quot;)
+        # flatline runs
+        run_start = 0
+        for i in range(1, len(vals) + 1):
+            if i &lt; len(vals) and vals[i] is not None and vals[i] == vals[run_start]:
+                continue
+            length = i - run_start
+            if vals[run_start] is not None and length &gt;= flatline_points:
+                r0, r1 = srt[run_start], srt[i - 1]
+                add(&quot;flatline&quot;, r0[&quot;line&quot;], r0[&quot;ts&quot;], c, f&quot;value {vals[run_start]:g} repeated {length}x until {fmt_ts(r1[&#x27;ts&#x27;])}&quot;)
+            run_start = i
+        if c in counters:
+            for i in range(1, len(vals)):
+                if vals[i] is not None and vals[i - 1] is not None and vals[i] &lt; vals[i - 1]:
+                    add(&quot;reset&quot;, srt[i][&quot;line&quot;], srt[i][&quot;ts&quot;], c, f&quot;counter dropped {vals[i - 1]:g} -&gt; {vals[i]:g} (restart or wrap)&quot;)
+        else:
+            for i, v in enumerate(vals):
+                if v is None:
+                    continue
+                med, scale = rolling_robust(vals, i, window)
+                if med is None:
+                    continue
+                score = abs(v - med) / scale
+                if score &gt;= z:
+                    add(&quot;spike&quot;, srt[i][&quot;line&quot;], srt[i][&quot;ts&quot;], c, f&quot;{v:g} vs local median {med:g} (robust z {score:.1f})&quot;)
+        good = [v for v in vals if v is not None]
+        stats[c] = {&quot;count&quot;: len(good), &quot;min&quot;: min(good) if good else None, &quot;max&quot;: max(good) if good else None,
+                    &quot;median&quot;: statistics.median(good) if good else None}
+
+    order = {&quot;out_of_order&quot;: 0, &quot;duplicate&quot;: 1, &quot;gap&quot;: 2, &quot;reset&quot;: 3, &quot;missing&quot;: 4, &quot;flatline&quot;: 5, &quot;spike&quot;: 6}
+    issues.sort(key=lambda x: (order[x[&quot;kind&quot;]], x[&quot;time&quot;], x[&quot;column&quot;]))
+    counts = {}
+    for it in issues:
+        counts[it[&quot;kind&quot;]] = counts.get(it[&quot;kind&quot;], 0) + 1
+    return {
+        &quot;rows&quot;: len(rows), &quot;time_column&quot;: time_col, &quot;columns&quot;: value_cols,
+        &quot;start&quot;: fmt_ts(srt[0][&quot;ts&quot;]), &quot;end&quot;: fmt_ts(srt[-1][&quot;ts&quot;]),
+        &quot;interval&quot;: fmt_dur(interval), &quot;interval_seconds&quot;: interval,
+        &quot;expected_points&quot;: expected, &quot;missing_points&quot;: missing_points,
+        &quot;completeness&quot;: round(100.0 * len(srt) / expected, 1) if expected else 100.0,
+        &quot;stats&quot;: stats, &quot;counts&quot;: counts, &quot;issues&quot;: issues,
+    }
+
+
+def to_markdown(r):
+    lines = [&quot;# Time series check&quot;, &quot;&quot;,
+             f&quot;Rows: {r[&#x27;rows&#x27;]}  Range: {r[&#x27;start&#x27;]} to {r[&#x27;end&#x27;]}  Interval: {r[&#x27;interval&#x27;]}&quot;,
+             f&quot;Completeness: {r[&#x27;completeness&#x27;]}% ({r[&#x27;missing_points&#x27;]} of {r[&#x27;expected_points&#x27;]} expected points missing)&quot;, &quot;&quot;,
+             &quot;| Column | Count | Min | Median | Max |&quot;, &quot;|---|---|---|---|---|&quot;]
+    for c, s in r[&quot;stats&quot;].items():
+        f = lambda v: &quot;-&quot; if v is None else f&quot;{v:g}&quot;
+        lines.append(f&quot;| {c} | {s[&#x27;count&#x27;]} | {f(s[&#x27;min&#x27;])} | {f(s[&#x27;median&#x27;])} | {f(s[&#x27;max&#x27;])} |&quot;)
+    lines += [&quot;&quot;, &quot;## Issues&quot;]
+    if not r[&quot;issues&quot;]:
+        lines.append(&quot;No issues found.&quot;)
+    else:
+        lines.append(&quot;Totals: &quot; + &quot;, &quot;.join(f&quot;{k} {v}&quot; for k, v in r[&quot;counts&quot;].items()))
+        lines += [&quot;&quot;, &quot;| Kind | Time (UTC) | Column | Line | Detail |&quot;, &quot;|---|---|---|---|---|&quot;]
+        lines += [f&quot;| {i[&#x27;kind&#x27;]} | {i[&#x27;time&#x27;]} | {i[&#x27;column&#x27;]} | {i[&#x27;line&#x27;]} | {i[&#x27;detail&#x27;]} |&quot; for i in r[&quot;issues&quot;]]
+    return &quot;\n&quot;.join(lines)
+
+
+def self_test():
+    cases = []
+
+    def ok(name, cond):
+        cases.append((name, bool(cond)))
+
+    base = 1760860800  # 2025-10-19T08:00:00Z
+    def csv_of(points, header=&quot;timestamp,value&quot;):
+        return header + &quot;\n&quot; + &quot;\n&quot;.join(f&quot;{t},{v}&quot; for t, v in points) + &quot;\n&quot;
+    wave = [10 + (i % 3) for i in range(30)]
+    clean = csv_of([(base + 60 * i, v) for i, v in enumerate(wave)])
+    r = check(clean)
+    ok(&quot;clean series has no issues&quot;, r[&quot;issues&quot;] == [])
+    ok(&quot;interval inferred as 1m&quot;, r[&quot;interval&quot;] == &quot;1m&quot;)
+    ok(&quot;completeness 100%&quot;, r[&quot;completeness&quot;] == 100.0)
+    gap_pts = [(base + 60 * i, v) for i, v in enumerate(wave) if not 10 &lt;= i &lt; 15]
+    r = check(csv_of(gap_pts))
+    ok(&quot;gap detected&quot;, r[&quot;counts&quot;].get(&quot;gap&quot;) == 1)
+    ok(&quot;gap counts 5 missing points&quot;, r[&quot;missing_points&quot;] == 5)
+    spiky = list(wave); spiky[20] = 95
+    r = check(csv_of([(base + 60 * i, v) for i, v in enumerate(spiky)]))
+    ok(&quot;spike detected&quot;, [i[&quot;line&quot;] for i in r[&quot;issues&quot;] if i[&quot;kind&quot;] == &quot;spike&quot;] == [22])
+    flat = list(wave); flat[5:13] = [7] * 8
+    r = check(csv_of([(base + 60 * i, v) for i, v in enumerate(flat)]), z=100)
+    ok(&quot;flatline detected&quot;, r[&quot;counts&quot;].get(&quot;flatline&quot;) == 1)
+    miss = [(base + 60 * i, (&quot;&quot; if i == 4 else &quot;NaN&quot; if i == 9 else v)) for i, v in enumerate(wave)]
+    ok(&quot;missing values detected&quot;, check(csv_of(miss)).get(&quot;counts&quot;).get(&quot;missing&quot;) == 2)
+    dup = [(base + 60 * i, v) for i, v in enumerate(wave)]
+    dup.insert(6, dup[5])
+    ok(&quot;duplicate detected&quot;, check(csv_of(dup))[&quot;counts&quot;].get(&quot;duplicate&quot;) == 1)
+    ooo = [(base + 60 * i, v) for i, v in enumerate(wave)]
+    ooo[7], ooo[8] = ooo[8], ooo[7]
+    ok(&quot;out of order detected&quot;, check(csv_of(ooo))[&quot;counts&quot;].get(&quot;out_of_order&quot;) == 1)
+    counter = [(base + 60 * i, 100 * i if i &lt; 20 else 100 * (i - 20)) for i in range(30)]
+    r = check(csv_of(counter, &quot;ts,requests_total&quot;), counters=(&quot;requests_total&quot;,))
+    ok(&quot;counter reset detected&quot;, r[&quot;counts&quot;].get(&quot;reset&quot;) == 1 and &quot;spike&quot; not in r[&quot;counts&quot;])
+    iso_rows = &quot;time,cpu\n&quot; + &quot;\n&quot;.join(f&quot;2026-10-19T08:{i:02d}:00Z,{40 + (i % 2)}&quot; for i in range(0, 60, 5)) + &quot;\n&quot;
+    r = check(iso_rows)
+    ok(&quot;ISO timestamps and 5m interval&quot;, r[&quot;interval&quot;] == &quot;5m&quot; and r[&quot;issues&quot;] == [])
+    ms_rows = csv_of([((base + 30 * i) * 1000, v) for i, v in enumerate(wave)])
+    ok(&quot;epoch milliseconds accepted&quot;, check(ms_rows)[&quot;interval&quot;] == &quot;30s&quot;)
+    r = check(clean, interval=30.0)
+    ok(&quot;explicit 30s interval flags every 1m step as a gap&quot;, r[&quot;counts&quot;].get(&quot;gap&quot;) == 29 and r[&quot;completeness&quot;] &lt; 60)
+    jitter = csv_of([(base + 60 * i + (3 if i % 2 else -2), v) for i, v in enumerate(wave)])
+    ok(&quot;small timestamp jitter is not a gap&quot;, &quot;gap&quot; not in check(jitter)[&quot;counts&quot;])
+    multi = &quot;timestamp,a,b\n&quot; + &quot;\n&quot;.join(f&quot;{base + 60 * i},{wave[i]},{wave[i] * 2 if i != 12 else 500}&quot; for i in range(30)) + &quot;\n&quot;
+    r = check(multi, cols=[&quot;a&quot;, &quot;b&quot;])
+    ok(&quot;multi-column spike only in b&quot;, {i[&quot;column&quot;] for i in r[&quot;issues&quot;]} == {&quot;b&quot;})
+    for bad, label in ((&quot;timestamp,value\n1,2\n&quot;, &quot;too few rows rejected&quot;),
+                       (&quot;timestamp,value\nyesterday,1\ntoday,2\nnow,3\n&quot;, &quot;bad timestamp rejected&quot;)):
+        try:
+            check(bad)
+            ok(label, False)
+        except InputError:
+            ok(label, True)
+    ok(&quot;markdown renders&quot;, &quot;## Issues&quot; in to_markdown(check(clean)))
+    passed = sum(c for _, c in cases)
+    for name, c in cases:
+        print((&quot;PASS &quot; if c else &quot;FAIL &quot;) + name)
+    print(f&quot;{passed}/{len(cases)} passed&quot;)
+    return 0 if passed == len(cases) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=&quot;Find gaps, duplicates, flatlines, spikes, and counter resets in CSV metrics.&quot;)
+    ap.add_argument(&quot;csv&quot;, nargs=&quot;?&quot;, help=&quot;CSV file, or &#x27;-&#x27; for stdin&quot;)
+    ap.add_argument(&quot;--time-col&quot;)
+    ap.add_argument(&quot;--cols&quot;, help=&quot;comma-separated value columns (default: all except the time column)&quot;)
+    ap.add_argument(&quot;--interval&quot;, help=&quot;expected spacing, e.g. 30s, 5m, 1h (default: median spacing)&quot;)
+    ap.add_argument(&quot;--z&quot;, type=float, default=4.0, help=&quot;robust z-score threshold for spikes (default 4)&quot;)
+    ap.add_argument(&quot;--window&quot;, type=int, default=6, help=&quot;neighbours on each side for the rolling median (default 6)&quot;)
+    ap.add_argument(&quot;--flatline-points&quot;, type=int, default=6)
+    ap.add_argument(&quot;--counter&quot;, default=&quot;&quot;, help=&quot;comma-separated monotonic counter columns (checked for resets, not spikes)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.csv:
+        ap.error(&quot;csv path required (or --self-test)&quot;)
+    try:
+        text = sys.stdin.read() if a.csv == &quot;-&quot; else open(a.csv, encoding=&quot;utf-8-sig&quot;).read()
+        r = check(text, a.time_col, [c.strip() for c in a.cols.split(&quot;,&quot;)] if a.cols else None,
+                  parse_interval(a.interval) if a.interval else None, a.z, a.window, a.flatline_points,
+                  tuple(c.strip() for c in a.counter.split(&quot;,&quot;) if c.strip()))
+    except (OSError, InputError) as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    print(json.dumps(r, indent=2) if a.json else to_markdown(r))
+    return 1 if r[&quot;issues&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/time-series-gap-and-anomaly-checker',TI="Time Series Gap and Anomaly Checker";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>image to video 360 product rotaion | Open library | claudebomb.com</title>
+<meta name="description" content="{ &quot;model&quot;: &quot;veo-3.1&quot;, &quot;task&quot;: &quot;image_to_video_360_product_rotation&quot;, &quot;objective&quot;: &quot;Generate a photorealistic, silent, 360-degree rotation video from t">
+<meta property="og:title" content="image to video 360 product rotaion | Open library | claudebomb.com">
+<meta property="og:description" content="{ &quot;model&quot;: &quot;veo-3.1&quot;, &quot;task&quot;: &quot;image_to_video_360_product_rotation&quot;, &quot;objective&quot;: &quot;Generate a photorealistic, silent, 360-degree rotation video from t">
+<meta property="og:url" content="https://claudebomb.com/l/pc/image-to-video-360-product-rotaion/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/image-to-video-360-product-rotaion/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">image to video 360 product rotaion</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by ayoubelouardi3710. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">{
+  &quot;model&quot;: &quot;veo-3.1&quot;,
+  &quot;task&quot;: &quot;image_to_video_360_product_rotation&quot;,
+
+  &quot;objective&quot;: &quot;Generate a photorealistic, silent, 360-degree rotation video from the provided front and back images of the exact same product. Preserve 100% of the original product identity without modification, addition, removal, or hallucination. The product must appear naturally filled internally using ghost mannequin volume reconstruction, while remaining completely faithful to the original images. The garment must appear professionally ironed, perfectly smooth, crisp, and retail-ready while preserving all original details. Output must contain absolutely no audio.&quot;,
+
+  &quot;garment_condition_global_rule&quot;: {
+    &quot;all_clothing_must_be_ironed&quot;: true,
+    &quot;appearance&quot;: &quot;perfectly pressed, crisp, smooth, structured, premium retail presentation&quot;,
+    &quot;no_new_wrinkles&quot;: true,
+    &quot;no_random_fabric_folding&quot;: true,
+    &quot;maintain_original_wrinkle_data_if_present&quot;: true,
+    &quot;no_artificial_wrinkle_generation&quot;: true,
+    &quot;clean_finish&quot;: true,
+    &quot;brand_new_look&quot;: true
+  },
+
+  &quot;input&quot;: {
+    &quot;type&quot;: &quot;multi_image&quot;,
+    &quot;views&quot;: [
+      {
+        &quot;name&quot;: &quot;front&quot;,
+        &quot;role&quot;: &quot;primary_reference&quot;,
+        &quot;weight&quot;: 1.0
+      },
+      {
+        &quot;name&quot;: &quot;back&quot;,
+        &quot;role&quot;: &quot;secondary_reference&quot;,
+        &quot;weight&quot;: 1.0
+      }
+    ],
+
+    &quot;forensic_identity_lock&quot;: {
+      &quot;mode&quot;: &quot;strict&quot;,
+
+      &quot;geometry_lock&quot;: true,
+      &quot;silhouette_lock&quot;: true,
+      &quot;mesh_lock&quot;: true,
+
+      &quot;texture_lock&quot;: true,
+      &quot;fabric_pattern_lock&quot;: true,
+      &quot;stitching_lock&quot;: true,
+      &quot;wrinkle_lock&quot;: true,
+
+      &quot;color_lock&quot;: true,
+      &quot;material_lock&quot;: true,
+      &quot;surface_lock&quot;: true,
+
+      &quot;logo_lock&quot;: true,
+      &quot;label_lock&quot;: true,
+      &quot;branding_lock&quot;: true,
+
+      &quot;proportion_lock&quot;: true,
+      &quot;measurement_lock&quot;: true,
+
+      &quot;prevent_hallucination&quot;: true,
+      &quot;prevent_detail_invention&quot;: true,
+      &quot;prevent_detail_removal&quot;: true
+    }
+  },
+
+  &quot;geometry_reconstruction&quot;: {
+    &quot;method&quot;: &quot;constrained_true_3d_reconstruction&quot;,
+
+    &quot;source_constraint&quot;: &quot;only_use_information_present_in_input_images&quot;,
+
+    &quot;volume_generation&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;type&quot;: &quot;ghost_mannequin_volume&quot;,
+      &quot;visibility&quot;: &quot;none&quot;
+    },
+
+    &quot;reconstruction_rules&quot;: {
+      &quot;interpolate_only&quot;: true,
+      &quot;no_detail_creation&quot;: true,
+      &quot;no_surface_modification&quot;: true,
+      &quot;no_topology_change&quot;: true,
+      &quot;no_design_interpretation&quot;: true
+    },
+
+    &quot;mesh_constraints&quot;: {
+      &quot;rigid&quot;: true,
+      &quot;no_deformation&quot;: true,
+      &quot;no_shape_change&quot;: true,
+      &quot;no_texture_shift&quot;: true
+    }
+  },
+
+  &quot;animation&quot;: {
+    &quot;type&quot;: &quot;360_degree_rotation&quot;,
+    &quot;axis&quot;: &quot;vertical&quot;,
+    &quot;degrees&quot;: 360,
+    &quot;direction&quot;: &quot;clockwise&quot;,
+
+    &quot;speed&quot;: &quot;constant&quot;,
+    &quot;duration_seconds&quot;: 6,
+
+    &quot;motion_constraints&quot;: {
+      &quot;no_wobble&quot;: true,
+      &quot;no_jitter&quot;: true,
+      &quot;no_mesh_change&quot;: true,
+      &quot;no_texture_shift&quot;: true,
+      &quot;no_geometry_shift&quot;: true
+    },
+
+    &quot;start_state&quot;: &quot;exact_front_view&quot;,
+    &quot;end_state&quot;: &quot;exact_front_view&quot;,
+
+    &quot;loop&quot;: true
+  },
+
+  &quot;ghost_mannequin&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;visibility&quot;: &quot;invisible&quot;,
+
+    &quot;constraints&quot;: {
+      &quot;must_not_be_visible&quot;: true,
+      &quot;must_not_modify_surface&quot;: true,
+      &quot;must_not_modify_shape&quot;: true,
+      &quot;must_not_modify_wrinkles&quot;: true,
+      &quot;must_not_modify_fit&quot;: true
+    }
+  },
+
+  &quot;scene&quot;: {
+    &quot;background&quot;: {
+      &quot;type&quot;: &quot;pure_white&quot;,
+      &quot;color&quot;: &quot;#FFFFFF&quot;,
+      &quot;uniform&quot;: true
+    },
+
+    &quot;product_state&quot;: {
+      &quot;floating&quot;: true,
+      &quot;no_support_visible&quot;: true
+    },
+
+    &quot;shadow&quot;: {
+      &quot;type&quot;: &quot;soft_contact&quot;,
+      &quot;stable&quot;: true,
+      &quot;physically_correct&quot;: true
+    }
+  },
+
+  &quot;camera&quot;: {
+    &quot;type&quot;: &quot;fixed&quot;,
+    &quot;movement&quot;: &quot;none&quot;,
+    &quot;rotation&quot;: &quot;none&quot;,
+    &quot;zoom&quot;: &quot;none&quot;,
+    &quot;center_lock&quot;: true,
+    &quot;lens&quot;: &quot;85mm&quot;,
+    &quot;distortion&quot;: false
+  },
+
+  &quot;lighting&quot;: {
+    &quot;type&quot;: &quot;studio_softbox&quot;,
+    &quot;consistency&quot;: &quot;locked&quot;,
+    &quot;variation&quot;: false,
+    &quot;flicker&quot;: false,
+    &quot;must_not_change_during_rotation&quot;: true
+  },
+
+  &quot;rendering&quot;: {
+    &quot;mode&quot;: &quot;photorealistic&quot;,
+    &quot;texture_source&quot;: &quot;input_images_only&quot;,
+    &quot;no_texture_generation&quot;: true,
+    &quot;no_creative_interpretation&quot;: true,
+    &quot;no_artificial_enhancement&quot;: true,
+    &quot;fabric_finish&quot;: &quot;smooth_pressed_clean&quot;,
+    &quot;retail_presentation_standard&quot;: &quot;premium_ecommerce_ready&quot;
+  },
+
+  &quot;audio&quot;: {
+    &quot;enabled&quot;: false,
+    &quot;generate_audio&quot;: false,
+    &quot;include_audio_track&quot;: false,
+    &quot;music&quot;: false,
+    &quot;sound_effects&quot;: false,
+    &quot;voice&quot;: false,
+    &quot;ambient_sound&quot;: false,
+    &quot;silence&quot;: true
+  },
+
+  &quot;output&quot;: {
+    &quot;resolution&quot;: &quot;2160x2160&quot;,
+    &quot;fps&quot;: 30,
+    &quot;duration_seconds&quot;: 6,
+    &quot;format&quot;: &quot;mp4&quot;,
+    &quot;video_codec&quot;: &quot;H.264&quot;,
+    &quot;audio_codec&quot;: &quot;none&quot;,
+    &quot;include_audio_track&quot;: false,
+    &quot;loop&quot;: true,
+    &quot;background&quot;: &quot;pure_white&quot;,
+    &quot;silent&quot;: true
+  },
+
+  &quot;hard_constraints&quot;: [
+    &quot;NO audio&quot;,
+    &quot;NO music&quot;,
+    &quot;NO sound effects&quot;,
+    &quot;NO voice&quot;,
+    &quot;NO ambient sound&quot;,
+    &quot;DO NOT add details&quot;,
+    &quot;DO NOT remove details&quot;,
+    &quot;DO NOT modify stitching&quot;,
+    &quot;DO NOT modify logos&quot;,
+    &quot;DO NOT modify texture&quot;,
+    &quot;DO NOT modify structure&quot;,
+    &quot;DO NOT change proportions&quot;,
+    &quot;DO NOT stylize&quot;,
+    &quot;DO NOT hallucinate&quot;,
+    &quot;NO new wrinkles&quot;,
+    &quot;NO messy fabric folds&quot;,
+    &quot;MUST appear professionally ironed&quot;
+  ],
+
+  &quot;negative_prompt&quot;: [
+    &quot;music&quot;,
+    &quot;sound&quot;,
+    &quot;voice&quot;,
+    &quot;audio&quot;,
+    &quot;ambient audio&quot;,
+    &quot;sound effects&quot;,
+    &quot;hallucinated details&quot;,
+    &quot;modified stitching&quot;,
+    &quot;different fabric&quot;,
+    &quot;shape morphing&quot;,
+    &quot;geometry distortion&quot;,
+    &quot;creative reinterpretation&quot;,
+    &quot;wrinkled fabric&quot;,
+    &quot;messy folds&quot;,
+    &quot;creased clothing&quot;,
+    &quot;unpressed garment&quot;
+  ]
+}</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/image-to-video-360-product-rotaion',TI="image to video 360 product rotaion";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

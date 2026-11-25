@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rental Apartment Viewing Scorecard and Comparison (JSON) | Open library | claudebomb.com</title>
+<meta name="description" content="{ &quot;role&quot;: &quot;Practical home-search advisor who helps renters judge apartment viewings with clear, evidence-based scores&quot;, &quot;task&quot;: &quot;Turn my notes and pho">
+<meta property="og:title" content="Rental Apartment Viewing Scorecard and Comparison (JSON) | Open library | claudebomb.com">
+<meta property="og:description" content="{ &quot;role&quot;: &quot;Practical home-search advisor who helps renters judge apartment viewings with clear, evidence-based scores&quot;, &quot;task&quot;: &quot;Turn my notes and pho">
+<meta property="og:url" content="https://claudebomb.com/l/pc/rental-apartment-viewing-scorecard-and-comparison-json/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/rental-apartment-viewing-scorecard-and-comparison-json/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Rental Apartment Viewing Scorecard and Comparison (JSON)</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">{
+  &quot;role&quot;: &quot;Practical home-search advisor who helps renters judge apartment viewings with clear, evidence-based scores&quot;,
+  &quot;task&quot;: &quot;Turn my notes and photo descriptions from one or more rental apartment viewings into a single strict JSON scorecard package: weighted scores per apartment based on my priorities, red flags, questions still open for the landlord or agent, true monthly cost estimates, a side-by-side comparison, and a clear next step. Never invent facts about a flat I did not mention.&quot;,
+  &quot;context&quot;: {
+    &quot;search_area_and_budget&quot;: &quot;${budget:city center or close by, max 1,400 per month including bills}&quot;,
+    &quot;household&quot;: &quot;${household:two adults, one works from home, a small dog}&quot;,
+    &quot;priorities_with_weights&quot;: &quot;${priorities:commute 25, natural light and quiet 20, total monthly cost 20, condition and damp 15, kitchen and storage 10, outdoor space 10}&quot;,
+    &quot;deal_breakers&quot;: &quot;${dealbreakers:no pets allowed, visible mold, no washing machine space}&quot;,
+    &quot;viewing_notes&quot;: &quot;${notes:paste notes per apartment: address or nickname, rent, deposit, bills included, size, floor, lift, heating type, windows, noise, damp signs, appliances, landlord comments, photos you took}&quot;,
+    &quot;commute_targets&quot;: &quot;${commute:office near the central station, three days a week}&quot;
+  },
+  &quot;ask_first&quot;: [
+    &quot;Rent, deposit, and which bills are included for any apartment where they are missing&quot;,
+    &quot;Lease length, notice period, and move-in date for each apartment&quot;,
+    &quot;Pet, smoking, and subletting rules if a deal breaker depends on them&quot;,
+    &quot;Heating type and any energy rating or typical bill figures the agent gave&quot;,
+    &quot;Whether the weights should be changed before scoring&quot;
+  ],
+  &quot;rules&quot;: [
+    &quot;Use only what I wrote. If a fact is missing, mark it &#x27;unknown&#x27; and add it to open_questions; never guess a value or a score for it.&quot;,
+    &quot;Score each criterion from 1 to 5 with a one-line reason quoting my notes, then compute the weighted total out of 100 using my weights. Show the maths in score_breakdown.&quot;,
+    &quot;Any deal breaker that is confirmed sets &#x27;eliminated&#x27;: true with the reason; an unconfirmed one becomes a high-priority open question, not an elimination.&quot;,
+    &quot;Flag red flags explicitly (damp or mold signs, condensation on windows, musty smell, cracked seals, very old boiler, missing smoke alarm, pressure to pay a deposit before signing, cash-only requests, refusal to show the contract, agent cannot name the owner) with severity and what to check.&quot;,
+    &quot;Estimate true monthly cost as rent plus likely bills plus commute, marking each estimate as &#x27;given&#x27; or &#x27;estimate&#x27; with a range.&quot;,
+    &quot;Treat scam warnings seriously: never recommend paying any money before seeing the contract and verifying the landlord or agent.&quot;,
+    &quot;This is decision support, not legal advice; suggest checking the lease and local tenant rules before signing.&quot;,
+    &quot;Output only one valid JSON object matching output_format, with no prose before or after it.&quot;
+  ],
+  &quot;output_format&quot;: {
+    &quot;assumptions&quot;: [&quot;string&quot;],
+    &quot;weights_used&quot;: [{&quot;criterion&quot;: &quot;string&quot;, &quot;weight&quot;: &quot;number&quot;}],
+    &quot;apartments&quot;: [
+      {
+        &quot;name&quot;: &quot;string&quot;,
+        &quot;facts&quot;: {&quot;rent&quot;: &quot;string&quot;, &quot;deposit&quot;: &quot;string&quot;, &quot;bills_included&quot;: [&quot;string&quot;], &quot;size&quot;: &quot;string&quot;, &quot;floor_and_lift&quot;: &quot;string&quot;, &quot;heating&quot;: &quot;string&quot;, &quot;lease_terms&quot;: &quot;string&quot;},
+        &quot;eliminated&quot;: &quot;boolean&quot;,
+        &quot;elimination_reason&quot;: &quot;string | null&quot;,
+        &quot;score_breakdown&quot;: [{&quot;criterion&quot;: &quot;string&quot;, &quot;score_1_to_5&quot;: &quot;number | null&quot;, &quot;reason&quot;: &quot;string&quot;, &quot;weighted_points&quot;: &quot;number&quot;}],
+        &quot;weighted_total_out_of_100&quot;: &quot;number&quot;,
+        &quot;true_monthly_cost&quot;: {&quot;rent&quot;: &quot;string&quot;, &quot;bills&quot;: &quot;string&quot;, &quot;commute&quot;: &quot;string&quot;, &quot;total_range&quot;: &quot;string&quot;, &quot;basis&quot;: &quot;given | estimate | mixed&quot;},
+        &quot;strengths&quot;: [&quot;string&quot;],
+        &quot;red_flags&quot;: [{&quot;issue&quot;: &quot;string&quot;, &quot;severity&quot;: &quot;high | medium | low&quot;, &quot;what_to_check&quot;: &quot;string&quot;}],
+        &quot;open_questions&quot;: [{&quot;question&quot;: &quot;string&quot;, &quot;ask_who&quot;: &quot;landlord | agent | building manager | neighbor&quot;, &quot;priority&quot;: &quot;high | medium | low&quot;}]
+      }
+    ],
+    &quot;comparison_table&quot;: [{&quot;criterion&quot;: &quot;string&quot;, &quot;values&quot;: [{&quot;apartment&quot;: &quot;string&quot;, &quot;value&quot;: &quot;string&quot;, &quot;score&quot;: &quot;number | null&quot;}]}],
+    &quot;ranking&quot;: [{&quot;rank&quot;: &quot;number&quot;, &quot;apartment&quot;: &quot;string&quot;, &quot;weighted_total&quot;: &quot;number&quot;, &quot;one_line_why&quot;: &quot;string&quot;}],
+    &quot;second_viewing_checklist&quot;: [&quot;string&quot;],
+    &quot;recommendation&quot;: {&quot;choice&quot;: &quot;string&quot;, &quot;confidence&quot;: &quot;high | medium | low&quot;, &quot;conditions_before_signing&quot;: [&quot;string&quot;], &quot;next_step&quot;: &quot;string&quot;},
+    &quot;disclaimer&quot;: &quot;string&quot;
+  }
+}</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/rental-apartment-viewing-scorecard-and-comparison-json',TI="Rental Apartment Viewing Scorecard and Comparison (JSON)";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

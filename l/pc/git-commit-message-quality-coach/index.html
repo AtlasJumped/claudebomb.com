@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Git Commit Message Quality Coach | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: git-commit-message-coach description: Reviews Git commit messages (and staged diff summaries) against Conventional Commits plus clarity rule">
+<meta property="og:title" content="Git Commit Message Quality Coach | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: git-commit-message-coach description: Reviews Git commit messages (and staged diff summaries) against Conventional Commits plus clarity rule">
+<meta property="og:url" content="https://claudebomb.com/l/pc/git-commit-message-quality-coach/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/git-commit-message-quality-coach/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Git Commit Message Quality Coach</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: git-commit-message-coach
+description: Reviews Git commit messages (and staged diff summaries) against Conventional Commits plus clarity rules — type, optional scope, imperative subject, why-not-what body — then rewrites weak messages and explains the improvements. Use when cleaning history before merge, writing a commit for a staged diff, teaching teammates, or when the user pastes a bad commit message.
+---
+
+# Git Commit Message Quality Coach
+
+You coach commit messages so `git log` stays useful six months later. Prefer teaching rewrites over silent fixes.
+
+## Files in this skill
+
+- `scripts/check_commit_msg.py` — subject/body linter (stdlib only)
+- `references/conventional-commits.md` — types, scopes, breaking changes
+- `references/subject-line-rules.md` — length, imperative mood, what to omit
+- `templates/review-notes.md` — feedback format
+- `examples/example-commit-coaching.md` — worked coaching session
+
+## Workflow
+
+### 1. Collect input
+- The commit message(s), and if available: `git log -1 --format=%B`, or a list from `git log --oneline`.
+- Optionally the diff summary: `git diff --stat` / `git diff --cached --stat`.
+- Note repo conventions if present (COMMIT_EDITMSG template, commitlint config).
+
+### 2. Lint
+```bash
+python3 scripts/check_commit_msg.py path/to/MSG
+echo &quot;fix: add retry&quot; | python3 scripts/check_commit_msg.py -
+```
+Use findings as leads; style guides may intentionally differ.
+
+### 3. Evaluate
+For each message, using the references:
+1. Is the **type** accurate for the change?
+2. Does the **subject** use imperative mood and finish the sentence &quot;If applied, this commit will …&quot;?
+3. Does the body explain **why** / tradeoffs, not restate the diff?
+4. Are breaking changes marked (`BREAKING CHANGE:` or `type!:`)?
+5. Is there noise (CI IDs, &quot;WIP&quot;, file lists already in the diff)?
+
+### 4. Rewrite
+- Provide a **recommended message** ready to paste.
+- Keep author intent; do not invent product motivations you cannot see — ask or mark assumptions.
+- For multi-commit cleanups, suggest squash boundaries when messages are redundant.
+
+### 5. Write coaching notes
+Fill `templates/review-notes.md` like `examples/example-commit-coaching.md`.
+
+## Verdicts (per message)
+- **GOOD** — ship as-is (nits optional).
+- **NEEDS EDIT** — rewrite provided.
+- **SPLIT OR SQUASH** — history structure is the real problem.
+
+## Rules
+- Never amend, rebase, or force-push unless the user explicitly asks.
+- Do not leak secrets from diffs into message examples.
+- Prefer one strong subject over witty vagueness.
+FILE:references/conventional-commits.md
+# Conventional Commits (practical)
+
+Format:
+```
+&lt;type&gt;[optional scope][!]: &lt;description&gt;
+
+[optional body]
+
+[optional footer(s)]
+```
+
+## Common types
+| Type | Use for |
+|------|---------|
+| feat | User-facing capability |
+| fix | Bug fix |
+| docs | Docs only |
+| style | Formatting; no code meaning change |
+| refactor | Code change neither fix nor feat |
+| perf | Performance |
+| test | Tests only |
+| build | Build system or dependencies |
+| ci | CI config |
+| chore | Maintenance that does not fit above |
+| revert | Reverts a prior commit |
+
+## Scope
+Optional noun in parentheses: `feat(api):`, `fix(auth):`. Keep short and stable across the repo.
+
+## Breaking changes
+- `feat!:` / `fix!:` in the subject, and/or
+- Footer: `BREAKING CHANGE: &lt;description of impact and migration&gt;`
+
+## Body
+- Explain **why**, constraints, side effects.
+- Wrap near 72 cols when practical.
+- Bullet lists OK for multiple motivations.
+FILE:references/subject-line-rules.md
+# Subject line rules
+
+1. **Imperative mood:** &quot;add&quot;, &quot;fix&quot;, &quot;remove&quot; — not &quot;added&quot; / &quot;adds&quot; / &quot;adding&quot;.
+2. **Complete the sentence:** &quot;If applied, this commit will …&quot;
+3. **~50 characters ideal, 72 hard max** for the subject (tooling varies).
+4. **No trailing period** on the subject.
+5. **Capitalize** only if your project style requires; Conventional Commits often use lowercase after the type colon — **follow the repo**.
+6. **Avoid** issue-only subjects (&quot;fix #123&quot;); mention the bug, reference the issue in the body/footer (`Fixes #123`).
+7. **Avoid** file dumps (&quot;update utils.py and helpers.go&quot;) — say the intent.
+8. **One logical change** per commit when teaching good history.
+FILE:templates/review-notes.md
+# Commit Message Coaching: &lt;branch or PR&gt;
+
+## Context
+- Diff summary: &lt;optional&gt;
+- Repo style: &lt;conventional / freeform / commitlint&gt;
+
+## Per-commit feedback
+
+### Commit &lt;short-sha or n&gt;
+**Verdict:** GOOD | NEEDS EDIT | SPLIT OR SQUASH
+**Original:**
+```
+...
+```
+**Issues:**
+- ...
+**Recommended:**
+```
+...
+```
+**Why this is better:** ...
+
+## Patterns to practice
+- ...
+FILE:examples/example-commit-coaching.md
+# Commit Message Coaching: feature/rate-limit
+
+## Context
+- Diff summary: auth middleware + Redis token bucket + docs
+- Repo style: Conventional Commits + commitlint
+
+## Per-commit feedback
+
+### Commit a1b2c3d
+**Verdict:** NEEDS EDIT
+**Original:**
+```
+updated stuff for API
+```
+**Issues:**
+- Missing type/scope
+- Vague (&quot;stuff&quot;); past tense
+- No why
+
+**Recommended:**
+```
+feat(api): add per-token rate limiting
+
+Prevent partner storms from exhausting the primary DB pool.
+Uses Redis token bucket with fail-open if Redis is unavailable.
+```
+**Why this is better:** States the capability, the motivation, and a critical failure-mode choice.
+
+### Commit d4e5f6a
+**Verdict:** GOOD
+**Original:**
+```
+docs(api): document rate-limit headers
+```
+**Issues:** none material
+
+## Patterns to practice
+- Lead with user/system impact, not file names.
+- Record fail-open/fail-closed decisions in the body.
+FILE:scripts/check_commit_msg.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Lint a Git commit message for Conventional Commits + clarity heuristics.
+Usage:
+  python3 check_commit_msg.py MSGFILE
+  python3 check_commit_msg.py -   # read stdin
+Exit: 0 if no HIGH findings, 1 if HIGH, 2 usage/IO error.
+Git-generated Merge/Revert subjects are reported as INFO and not linted.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import re
+import sys
+
+TYPES = (
+    &quot;feat&quot;, &quot;fix&quot;, &quot;docs&quot;, &quot;style&quot;, &quot;refactor&quot;, &quot;perf&quot;, &quot;test&quot;,
+    &quot;build&quot;, &quot;ci&quot;, &quot;chore&quot;, &quot;revert&quot;,
+)
+CONV = re.compile(
+    rf&quot;^(?P&lt;type&gt;{&#x27;|&#x27;.join(TYPES)})&quot;
+    r&quot;(?:\((?P&lt;scope&gt;[^)]*)\))?(?P&lt;break&gt;!)?:(?P&lt;space&gt;\s*)(?P&lt;sub&gt;.*)$&quot;
+)
+# Same shape but any case / unknown word as type, used for better diagnostics
+LOOSE = re.compile(r&quot;^(?P&lt;type&gt;[A-Za-z]+)(?:\([^)]*\))?!?:\s*\S&quot;)
+# Subjects generated by git itself; not the author&#x27;s prose
+GIT_GENERATED = re.compile(r&quot;^(Merge (branch|pull request|remote-tracking branch|tag) |Merge [0-9a-f]{7,} into |Revert \&quot;)&quot;)
+AUTOSQUASH = re.compile(r&quot;^(fixup|squash|amend)! &quot;)
+
+
+def lint(text: str) -&gt; list[tuple[str, str, str]]:
+    text = text.replace(&quot;\r\n&quot;, &quot;\n&quot;).replace(&quot;\r&quot;, &quot;\n&quot;)
+    if text.startswith(&quot;\ufeff&quot;):
+        text = text[1:]
+    lines = text.split(&quot;\n&quot;)
+    # drop scissor / comment lines like git commit -v
+    cleaned = []
+    for ln in lines:
+        if ln.strip() == &quot;# ------------------------ &gt;8 ------------------------&quot;:
+            break
+        if ln.startswith(&quot;#&quot;):
+            continue
+        cleaned.append(ln)
+    while cleaned and not cleaned[-1].strip():
+        cleaned.pop()
+    while cleaned and not cleaned[0].strip():  # git strips leading blank lines
+        cleaned.pop(0)
+    findings: list[tuple[str, str, str]] = []
+    if not cleaned or not cleaned[0].strip():
+        findings.append((&quot;HIGH&quot;, &quot;empty&quot;, &quot;Message is empty&quot;))
+        return findings
+    subject = cleaned[0].strip()
+    body_lines = cleaned[1:]
+    if GIT_GENERATED.match(subject):
+        findings.append((&quot;INFO&quot;, &quot;git-generated&quot;, &quot;Merge/revert subject generated by git; not linted&quot;))
+        return findings
+    if AUTOSQUASH.match(subject):
+        findings.append((&quot;MEDIUM&quot;, &quot;autosquash-pending&quot;,
+                         &quot;fixup!/squash! commit: run `git rebase -i --autosquash` before merging&quot;))
+        return findings
+    m = CONV.match(subject)
+    if not m:
+        loose = LOOSE.match(subject)
+        if loose and loose.group(&quot;type&quot;).lower() in TYPES:
+            findings.append((&quot;HIGH&quot;, &quot;type-case&quot;, f&quot;Use lowercase type `{loose.group(&#x27;type&#x27;).lower()}:`&quot;))
+        elif loose:
+            findings.append((&quot;HIGH&quot;, &quot;type-unknown&quot;,
+                             f&quot;Unknown type `{loose.group(&#x27;type&#x27;)}`; use one of: {&#x27;, &#x27;.join(TYPES)}&quot;))
+        else:
+            findings.append(
+                (&quot;HIGH&quot;, &quot;type-missing&quot;,
+                 &quot;Subject should start with type[optional scope][!]: description&quot;)
+            )
+        sub = subject.split(&quot;:&quot;, 1)[1] if loose else subject
+        sub = sub.strip()
+    else:
+        sub = m.group(&quot;sub&quot;).strip()
+        if m.group(&quot;scope&quot;) is not None and not m.group(&quot;scope&quot;).strip():
+            findings.append((&quot;MEDIUM&quot;, &quot;empty-scope&quot;, &quot;Scope parentheses are empty&quot;))
+        if sub and m.group(&quot;space&quot;) != &quot; &quot;:
+            findings.append((&quot;MEDIUM&quot;, &quot;colon-space&quot;, &quot;Use exactly one space after the colon (`type: description`)&quot;))
+    if not sub:
+        findings.append((&quot;HIGH&quot;, &quot;empty-subject&quot;, &quot;Empty description after type:&quot;))
+    if len(subject) &gt; 72:
+        findings.append((&quot;HIGH&quot;, &quot;subject-too-long&quot;, f&quot;Subject is {len(subject)} chars (max 72)&quot;))
+    elif len(subject) &gt; 50:
+        findings.append((&quot;LOW&quot;, &quot;subject-long&quot;, f&quot;Subject is {len(subject)} chars (ideal ≤50)&quot;))
+    if subject.endswith(&quot;.&quot;):
+        findings.append((&quot;MEDIUM&quot;, &quot;subject-period&quot;, &quot;Omit trailing period on subject&quot;))
+    if re.match(r&quot;^(fixed|added|updated|removed|changed|deleted)\b&quot;, sub, re.I):
+        findings.append((&quot;MEDIUM&quot;, &quot;past-tense&quot;, &quot;Use imperative mood (fix/add/update), not past tense&quot;))
+    if re.match(r&quot;^(fixes|adds|updates|removes|changes)\b&quot;, sub, re.I):
+        findings.append((&quot;MEDIUM&quot;, &quot;third-person&quot;, &quot;Use imperative (fix/add), not third person&quot;))
+    if re.match(r&quot;^(fixing|adding|updating|removing|changing|deleting|refactoring)\b&quot;, sub, re.I):
+        findings.append((&quot;MEDIUM&quot;, &quot;gerund&quot;, &quot;Use imperative (fix/add), not -ing form&quot;))
+    if re.search(r&quot;\b(WIP|TODO|TMP)\b&quot;, subject, re.I):
+        findings.append((&quot;HIGH&quot;, &quot;wip&quot;, &quot;Subject looks temporary (WIP/TODO/TMP)&quot;))
+    if re.fullmatch(r&quot;fix(es)?\s+#?\d+&quot;, sub, re.I):
+        findings.append((&quot;MEDIUM&quot;, &quot;issue-only&quot;, &quot;Describe the fix; put Fixes #N in the footer&quot;))
+    if body_lines:
+        if body_lines[0].strip() != &quot;&quot;:
+            findings.append((&quot;MEDIUM&quot;, &quot;need-blank-line&quot;, &quot;Insert a blank line between subject and body&quot;))
+        body = &quot;\n&quot;.join(body_lines).strip()
+        if body:
+            for i, bl in enumerate(body_lines, start=2):
+                if bl.startswith(&quot;#&quot;):
+                    continue
+                if len(bl) &gt; 100 and not bl.startswith(&quot;http&quot;):
+                    findings.append((&quot;LOW&quot;, &quot;body-wrap&quot;, f&quot;Line {i} is {len(bl)} chars; wrap near 72 when possible&quot;))
+                    break
+            if re.search(r&quot;^(updated? files?|changes made):?\s*$&quot;, body, re.I | re.M):
+                findings.append((&quot;LOW&quot;, &quot;file-list-body&quot;, &quot;Body restates the diff; explain why instead&quot;))
+    breaking_footer = any(
+        re.match(r&quot;^BREAKING[ -]CHANGE:&quot;, ln) for ln in body_lines
+    )
+    if m and m.group(&quot;break&quot;) and not breaking_footer:
+        findings.append(
+            (&quot;LOW&quot;, &quot;breaking-explain&quot;,
+             &quot;Marked breaking (!) — consider a BREAKING CHANGE: footer explaining impact&quot;)
+        )
+    return findings
+
+
+def main(argv: list[str]) -&gt; int:
+    if len(argv) != 1:
+        print(__doc__, file=sys.stderr)
+        return 2
+    target = argv[0]
+    try:
+        text = sys.stdin.read() if target == &quot;-&quot; else open(target, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;).read()
+    except OSError as e:
+        print(f&quot;error: {e}&quot;, file=sys.stderr)
+        return 2
+    findings = lint(text)
+    for sev, rid, msg in findings:
+        print(f&quot;[{sev}] {rid}: {msg}&quot;)
+    counts = {s: sum(1 for f in findings if f[0] == s) for s in (&quot;HIGH&quot;, &quot;MEDIUM&quot;, &quot;LOW&quot;, &quot;INFO&quot;)}
+    print(f&quot;\n{counts[&#x27;HIGH&#x27;]} HIGH, {counts[&#x27;MEDIUM&#x27;]} MEDIUM, {counts[&#x27;LOW&#x27;]} LOW&quot;
+          + (f&quot;, {counts[&#x27;INFO&#x27;]} INFO&quot; if counts[&quot;INFO&quot;] else &quot;&quot;))
+    print(&quot;Heuristic only: confirm with references/conventional-commits.md.&quot;)
+    return 1 if counts[&quot;HIGH&quot;] else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main(sys.argv[1:]))</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/git-commit-message-quality-coach',TI="Git Commit Message Quality Coach";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>

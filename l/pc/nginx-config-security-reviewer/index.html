@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nginx Config Security Reviewer | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: nginx-config-security-reviewer description: Reviews nginx.conf and site configs for security problems such as TLS 1.0/1.1, weak ciphers, mis">
+<meta property="og:title" content="Nginx Config Security Reviewer | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: nginx-config-security-reviewer description: Reviews nginx.conf and site configs for security problems such as TLS 1.0/1.1, weak ciphers, mis">
+<meta property="og:url" content="https://claudebomb.com/l/pc/nginx-config-security-reviewer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/nginx-config-security-reviewer/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=4">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Nginx Config Security Reviewer</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: nginx-config-security-reviewer
+description: Reviews nginx.conf and site configs for security problems such as TLS 1.0/1.1, weak ciphers, missing HSTS and security headers, the add_header inheritance trap, alias off-by-slash path traversal, autoindex, unlimited body size, $uri in redirects, HTTP without an HTTPS redirect, open admin paths and logins without rate limits. Gives a fixed config. Includes a stdlib Python checker with --self-test.
+---
+
+# Nginx Config Security Reviewer
+
+You review nginx configurations the way a careful ops engineer would before a security audit: find the settings that expose data or weaken TLS, explain each one in plain words, and hand back a corrected config that still serves the same routes. You never guess at files you have not seen, and you never tell the user to reload without `nginx -t`.
+
+## Files in this skill
+
+- `scripts/nginx_review.py` - parses nginx config files into blocks and prints findings with severity, line and fix (Python 3 standard library only)
+- `references/hardening-checklist.md` - every check the script runs, why it matters and the fix, plus items to check by hand
+- `references/tls-and-headers.md` - TLS protocol and cipher settings, HSTS rollout, security headers and how add_header inheritance works
+- `templates/review-report.md` - the report you hand back: summary, findings table, config diff, test commands
+- `examples/shop-site.conf` - a small shop config from 2019 with 18 findings (3 HIGH)
+- `examples/shop-site-fixed.conf` - the same site after the fixes (no findings apart from the include note)
+
+## Workflow
+
+### 1. Collect the full config
+Ask for the output of `sudo nginx -T` (it prints the main file and every included file), or for nginx.conf plus the relevant sites-enabled files. Ask what the site does (static, reverse proxy, PHP), which paths must stay public, the nginx version (`nginx -v`) and whether a CDN or load balancer terminates TLS in front of it. Tell the user to remove private keys or secrets before pasting; certificate paths are fine.
+
+### 2. Run the checker
+```
+python3 scripts/nginx_review.py examples/shop-site.conf
+python3 scripts/nginx_review.py /etc/nginx/nginx.conf /etc/nginx/sites-enabled/shop --json
+python3 scripts/nginx_review.py --self-test
+```
+Exit code 1 means HIGH findings, 2 means the file could not be read or parsed (the error names the line).
+
+### 3. Confirm and add manual checks
+Read each finding against the user&#x27;s context: a CDN in front changes TLS findings, an internal-only admin route may already be firewalled, a `return 404` may already hide a path. Then go through the manual items in `references/hardening-checklist.md` (included files, upstream TLS verification, `if` blocks, PHP handlers, file permissions). Drop false positives and say why.
+
+### 4. Deliver
+Fill `templates/review-report.md`: HIGH items first, a minimal diff of the config, and the test steps. Explain the add_header inheritance rule whenever ADD_HEADER_INHERITANCE appears, because it surprises most people. Introduce HSTS with a short max-age first if the site has never used it.
+
+## Example result
+For `examples/shop-site.conf`: 3 HIGH (TLS 1.0/1.1 enabled, RC4 and 3DES ciphers, `location /images` with `alias .../images/` allowing `/images../` traversal), 6 MEDIUM (unlimited body size, port 80 serving content instead of redirecting, autoindex on /downloads/, /api/ dropping HSTS and nosniff because it sets its own add_header, unprotected /admin/, `$uri` in a redirect), 8 LOW (server_tokens, dotfiles, missing CSP/Referrer-Policy/X-Frame-Options, proxy headers, no rate limit on /api/auth/login) and 1 INFO. `examples/shop-site-fixed.conf` shows the fixes and passes `nginx -t`.
+
+## Rules
+
+- Quote the exact line and the exact replacement; keep changes minimal and route-preserving.
+- Always end with `sudo nginx -t &amp;&amp; sudo systemctl reload nginx` and a curl check; never suggest a restart that drops connections when a reload works.
+- Do not invent directives: check names against the nginx docs for the user&#x27;s version (for example `http2 on;` needs 1.25.1+, older versions use `listen 443 ssl http2;`).
+- Never ask for or repeat private keys, passwords or htpasswd hashes.
+- Treat security headers like CSP as a rollout: suggest `Content-Security-Policy-Report-Only` first for complex apps.
+FILE:references/hardening-checklist.md
+# Nginx Hardening Checklist
+
+Every code the script prints, why it matters and the fix. Severity is the default; raise or lower it with context.
+
+## HIGH
+
+### OLD_TLS_PROTOCOL
+`ssl_protocols` lists SSLv3, TLSv1 or TLSv1.1. These are deprecated (RFC 8996), fail PCI DSS and allow downgrade attacks. Fix: `ssl_protocols TLSv1.2 TLSv1.3;` (the default since nginx 1.23.4, so deleting the line also works on new versions). Only very old clients (Android 4.3, IE on Windows 7 without updates) lose access.
+
+### WEAK_CIPHERS
+`ssl_ciphers` allows RC4, DES/3DES (SWEET32), MD5, NULL, EXPORT or anonymous (aNULL/ADH) suites. Entries starting with `!` or `-` are exclusions and are fine. Fix: use the Mozilla &quot;intermediate&quot; list from ssl-config.mozilla.org or remove `ssl_ciphers` to use the OpenSSL default, and set `ssl_prefer_server_ciphers off;` when only modern AEAD suites remain.
+
+### NO_CERTIFICATE
+A server listens with `ssl` but no `ssl_certificate` is set in it or in http. nginx refuses to start or fails the handshake. Add `ssl_certificate` (full chain) and `ssl_certificate_key`.
+
+### ALIAS_TRAVERSAL (off-by-slash)
+`location /images { alias /var/www/media/images/; }`: a request for `/images../secret.txt` maps to `/var/www/media/images/../secret.txt`, so files one level above the alias are readable (a well-known finding in many audits). Fix: both the location and the alias end with a slash, `location /images/ { alias /var/www/media/images/; }`, or use `root` when the path matches the folder name.
+
+## MEDIUM
+
+### HTTP_NO_REDIRECT
+A port-80 server with the same server_name as an HTTPS server serves pages instead of redirecting. Users and cookies stay on plain HTTP. Fix:
+```
+server {
+    listen 80;
+    server_name shop.example.com;
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
+}
+```
+
+### NO_HSTS
+No `Strict-Transport-Security` header on an HTTPS server, so the first request of a session can be downgraded. See `tls-and-headers.md` for the rollout.
+
+### ADD_HEADER_INHERITANCE
+nginx inherits `add_header` from the parent level only when the current level has no `add_header` at all. One `add_header Cache-Control no-store;` in `location /api/` drops every security header from the server block for that location. Fix: repeat the headers in that location, or keep them in a snippet (`include snippets/security-headers.conf;`) and include it in every block that has its own add_header. On nginx 1.29.3+ `add_header_inherit merge;` in http makes child blocks add to the parent headers instead of replacing them. `proxy_set_header`, `fastcgi_param` and `proxy_hide_header` follow the same rule.
+
+### AUTOINDEX_ON
+Directory listing shows every file name, including backups and exports nobody linked. Turn it off or protect the location.
+
+### ADMIN_OPEN
+Paths such as /admin, /phpmyadmin, /actuator, /server-status, /nginx_status or /metrics without allow/deny, auth_basic or auth_request. Fix: `allow 10.20.0.0/16; deny all;` (office or VPN range), or `auth_request` to an SSO service. Basic auth only over HTTPS.
+
+### UNLIMITED_BODY
+`client_max_body_size 0` disables the request size limit, making disk and memory exhaustion easy. Keep the default 1m or a real limit in http, and raise it only in the upload location.
+
+### URI_IN_REDIRECT
+`$uri` is normalized and URL-decoded, so `%0d%0a` becomes a real line break and an attacker can inject headers (`Set-Cookie`) into the redirect response. Use `$request_uri` (the raw, still-encoded request line) in `return`, `rewrite` targets and `add_header`.
+
+## LOW
+
+### SERVER_TOKENS
+The version appears in the `Server` header and on error pages, which helps attackers match known CVEs. `server_tokens off;` in http.
+
+### MISSING_SECURITY_HEADERS
+On HTTPS servers: `X-Content-Type-Options nosniff`, `X-Frame-Options` (or CSP `frame-ancestors`), `Content-Security-Policy`, `Referrer-Policy`. Add them with `always` so they are also sent on 4xx/5xx responses.
+
+### SHORT_HSTS
+HSTS max-age under 180 days. Fine during rollout; raise it to one year afterwards.
+
+### DOTFILES_EXPOSED
+The server serves files but has no rule for hidden files, so `/.git/config`, `/.env` or `/.htpasswd` may be downloadable if they exist under the web root. Fix: `location ~ /\.(?!well-known) { deny all; }` (keeps ACME challenges working).
+
+### NO_RATE_LIMIT
+A login, auth or token path without `limit_req`. Add a zone in http and apply it to the location; return 429 with `limit_req_status 429;`.
+
+### PROXY_HEADERS
+A `proxy_pass` location that does not send Host, X-Forwarded-For and X-Forwarded-Proto, so the app logs the proxy&#x27;s IP, builds wrong redirect URLs and may think HTTPS requests are HTTP. Remember the inheritance rule: one `proxy_set_header` in the location replaces all inherited ones.
+
+## INFO
+
+### INCLUDE_NOT_FOLLOWED
+The script reads only the files you pass. Ask for `nginx -T` or the included files.
+
+## Check by hand (not automated)
+- `proxy_pass https://...` to an upstream on the internet without `proxy_ssl_verify on;` and `proxy_ssl_trusted_certificate`.
+- PHP: `location ~ \.php$` must use `try_files $uri =404;` (or `fastcgi_split_path_info` with a check) so uploaded images cannot run as PHP; uploads directories should never pass to PHP.
+- `if` inside location with anything other than `return` or `rewrite ... last` (&quot;if is evil&quot;).
+- `default_server` blocks: an unknown Host should get `return 444;` with a self-signed or `ssl_reject_handshake on;` (1.19.4+) instead of the first site.
+- Permissions: nginx workers should not be able to write the web root; private keys `chmod 600`, owned by root.
+- Large headers / slow clients: `client_body_timeout`, `client_header_timeout`, `large_client_header_buffers` for public APIs under attack.
+- Logging: access logs must not record tokens in query strings; use a custom log_format if needed.
+FILE:references/tls-and-headers.md
+# TLS and Security Headers
+
+## TLS settings that pass most audits (nginx 1.25+ with OpenSSL 1.1.1 or 3.x)
+```
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+ssl_prefer_server_ciphers off;
+ssl_session_timeout 1d;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+```
+This is the Mozilla &quot;intermediate&quot; profile. TLS 1.3 suites are not set with ssl_ciphers (OpenSSL handles them). If DHE suites stay, provide `ssl_dhparam` with at least 2048 bits or drop the DHE entries.
+
+OCSP stapling (`ssl_stapling on; ssl_stapling_verify on;`) is optional; Let&#x27;s Encrypt ended OCSP support in 2025, so do not add it for LE certificates.
+
+HTTP/2: `http2 on;` inside the server on nginx 1.25.1+; older versions use `listen 443 ssl http2;`.
+
+## HSTS rollout
+1. Make sure every subdomain works over HTTPS.
+2. Start short: `add_header Strict-Transport-Security &quot;max-age=300&quot; always;`
+3. After a week without problems: `max-age=31536000; includeSubDomains`.
+4. Only add `preload` and submit to hstspreload.org when you are sure; removal takes months.
+HSTS on plain HTTP responses is ignored by browsers, so set it on the 443 server.
+
+## Security headers
+| Header | Typical value | Notes |
+|---|---|---|
+| X-Content-Type-Options | `nosniff` | Stops MIME sniffing of uploads |
+| X-Frame-Options | `DENY` or `SAMEORIGIN` | Clickjacking; CSP `frame-ancestors` is the modern equivalent |
+| Content-Security-Policy | `default-src &#x27;self&#x27;` and more | App-specific; roll out with `Content-Security-Policy-Report-Only` |
+| Referrer-Policy | `strict-origin-when-cross-origin` | Keeps paths and query strings out of other sites&#x27; logs |
+| Permissions-Policy | `camera=(), microphone=(), geolocation=()` | Optional |
+Add `always` so headers are also sent on error responses.
+
+## The add_header inheritance rule
+```
+server {
+    add_header X-Content-Type-Options nosniff always;   # A
+    location / { }                                      # gets A
+    location /api/ {
+        add_header Cache-Control no-store;              # gets ONLY this one, A is gone
+    }
+}
+```
+A block inherits add_header from its parent only if it defines none itself. Keep shared headers in a snippet and include it in every block that adds its own. nginx 1.29.3 (October 2025) added `add_header_inherit merge;`, which makes nested blocks add to the inherited headers; check `nginx -v` before suggesting it (Debian 13 ships 1.26).
+
+## Testing
+```
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+curl -sI https://shop.example.com/ | grep -iE &#x27;strict|x-content|x-frame|content-security|referrer|server:&#x27;
+curl -sI http://shop.example.com/page?x=1        # expect 301 to https://shop.example.com/page?x=1
+curl -s -o /dev/null -w &#x27;%{http_code}\n&#x27; https://shop.example.com/.git/config   # expect 403 or 404
+curl -s -o /dev/null -w &#x27;%{http_code}\n&#x27; https://shop.example.com/images../      # expect 404 after the alias fix
+openssl s_client -connect shop.example.com:443 -tls1_1 &lt;/dev/null   # expect a handshake failure
+```
+For a full external check: SSL Labs server test or `testssl.sh shop.example.com`.
+FILE:templates/review-report.md
+# Nginx security review: &lt;site or server name&gt;
+
+**Version:** &lt;nginx 1.26.3, OpenSSL 3.x&gt;   **Role:** &lt;static site / reverse proxy to Node on :3000 / PHP-FPM&gt;
+**Files reviewed:** &lt;nginx -T output, 2 files&gt;   **TLS terminated by:** &lt;nginx / CDN / load balancer&gt;
+**Summary:** &lt;one sentence: the most serious problem and what the fix changes&gt;
+
+## Findings
+| # | Severity | Code | File:line | Problem | Fix |
+|---|---|---|---|---|---|
+| 1 | HIGH | &lt;ALIAS_TRAVERSAL&gt; | &lt;nginx.conf:51&gt; | &lt;location /images allows /images../&gt; | &lt;location /images/ { alias .../images/; }&gt; |
+| 2 | &lt;MEDIUM&gt; | &lt;...&gt; | &lt;...&gt; | &lt;...&gt; | &lt;...&gt; |
+
+## Not changed (with reason)
+- &lt;ADMIN_OPEN on /admin/: already limited by the cloud firewall to the VPN; added deny all anyway? yes/no&gt;
+
+## Config changes
+```diff
+- ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
++ ssl_protocols TLSv1.2 TLSv1.3;
+```
+
+## Apply and test
+1. Back up: `sudo cp -a /etc/nginx /etc/nginx.bak-&lt;date&gt;`
+2. Edit, then `sudo nginx -t &amp;&amp; sudo systemctl reload nginx`
+3. Checks:
+   - `curl -sI https://&lt;host&gt;/` shows the security headers
+   - `curl -sI http://&lt;host&gt;/x?y=1` returns 301 to the same path on https
+   - &lt;path traversal / dotfile / admin checks from the findings&gt;
+4. Roll back: restore the backup and reload.
+
+## Follow-ups
+- &lt;HSTS: raise max-age to 31536000 after &lt;date&gt;&gt;
+- &lt;CSP: move from Report-Only to enforcing after reviewing reports&gt;
+FILE:examples/shop-site.conf
+# /etc/nginx/nginx.conf for shop.example.com (single-file setup)
+# A small online shop: static storefront, product images, a Node.js API on :3000
+# and a legacy admin panel. Written in 2019, certificates renewed by certbot.
+
+user www-data;
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    sendfile on;
+    keepalive_timeout 65;
+    client_max_body_size 0;
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers &quot;HIGH:RC4-SHA:DES-CBC3-SHA:!aNULL&quot;;
+    ssl_prefer_server_ciphers on;
+
+    server {
+        listen 80;
+        server_name shop.example.com www.shop.example.com;
+        root /var/www/shop;
+
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+    }
+
+    server {
+        listen 443 ssl;
+        http2 on;
+        server_name shop.example.com www.shop.example.com;
+
+        ssl_certificate /etc/letsencrypt/live/shop.example.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/shop.example.com/privkey.pem;
+
+        add_header Strict-Transport-Security &quot;max-age=31536000&quot; always;
+        add_header X-Content-Type-Options nosniff always;
+
+        root /var/www/shop;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /images {
+            alias /var/www/shop-media/images/;
+        }
+
+        location /downloads/ {
+            alias /var/www/shop-media/downloads/;
+            autoindex on;
+        }
+
+        location /api/ {
+            add_header Cache-Control &quot;no-store&quot;;
+            proxy_pass http://127.0.0.1:3000;
+        }
+
+        location /api/auth/login {
+            proxy_pass http://127.0.0.1:3000;
+            proxy_set_header Host $host;
+        }
+
+        location /admin/ {
+            proxy_pass http://127.0.0.1:8080/;
+        }
+
+        location /old-blog {
+            return 301 https://blog.example.com$uri;
+        }
+    }
+}
+FILE:examples/shop-site-fixed.conf
+# shop.example.com after the review: same routes, hardened.
+# Shared security headers live in one snippet so locations with their own
+# add_header can include it again (add_header is not inherited into a block
+# that sets any add_header of its own).
+
+user www-data;
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    sendfile on;
+    keepalive_timeout 65;
+    server_tokens off;
+    client_max_body_size 10m;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+
+    limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;
+
+    server {
+        listen 80;
+        server_name shop.example.com www.shop.example.com;
+
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    server {
+        listen 443 ssl;
+        http2 on;
+        server_name shop.example.com www.shop.example.com;
+
+        ssl_certificate /etc/letsencrypt/live/shop.example.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/shop.example.com/privkey.pem;
+
+        # same lines as /etc/nginx/snippets/security-headers.conf
+        add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot; always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header Content-Security-Policy &quot;default-src &#x27;self&#x27;; img-src &#x27;self&#x27; data:; frame-ancestors &#x27;self&#x27;&quot; always;
+        add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        root /var/www/shop;
+        index index.html;
+
+        location ~ /\.(?!well-known) {
+            deny all;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /images/ {
+            alias /var/www/shop-media/images/;
+        }
+
+        location /downloads/ {
+            alias /var/www/shop-media/downloads/;
+        }
+
+        location /api/ {
+            add_header Cache-Control &quot;no-store&quot; always;
+            add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot; always;
+            add_header X-Content-Type-Options nosniff always;
+            add_header X-Frame-Options SAMEORIGIN always;
+            add_header Content-Security-Policy &quot;default-src &#x27;self&#x27;; img-src &#x27;self&#x27; data:; frame-ancestors &#x27;self&#x27;&quot; always;
+            add_header Referrer-Policy strict-origin-when-cross-origin always;
+            proxy_pass http://127.0.0.1:3000;
+        }
+
+        location /api/auth/login {
+            limit_req zone=login burst=5 nodelay;
+            proxy_pass http://127.0.0.1:3000;
+        }
+
+        location /admin/ {
+            allow 10.20.0.0/16;
+            deny all;
+            proxy_pass http://127.0.0.1:8080/;
+        }
+
+        location /old-blog {
+            return 301 https://blog.example.com$request_uri;
+        }
+    }
+}
+FILE:scripts/nginx_review.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;Nginx config security reviewer (Python 3 standard library only).
+
+Parses nginx.conf / sites-available files into a block tree and flags common
+security and hardening problems: old TLS protocols, weak ciphers, missing HSTS
+and security headers, the add_header inheritance trap, alias off-by-slash path
+traversal, autoindex, unlimited body size, $uri in redirects (CRLF injection),
+plain-HTTP servers without a redirect, open admin paths, login paths without
+rate limiting, exposed dotfiles and proxies without forwarding headers.
+
+Usage:
+  python3 nginx_review.py site.conf [more.conf ...] [--json]
+  python3 nginx_review.py --self-test
+Exit codes: 0 = no HIGH findings, 1 = HIGH findings, 2 = unreadable/unparseable input.
+&quot;&quot;&quot;
+import argparse, json, re, sys
+
+SEV_ORDER = {&quot;HIGH&quot;: 0, &quot;MEDIUM&quot;: 1, &quot;LOW&quot;: 2, &quot;INFO&quot;: 3}
+OLD_PROTOCOLS = {&quot;SSLv2&quot;, &quot;SSLv3&quot;, &quot;TLSv1&quot;, &quot;TLSv1.1&quot;}
+WEAK_CIPHER_WORDS = [&quot;RC4&quot;, &quot;DES&quot;, &quot;3DES&quot;, &quot;MD5&quot;, &quot;NULL&quot;, &quot;EXPORT&quot;, &quot;EXP-&quot;, &quot;aNULL&quot;, &quot;eNULL&quot;, &quot;ADH&quot;, &quot;AECDH&quot;]
+SECURITY_HEADERS = {
+    &quot;x-content-type-options&quot;: &quot;X-Content-Type-Options nosniff&quot;,
+    &quot;x-frame-options&quot;: &quot;X-Frame-Options DENY or SAMEORIGIN (or CSP frame-ancestors)&quot;,
+    &quot;content-security-policy&quot;: &quot;Content-Security-Policy&quot;,
+    &quot;referrer-policy&quot;: &quot;Referrer-Policy strict-origin-when-cross-origin&quot;,
+}
+LOGIN_RE = re.compile(r&quot;login|signin|sign-in|auth|token|password|wp-login&quot;, re.I)
+ADMIN_RE = re.compile(r&quot;admin|phpmyadmin|actuator|server-status|nginx_status|/metrics|wp-admin&quot;, re.I)
+
+
+class ParseError(Exception):
+    pass
+
+
+class Node:
+    def __init__(self, name, args, line, children=None):
+        self.name, self.args, self.line, self.children = name, args, line, children
+
+    def get(self, name):
+        return [c for c in (self.children or []) if c.name == name]
+
+    def first(self, name):
+        found = self.get(name)
+        return found[0] if found else None
+
+    def walk(self):
+        for c in self.children or []:
+            yield c
+            if c.children is not None:
+                yield from c.walk()
+
+
+def tokenize(text):
+    tokens, i, line, n = [], 0, 1, len(text)
+    while i &lt; n:
+        ch = text[i]
+        if ch == &quot;\n&quot;:
+            line += 1; i += 1
+        elif ch.isspace():
+            i += 1
+        elif ch == &quot;#&quot;:
+            while i &lt; n and text[i] != &quot;\n&quot;:
+                i += 1
+        elif ch in &quot;{};&quot;:
+            tokens.append((ch, line, True)); i += 1
+        elif ch in &quot;\&quot;&#x27;&quot;:
+            q, j, buf = ch, i + 1, []
+            while j &lt; n and text[j] != q:
+                if text[j] == &quot;\\&quot; and j + 1 &lt; n:
+                    buf.append(text[j + 1]); j += 2; continue
+                if text[j] == &quot;\n&quot;:
+                    line += 1
+                buf.append(text[j]); j += 1
+            if j &gt;= n:
+                raise ParseError(f&quot;line {line}: unterminated quote&quot;)
+            tokens.append((&quot;&quot;.join(buf), line, False)); i = j + 1
+        else:
+            j = i
+            while j &lt; n and not text[j].isspace() and text[j] not in &quot;{};&quot;:
+                if text[j] == &quot;$&quot; and j + 1 &lt; n and text[j + 1] == &quot;{&quot;:  # ${var}
+                    k = text.find(&quot;}&quot;, j)
+                    j = k + 1 if k != -1 else n
+                    continue
+                j += 1
+            tokens.append((text[i:j], line, False)); i = j
+    return tokens
+
+
+def parse(text):
+    tokens = tokenize(text)
+    root = Node(&quot;main&quot;, [], 0, [])
+    stack, cur = [root], []
+    for tok, line, special in tokens:
+        if special and tok == &quot;;&quot;:
+            if not cur:
+                continue
+            stack[-1].children.append(Node(cur[0][0], [t for t, _ in cur[1:]], cur[0][1]))
+            cur = []
+        elif special and tok == &quot;{&quot;:
+            if not cur:
+                raise ParseError(f&quot;line {line}: &#x27;{{&#x27; without a directive name&quot;)
+            node = Node(cur[0][0], [t for t, _ in cur[1:]], cur[0][1], [])
+            stack[-1].children.append(node); stack.append(node); cur = []
+        elif special and tok == &quot;}&quot;:
+            if cur:
+                raise ParseError(f&quot;line {line}: missing &#x27;;&#x27; before &#x27;}}&#x27;&quot;)
+            if len(stack) == 1:
+                raise ParseError(f&quot;line {line}: unexpected &#x27;}}&#x27;&quot;)
+            stack.pop()
+        else:
+            cur.append((tok, line))
+    if cur:
+        raise ParseError(f&quot;line {cur[0][1]}: directive &#x27;{cur[0][0]}&#x27; not terminated with &#x27;;&#x27;&quot;)
+    if len(stack) != 1:
+        raise ParseError(f&quot;block &#x27;{stack[-1].name}&#x27; opened on line {stack[-1].line} is not closed&quot;)
+    return root
+
+
+def headers_of(node):
+    return {d.args[0].lower(): d for d in node.get(&quot;add_header&quot;) if d.args}
+
+
+def is_tls(server):
+    for l in server.get(&quot;listen&quot;):
+        if &quot;ssl&quot; in l.args or &quot;quic&quot; in l.args or any(a.endswith(&quot;:443&quot;) or a == &quot;443&quot; for a in l.args):
+            return True
+    s = server.first(&quot;ssl&quot;)
+    return bool(s and s.args and s.args[0] == &quot;on&quot;)
+
+
+def listens_plain(server):
+    ls = server.get(&quot;listen&quot;)
+    if not ls:
+        return True  # default listen *:80
+    for l in ls:
+        if not (&quot;ssl&quot; in l.args or &quot;quic&quot; in l.args or any(a.endswith(&quot;:443&quot;) or a == &quot;443&quot; for a in l.args)):
+            return True
+    return False
+
+
+def names(server):
+    out = []
+    for d in server.get(&quot;server_name&quot;):
+        out.extend(d.args)
+    return set(out) or {&quot;_&quot;}
+
+
+def inherited(scopes, name):
+    &quot;&quot;&quot;Value of a directive as nginx inherits it: innermost scope that sets it.&quot;&quot;&quot;
+    for s in reversed(scopes):
+        d = s.first(name)
+        if d is not None:
+            return d
+    return None
+
+
+def effective_headers(scopes):
+    for s in reversed(scopes):
+        h = headers_of(s)
+        if h:
+            return h
+    return {}
+
+
+def review(text, fname=&quot;nginx.conf&quot;):
+    root = parse(text)
+    http = root.first(&quot;http&quot;)
+    top = http if http is not None else root
+    base = [root] + ([http] if http is not None else [])
+    servers = [s for s in top.get(&quot;server&quot;)]
+    findings = []
+
+    def add(sev, code, line, msg, fix):
+        findings.append({&quot;severity&quot;: sev, &quot;code&quot;: code, &quot;file&quot;: fname, &quot;line&quot;: line, &quot;message&quot;: msg, &quot;fix&quot;: fix})
+
+    for d in root.walk():
+        if d.name == &quot;include&quot;:
+            add(&quot;INFO&quot;, &quot;INCLUDE_NOT_FOLLOWED&quot;, d.line, f&quot;include {&#x27; &#x27;.join(d.args)} is not read by this checker&quot;,
+                &quot;Review the included files too (pass them as extra arguments) or paste `nginx -T` output.&quot;)
+
+    tokens = [d for d in root.walk() if d.name == &quot;server_tokens&quot;]
+    if not any(d.args and d.args[0] == &quot;off&quot; for d in tokens):
+        add(&quot;LOW&quot;, &quot;SERVER_TOKENS&quot;, (http or root).line, &quot;server_tokens is not off, so error pages and the Server header show the nginx version&quot;,
+            &quot;Add `server_tokens off;` in the http block.&quot;)
+
+    tls_names = set()
+    for s in servers:
+        if is_tls(s):
+            tls_names |= names(s)
+
+    for s in servers:
+        scopes = base + [s]
+        label = &quot; &quot;.join(sorted(names(s)))
+        tls = is_tls(s)
+        if tls:
+            if inherited(scopes, &quot;ssl_certificate&quot;) is None:
+                add(&quot;HIGH&quot;, &quot;NO_CERTIFICATE&quot;, s.line, f&quot;TLS server {label} has no ssl_certificate in scope&quot;,
+                    &quot;Add ssl_certificate and ssl_certificate_key (fullchain + key).&quot;)
+            proto = inherited(scopes, &quot;ssl_protocols&quot;)
+            if proto is not None:
+                old = [p for p in proto.args if p in OLD_PROTOCOLS]
+                if old:
+                    add(&quot;HIGH&quot;, &quot;OLD_TLS_PROTOCOL&quot;, proto.line, f&quot;{label}: ssl_protocols enables {&#x27;, &#x27;.join(old)}&quot;,
+                        &quot;Use `ssl_protocols TLSv1.2 TLSv1.3;` (SSLv3/TLS 1.0/1.1 are deprecated, RFC 8996).&quot;)
+            ciph = inherited(scopes, &quot;ssl_ciphers&quot;)
+            if ciph is not None and ciph.args:
+                parts = re.split(r&quot;[:\s]+&quot;, &quot; &quot;.join(ciph.args))
+                weak = sorted({w for p in parts if p and not p.startswith(&quot;!&quot;) and not p.startswith(&quot;-&quot;)
+                               for w in WEAK_CIPHER_WORDS if w.lower() in p.lower()})
+                if weak:
+                    add(&quot;HIGH&quot;, &quot;WEAK_CIPHERS&quot;, ciph.line, f&quot;{label}: ssl_ciphers allows weak suites ({&#x27;, &#x27;.join(weak)})&quot;,
+                        &quot;Use the Mozilla &#x27;intermediate&#x27; cipher list, or remove ssl_ciphers to use the safe OpenSSL default.&quot;)
+            hdrs = effective_headers(scopes)
+            if &quot;strict-transport-security&quot; not in hdrs:
+                add(&quot;MEDIUM&quot;, &quot;NO_HSTS&quot;, s.line, f&quot;TLS server {label} sends no Strict-Transport-Security header&quot;,
+                    &#x27;Add `add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot; always;` (start with a short max-age).&#x27;)
+            else:
+                hsts = hdrs[&quot;strict-transport-security&quot;]
+                m = re.search(r&quot;max-age=(\d+)&quot;, &quot; &quot;.join(hsts.args), re.I)
+                if m and int(m.group(1)) &lt; 15552000:
+                    add(&quot;LOW&quot;, &quot;SHORT_HSTS&quot;, hsts.line, f&quot;{label}: HSTS max-age {m.group(1)} is under 180 days&quot;,
+                        &quot;Raise max-age to 31536000 once HTTPS works everywhere.&quot;)
+            missing = [v for k, v in SECURITY_HEADERS.items() if k not in hdrs]
+            if &quot;x-frame-options&quot; not in hdrs and &quot;content-security-policy&quot; in hdrs and \
+                    &quot;frame-ancestors&quot; in &quot; &quot;.join(hdrs[&quot;content-security-policy&quot;].args):
+                missing = [v for v in missing if not v.startswith(&quot;X-Frame&quot;)]
+            if missing:
+                add(&quot;LOW&quot;, &quot;MISSING_SECURITY_HEADERS&quot;, s.line, f&quot;{label}: missing {&#x27;; &#x27;.join(missing)}&quot;,
+                    &quot;Add them with `always` in the server block (check the inheritance rule for locations).&quot;)
+        elif listens_plain(s) and names(s) &amp; tls_names:
+            redirects = any(r.args and r.args[0] in (&quot;301&quot;, &quot;302&quot;, &quot;307&quot;, &quot;308&quot;) and len(r.args) &gt; 1 and r.args[1].startswith(&quot;https://&quot;)
+                            for r in [d for d in s.walk() if d.name == &quot;return&quot;])
+            rewrites = any(len(r.args) &gt; 1 and r.args[1].startswith(&quot;https://&quot;) for r in [d for d in s.walk() if d.name == &quot;rewrite&quot;])
+            if not (redirects or rewrites):
+                add(&quot;MEDIUM&quot;, &quot;HTTP_NO_REDIRECT&quot;, s.line, f&quot;plain-HTTP server {label} serves content instead of redirecting to HTTPS&quot;,
+                    &quot;Use `return 301 https://$host$request_uri;` in the port-80 server (keep only /.well-known/acme-challenge/ if needed).&quot;)
+
+        server_hdrs = effective_headers(scopes)
+        has_dot_rule = False
+        locations = [d for d in s.walk() if d.name == &quot;location&quot;]
+        for loc in locations:
+            path = loc.args[-1] if loc.args else &quot;&quot;
+            mod = loc.args[0] if len(loc.args) &gt; 1 else &quot;&quot;
+            if mod in (&quot;~&quot;, &quot;~*&quot;) and (r&quot;/\.&quot; in path or path.startswith(r&quot;\.&quot;) or r&quot;(^|/)\.&quot; in path):
+                if loc.get(&quot;deny&quot;) or any(r.args and r.args[0] in (&quot;403&quot;, &quot;404&quot;) for r in loc.get(&quot;return&quot;)):
+                    has_dot_rule = True
+            own = headers_of(loc)
+            hi = inherited(scopes + [loc], &quot;add_header_inherit&quot;)
+            merge = bool(hi and hi.args and hi.args[0] == &quot;merge&quot;)  # nginx 1.29.3+
+            if own and server_hdrs and not merge:
+                lost = sorted(set(server_hdrs) - set(own))
+                if lost:
+                    add(&quot;MEDIUM&quot;, &quot;ADD_HEADER_INHERITANCE&quot;, loc.line,
+                        f&quot;location {path} has its own add_header, so it silently drops {&#x27;, &#x27;.join(lost)} set at server/http level&quot;,
+                        &quot;Repeat those headers in this location, include a shared headers snippet, or on nginx 1.29.3+ set `add_header_inherit merge;`.&quot;)
+            al = loc.first(&quot;alias&quot;)
+            if al and al.args and mod in (&quot;&quot;, &quot;^~&quot;) and not path.endswith(&quot;/&quot;) and al.args[0].endswith(&quot;/&quot;):
+                add(&quot;HIGH&quot;, &quot;ALIAS_TRAVERSAL&quot;, al.line,
+                    f&quot;location {path} (no trailing slash) with alias {al.args[0]} (trailing slash) allows {path}../ path traversal&quot;,
+                    f&quot;Make both end with a slash: `location {path}/ {{ alias {al.args[0]}; }}`.&quot;)
+            ai = loc.first(&quot;autoindex&quot;)
+            if ai and ai.args and ai.args[0] == &quot;on&quot;:
+                add(&quot;MEDIUM&quot;, &quot;AUTOINDEX_ON&quot;, ai.line, f&quot;autoindex on in location {path} lists directory contents&quot;,
+                    &quot;Turn it off, or restrict the location with allow/deny or auth_basic.&quot;)
+            if ADMIN_RE.search(path):
+                guarded = loc.get(&quot;deny&quot;) or loc.get(&quot;auth_basic&quot;) or loc.get(&quot;auth_request&quot;) or loc.get(&quot;satisfy&quot;) \
+                    or any(r.args and r.args[0] in (&quot;403&quot;, &quot;404&quot;, &quot;444&quot;) for r in loc.get(&quot;return&quot;))
+                if not guarded:
+                    add(&quot;MEDIUM&quot;, &quot;ADMIN_OPEN&quot;, loc.line, f&quot;location {path} looks like an admin/status endpoint with no allow/deny or auth&quot;,
+                        &quot;Add `allow &lt;office/VPN range&gt;; deny all;` or auth_basic/auth_request, or remove the route.&quot;)
+            if LOGIN_RE.search(path) and not inherited(scopes + [loc], &quot;limit_req&quot;):
+                add(&quot;LOW&quot;, &quot;NO_RATE_LIMIT&quot;, loc.line, f&quot;location {path} looks like a login/auth endpoint without limit_req&quot;,
+                    &quot;Define `limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;` in http and `limit_req zone=login burst=5 nodelay;` here.&quot;)
+            if loc.first(&quot;proxy_pass&quot;):
+                ph = set()
+                for sc in reversed(scopes + [loc]):  # like add_header: innermost level that sets any wins
+                    if sc.get(&quot;proxy_set_header&quot;):
+                        ph = {d.args[0].lower() for d in sc.get(&quot;proxy_set_header&quot;) if d.args}
+                        break
+                miss = [h for h in (&quot;host&quot;, &quot;x-forwarded-for&quot;, &quot;x-forwarded-proto&quot;) if h not in ph]
+                if miss:
+                    add(&quot;LOW&quot;, &quot;PROXY_HEADERS&quot;, loc.line, f&quot;location {path} proxies without {&#x27;, &#x27;.join(miss)}&quot;,
+                        &quot;Set proxy_set_header Host $host; X-Forwarded-For $proxy_add_x_forwarded_for; X-Forwarded-Proto $scheme; (note: any proxy_set_header in a location replaces inherited ones).&quot;)
+        serves_files = inherited(scopes, &quot;root&quot;) or any(
+            (l.first(&quot;root&quot;) or l.first(&quot;alias&quot;)) and not (l.args and l.args[-1].startswith(&quot;/.well-known/&quot;)) for l in locations)
+        if serves_files and not has_dot_rule:
+            add(&quot;LOW&quot;, &quot;DOTFILES_EXPOSED&quot;, s.line, f&quot;{label}: no rule blocks hidden files such as /.git/ or /.env&quot;,
+                r&quot;Add `location ~ /\.(?!well-known) { deny all; }`.&quot;)
+
+    for d in root.walk():
+        if d.name == &quot;client_max_body_size&quot; and d.args and d.args[0] in (&quot;0&quot;, &quot;0m&quot;, &quot;0k&quot;):
+            add(&quot;MEDIUM&quot;, &quot;UNLIMITED_BODY&quot;, d.line, &quot;client_max_body_size 0 disables the request body limit&quot;,
+                &quot;Set a real limit (e.g. 10m, or larger only in the upload location).&quot;)
+        if d.name in (&quot;return&quot;, &quot;rewrite&quot;, &quot;add_header&quot;) and any(re.search(r&quot;\$uri\b|\$document_uri\b&quot;, a) for a in d.args):
+            add(&quot;MEDIUM&quot;, &quot;URI_IN_REDIRECT&quot;, d.line, f&quot;{d.name} uses $uri (decoded, may contain CR/LF), which allows header injection&quot;,
+                &quot;Use $request_uri (raw, still encoded) in redirects and headers.&quot;)
+    findings.sort(key=lambda f: (SEV_ORDER[f[&quot;severity&quot;]], f[&quot;line&quot;]))
+    return {&quot;file&quot;: fname, &quot;servers&quot;: [{&quot;line&quot;: s.line, &quot;names&quot;: sorted(names(s)), &quot;tls&quot;: is_tls(s)} for s in servers],
+            &quot;findings&quot;: findings}
+
+
+def to_markdown(results):
+    out = [&quot;# Nginx config security review&quot;, &quot;&quot;]
+    allf = [f for r in results for f in r[&quot;findings&quot;]]
+    counts = {k: sum(1 for f in allf if f[&quot;severity&quot;] == k) for k in SEV_ORDER}
+    out.append(&quot;Findings: &quot; + &quot;, &quot;.join(f&quot;{v} {k}&quot; for k, v in counts.items()))
+    for r in results:
+        out += [&quot;&quot;, f&quot;## {r[&#x27;file&#x27;]}&quot;, &quot;&quot;, &quot;| Server | Line | TLS |&quot;, &quot;|---|---|---|&quot;]
+        for s in r[&quot;servers&quot;]:
+            out.append(f&quot;| {&#x27; &#x27;.join(s[&#x27;names&#x27;])} | {s[&#x27;line&#x27;]} | {&#x27;yes&#x27; if s[&#x27;tls&#x27;] else &#x27;no&#x27;} |&quot;)
+        out += [&quot;&quot;, &quot;| Severity | Code | Line | Problem | Fix |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in r[&quot;findings&quot;]:
+            out.append(f&quot;| {f[&#x27;severity&#x27;]} | {f[&#x27;code&#x27;]} | {f[&#x27;line&#x27;]} | {f[&#x27;message&#x27;]} | {f[&#x27;fix&#x27;]} |&quot;)
+        if not r[&quot;findings&quot;]:
+            out.append(&quot;| - | - | - | no findings | - |&quot;)
+    out += [&quot;&quot;, &quot;Always run `nginx -t` before reloading, and test with `curl -sI https://&lt;host&gt;/` afterwards.&quot;]
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    results = []
+
+    def check(name, cond):
+        results.append(cond)
+        print((&quot;PASS &quot; if cond else &quot;FAIL &quot;) + name)
+
+    def codes(conf):
+        return [f[&quot;code&quot;] for f in review(conf)[&quot;findings&quot;]]
+
+    good = &quot;&quot;&quot;
+    http {
+      server_tokens off;
+      limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;
+      server { listen 80; server_name a.test; return 301 https://$host$request_uri; }
+      server {
+        listen 443 ssl; http2 on; server_name a.test;
+        ssl_certificate /c.pem; ssl_certificate_key /k.pem;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot; always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header Content-Security-Policy &quot;default-src &#x27;self&#x27;; frame-ancestors &#x27;none&#x27;&quot; always;
+        add_header Referrer-Policy strict-origin-when-cross-origin always;
+        root /srv/www;
+        location ~ /\\.(?!well-known) { deny all; }
+        location /static/ { alias /srv/static/; }
+        location /login { limit_req zone=login burst=5 nodelay; proxy_pass http://app;
+          proxy_set_header Host $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme; }
+      }
+    }&quot;&quot;&quot;
+    check(&quot;clean config has no findings&quot;, codes(good) == [])
+    check(&quot;comments and quotes parsed&quot;, parse(&#x27;a &quot;b c;&quot; d; # x;\n e f;&#x27;).children[0].args == [&quot;b c;&quot;, &quot;d&quot;])
+    check(&quot;${var} token kept&quot;, parse(&quot;set $x ${host}a;&quot;).children[0].args == [&quot;$x&quot;, &quot;${host}a&quot;])
+    for bad, msg in [(&quot;server { listen 80;&quot;, &quot;unclosed block&quot;), (&quot;a b&quot;, &quot;missing ;&quot;), (&quot;}&quot;, &quot;stray brace&quot;), (&#x27;a &quot;b;&#x27;, &quot;unterminated quote&quot;)]:
+        try:
+            parse(bad); check(&quot;parse error: &quot; + msg, False)
+        except ParseError:
+            check(&quot;parse error: &quot; + msg, True)
+    check(&quot;SERVER_TOKENS when missing&quot;, &quot;SERVER_TOKENS&quot; in codes(&quot;http { server { listen 80; } }&quot;))
+    tls = &quot;server { listen 443 ssl; server_name b.test; ssl_certificate /c; %s }&quot;
+    check(&quot;OLD_TLS_PROTOCOL&quot;, &quot;OLD_TLS_PROTOCOL&quot; in codes(tls % &quot;ssl_protocols TLSv1 TLSv1.2;&quot;))
+    check(&quot;TLSv1.2 alone fine&quot;, &quot;OLD_TLS_PROTOCOL&quot; not in codes(tls % &quot;ssl_protocols TLSv1.2;&quot;))
+    check(&quot;WEAK_CIPHERS&quot;, &quot;WEAK_CIPHERS&quot; in codes(tls % &quot;ssl_ciphers &#x27;HIGH:RC4-SHA:DES-CBC3-SHA&#x27;;&quot;))
+    check(&quot;excluded !RC4 is fine&quot;, &quot;WEAK_CIPHERS&quot; not in codes(tls % &quot;ssl_ciphers &#x27;HIGH:!aNULL:!MD5:!RC4&#x27;;&quot;))
+    check(&quot;NO_CERTIFICATE&quot;, &quot;NO_CERTIFICATE&quot; in codes(&quot;server { listen 443 ssl; }&quot;))
+    check(&quot;cert inherited from http&quot;, &quot;NO_CERTIFICATE&quot; not in codes(&quot;http { ssl_certificate /c; server { listen 443 ssl; } }&quot;))
+    check(&quot;NO_HSTS&quot;, &quot;NO_HSTS&quot; in codes(tls % &quot;&quot;))
+    check(&quot;SHORT_HSTS&quot;, &quot;SHORT_HSTS&quot; in codes(tls % &#x27;add_header Strict-Transport-Security &quot;max-age=300&quot;;&#x27;))
+    check(&quot;MISSING_SECURITY_HEADERS&quot;, &quot;MISSING_SECURITY_HEADERS&quot; in codes(tls % &quot;&quot;))
+    inh = tls % &#x27;add_header Strict-Transport-Security &quot;max-age=31536000&quot;; location /api/ { add_header Cache-Control no-store; }&#x27;
+    r = review(inh)[&quot;findings&quot;]
+    check(&quot;ADD_HEADER_INHERITANCE names lost header&quot;,
+          any(f[&quot;code&quot;] == &quot;ADD_HEADER_INHERITANCE&quot; and &quot;strict-transport-security&quot; in f[&quot;message&quot;] for f in r))
+    check(&quot;headers inherited when location has none&quot;, &quot;ADD_HEADER_INHERITANCE&quot; not in codes(
+        tls % &#x27;add_header Strict-Transport-Security &quot;max-age=31536000&quot;; location /api/ { proxy_pass http://x; }&#x27;))
+    check(&quot;add_header_inherit merge respected&quot;, &quot;ADD_HEADER_INHERITANCE&quot; not in codes(
+        tls % &#x27;add_header_inherit merge; add_header Strict-Transport-Security &quot;max-age=31536000&quot;; location /api/ { add_header Cache-Control no-store; }&#x27;))
+    check(&quot;ALIAS_TRAVERSAL&quot;, &quot;ALIAS_TRAVERSAL&quot; in codes(&quot;server { location /img { alias /srv/img/; } }&quot;))
+    check(&quot;alias with matching slashes fine&quot;, &quot;ALIAS_TRAVERSAL&quot; not in codes(&quot;server { location /img/ { alias /srv/img/; } }&quot;))
+    check(&quot;regex location alias not flagged&quot;, &quot;ALIAS_TRAVERSAL&quot; not in codes(r&quot;server { location ~ ^/img/(.*)$ { alias /srv/img/$1; } }&quot;))
+    check(&quot;AUTOINDEX_ON&quot;, &quot;AUTOINDEX_ON&quot; in codes(&quot;server { location /files/ { autoindex on; } }&quot;))
+    check(&quot;HTTP_NO_REDIRECT&quot;, &quot;HTTP_NO_REDIRECT&quot; in codes(
+        &quot;server { listen 80; server_name c.test; root /x; } server { listen 443 ssl; server_name c.test; ssl_certificate /c; }&quot;))
+    check(&quot;no HTTP_NO_REDIRECT for unrelated name&quot;, &quot;HTTP_NO_REDIRECT&quot; not in codes(
+        &quot;server { listen 80; server_name d.test; } server { listen 443 ssl; server_name c.test; ssl_certificate /c; }&quot;))
+    check(&quot;ADMIN_OPEN&quot;, &quot;ADMIN_OPEN&quot; in codes(&quot;server { location /admin/ { proxy_pass http://x; } }&quot;))
+    check(&quot;admin with deny fine&quot;, &quot;ADMIN_OPEN&quot; not in codes(&quot;server { location /admin/ { allow 10.0.0.0/8; deny all; } }&quot;))
+    check(&quot;NO_RATE_LIMIT&quot;, &quot;NO_RATE_LIMIT&quot; in codes(&quot;server { location /api/login { proxy_pass http://x; } }&quot;))
+    check(&quot;rate limit inherited from server&quot;, &quot;NO_RATE_LIMIT&quot; not in codes(
+        &quot;server { limit_req zone=z; location /api/login { proxy_pass http://x; } }&quot;))
+    check(&quot;PROXY_HEADERS&quot;, &quot;PROXY_HEADERS&quot; in codes(&quot;server { location / { proxy_pass http://x; } }&quot;))
+    check(&quot;proxy_set_header in location replaces inherited&quot;, &quot;PROXY_HEADERS&quot; in codes(
+        &quot;server { proxy_set_header Host $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; &quot;
+        &quot;proxy_set_header X-Forwarded-Proto $scheme; location / { proxy_set_header Upgrade $http_upgrade; proxy_pass http://x; } }&quot;))
+    check(&quot;DOTFILES_EXPOSED&quot;, &quot;DOTFILES_EXPOSED&quot; in codes(&quot;server { root /srv; }&quot;))
+    check(&quot;ACME-only port 80 server not flagged for dotfiles&quot;, &quot;DOTFILES_EXPOSED&quot; not in codes(
+        &quot;server { listen 80; location /.well-known/acme-challenge/ { root /var/www/certbot; } location / { return 301 https://$host$request_uri; } }&quot;))
+    check(&quot;UNLIMITED_BODY&quot;, &quot;UNLIMITED_BODY&quot; in codes(&quot;http { client_max_body_size 0; }&quot;))
+    check(&quot;URI_IN_REDIRECT&quot;, &quot;URI_IN_REDIRECT&quot; in codes(&quot;server { return 301 https://$host$uri; }&quot;))
+    check(&quot;$request_uri fine&quot;, &quot;URI_IN_REDIRECT&quot; not in codes(&quot;server { return 301 https://$host$request_uri; }&quot;))
+    check(&quot;INCLUDE_NOT_FOLLOWED&quot;, &quot;INCLUDE_NOT_FOLLOWED&quot; in codes(&quot;http { include /etc/nginx/conf.d/*.conf; }&quot;))
+    check(&quot;findings sorted HIGH first&quot;, review(&quot;server { listen 443 ssl; location /files/ { autoindex on; } }&quot;)[&quot;findings&quot;][0][&quot;severity&quot;] == &quot;HIGH&quot;)
+    passed = sum(results)
+    print(f&quot;{passed}/{len(results)} passed&quot;)
+    return 0 if passed == len(results) else 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description=&quot;Nginx config security reviewer&quot;)
+    ap.add_argument(&quot;files&quot;, nargs=&quot;*&quot;, help=&quot;nginx config files (nginx.conf, sites-available/*, or `nginx -T` output)&quot;)
+    ap.add_argument(&quot;--json&quot;, action=&quot;store_true&quot;, help=&quot;print JSON instead of Markdown&quot;)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.files:
+        ap.error(&quot;give at least one config file, or --self-test&quot;)
+    results = []
+    for f in a.files:
+        try:
+            with open(f, encoding=&quot;utf-8&quot;) as fh:
+                results.append(review(fh.read(), f))
+        except (OSError, UnicodeDecodeError, ParseError) as e:
+            print(f&quot;error: {f}: {e}&quot;, file=sys.stderr)
+            return 2
+    print(json.dumps(results, indent=2) if a.json else to_markdown(results))
+    return 1 if any(f[&quot;severity&quot;] == &quot;HIGH&quot; for r in results for f in r[&quot;findings&quot;]) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=4"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/nginx-config-security-reviewer',TI="Nginx Config Security Reviewer";
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>
+</body></html>
