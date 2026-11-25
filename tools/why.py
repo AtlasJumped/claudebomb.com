@@ -51,8 +51,8 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
     def cell(c):
         k, t = c
         return '<td class="%s">%s</td>' % (k, E(t))
-    rows = ('<tr class="us"><th scope="row">claudebomb</th><td class="y">Yes: the open ones, daily. Last checked %s.</td><td class="y">Yes</td><td class="y">Yes</td>'
-            '<td class="n">Being added. Today: one version that works with every AI.</td><td class="y">Yes: every gallery in this table</td></tr>\n') % E(last)
+    rows = ('<tr class="us"><th scope="row">claudebomb</th><td class="y">Yes, daily (the open ones)</td><td class="y">Yes</td><td class="y">Yes</td>'
+            '<td class="n">Being added</td><td class="y">Yes, every one here</td></tr>\n')
     for name, url, cells in GALLERIES:
         rows += '<tr><th scope="row"><a href="%s">%s</a></th>%s</tr>\n' % (url, E(name), ''.join(cell(c) for c in cells))
     pg = head('Why claudebomb | claudebomb.com', 'One free place for every prompt, for every AI, updated every day. No ads, free forever. How claudebomb compares with every other prompt gallery.', 'https://claudebomb.com/why/')
