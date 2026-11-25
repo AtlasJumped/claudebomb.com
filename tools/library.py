@@ -5,6 +5,15 @@ from collections import Counter
 STOPW = set('a an and are as at be by can for from how i in into is it its me my of on or our so that the this to was what when which who will with you your act want need help make prompt prompts use using user also each any all not but have has should would could must only then than them they their there these those about more most such very just like one two first output input give provide write create based following ensure include including make sure please'.split())
 def words(t): return [w for w in re.findall(r'[a-z][a-z0-9]+', t.lower()) if len(w) > 3 and w not in STOPW]
 
+def _checked(R):
+    import datetime
+    try:
+        c = json.load(open(os.path.join(R, 'library/crawl.json')))['checked']
+        d = datetime.datetime.strptime(c[:10], '%Y-%m-%d'); day = d.strftime('%B ') + str(d.day) + d.strftime(', %Y')
+    except Exception:
+        day = 'not yet'
+    return 'Updated every day from the open galleries. Last checked: %s. <a href="/library/changes/">See what changed</a>.' % day
+
 def build(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=()):
     S = [json.load(open(os.path.join(R, 'library/sources', f))) for f in ('prompts-chat.json', 'fabric.json')]
     total = sum(len(s['prompts']) for s in S)
@@ -103,6 +112,7 @@ C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty
   <p class="eyebrow"><span class="no">Free</span> Openly licensed, credited</p>
   <h1 id="h1">Search every prompt</h1>
   <p class="lead">One search over our own prompts and %s free prompts from other open galleries: %s from <a href="%s">prompts.chat</a> (public domain) and %s from <a href="%s">Fabric</a> (MIT licence). Each page credits its source. You can improve any of them with no account.</p>
+  <p class="mut">@@CHECKED@@</p>
   <form class="find" role="search" onsubmit="return false">
    <div><label for="q">Search the library</label><input id="q" type="search" placeholder="Try: interview, excel, summary, travel" autocomplete="off"></div>
    <div><label for="src">Source</label><select id="src"><option value="">All sources</option><option value="cb">claudebomb</option><option value="pc">prompts.chat</option><option value="fb">Fabric</option><option value="dev">For developers</option></select></div>
@@ -121,6 +131,7 @@ C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty
 </section>
 </main>
 ''' % (format(total, ','), format(n_pc, ','), S[0]['home'], n_fb, S[1]['home'])
+    pg = pg.replace('@@CHECKED@@', _checked(R))
     pg += FOOT
     js = '''<script>
 (function(){var C=window.CB,q=document.getElementById('q'),src=document.getElementById('src'),list=document.getElementById('list'),count=document.getElementById('count'),more=document.getElementById('more'),bi=document.getElementById('buildit'),IX=null,ALL=[],hits=[],shown=0,N={cb:'claudebomb',pc:'prompts.chat',fb:'Fabric'};

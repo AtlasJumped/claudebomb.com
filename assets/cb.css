@@ -145,3 +145,17 @@ textarea.ta.talk{font-family:var(--sans);font-size:1rem}
 .myl h3{margin:0 0 .3rem;font-size:1.05rem}
 .rule{display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;margin:.4rem 0}
 @media(max-width:600px){.rule{grid-template-columns:1fr}}
+/* why page: comparison table and workflow */
+.cmpw{overflow-x:auto;border:3px solid var(--fg);border-radius:14px;background:#fff;margin:1rem 0}
+.cmp{border-collapse:collapse;width:100%;min-width:46rem;font-size:.95rem}
+.cmp th,.cmp td{padding:.65rem .75rem;border-bottom:1px solid #e5dcc4;text-align:left;vertical-align:top}
+.cmp thead th{background:var(--butter);font-weight:800;line-height:1.2}
+.cmp tbody th{font-weight:700;white-space:nowrap}
+.cmp tr.us{background:var(--mint)}
+.cmp .y{font-weight:800}.cmp .x{color:#b3261e;font-weight:800}.cmp .q{color:var(--mut)}
+.flow{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));gap:.6rem;counter-reset:f}
+.flow li{border:3px solid var(--fg);border-radius:14px;background:#fff;padding:.8rem;counter-increment:f}
+.flow li:before{content:counter(f);display:inline-grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:99px;background:var(--fg);color:#fff;font-weight:800;margin-bottom:.4rem}
+.flow b{display:block}.flow .st{display:inline-block;margin-top:.4rem;font-size:.8rem;font-weight:700;border-radius:99px;padding:.1rem .55rem;background:var(--butter)}
+.flow .st.on{background:var(--mint)}
+.cta{font-size:1.25rem;padding:1rem 1.6rem}

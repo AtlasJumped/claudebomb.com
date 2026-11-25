@@ -32,7 +32,7 @@ json.dump(dict(shared=SHARED, dashboard={k: v for k, v in DASH.items() if k != '
 FAV = open(os.path.join(R, 'tools/favicon.html')).read().strip()
 LOGO = '<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>'
 MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>'
-V = '5'
+V = '6'
 # Keep whatever dock version is live (another job bumps it in the built pages).
 import re as _re
 DOCKV = (_re.search(r'hmr-dock\.js\?v=([0-9.]+)', open(os.path.join(R, 'index.html')).read()) or [0, '6.6.1'])[1]
@@ -47,7 +47,7 @@ def head(title, desc, url):
 def hdr(nav, home='/'):
     links = ''.join('<a href="%s">%s</a>' % (h, E(t)) for h, t in nav)
     return ('<header class="hdr">\n <a class="logo" href="%s" aria-label="claudebomb.com, home">%sclaudebomb</a>\n <nav class="nav" aria-label="Main">%s</nav>\n</header>\n'
-            '<div class="promise"><div class="wrap"><b>100%% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>\n') % (home, LOGO, links)
+            '<div class="promise"><div class="wrap"><b>100%% free, no ads, forever.</b><a href="/why/">Why claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>\n') % (home, LOGO, links)
 
 FOOT = '''<footer class="foot">
  <div class="wrap">
@@ -401,6 +401,8 @@ LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=[dict(page=p[
 print('library prompts:', LIBN)
 from pages2 import build as build_pages2
 build_pages2(R, E, head, hdr, FOOT, TAIL, V, microw)
+from why import build as build_why
+build_why(R, E, head, hdr, FOOT, TAIL, V)
 
 bad = []
 for root, _, fs in os.walk(R):

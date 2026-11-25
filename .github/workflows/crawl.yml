@@ -1,0 +1,40 @@
+name: Daily crawl of open galleries
+# Every day: re-pull the openly licensed galleries (prompts.chat, CC0; Fabric, MIT),
+# record what changed in library/changes.json, rebuild the site and publish.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pull the open galleries
+        run: |
+          git clone -q --depth 1 https://github.com/f/prompts.chat "$RUNNER_TEMP/pc"
+          git clone -q --depth 1 https://github.com/danielmiessler/fabric "$RUNNER_TEMP/fb"
+      - name: Import and record changes
+        run: |
+          mkdir -p "$RUNNER_TEMP/old" && cp library/sources/*.json "$RUNNER_TEMP/old/"
+          python3 tools/import_library.py "$RUNNER_TEMP/pc" "$RUNNER_TEMP/fb"
+          python3 tools/crawl_changes.py "$RUNNER_TEMP/old"
+      - name: Rebuild the site
+        run: python3 tools/build.py
+      - name: Publish
+        run: |
+          git config user.name "claudebomb crawler"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A ':!tools/__pycache__'
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Daily crawl: $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git push -q && exit 0; sleep 5; git pull -q --rebase || exit 1; done
+          exit 1

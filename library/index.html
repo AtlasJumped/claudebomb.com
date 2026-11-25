@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#fff6e0">
 <link rel="canonical" href="https://claudebomb.com/library/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/assets/cb.css?v=5">
+<link rel="stylesheet" href="/assets/cb.css?v=6">
 </head>
 <body id="top">
 <a class="skip" href="#lib">Skip to the prompts</a>
@@ -19,13 +19,14 @@
  <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
  <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
 </header>
-<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/why/">Why claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
 <main>
 <section class="sec hero" aria-labelledby="h1">
  <div class="wrap">
   <p class="eyebrow"><span class="no">Free</span> Openly licensed, credited</p>
   <h1 id="h1">Search every prompt</h1>
   <p class="lead">One search over our own prompts and 3,428 free prompts from other open galleries: 3,161 from <a href="https://prompts.chat">prompts.chat</a> (public domain) and 267 from <a href="https://github.com/danielmiessler/fabric">Fabric</a> (MIT licence). Each page credits its source. You can improve any of them with no account.</p>
+  <p class="mut">Updated every day from the open galleries. Last checked: November 25, 2026. <a href="/library/changes/">See what changed</a>.</p>
   <form class="find" role="search" onsubmit="return false">
    <div><label for="q">Search the library</label><input id="q" type="search" placeholder="Try: interview, excel, summary, travel" autocomplete="off"></div>
    <div><label for="src">Source</label><select id="src"><option value="">All sources</option><option value="cb">claudebomb</option><option value="pc">prompts.chat</option><option value="fb">Fabric</option><option value="dev">For developers</option></select></div>
@@ -52,7 +53,7 @@
  </div>
 </footer>
 <div class="toast" id="toast" role="status"></div>
-<script src="/assets/cb.js?v=5"></script>
+<script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
 <script src="/assets/cb-account.js?v=1"></script>
@@ -70,7 +71,7 @@ function run(){var t=q.value.trim(),s=src.value;
  bi.hidden=!t;var a=bi.querySelector('a');a.href='/build/?q='+encodeURIComponent(t);
  try{var u=new URL(location.href);t?u.searchParams.set('q',t):u.searchParams.delete('q');s?u.searchParams.set('src',s):u.searchParams.delete('src');history.replaceState(null,'',u)}catch(e){}}
 try{var sp=new URLSearchParams(location.search);if(sp.get('q'))q.value=sp.get('q');if(sp.get('src'))src.value=sp.get('src')}catch(e){}
-fetch('/library/index.json?v=5').then(function(r){return r.json()}).then(function(d){ALL=d.map(function(x){return{url:x[0],title:x[1],src:x[2],excerpt:x[3],dev:x[4],kw:x[5],cat:x[6]||''}});IX=C.prep(ALL);run()},function(){count.textContent='The library could not load. Reload the page to try again.'});
+fetch('/library/index.json?v=6').then(function(r){return r.json()}).then(function(d){ALL=d.map(function(x){return{url:x[0],title:x[1],src:x[2],excerpt:x[3],dev:x[4],kw:x[5],cat:x[6]||''}});IX=C.prep(ALL);run()},function(){count.textContent='The library could not load. Reload the page to try again.'});
 var lt=0;q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(run,150)});src.addEventListener('change',run);more.addEventListener('click',function(){page(50)});
 })();
 </script>
