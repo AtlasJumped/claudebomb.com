@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My prompts | claudebomb.com</title>
+<meta name="description" content="The prompts you saved on claudebomb.com, ready to edit and copy. Free, no ads, forever.">
+<meta property="og:title" content="My prompts | claudebomb.com">
+<meta property="og:description" content="The prompts you saved on claudebomb.com, ready to edit and copy. Free, no ads, forever.">
+<meta property="og:url" content="https://claudebomb.com/my/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/my/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=5">
+</head>
+<body id="top">
+<a class="skip" href="#mylist">Skip to your prompts</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Search all</a><a href="/build/">Build</a><a href="/my/">My prompts</a></nav>
+</header>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <h1 id="h1">My prompts</h1>
+  <p class="lead">Prompts you save show up here, with your changes. Edit them, copy them for your AI, or delete them.</p>
+ </div>
+</section>
+<section class="sec" aria-label="Saved prompts">
+ <div class="wrap">
+  <p class="count" id="mycount"></p>
+  <ul class="myl" id="mylist"></ul>
+  <div class="empty" id="myempty" hidden><p>Nothing saved yet.</p><div class="btns"><a class="btn" href="/library/">Find a prompt</a><a class="btn ghost" href="/build/">Build a prompt</a></div></div>
+ </div>
+</section>
+<section class="sec" aria-labelledby="acct">
+ <div class="wrap">
+  <h2 id="acct">Your account</h2>
+  <div id="acctbox"><p>Sign in is coming soon. Until then, what you save stays in this browser on this device, and nobody else can see it.</p></div>
+  <h3>What happens to what you save</h3>
+  <p>On this device, your prompts stay in this browser. Clearing your browser data deletes them.</p>
+  <p>Once you have an account, we keep your saved prompts so they follow you to any device. We also read saved prompts together, with everyone's, to find changes that make a shared prompt better for everyone. If one of your changes makes it into a shared prompt, we credit you in that prompt's history under the name you choose, or not at all if you leave it blank. You can turn this off for your account.</p>
+  <p>No ads, ever. We never sell what you save. Don't save passwords or private details in a prompt.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=5"></script>
+<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb2.js?v=1"></script>
+<script src="/assets/cb-account.js?v=1"></script>
+<script>
+(function(){var C=window.CB,d=document,list=d.getElementById('mylist'),cnt=d.getElementById('mycount'),emp=d.getElementById('myempty');
+function fmt(s){try{return new Date(s).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}catch(e){return ''}}
+function draw(){var L=C.mine();list.textContent='';emp.hidden=L.length>0;cnt.textContent=L.length?(L.length===1?'1 saved prompt':L.length+' saved prompts'):'';
+ L.forEach(function(it){var li=C.el('li'),h=C.el('h3');var a=C.el('a',null,it.title||'Untitled prompt');a.href=it.url||'#';h.appendChild(a);li.appendChild(h);
+  li.appendChild(C.el('p','mut','Saved '+fmt(it.saved)+(it.edited?', edited '+fmt(it.edited):'')));
+  var ta=C.el('textarea','inp');ta.rows=8;ta.value=it.text||'';ta.setAttribute('aria-label','Prompt text: '+(it.title||'Untitled prompt'));li.appendChild(ta);
+  var t=0;ta.addEventListener('input',function(){clearTimeout(t);t=setTimeout(function(){var M=C.mine();M.forEach(function(m){if(m.key===it.key){m.text=ta.value;m.edited=new Date().toISOString()}});C.saveMine(M)},400)});
+  var bs=C.el('div','btns'),cp=C.el('button','btn','Copy prompt'),del=C.el('button','btn ghost','Delete');cp.type=del.type='button';cp.setAttribute('data-copym','');
+  cp.addEventListener('click',function(){C.copyText(ta.value).then(C.copied)});
+  var arm=0;del.addEventListener('click',function(){if(!arm){arm=1;del.textContent='Tap again to delete "'+(it.title||'this prompt').slice(0,40)+'"';setTimeout(function(){arm=0;del.textContent='Delete'},4000);return}
+   C.saveMine(C.mine().filter(function(m){return m.key!==it.key}));draw();C.toast('Deleted.')});
+  bs.appendChild(cp);bs.appendChild(del);li.appendChild(bs);list.appendChild(li)});
+ if(C.relabel)C.relabel()}
+draw();window.addEventListener('cb-my-synced',draw);
+if(window.CBAccount&&window.CBAccount.mount)window.CBAccount.mount(d.getElementById('acctbox'));
+})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
+</body></html>

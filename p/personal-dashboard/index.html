@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#fff6e0">
 <link rel="canonical" href="https://claudebomb.com/p/personal-dashboard/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/assets/cb.css?v=4">
+<link rel="stylesheet" href="/assets/cb.css?v=5">
 </head>
 <body id="top">
 <a class="skip" href="#prompt">Skip to the prompt</a>
@@ -19,6 +19,7 @@
  <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
  <nav class="nav" aria-label="Main"><a href="/#bank">All prompts</a><a href="#prompt">The prompt</a><a href="#improve">Improve it</a><a href="#history">History</a><a href="/#ask">Ask for one</a></nav>
 </header>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
 <main>
 <section class="sec hero" aria-labelledby="h1">
  <div class="wrap">
@@ -26,7 +27,7 @@
   <h1 class="sm" id="h1">Personal dashboard (flagship)</h1>
   <p class="lead">Audits your AI setup, sets things up from your instructions, and builds one calm page for your day.</p>
   <p class="saves">Our flagship, and the bar for this site. Free forever.</p>
-  <div class="btns"><button class="btn" type="button" data-copyv>Copy prompt</button><a class="btn ghost" href="#prompt">Read it first</a></div>
+  <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
  </div>
 </section>
@@ -54,12 +55,16 @@
 <div class="feat" role="radiogroup" aria-label="One question at a time"><span class="fn" title="Ask me one question at a time. / No: Put all your questions in one message so I can answer them together.">One question at a time</span><span class="seg"><label><input type="radio" name="f7" value="want"><span>Yes</span></label><label><input type="radio" name="f7" value="" checked><span>Either</span></label><label><input type="radio" name="f7" value="dont"><span>No</span></label></span></div>
 <div class="feat" role="radiogroup" aria-label="Say where facts come from"><span class="fn" title="When you state a fact, say where it comes from, or say plainly that you are not sure.">Say where facts come from</span><span class="seg"><label><input type="radio" name="f8" value="want"><span>Yes</span></label><label><input type="radio" name="f8" value="" checked><span>Either</span></label></span></div></div>
   <p class="adj" id="adj"></p>
-  <div class="btns"><button class="btn" type="button" data-copyv>Copy prompt</button><button class="btn ghost" type="button" id="clearf">Clear my choices</button></div>
+  <h3>Fill it in, by voice or by typing</h3>
+  <p class="mut">Everything you write here is added at the end of the prompt. Tap a microphone and just talk. It stays on this device.</p>
+  <div id="cz"></div>
+  <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><button class="btn ghost" type="button" data-save>Save to My prompts</button><button class="btn ghost" type="button" id="clearf">Clear my choices</button></div>
+  <p class="mut sm">One version works with every AI today. Versions tuned for each AI will come from <a href="/council/">the council</a>.</p>
   <details id="read"><summary>Read it first, and edit it as much as you want</summary>
    <p class="mut">Change anything below. Your edits stay on this device only. Copy prompt copies your version, plus the features you picked.</p>
    <label class="sr" for="ed">The prompt text</label>
    <textarea class="ta big" id="ed" spellcheck="false">Loading the text...</textarea>
-   <div class="btns"><button class="btn" type="button" data-copyv>Copy prompt</button><button class="btn ghost" type="button" id="hide">Hide it</button><button class="btn ghost" type="button" id="reset">Undo my edits</button></div>
+   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><button class="btn ghost" type="button" id="hide">Hide it</button><button class="btn ghost" type="button" id="reset">Undo my edits</button></div>
   </details>
  </div>
 </section>
@@ -97,18 +102,23 @@
  </div>
 </footer>
 <div class="toast" id="toast" role="status"></div>
-<script src="/assets/cb.js?v=4"></script>
-<script id="pdata" type="application/json">{"id": "personal-dashboard", "title": "Personal dashboard (flagship)", "text": "", "load": true, "paths": ["setup/claude-setup-guide.md", "dashboard/claudebomb-dashboard.md"], "feats": [{"name": "Automated setup", "want": "Use automated setup: do every step for me and ask yes or no on each choice.", "dont": "Use manual setup: let me pick every step myself."}, {"name": "Money tab", "want": "Include the read-only Money tab if you can reach my spending.", "dont": "Leave out the Money tab entirely."}, {"name": "Family question", "want": "Ask the optional family and generations question.", "dont": "Skip the family and generations question."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}]}</script>
+<script src="/assets/cb.js?v=5"></script>
+<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb2.js?v=1"></script>
+<script src="/assets/cb-account.js?v=1"></script>
+<script id="pdata" type="application/json">{"id": "personal-dashboard", "title": "Personal dashboard (flagship)", "text": "", "load": true, "paths": ["setup/claude-setup-guide.md", "dashboard/claudebomb-dashboard.md"], "feats": [{"name": "Automated setup", "want": "Use automated setup: do every step for me and ask yes or no on each choice.", "dont": "Use manual setup: let me pick every step myself."}, {"name": "Money tab", "want": "Include the read-only Money tab if you can reach my spending.", "dont": "Leave out the Money tab entirely."}, {"name": "Family question", "want": "Ask the optional family and generations question.", "dont": "Skip the family and generations question."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
 (function(){
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
-function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');return a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n'}
-function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
+var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
 document.querySelector('.feats').addEventListener('change',function(){saveF();info()});
-document.getElementById('clearf').addEventListener('click',function(){Array.prototype.forEach.call(document.querySelectorAll('.feats input[value=""]'),function(r){r.checked=true});C.ls(KF,null);info()});
+Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){if(!ORIG){C.toast('The text is still loading.');return}C.save({id:D.id,title:D.title,url:'/p/'+D.id+'/',text:version()});C.toast('Saved to My prompts on this device.')})});
+document.getElementById('clearf').addEventListener('click',function(){CZ.clear();Array.prototype.forEach.call(document.querySelectorAll('.feats input[value=""]'),function(r){r.checked=true});C.ls(KF,null);info()});
 function ready(){var s=C.ls(KEY);if(s)ed.value=s;info()}
 if(D.load){ed.value='Loading the text...';C.loadDash().then(function(t){ORIG=t;ed.value=t;ready()},function(){ed.value='We could not load the text. Reload the page to try again.'})}else ready();
 ed.addEventListener('input',function(){if(ORIG&&ed.value!==ORIG)C.ls(KEY,ed.value);else C.ls(KEY,null);info()});

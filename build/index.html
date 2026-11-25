@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Build a prompt | claudebomb.com</title>
+<meta name="description" content="Build a prompt for any AI by voice or by typing: say what you want, add rules like &quot;if this, do that&quot;, and copy a prompt that works the first time.">
+<meta property="og:title" content="Build a prompt | claudebomb.com">
+<meta property="og:description" content="Build a prompt for any AI by voice or by typing: say what you want, add rules like &quot;if this, do that&quot;, and copy a prompt that works the first time.">
+<meta property="og:url" content="https://claudebomb.com/build/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/build/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=5">
+</head>
+<body id="top">
+<a class="skip" href="#goal">Skip to the builder</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Search all</a><a href="/build/">Build</a><a href="/my/">My prompts</a></nav>
+</header>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <h1 id="h1">Build a prompt</h1>
+  <p class="lead">Didn't find the prompt you wanted? Say what you need, by voice or by typing. The prompt on the right updates as you go. Copy it into your AI, save it, or send it to us and we'll add it to the bank for everyone.</p>
+ </div>
+</section>
+<section class="sec" aria-label="Prompt builder">
+ <div class="wrap two">
+  <div>
+   <div class="fld"><label for="goal">What do you want the AI to do?</label><textarea id="goal" rows="3" placeholder="Example: plan a week of dinners for a family of four, under $100"></textarea><div class="microw"><button class="mic" type="button" data-mic="goal" data-st="goal-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="goal-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+   <div class="fld"><label for="ctx">What should it know?</label><textarea id="ctx" rows="3" placeholder="Who it is for, what you have tried, anything it would get wrong without being told"></textarea><div class="microw"><button class="mic" type="button" data-mic="ctx" data-st="ctx-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="ctx-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+   <div class="fld"><label for="shape">What should you get back?</label><textarea id="shape" rows="2" placeholder="Example: a table with one row per day, then a shopping list"></textarea><div class="microw"><button class="mic" type="button" data-mic="shape" data-st="shape-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="shape-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+   <div class="fld"><label for="tone">Tone</label><textarea id="tone" rows="1" placeholder="Example: plain and friendly, no jargon"></textarea><div class="microw"><button class="mic" type="button" data-mic="tone" data-st="tone-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="tone-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+   <div class="fld"><label for="never">Anything it must never do?</label><textarea id="never" rows="2" placeholder="Example: never suggest pork"></textarea><div class="microw"><button class="mic" type="button" data-mic="never" data-st="never-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="never-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+   <h2 class="h3">Rules: if this, then that</h2>
+   <p class="mut">Optional. For example: if the answer needs a number I didn't give, then ask me for it.</p>
+   <div id="rules"></div>
+   <div class="btns"><button class="btn ghost" type="button" id="addrule">Add a rule</button><button class="btn ghost" type="button" id="clearb">Start over</button></div>
+  </div>
+  <div>
+   <h2 class="h3">Your prompt</h2>
+   <pre id="out" aria-live="polite"></pre>
+   <div class="btns"><button class="btn" type="button" id="copyb" data-copym>Copy prompt</button><button class="btn ghost" type="button" id="saveb">Save to My prompts</button></div>
+   <p class="mut">Want it sharper? Paste it into our <a href="/p/prompt-improver/">prompt improver</a>.</p>
+   <h2 class="h3">Send it to us</h2>
+   <p class="mut">We'll polish it and add it to the bank, free for everyone, with credit to you if you leave your email.</p>
+   <div id="sendb"></div>
+  </div>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=5"></script>
+<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb2.js?v=1"></script>
+<script src="/assets/cb-account.js?v=1"></script>
+<script>
+(function(){var C=window.CB,d=document,F=['goal','ctx','shape','tone','never'],out=d.getElementById('out'),rules=d.getElementById('rules'),RK='cb-build-rules';
+function v(i){return d.getElementById(i).value.trim()}
+function getRules(){return Array.prototype.map.call(rules.querySelectorAll('.rule'),function(r){var a=r.querySelectorAll('input');return[a[0].value.trim(),a[1].value.trim()]})}
+function saveRules(){C.ls(RK,JSON.stringify(getRules()))}
+function addRule(a,b){var r=C.el('div','rule'),n=rules.children.length+1;
+ r.innerHTML='<label>If <input type="text" aria-label="If, rule '+n+'" placeholder="this happens"></label><label>then <input type="text" aria-label="Then, rule '+n+'" placeholder="do this"></label>';
+ var x=C.el('button','btn ghost sm','Remove');x.type='button';x.addEventListener('click',function(){r.remove();saveRules();draw()});r.appendChild(x);
+ var ins=r.querySelectorAll('input');ins[0].value=a||'';ins[1].value=b||'';Array.prototype.forEach.call(ins,function(i){i.addEventListener('input',function(){saveRules();draw()})});rules.appendChild(r)}
+function text(){var g=v('goal');if(!g)return '';var t='I need your help with this: '+g+'\n\nBefore you start, ask me up to 3 short questions if anything important is missing. If nothing is missing, start right away.';
+ if(v('ctx'))t+='\n\nWhat you should know:\n'+v('ctx');
+ t+='\n\nWhat I want back:\n'+(v('shape')||'A clear, finished result I can use as it is.');
+ if(v('tone'))t+='\n\nTone: '+v('tone');
+ t+='\n\nRules:\n- If you are not sure about a fact, say so instead of guessing.\n- Keep to what I asked. If you think something else would help, mention it at the end in one line.';
+ if(v('never'))t+='\n- Never: '+v('never');
+ var rs=getRules().filter(function(r){return r[0]&&r[1]});if(rs.length)t+='\n\nFollow these exactly:\n'+rs.map(function(r){return '- If '+r[0]+', then '+r[1]+'.'}).join('\n');
+ t+='\n\nWhen you finish, check your answer against everything above and fix anything that does not match.';return t}
+function draw(){var t=text();out.textContent=t||'Start with the first box: what do you want the AI to do?'}
+F.forEach(function(i){var ta=d.getElementById(i);C.keep(ta,'cb-build-'+i);ta.addEventListener('input',draw)});
+try{var q=new URLSearchParams(location.search).get('q');if(q&&!v('goal')){d.getElementById('goal').value=q;C.ls('cb-build-goal',q)}}catch(e){}
+var saved=[];try{saved=JSON.parse(C.ls(RK)||'[]')}catch(e){}saved.forEach(function(r){addRule(r[0],r[1])});
+d.getElementById('addrule').addEventListener('click',function(){addRule();rules.lastChild.querySelector('input').focus()});
+d.getElementById('clearb').addEventListener('click',function(){F.forEach(function(i){d.getElementById(i).value='';C.ls('cb-build-'+i,null)});rules.textContent='';C.ls(RK,null);draw();C.toast('Cleared.')});
+d.getElementById('copyb').addEventListener('click',function(){var t=text();if(!t){C.toast('Say what you want the AI to do first.');return}C.copyText(t).then(C.copied)});
+d.getElementById('saveb').addEventListener('click',function(){var t=text();if(!t){C.toast('Say what you want the AI to do first.');return}C.save({id:'built',title:v('goal').slice(0,80),url:'/build/',text:t});C.toast('Saved to My prompts on this device.')});
+C.submitPair(d.getElementById('sendb'),{kind:'prompt request',empty:'Say what you want the AI to do first.',text:text,details:function(){return{source:'claudebomb builder',model:C.model()||''}}});
+draw()})();
+</script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
+</body></html>

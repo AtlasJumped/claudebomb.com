@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#fff6e0">
 <link rel="canonical" href="https://claudebomb.com/l/pc/greenhouse-care-system/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/assets/cb.css?v=4">
+<link rel="stylesheet" href="/assets/cb.css?v=5">
 </head>
 <body id="top">
 <a class="skip" href="#prompt">Skip to the prompt</a>
@@ -19,20 +19,24 @@
  <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
  <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
 </header>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
 <main>
 <section class="sec hero" aria-labelledby="h1">
  <div class="wrap">
   <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
   <h1 class="sm" id="h1">Greenhouse care system</h1>
   <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by johndavecastro1006. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
-  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+  <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
  </div>
 </section>
 <section class="sec bank" id="prompt" aria-labelledby="pr-h">
  <div class="wrap">
   <h2 id="pr-h">The prompt</h2>
   <pre id="pt">create an image of this wireframe🧰 Part 1: Physical Single-Breadboard LayoutYou will place everything onto one single breadboard. This layout keeps your project clean and professional for your professor.The Microcontrollers: Plug your ESP32 Dev Board firmly across the center plastic divider trench on the right half of the board. Place your Arduino R3 right next to the left side of the breadboard.The Safe Power Rails (Top Edge of Board):Connect Arduino 5V Pin → Top Red Positive (+) Rail.Connect Arduino GND Pin → Top Black Negative (-) Rail.All sensors, the buzzer, the LCD screen, and the logic side of the relay module use these top rails.The Isolated Fan Power Rails (Bottom Edge of Board):Connect your AA Battery Pack Red wire → Bottom Red Positive (+) Rail.Connect your AA Battery Pack Black wire → Bottom Black Negative (-) Rail.Keep these bottom rails completely separate from the top rails to isolate the motor&#x27;s power.🗺️ Part 2: Master Wireframe Wiring Manifest1. Components Mounted Directly in the Breadboard Grid HolesESP32 Dev Board: Pushed into the right side grid rows, straddling the center ditch.Buzzer (Active or Passive): Push its legs straight into two empty grid holes.Purple Wire: Long Positive (+) leg row → Arduino Digital Pin 3.Black Wire: Short Negative (-) leg row → Top Black Negative Rail.2. Loose Modules Connected via Female-to-Male (F-M) Jumper WiresSlip the Female sockets onto the module pins, and plug the Male pins directly into these destinations:DHT11 Temperature &amp; Humidity Sensor:VCC wire → Top Red Positive RailGND wire → Top Black Negative RailDATA wire → Arduino Analog Pin A0Water Level Detection Sensor Module:VCC (+) wire → Top Red Positive RailGND (-) wire → Top Black Negative RailSignal (S) wire → Arduino Analog Pin A1LCD1602 Screen Panel (I2C Backpack Pins):VCC wire → Top Red Positive RailGND wire → Top Black Negative RailSDA wire → Arduino Analog Pin A4SCL wire → Arduino Analog Pin A5Real-Life 5V Relay Module (3 Logic Input Pins):VCC wire → Top Red Positive RailGND wire → Top Black Negative RailIN wire → Arduino Digital Pin 43. High-Current Fan Wiring (Screw Terminal Side of Relay Module)Stick the bare wires into the open plastic blocks and tighten the screws firmly:Red Wire: From the Bottom Red Positive Rail (AA Batteries) → Relay Module COM (Common) screw terminal.Red Wire: From the Relay Module NO (Normally Open) screw terminal → Red positive wire of your 3V DC Motor.Black Wire: From the Black negative wire of your 3V DC Motor → Bottom Black Negative Rail.4. The Microcontroller Communication Data BridgeGreen Wire: Connect Arduino Digital Pin 2 → the breadboard column matching ESP32 GPIO Pin 16 (RX2).Black Wire: Connect any GND Pin on your ESP32 → Top Black Negative Rail.</pre>
-  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <h3 id="mine">Make it yours, by voice or by typing</h3>
+  <p class="mut">Anything you write here is added at the end of the prompt when you copy it. It stays on this device.</p>
+  <div id="cz"></div>
+  <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><button class="btn ghost" type="button" data-save>Save to My prompts</button></div>
   <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
  </div>
 </section>
@@ -60,10 +64,15 @@
  </div>
 </footer>
 <div class="toast" id="toast" role="status"></div>
-<script src="/assets/cb.js?v=4"></script>
+<script src="/assets/cb.js?v=5"></script>
+<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb2.js?v=1"></script>
+<script src="/assets/cb-account.js?v=1"></script>
 <script>
 (function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/greenhouse-care-system',TI="Greenhouse care system";
-Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var CZ=C.custom(document.getElementById('cz'),{id:'l-'+K});function full(){return T.replace(/\s+$/,'')+CZ.text()}
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(full()).then(C.copied)})});
+Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){C.save({id:'l-'+K,title:TI,url:'/l/'+K+'/',text:full()});C.toast('Saved to My prompts on this device.')})});
 var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
 document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
 C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});

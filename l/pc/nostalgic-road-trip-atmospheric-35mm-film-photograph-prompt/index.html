@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#fff6e0">
 <link rel="canonical" href="https://claudebomb.com/l/pc/nostalgic-road-trip-atmospheric-35mm-film-photograph-prompt/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/assets/cb.css?v=4">
+<link rel="stylesheet" href="/assets/cb.css?v=5">
 </head>
 <body id="top">
 <a class="skip" href="#prompt">Skip to the prompt</a>
@@ -19,13 +19,14 @@
  <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
  <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
 </header>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
 <main>
 <section class="sec hero" aria-labelledby="h1">
  <div class="wrap">
   <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
   <h1 class="sm" id="h1">Nostalgic Road Trip - Atmospheric 35mm Film Photograph Prompt</h1>
   <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by senoldak. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
-  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+  <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
  </div>
 </section>
 <section class="sec bank" id="prompt" aria-labelledby="pr-h">
@@ -106,7 +107,10 @@
   &quot;use_case&quot;: &quot;Training AI models to replicate analog film artifacts and atmospheric lighting conditions.&quot;,
   &quot;uuid&quot;: &quot;6174aa00-9033-46dc-8f74-8c54ce90a956&quot;
 }</pre>
-  <div class="btns"><button class="btn" type="button" data-copyl>Copy prompt</button></div>
+  <h3 id="mine">Make it yours, by voice or by typing</h3>
+  <p class="mut">Anything you write here is added at the end of the prompt when you copy it. It stays on this device.</p>
+  <div id="cz"></div>
+  <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><button class="btn ghost" type="button" data-save>Save to My prompts</button></div>
   <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
  </div>
 </section>
@@ -134,10 +138,15 @@
  </div>
 </footer>
 <div class="toast" id="toast" role="status"></div>
-<script src="/assets/cb.js?v=4"></script>
+<script src="/assets/cb.js?v=5"></script>
+<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb2.js?v=1"></script>
+<script src="/assets/cb-account.js?v=1"></script>
 <script>
 (function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/nostalgic-road-trip-atmospheric-35mm-film-photograph-prompt',TI="Nostalgic Road Trip - Atmospheric 35mm Film Photograph Prompt";
-Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(T).then(C.copied)})});
+var CZ=C.custom(document.getElementById('cz'),{id:'l-'+K});function full(){return T.replace(/\s+$/,'')+CZ.text()}
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(full()).then(C.copied)})});
+Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){C.save({id:'l-'+K,title:TI,url:'/l/'+K+'/',text:full()});C.toast('Saved to My prompts on this device.')})});
 var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
 document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
 C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});

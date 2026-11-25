@@ -21,6 +21,13 @@ A prompt so big it needs its own website. The free, open-source prompt bank for 
 
 Rebuild with `python3 tools/import_library.py <prompts.chat clone> <fabric clone>` then `python3 tools/build.py`. Paid or all-rights-reserved galleries are linked from the home page, never copied.
 
+## Search, builder, saved prompts
+- Search (home page and `/library/`): ranked keyword search in the browser, in `assets/cb2.js`. It shows one best match or a short pick of two or three, and always links `/build/`. AI search on the Tower is designed in `docs/ai-search.md`.
+- `/build/`: prompt builder with voice input and if-then rules. Built by `tools/pages2.py`.
+- `/my/`: saved prompts. They stay in the browser until accounts are switched on.
+- Accounts (off): put the Supabase URL and anon key in `assets/cb-config.js` and run `supabase/schema.sql` once. Row-level security keeps each person's prompts private.
+- Every prompt page has fill-in boxes with microphones (changes, extra context, tone, and fields per prompt, like characters and setting for video). What people type is added to the end of the prompt when they copy it.
+
 ## The council (planned)
 
 `tools/council.py` gathers every free version of a prompt, has one top model from each of four companies review them, runs one round of debate, and has a chair merge the best version into `prompts/council/<id>.md`. Only the Claude seat is written; it is not running yet. It needs four API keys with billing (Anthropic, OpenAI, xAI, Google Gemini), kept as GitHub Actions secrets or on the Tower, never in the repo.

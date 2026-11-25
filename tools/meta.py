@@ -1,6 +1,23 @@
 # Page content for each prompt: what it does, common pitfalls and how the prompt handles them, and its own feature switches.
 # Shared switches live in build.py. Each feature: name, want (line added when you want it), dont (line added when you don't; optional).
 META = {
+"video-one-shot": dict(
+ does="You fill in boxes for your characters, your setting, your style, and your story. Your AI asks what is missing, writes a logline and a shot list, then gives you one finished prompt for any AI video tool, with a list of things the tool must not show.",
+ pitfalls=[
+  ("AI video tools drift: a character changes face or clothes between shots.","Each character is described the same way, word for word, every time they appear."),
+  ("Scenes wander outside the place you meant.","A decision rule treats any shot outside your setting as an error to fix."),
+  ("Clips run longer than the tool can make, so the end is cut off.","Long ideas are split into numbered clips with matching first and last frames."),
+ ],
+ features=[
+  dict(name="Crowds allowed", want="Background people and crowds are fine.", dont="No background people. Only my characters."),
+  dict(name="Dialogue", want="Include spoken lines for my characters.", dont="No dialogue. Music and sound only."),
+ ],
+ fields=[
+  dict(k="characters", label="Characters", ph="One per line: name, age, look, clothes, voice. For example: Mia, 8, red raincoat, curly hair, giggles a lot."),
+  dict(k="setting", label="Setting", ph="Where and when it all happens. For example: a small harbor at sunrise, fishing boats, gulls, light fog.", guard="Everything happens in this setting. If you find yourself writing a shot outside it, that is an error: fix it or ask me."),
+  dict(k="story", label="What happens", ph="The story from start to end, in your own words."),
+  dict(k="style", label="Style, length, and tool", ph="For example: warm hand-drawn animation, 20 seconds, for Veo. Or: realistic, 8 seconds, any tool."),
+ ]),
 "personal-dashboard": dict(
  does="Paste it into a new chat on day one. Your AI makes you comfortable, checks what it can reach, sets up one tidy folder and a master notes file with your yes, then builds a one-page dashboard for your day: ranked to-dos, inbox with drafted replies, calendar, money, fun, and the people who matter.",
  pitfalls=[

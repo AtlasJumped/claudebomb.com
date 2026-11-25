@@ -15,7 +15,7 @@ DASH = dict(id='personal-dashboard', category='Dashboards', title='Personal dash
 ALL = [DASH] + P
 for p in ALL:
     m = META[p['id']]
-    p['does'] = m['does']; p['pitfalls'] = [dict(pitfall=a, fix=b) for a, b in m['pitfalls']]; p['features'] = m['features']
+    p['does'] = m['does']; p['fields'] = m.get('fields', []); p['pitfalls'] = [dict(pitfall=a, fix=b) for a, b in m['pitfalls']]; p['features'] = m['features']
     p['page'] = '/p/%s/' % p['id']
     p.setdefault('paths', ['prompts/%s.md' % p['id']])
 SHARED = [
@@ -32,7 +32,7 @@ json.dump(dict(shared=SHARED, dashboard={k: v for k, v in DASH.items() if k != '
 FAV = open(os.path.join(R, 'tools/favicon.html')).read().strip()
 LOGO = '<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>'
 MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>'
-V = '4'
+V = '5'
 # Keep whatever dock version is live (another job bumps it in the built pages).
 import re as _re
 DOCKV = (_re.search(r'hmr-dock\.js\?v=([0-9.]+)', open(os.path.join(R, 'index.html')).read()) or [0, '6.6.1'])[1]
@@ -46,7 +46,8 @@ def head(title, desc, url):
 
 def hdr(nav, home='/'):
     links = ''.join('<a href="%s">%s</a>' % (h, E(t)) for h, t in nav)
-    return ('<header class="hdr">\n <a class="logo" href="%s" aria-label="claudebomb.com, home">%sclaudebomb</a>\n <nav class="nav" aria-label="Main">%s</nav>\n</header>\n') % (home, LOGO, links)
+    return ('<header class="hdr">\n <a class="logo" href="%s" aria-label="claudebomb.com, home">%sclaudebomb</a>\n <nav class="nav" aria-label="Main">%s</nav>\n</header>\n'
+            '<div class="promise"><div class="wrap"><b>100%% free, no ads, forever.</b><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>\n') % (home, LOGO, links)
 
 FOOT = '''<footer class="foot">
  <div class="wrap">
@@ -58,7 +59,7 @@ FOOT = '''<footer class="foot">
 </footer>
 <div class="toast" id="toast" role="status"></div>
 '''
-TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n%s<script src="/v6/funsies.js?v=1" defer></script>\n'
+TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=1"></script>\n%s<script src="/v6/funsies.js?v=1" defer></script>\n'
         '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
@@ -103,6 +104,7 @@ idx += '''<main>
    <div><label for="q">Search prompts</label><input id="q" type="search" placeholder="Try: scam, tutor, contract, family" autocomplete="off"></div>
    <div><label for="cat">Type of prompt</label><select id="cat"><option value="">All types</option>''' + opts + '''</select></div>
    <p class="count" id="count" aria-live="polite"></p>
+   <div class="best" id="best" hidden aria-live="polite"></div>
    <p class="others-top">Other prompt galleries: <a href="https://prompts.chat">prompts.chat</a>, <a href="https://github.com/danielmiessler/fabric">Fabric</a>, <a href="https://docs.langchain.com/langsmith/manage-prompts">LangChain Prompt Hub</a>, <a href="https://godofprompt.ai/prompt-library">God of Prompt</a>, <a href="https://promptbase.com">PromptBase</a>, <a href="https://code.claude.com/docs/en/prompt-library">Claude Code</a>, <a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/prompt-gallery">Google</a>. <a href="#others">How they compare</a>.</p>
   </form>
  </div>
@@ -114,7 +116,6 @@ idx += '''<main>
   <h2 id="bank-h">Prompts that do real work</h2>
   <p class="lead mut">Each one would take a person hours to write well. Open a prompt to see what it does, the pitfalls it avoids, and to switch features on or off before you copy it.</p>
   <div class="grid" id="grid"></div>
-  <p class="libhint" id="libhint"></p>
   <div class="empty" id="none" hidden><p><b>No prompt for that yet.</b> Ask for it, and say what you want it to do.</p><div class="btns"><a class="btn" href="#ask" id="none-ask">Ask for this prompt</a></div></div>
  </div>
 </section>
@@ -230,21 +231,28 @@ function render(){
   a.appendChild(el('span','tag',p.category));
   var h=el('h3'),l=el('a',null,p.title);l.href=p.page;h.appendChild(l);a.appendChild(h);
   a.appendChild(el('p',null,p.summary));a.appendChild(el('p','saves',p.saves));
-  var b=el('div','btns'),cb=el('button','btn','Copy prompt');cb.type='button';cb.setAttribute('data-copy',p.id);cb.setAttribute('aria-label','Copy prompt: '+p.title);
+  var mn=C.model&&C.model(),b=el('div','btns'),cb=el('button','btn',mn&&mn!=='other'?'Copy for '+C.modelName(mn):'Copy prompt');cb.setAttribute('data-copym','');cb.type='button';cb.setAttribute('data-copy',p.id);cb.setAttribute('aria-label','Copy prompt: '+p.title);
   var op=el('a','btn ghost','Open');op.href=p.page;op.setAttribute('aria-label','Open the page for: '+p.title);b.appendChild(cb);b.appendChild(op);a.appendChild(b);
   a.appendChild(el('p','meta',(p.words?p.words+' words. ':'')+'Works with Claude, ChatGPT, Gemini, and other assistants.'));
   grid.appendChild(a);
  });
- none.hidden=n>0;
+ none.hidden=n>0||!!term;
  count.textContent=n+(n===1?' prompt':' prompts')+(c?' in '+c:'')+(term?' matching "'+q.value.trim()+'"':'');
  try{var u=new URL(location.href);term?u.searchParams.set('q',q.value.trim()):u.searchParams.delete('q');c?u.searchParams.set('type',c):u.searchParams.delete('type');history.replaceState(null,'',u)}catch(e){}
 }
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-copy]');if(t)doCopy(t.getAttribute('data-copy'))});
 try{var sp=new URLSearchParams(location.search);if(sp.get('q'))q.value=sp.get('q');if(sp.get('type'))cat.value=sp.get('type')}catch(e){}
 q.addEventListener('input',render);cat.addEventListener('change',render);render();
-var hint=document.getElementById('libhint'),LIB=null,lt=0;
-function lib(){var t=q.value.trim().toLowerCase();if(!t){hint.textContent='';return}if(!LIB){fetch('/library/index.json?v='+'4'+'').then(function(r){return r.json()}).then(function(d){LIB=d;lib()},function(){});return}var w=t.split(/\\s+/),n=0;LIB.forEach(function(r){var h=(r[1]+' '+r[3]).toLowerCase();for(var i=0;i<w.length;i++)if(h.indexOf(w[i])<0)return;n++});hint.textContent='';if(n){var a=C.el('a',null,n.toLocaleString()+(n===1?' more prompt':' more prompts')+' for "'+q.value.trim()+'" in the open library');a.href='/library/?q='+encodeURIComponent(q.value.trim());hint.appendChild(a)}}
-q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(lib,250)});lib();
+var best=document.getElementById('best'),IX=null,loading=0,lt=0;
+function bestRow(r){var li=C.el('li'),a=C.el('a',null,r.title);a.href=r.url;li.appendChild(a);li.appendChild(C.el('span','tag',r.src==='cb'?'claudebomb':r.src==='pc'?'prompts.chat':'Fabric'));li.appendChild(C.el('p','mut',r.excerpt));return li}
+function findBest(){var t=q.value.trim();if(!t){best.hidden=true;return}
+ if(!IX){if(!loading){loading=1;best.hidden=false;best.textContent='Searching every prompt...';fetch('/library/index.json?v=5').then(function(r){return r.json()}).then(function(d){IX=C.prep(d.map(function(x){return{url:x[0],title:x[1],src:x[2],excerpt:x[3],dev:x[4],kw:x[5],cat:x[6]||''}}));findBest()},function(){best.hidden=true})}return}
+ var res=C.search(IX,t),k=C.shortPick(res);best.textContent='';best.hidden=false;
+ if(k){best.appendChild(C.el('h3',null,k===1?'Best match':'Best matches'));var ol=C.el('ol');res.slice(0,k).forEach(function(x){ol.appendChild(bestRow(x.r))});best.appendChild(ol);
+  if(res.length>k){var m=C.el('a',null,'See all '+res.length.toLocaleString()+' results');m.href='/library/?q='+encodeURIComponent(t);var pm=C.el('p','sm');pm.appendChild(m);best.appendChild(pm)}}
+ else best.appendChild(C.el('h3',null,'No prompt for that yet, here or anywhere we searched.'));
+ var bp=C.el('p','buildit'),ba=C.el('a',null,"Don't see your prompt? Build it here");ba.href='/build/?q='+encodeURIComponent(t);bp.appendChild(ba);bp.appendChild(document.createTextNode(' or '));var aa=C.el('a',null,'ask us for it');aa.href='#ask';aa.addEventListener('click',function(){var at=document.getElementById('ask-t');if(!at.value)at.value='A prompt for: '+t+'. '});bp.appendChild(aa);bp.appendChild(document.createTextNode('.'));best.appendChild(bp)}
+q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(findBest,200)});findBest();
 // ask for a prompt
 var at=document.getElementById('ask-t');C.keep(at,'cb-ask');
 document.getElementById('none-ask').addEventListener('click',function(){var v=q.value.trim();if(v&&!at.value)at.value='A prompt for: '+v+'. ';setTimeout(function(){at.focus()},300)});
@@ -291,7 +299,7 @@ for p in ALL:
   <h1 class="sm" id="h1">%s</h1>
   <p class="lead">%s</p>
   <p class="saves">%s</p>
-  <div class="btns"><button class="btn" type="button" data-copyv>Copy prompt</button><a class="btn ghost" href="#prompt">Read it first</a></div>
+  <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
  </div>
 </section>
@@ -311,12 +319,16 @@ for p in ALL:
   <p class="lead mut">Pick the features you do and don't want. Yes adds that instruction, No asks for the opposite, Either leaves it out. Your choices go at the end of the prompt and win over anything above them.</p>
   <div class="feats">%s</div>
   <p class="adj" id="adj"></p>
-  <div class="btns"><button class="btn" type="button" data-copyv>Copy prompt</button><button class="btn ghost" type="button" id="clearf">Clear my choices</button></div>
+  <h3>Fill it in, by voice or by typing</h3>
+  <p class="mut">Everything you write here is added at the end of the prompt. Tap a microphone and just talk. It stays on this device.</p>
+  <div id="cz"></div>
+  <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><button class="btn ghost" type="button" data-save>Save to My prompts</button><button class="btn ghost" type="button" id="clearf">Clear my choices</button></div>
+  <p class="mut sm">One version works with every AI today. Versions tuned for each AI will come from <a href="/council/">the council</a>.</p>
   <details id="read"><summary>Read it first, and edit it as much as you want</summary>
    <p class="mut">Change anything below. Your edits stay on this device only. Copy prompt copies your version, plus the features you picked.</p>
    <label class="sr" for="ed">The prompt text</label>
    <textarea class="ta big" id="ed" spellcheck="false">%s</textarea>
-   <div class="btns"><button class="btn" type="button" data-copyv>Copy prompt</button><button class="btn ghost" type="button" id="hide">Hide it</button><button class="btn ghost" type="button" id="reset">Undo my edits</button></div>
+   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><button class="btn ghost" type="button" id="hide">Hide it</button><button class="btn ghost" type="button" id="reset">Undo my edits</button></div>
   </details>
  </div>
 </section>
@@ -349,12 +361,14 @@ for p in ALL:
 (function(){
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
-function version(){var a=feats(),t=ed.value.replace(/\\s+$/,'');return a.length?t+'\\n\\n---\\n\\nMy adjustments. These win over anything above where they differ:\\n- '+a.join('\\n- ')+'\\n':t+'\\n'}
-function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
+var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+function version(){var a=feats(),t=ed.value.replace(/\\s+$/,'');var v=a.length?t+'\\n\\n---\\n\\nMy adjustments. These win over anything above where they differ:\\n- '+a.join('\\n- ')+'\\n':t+'\\n';return v.replace(/\\s+$/,'')+CZ.text()+(CZ.count()?'':'\\n')}
+function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
 document.querySelector('.feats').addEventListener('change',function(){saveF();info()});
-document.getElementById('clearf').addEventListener('click',function(){Array.prototype.forEach.call(document.querySelectorAll('.feats input[value=""]'),function(r){r.checked=true});C.ls(KF,null);info()});
+Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){if(!ORIG){C.toast('The text is still loading.');return}C.save({id:D.id,title:D.title,url:'/p/'+D.id+'/',text:version()});C.toast('Saved to My prompts on this device.')})});
+document.getElementById('clearf').addEventListener('click',function(){CZ.clear();Array.prototype.forEach.call(document.querySelectorAll('.feats input[value=""]'),function(r){r.checked=true});C.ls(KF,null);info()});
 function ready(){var s=C.ls(KEY);if(s)ed.value=s;info()}
 if(D.load){ed.value='Loading the text...';C.loadDash().then(function(t){ORIG=t;ed.value=t;ready()},function(){ed.value='We could not load the text. Reload the page to try again.'})}else ready();
 ed.addEventListener('input',function(){if(ORIG&&ed.value!==ORIG)C.ls(KEY,ed.value);else C.ls(KEY,null);info()});
@@ -377,14 +391,16 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
-''' % json.dumps(dict(id=pid, title=p['title'], text=p.get('text', ''), load=bool(p.get('load')), paths=p['paths'], feats=feats), ensure_ascii=False).replace('</', '<\\/')
+''' % json.dumps(dict(id=pid, title=p['title'], text=p.get('text', ''), load=bool(p.get('load')), paths=p['paths'], feats=feats, fields=p['fields']), ensure_ascii=False).replace('</', '<\\/')
     pg += TAIL % (V, js)
     os.makedirs(os.path.join(R, 'p', pid), exist_ok=True)
     open(os.path.join(R, 'p', pid, 'index.html'), 'w').write(pg)
 
 from library import build as build_library
-LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane)
+LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=[dict(page=p['page'], title=p['title'], summary=p['summary'], category=p['category'], text=p.get('text', '')) for p in ALL])
 print('library prompts:', LIBN)
+from pages2 import build as build_pages2
+build_pages2(R, E, head, hdr, FOOT, TAIL, V, microw)
 
 bad = []
 for root, _, fs in os.walk(R):
