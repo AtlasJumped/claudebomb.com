@@ -1049,6 +1049,31 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
   .cp-pair{gap:.5rem}
 }
 @media(prefers-reduced-motion:reduce){.tr-card,.tr-gm .tw{animation:none}}
+
+/* infinity model */
+.inf{margin:0 0 1.4rem}
+.inf svg{display:block;width:100%;height:auto;overflow:visible}
+.inf .inf-v{display:none;max-width:24rem;margin:0 auto}
+@media (max-width:640px){.inf .inf-h{display:none}.inf .inf-v{display:block}}
+.inf text{fill:var(--fg);font:500 15px/1 var(--body,system-ui)}
+.inf text.t{font-weight:800;font-size:17px}
+.inf text.m{fill:var(--mut)}
+.inf text.sm{font-size:12px}
+.inf .soc{fill:none;stroke:var(--mut);stroke-width:1.5;stroke-dasharray:6 6}
+.inf .lobe{fill:var(--card);stroke:var(--acc);stroke-width:4}
+.inf .arr{fill:none;stroke:var(--mut);stroke-width:1.5}
+.inf .cx rect{fill:var(--acc)}
+.inf .cx text{fill:var(--accfg)}
+.inf .cx .ct{font-weight:800;font-size:15px}
+.inf .cx .cs{font-size:12px}
+.inf .rp,.inf .cx{transition:opacity .4s}
+.inf.off .rp{opacity:.25}
+.inf.off .cx{opacity:.45}
+.inf figcaption{color:var(--mut);margin:.8rem 0}
+.inf-many{display:flex;gap:1rem;justify-content:center;margin:0 0 1rem}
+.inf-many svg{width:5.5rem;height:auto}
+.inf-many .lobe{fill:var(--card);stroke:var(--acc);stroke-width:14}
+@media (prefers-reduced-motion:reduce){.inf .rp,.inf .cx{transition:none}}
 </style><style>.hdr .hdr-login{order:9;flex:none;display:inline-flex;align-items:center;min-height:2.5rem;padding:0 1rem;border-radius:var(--br,99px);border:1px solid var(--rule,var(--line));background:transparent;color:inherit;cursor:pointer;font:inherit;font-weight:600;font-size:.9rem;white-space:nowrap}.hdr .hdr-login:hover{border-color:currentColor}</style>
 </head>
 <body class="citrus">
@@ -1144,7 +1169,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <p class="cx-closing">These problems plagued early adopters. The fix is simple: clear structure and instructions from day one.</p>
 
 <figure class="cx-curve" id="cxcurve">
-<div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. Copy the text, paste it into your AI, and join the blossoming world of artificial intelligence.<span class="vb-cp"><button type="button" class="btn small" data-cpit data-closeall>Copy it</button><button type="button" class="btn small ghost" data-readfirst data-closeall>Read it first</button></span><span class="vb-ai"><a class="vb-btn" href="https://claude.ai" target="_blank" rel="noopener">No AI on your computer yet and open to trying it? Click here.</a><small>This is the one that has been in the news the most, with incredible capabilities at a great price, including free. For a website you need the $20 Pro plan, and a domain is easily under $5 after that. You would have total control of your site, including one that looks just like this.</small></span></span></div>
+<div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. Copy the text, paste it into your AI, and join the blossoming world of artificial intelligence.<span class="vb-cp"><button type="button" class="btn small" data-cpit data-closeall>Copy it</button><button type="button" class="btn small ghost" data-readfirst data-closeall>Read it first</button></span><span class="vb-ai"><a class="vb-btn" href="https://claude.ai" target="_blank" rel="noopener">No AI on your computer yet and open to trying it? Click here.</a><small>This is the one that has been in the news the most, with incredible capabilities at a great price, including free. For a website you need the $20 Pro plan, and a web address can cost less than a cup of coffee for the first year. You would have total control of your site, including one that looks just like this.</small></span></span></div>
 <svg viewBox="0 -26 800 326" role="img" aria-labelledby="cxct cxcd" preserveAspectRatio="xMidYMid meet" style="overflow:visible">
 <title id="cxct">The AI learning curve: one person forges the path, stumbles, reaches the top, and pulls others up</title>
 <desc id="cxcd">A rising curve. A figure climbs from the bottom, stumbles, climbs again, reaches the top, and then reaches down and lifts the other figures up the curve.</desc>
@@ -1169,6 +1194,18 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <div class="cta cx-botbar"><button type="button" class="btn" id="cxcurve-replay">Play the story</button></div>
 </figure>
 <p class="lead">Everyone is lifted. Even people who have never felt at home with modern technology have reached a time when one document unlocks the powers of artificial intelligence that advanced users have been using, right at your fingertips.</p>
+</div></section>
+
+<section class="sec" id="why"><div class="wrap">
+<div class="shead"><p class="eyebrow">Why this exists</p>
+<h2>Your AI got the keys, but no map</h2>
+<p class="lead">Today you can connect an AI to your computer in a few clicks. But it does not come with shared rules for where things go, so your files can end up scattered.</p></div>
+<div class="cards c3">
+<article class="card"><h3>No shared rules for folders</h3><p>Everyone names their folders differently, and a new chat often does not know where yours are. So it can make new folders, read the wrong ones, and leave duplicates behind.</p></article>
+<article class="card"><h3>Like driving without your GPS</h3><p>Many of us can't drive to the grocery store without our GPS anymore. The same thing is happening with our files: you want to change one line in a document, and you can't find it without asking your AI.</p></article>
+<article class="card hl"><h3>One sheet of music for both</h3><p>claudebomb gives you rules for your folders, rules for your AI, and rules for you, so you are both reading from the same sheet of music. It is free, open source, and anyone can help make it better.</p></article>
+</div>
+<p class="note"><b>New to AI? You're behind. Good.</b> You may feel that other people are ahead of you, and they are. But many of them picked up messy habits and messy folders along the way, and you get to start clean.</p>
 </div></section>
 
 <section class="sec" id="products"><div class="wrap">
@@ -1286,15 +1323,16 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <p>We know many of you can do much better. We built this version ourselves. A crowd can build a far better one.</p>
 <p>If everyone has a dashboard, the person you call for help has one too. They are not buried in messages, and they get to you sooner. When you elevate your peers, you help yourself later.</p>
 <p>The mission is free, forever: use human ingenuity and AI to lift and optimize the efficiency of every person.</p></article>
-<article class="card"><span class="tag warm">Dashboard V1.5</span><h3>Versions and credit</h3>
+<article class="card"><span class="tag warm">Dashboard V1.6</span><h3>Versions and credit</h3>
 <ul>
+<li>V1.6: A website step after setup, and both sides tune the middle layer.</li>
 <li>V1.5: The HMR operating system, three layers of rules, and a "My rules" check.</li>
 <li>V1.4: Integrations and partnerships tab, and the mistakes come to the front rule.</li>
 <li>V1.3: How we talk rules: just talk, side notes, nothing gets dropped, short replies.</li>
 <li>V1.2: Bringing humans closer tab and an optional family and generation question.</li>
 <li>V1.1: My AI Journey tab, model delegation, and a choice of automated or manual setup.</li>
 <li>V1.0: First release. Setup rating, nine tabs, privacy firewall.</li></ul>
-<p>We review each suggestion and test it on our side. If it improves the file, we ship it in a new version and credit the person who suggested it, here and in the repo. Credit goes to the Claude Bomb team, and your name goes here when your suggestion ships.</p>
+<p>We review each suggestion and test it on our side. If it improves the file, we ship it in a new version and credit the person who suggested it, here and in the repo. Credit goes to the claudebomb team, and your name goes here when your suggestion ships.</p>
 <div class="links"><a class="btn" href="https://github.com/AtlasJumped/claudebomb.com" target="_blank" rel="noopener">View the GitHub repo</a><a class="link" href="https://github.com/AtlasJumped/claudebomb.com/issues" target="_blank" rel="noopener">Send an improvement</a></div></article>
 </div>
 </div></section>
@@ -1306,7 +1344,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <ol class="cx-steps3" aria-label="The three steps"><li><b>Copy.</b><span>One button copies the text.</span></li><li><b>Paste.</b><span>Paste it into a new chat and send.</span></li><li><b>Your AI gets to work.</b><span>It looks around, asks, and sets it up.</span></li></ol>
 <p class="cx-simple">It's that simple now.</p>
 <div class="cx-player" id="p1">
-<div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. Copy the text, paste it into your AI, and join the blossoming world of artificial intelligence.<span class="vb-cp"><button type="button" class="btn small" data-cpit data-closeall>Copy it</button><button type="button" class="btn small ghost" data-readfirst data-closeall>Read it first</button></span><span class="vb-ai"><a class="vb-btn" href="https://claude.ai" target="_blank" rel="noopener">No AI on your computer yet and open to trying it? Click here.</a><small>This is the one that has been in the news the most, with incredible capabilities at a great price, including free. For a website you need the $20 Pro plan, and a domain is easily under $5 after that. You would have total control of your site, including one that looks just like this.</small></span></span></div>
+<div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. Copy the text, paste it into your AI, and join the blossoming world of artificial intelligence.<span class="vb-cp"><button type="button" class="btn small" data-cpit data-closeall>Copy it</button><button type="button" class="btn small ghost" data-readfirst data-closeall>Read it first</button></span><span class="vb-ai"><a class="vb-btn" href="https://claude.ai" target="_blank" rel="noopener">No AI on your computer yet and open to trying it? Click here.</a><small>This is the one that has been in the news the most, with incredible capabilities at a great price, including free. For a website you need the $20 Pro plan, and a web address can cost less than a cup of coffee for the first year. You would have total control of your site, including one that looks just like this.</small></span></span></div>
 <div class="cx-stage" id="p1-stage">
 <div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>AI assistant</span></div><div class="cx-chat" id="p1-chat"></div><div class="cx-input"><span class="cx-typed" id="p1-in">Message your AI</span><b class="cx-sendb" id="p1-send">Send</b></div></div>
 <div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>What it looks like next to it</span></div><div class="cx-nar" id="p1-nar"></div></div>
@@ -1322,7 +1360,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <h2>Your dashboard builds itself while you get a drink</h2>
 <p class="lead">You hit enter. Your AI builds your dashboard, and you wait.</p></div>
 <div class="cx-player" id="p2">
-<div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. Copy the text, paste it into your AI, and join the blossoming world of artificial intelligence.<span class="vb-cp"><button type="button" class="btn small" data-cpit data-closeall>Copy it</button><button type="button" class="btn small ghost" data-readfirst data-closeall>Read it first</button></span><span class="vb-ai"><a class="vb-btn" href="https://claude.ai" target="_blank" rel="noopener">No AI on your computer yet and open to trying it? Click here.</a><small>This is the one that has been in the news the most, with incredible capabilities at a great price, including free. For a website you need the $20 Pro plan, and a domain is easily under $5 after that. You would have total control of your site, including one that looks just like this.</small></span></span></div>
+<div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. Copy the text, paste it into your AI, and join the blossoming world of artificial intelligence.<span class="vb-cp"><button type="button" class="btn small" data-cpit data-closeall>Copy it</button><button type="button" class="btn small ghost" data-readfirst data-closeall>Read it first</button></span><span class="vb-ai"><a class="vb-btn" href="https://claude.ai" target="_blank" rel="noopener">No AI on your computer yet and open to trying it? Click here.</a><small>This is the one that has been in the news the most, with incredible capabilities at a great price, including free. For a website you need the $20 Pro plan, and a web address can cost less than a cup of coffee for the first year. You would have total control of your site, including one that looks just like this.</small></span></span></div>
 <div class="cx-stage" id="p2-stage">
 <div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>AI assistant</span></div><div class="cx-chat" id="p2-chat"></div></div>
 <div class="cx-win"><div class="cx-wh"><i></i><i></i><i></i><span>Meanwhile, in the room</span></div><div class="cx-nar" id="p2-nar">
@@ -1356,6 +1394,29 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 </div>
 </div></section>
 
+<section class="sec" id="canvas"><div class="wrap">
+<div class="shead"><p class="eyebrow">Your own website</p>
+<h2>Own a website for less than a cup of coffee</h2>
+<p class="lead">Most people don't know that you can own a website for less than a cup of coffee. A regular coffee costs about $3.61 in the US, and some web addresses cost less than that for the first year. Think of it as a blank canvas for showing the world what you care about, and if you have ever thought a web page is not for someone your age, it is.</p></div>
+<div class="cards c2x">
+<article class="card"><h3>Then</h3><p>Putting up a website meant DNS servers, hosting, and other technical steps. It was an engineering job.</p></article>
+<article class="card hl"><h3>Now</h3><p>Your AI does that part. You say what you want, and you make the decisions.</p></article>
+</div>
+<ol class="cx-steps3" aria-label="Three steps to your own website">
+<li><b>Get an AI.</b><span>We suggest <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>. Signing up takes about 5 minutes, including paying.</span></li>
+<li><b>Drop in our text.</b><span>Press "Copy it", paste it into your AI, and it sets up your folders, your rules and your dashboard.</span></li>
+<li><b>Tell it "build me a website".</b><span>It guides you one step at a time, and a simple site can be live in about an hour.</span></li>
+</ol>
+<p class="mut small">Signing up and chatting can't break your computer. Your AI can only touch your files if you connect them, and our rules tell it to ask before it changes or deletes anything.</p>
+<div class="cards c2x">
+<article class="card"><h3>Your AI does</h3><ul><li>Builds the pages</li><li>Handles the technical setup it can reach</li><li>Looks up current prices with you</li><li>Tells you plainly when it needs you</li></ul></article>
+<article class="card"><h3>You do</h3><ul><li>Pick the name</li><li>Pay in your own browser (your AI never types card numbers)</li><li>Receive anything delivered to your home</li><li>Say yes before anything goes public</li></ul></article>
+</div>
+<p class="lead">After the first year it costs more to keep, often about $11 to $30 a year depending on the ending, so check the renewal price too. The first year is usually the cheapest, so compare two places that sell web addresses before you buy, for example GoDaddy and Spaceship. We get nothing from either.</p>
+<p class="mut small">Prices checked November 25, 2026. Coffee: Toast's typical US price for a regular hot coffee. Web addresses: Porkbun's own price list, where some endings start under $2 for the first year. Prices change, so your AI checks them again with you.</p>
+<div class="cta cp-pair"><button type="button" class="btn" data-cpit>Copy it</button><button type="button" class="btn ghost" data-readfirst>Read it first</button></div>
+</div></section>
+
 <section class="sec" id="rules"><div class="wrap">
 <div class="shead"><p class="eyebrow">The HMR operating system</p>
 <h2>We set up the rules so you don't have to</h2>
@@ -1378,6 +1439,18 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <p class="lead" style="margin-top:1.6rem">This is how AI drives positive change: collaboration, cooperation, intention, a shared mission, and shared values.</p>
 <div class="cta cp-pair"><button type="button" class="btn" data-cpit>Copy it</button><button type="button" class="btn ghost" data-readfirst>Read it first</button></div>
 <p class="mut small">These rules are already in the text you copy.</p>
+</div></section>
+
+<section class="sec" id="model"><div class="wrap">
+<div class="shead"><p class="eyebrow">The big picture</p>
+<h2>Two worlds, one set of rules between</h2>
+<p class="lead">You live in the physical world, and your AI works in the digital one. A shared set of rules sits in the middle, so the two of you can work well together.</p></div>
+<figure class="inf" id="inf"><svg class="inf-h" viewBox="0 0 960 470" role="img" aria-labelledby="infht infhd"><title id="infht">The infinity model</title><desc id="infhd">Two loops joined in the middle. Left loop: your physical world, with family, neighbours and the grocery store. Middle: the HMR operating system, rules you share. Right loop: your digital world, from near to far: phone call, texts and messages, email, social media, your ai, an ai data center, a warehouse computer. A dashed line around both loops is society.</desc><rect class="soc" x="10" y="30" width="940" height="410" rx="40"/><text class="m" x="480" y="462" text-anchor="middle">Society wraps both sides</text><path class="lobe" d="M480 230C430 120 300 70 200 80C100 90 60 170 60 230C60 290 100 370 200 380C300 390 430 340 480 230C530 120 660 70 760 80C860 90 900 170 900 230C900 290 860 370 760 380C660 390 530 340 480 230Z"/><g class="lp"><text class="t" x="250" y="160" text-anchor="middle">Your physical world</text><text x="250" y="210" text-anchor="middle">Family</text><text x="250" y="246" text-anchor="middle">Neighbours</text><text x="250" y="282" text-anchor="middle">The grocery store</text></g><g class="rp"><text class="t" x="725" y="128" text-anchor="middle">Your digital world</text><text x="725" y="162" text-anchor="middle">Phone call</text><text x="725" y="193" text-anchor="middle">Texts and messages</text><text x="725" y="224" text-anchor="middle">Email</text><text x="725" y="255" text-anchor="middle">Social media</text><text x="725" y="286" text-anchor="middle">Your AI</text><text x="725" y="317" text-anchor="middle">An AI data center</text><text x="725" y="348" text-anchor="middle">A warehouse computer</text><path class="arr" d="M598 152V356"/><path class="arr" d="M592 348l6 9 6-9"/><text class="m sm" x="590" y="160" text-anchor="end">near</text><text class="m sm" x="590" y="360" text-anchor="end">far</text></g><g class="cx"><rect x="372" y="204" width="216" height="54" rx="27"/><text class="ct" x="480" y="227" text-anchor="middle">The HMR operating system</text><text class="cs" x="480" y="246" text-anchor="middle">Rules you share</text></g></svg><svg class="inf-v" viewBox="0 0 340 840" role="img" aria-labelledby="infvt infvd"><title id="infvt">The infinity model</title><desc id="infvd">Two loops joined in the middle. Top loop: your physical world, with family, neighbours and the grocery store. Middle: the HMR operating system, rules you share. Bottom loop: your digital world, from near to far: phone call, texts and messages, email, social media, your ai, an ai data center, a warehouse computer. A dashed line around both loops is society.</desc><rect class="soc" x="6" y="26" width="328" height="780" rx="34"/><text class="m" x="170" y="830" text-anchor="middle">Society wraps both sides</text><path class="lobe" d="M170 330C60 290 20 220 20 170C20 100 90 56 170 56C250 56 320 100 320 170C320 220 280 290 170 330C60 370 20 450 20 560C20 700 90 780 170 780C250 780 320 700 320 560C320 450 280 370 170 330Z"/><g class="lp"><text class="t" x="170" y="130" text-anchor="middle">Your physical world</text><text x="170" y="170" text-anchor="middle">Family</text><text x="170" y="202" text-anchor="middle">Neighbours</text><text x="170" y="234" text-anchor="middle">The grocery store</text></g><g class="rp"><text class="t" x="180" y="425" text-anchor="middle">Your digital world</text><text x="180" y="466" text-anchor="middle">Phone call</text><text x="180" y="504" text-anchor="middle">Texts and messages</text><text x="180" y="542" text-anchor="middle">Email</text><text x="180" y="580" text-anchor="middle">Social media</text><text x="180" y="618" text-anchor="middle">Your AI</text><text x="180" y="656" text-anchor="middle">An AI data center</text><text x="180" y="694" text-anchor="middle">A warehouse computer</text><path class="arr" d="M60 470V700"/><path class="arr" d="M54 692l6 9 6-9"/><text class="m sm" x="60" y="460" text-anchor="middle">near</text><text class="m sm" x="60" y="720" text-anchor="middle">far</text></g><g class="cx"><rect x="62" y="303" width="216" height="54" rx="27"/><text class="ct" x="170" y="326" text-anchor="middle">The HMR operating system</text><text class="cs" x="170" y="345" text-anchor="middle">Rules you share</text></g></svg><figcaption><span id="infcap" role="status" aria-live="polite">You connect when you pick up a device, and you disconnect when you put it down. While you are connected, you are half of a whole: you bring the real world, and your AI brings the digital one.</span></figcaption>
+<div class="cta"><button type="button" class="btn ghost" id="inf-tog" aria-pressed="false">Put the device down</button></div>
+</figure>
+<div class="inf-many" aria-hidden="true"><svg viewBox="0 0 960 460" aria-hidden="true" focusable="false"><path class="lobe" d="M480 230C430 120 300 70 200 80C100 90 60 170 60 230C60 290 100 370 200 380C300 390 430 340 480 230C530 120 660 70 760 80C860 90 900 170 900 230C900 290 860 370 760 380C660 390 530 340 480 230Z"/></svg><svg viewBox="0 0 960 460" aria-hidden="true" focusable="false"><path class="lobe" d="M480 230C430 120 300 70 200 80C100 90 60 170 60 230C60 290 100 370 200 380C300 390 430 340 480 230C530 120 660 70 760 80C860 90 900 170 900 230C900 290 860 370 760 380C660 390 530 340 480 230Z"/></svg><svg viewBox="0 0 960 460" aria-hidden="true" focusable="false"><path class="lobe" d="M480 230C430 120 300 70 200 80C100 90 60 170 60 230C60 290 100 370 200 380C300 390 430 340 480 230C530 120 660 70 760 80C860 90 900 170 900 230C900 290 860 370 760 380C660 390 530 340 480 230Z"/></svg></div>
+<p class="lead"><b>Everyone has their own.</b> Your picture is yours, and no two look the same.</p>
+<p class="lead">You and your AI both keep tuning the middle layer, so it fits you better over time. Society wraps around both sides, because other people are part of your physical world and your digital one.</p>
 </div></section>
 
 <section class="sec" id="demos"><div class="wrap">
@@ -1430,7 +1503,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <p class="mut small">We estimate your parents' and children's generations from your birth year alone. Parents are usually 20 to 40 years older, so yours may differ. These are broad tendencies, not a verdict on anyone. Year ranges are from Pew Research Center where Pew defines them.</p>
 </div>
 <details class="gen-more" id="gen-more"><summary>Language over time</summary><dl id="gen-list"></dl></details>
-<div class="pcard cl-later"><h3>Coming later</h3><p>Meetup groups, seeing what other people like to do, and choosing who sees what about you all need accounts. Claudebomb has no accounts and no server, so we cannot offer those today. We are not going to pretend we do.</p><p>What works today is the private version. Your own assistant keeps your list of things you like. It adds your family's interests when you tell it. It can search the web for real local groups and give you the links. Every item starts as Only me, and you decide what changes.</p></div>
+<div class="pcard cl-later"><h3>Coming later</h3><p>Meetup groups, seeing what other people like to do, and choosing who sees what about you all need accounts. claudebomb has no accounts and no server, so we cannot offer those today. We are not going to pretend we do.</p><p>What works today is the private version. Your own assistant keeps your list of things you like. It adds your family's interests when you tell it. It can search the web for real local groups and give you the links. Every item starts as Only me, and you decide what changes.</p></div>
 <div class="cta cp-pair"><button type="button" class="btn" data-cpit>Copy it</button><button type="button" class="btn ghost" data-readfirst>Read it first</button></div>
 <p class="mut small">Paste our text into your assistant and it does this for your real family, privately.</p>
 </div></section>
@@ -1503,12 +1576,12 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <button type="button" class="xbtn pop-x" data-popx aria-label="Close">&times;</button>
 <p class="eyebrow">Cost</p>
 <h2 id="cost-t">What's this going to cost me in the long run?</h2>
-<p class="lead">You can do almost everything for free. The cheapest way to get a fully running website like this one is about $25: under $5 for the domain and $20 for a month of a paid AI.</p>
+<p class="lead">You can do almost everything for free. The cheapest way to get a fully running website like this one is about $25: a web address that can cost less than a cup of coffee for the first year, and $20 for a month of a paid AI.</p>
 <p class="mut small" id="cost-note" hidden></p>
 <div class="cards c2x">
 <article class="card hl"><h3>Free if you already pay for an AI</h3><p>The text, the dashboard, and every demo on this page cost you nothing. Always free forever. Nothing we make will ever ask you to pay.</p></article>
 <article class="card"><h3>Extras never go to us</h3><p>Some things cost money, such as a paid AI plan or a place to host a website. That money goes to those companies, never to us.</p></article>
-<article class="card"><h3>The cheapest way to get a site of your own: about $25</h3><p>One month of Claude Pro is $20, and a domain name (your own web address) is under $5 for the first year. Both go to those companies, not to us.</p></article>
+<article class="card"><h3>The cheapest way to get a site of your own: about $25</h3><p>One month of Claude Pro is $20, and a domain name (your own web address) can cost less than a cup of coffee for the first year. Keeping it costs more after that. Both go to those companies, not to us.</p></article>
 <article class="card hl"><h3>This site cost less than $25 to make</h3><p>This site cost less than $25 to make, plus our time. Do it yourself now. It's that simple now.</p></article>
 <article class="card"><h3>No paid AI yet? We recommend Claude Pro</h3><p>It is the plan that lets your AI build things for you, such as a website. Try the free version first, see your dashboard, and then decide.</p></article>
 </div>
@@ -2499,4 +2572,10 @@ function addMsg(chat,cls,html){var d=document.createElement('div');d.className='
 <script src="hmr-dock.js?v=6.5.8" data-site="claudebomb.com" defer></script>
 <script>/* hmr-card fallback: if the card player never loads, demo buttons open a still picture */(function(){var d=document,w=window,up=0;if(!d.addEventListener)return;w.addEventListener("load",function(){up=1},false);d.addEventListener("click",function(e){if(!up||w.HMRCard)return;var t=e.target;while(t&&t.getAttribute&&!t.getAttribute("data-hmr-card"))t=t.parentNode;if(t&&t.getAttribute){e.preventDefault();w.location.href="hmr-card/still.html"}},false)})();</script>
 <script src="hmr-card/hmr-card.js?v=4" defer></script>
+
+<script>
+(function(){var f=document.getElementById('inf'),b=document.getElementById('inf-tog'),c=document.getElementById('infcap');if(!f||!b)return;
+var on=c.textContent,off='The device is down, so you are disconnected. Your digital world is still there, and your AI can keep working on what you asked, until you pick it up again.';
+b.addEventListener('click',function(){var d=f.classList.toggle('off');b.setAttribute('aria-pressed',d?'true':'false');b.textContent=d?'Pick the device up':'Put the device down';c.textContent=d?off:on;});})();
+</script>
 </body></html>

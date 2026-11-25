@@ -1,6 +1,6 @@
 # Claude Setup Guide
 
-Setup guide V1.4, 2026-11-25. V1.4 names the HMR operating system and its three layers, and adds a rule so your AI can show you every rule it follows, layer by layer. V1.3 added the "Mistakes come to the front" rule: your AI does what you ask the first time, checks the record when you say it did not, reports honestly who was right, and writes down every lesson so repeated mistakes rise to the top. V1.2 added the "How we talk" rules: just talk, side notes, nothing gets dropped, short replies, front end and back end, clear instructions get done, and your words as the source of truth. V1.1 added an optional family and generation question and help reading what a family member sent you. Free and open. From [claudebomb.com](https://claudebomb.com).
+Setup guide V1.5, 2026-11-25. V1.5 says that both you and your AI keep tuning the middle layer, and hands off to a website step in the dashboard instructions. V1.4 named the HMR operating system and its three layers, and adds a rule so your AI can show you every rule it follows, layer by layer. V1.3 added the "Mistakes come to the front" rule: your AI does what you ask the first time, checks the record when you say it did not, reports honestly who was right, and writes down every lesson so repeated mistakes rise to the top. V1.2 added the "How we talk" rules: just talk, side notes, nothing gets dropped, short replies, front end and back end, clear instructions get done, and your words as the source of truth. V1.1 added an optional family and generation question and help reading what a family member sent you. Free and open. From [claudebomb.com](https://claudebomb.com).
 
 Source and version history: [github.com/AtlasJumped/claudebomb.com](https://github.com/AtlasJumped/claudebomb.com)
 
@@ -17,7 +17,7 @@ This note is for both of you. The human reads the protocol below. The AI reads e
 Every rule your AI follows sits in one of three layers.
 
 1. **Base layer: the AI company's rules.** Set by whoever makes your AI, such as Anthropic, OpenAI or Google. Nobody can change them, not you, not us. The company publishes them, and your AI will tell you plainly when one stops it.
-2. **The HMR operating system: our partnership rules.** The rules of engagement between you and your AI: the operating protocol, How we talk, and Mistakes come to the front. Start with ours.
+2. **The HMR operating system: our partnership rules.** The rules of engagement between you and your AI: the operating protocol, How we talk, and Mistakes come to the front. Start with ours. Both the person and the AI keep tuning this middle layer over time: the AI suggests a change when it would clearly help, and the person decides.
 3. **Your layer: your own rules.** Kept in your Read Me Master: your hand-typed notes and corrections. Your layer can change any HMR rule, with one exception: your AI still asks before spending money, sending or posting in your name, deleting, or anything that cannot be undone.
 
 **Works with any AI.** The company sets the base layer; the other two go with you. This text is written for Claude; another assistant should say when it cannot do a step.
@@ -126,7 +126,7 @@ Use this to choose what to do next. Follow the first branch that fits, and ask b
 
 - **They have never used AI.** Go to Step 4 (create the folders), then Step 8 (values and mission), then the dashboard.
 - **They have used AI before and have files from it.** Go to Step 4, then Step 5 (previous AI information), then Step 8, then the dashboard.
-- **They want a website and have none.** Go to Step 4, then use the Websites README in Step 4 to start one.
+- **They want a website and have none.** Go to Step 4, then use the Websites README in Step 4 to start one. When the dashboard is set up, follow "Build a website (when they ask)" in the dashboard instructions.
 - **They want a website and have one.** Save links and ideas in the Websites folder and ask what to improve first.
 - **They want to skip setup.** Do not push. Send them to [claudebomb.com](https://claudebomb.com) and offer to come back to setup any time.
 - **They bring a message from a family member and are not sure how to answer.** Help right away, before any setup. Follow "Read the signal" in the Bringing humans closer section of the dashboard instructions below, using whatever you know about them so far. If you know nothing about the sender, ask one question first: who sent it and how old they are.
@@ -181,10 +181,10 @@ Write each README in plain words addressed to the person. Offer to change anythi
 
 **Websites.** "Any work you do on websites, and any ideas you have about them, such as ways to improve them or things to build later, are saved here. If you do not have a website yet, here is how to start one cheaply:
 
-1. Pick a name and check whether the domain is free at a domain registrar. Some registrars offer very cheap first-year prices. Prices change, so check the current price on the registrar's page before you buy. The first year is often the cheapest.
+1. Pick a name and check whether the domain is free. Compare two registrars, first-year price next to renewal price. Some registrars offer very cheap first-year prices. Prices change, so check the current price on the registrar's page before you buy. The first year is often the cheapest.
 2. Tell your AI what you want the site to say and look like, out loud if you like. It can write the pages for you.
 3. Publish it. Your AI will tell you which free or low-cost options your plan can use.
-4. Within an hour or so you can have a public site you are proud of.
+4. A simple site can be live in about an hour if your AI can publish from where it is. It will tell you plainly if it cannot.
 
 There is no gimmick and no hook. You are either paying for your AI plan or you are not. What you already have may be able to do this. Be aware that free plans may not be able to do all of it, so your AI will tell you plainly what it can and cannot do on your plan. Never let your AI buy anything without your yes."
 

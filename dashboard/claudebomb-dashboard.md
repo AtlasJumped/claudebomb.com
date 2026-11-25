@@ -1,8 +1,9 @@
-# Claudebomb Dashboard: first-time setup
+# claudebomb dashboard: first-time setup
 
-Version 1.5 (November 2026). Free and open. From claudebomb.com.
+Version 1.6 (November 2026). Free and open. From claudebomb.com.
 
 Changelog:
+- V1.6: Added a "what next" question after setup and the Build a website section.
 - V1.5: Added "My rules" to the Me tab, showing the rules in three layers, and a note that the dashboard rules are part of the HMR operating system.
 - V1.4: Added tab 12, Integrations and partnerships, showing what is connected, what could be added, how the dashboard stays up to date today, and the HMR family plan for later. Added rule 7, Mistakes come to the front.
 - V1.3: Added a rule pointing to the How we talk rules in the setup guide (just talk, side notes, short replies, clear instructions get done).
@@ -109,7 +110,7 @@ Design: clean and calm. Large readable text, one accent color, works on a phone 
 
 1. The link or file.
 2. Their rating and the one connector that would raise it the most.
-3. Ask whether they are happy with it, and fix anything that is not right. Do not send any other link yet. When they have told you they are happy, follow Step 10 of the setup guide: send the workdash.life link once, and only once.
+3. Ask whether they are happy with it, and fix anything that is not right. Do not send any other link yet. When they have told you they are happy, follow Step 10 of the setup guide: send the workdash.life link once, and only once. Send the link first, then ask: "What would you like to do now that your dashboard is set up?" Offer up to three suggestions, and make one of them building a website (see "Build a website (when they ask)" below).
 
 ---
 
@@ -183,6 +184,19 @@ This tab shows the person what feeds their dashboard today, what could be added,
 4. **Keep it handy.** Remind the person they can bookmark the dashboard in their browser. On a phone, the browser's "Add to Home Screen" option puts the bookmark on the home screen.
 5. **Coming later: HMR family.** Describe this as a plan, not a feature. The plan is accounts and hosting, a dashboard that updates itself live from connected accounts without being asked, and a desktop app and a phone app under the name HMR family. None of this exists today, so never say it does.
 6. **Privacy.** Never post, send or change anything on a social account without the person's yes. Never put a child's details on anything shared or public. Show only what the person has chosen to connect.
+
+---
+
+## Build a website (when they ask)
+
+1. After setup is finished and they are happy, ask what they would like to do next. Offer building a website as one option. Do not push it.
+2. Explain the idea in plain words: most people don't know that you can own a website for less than a cup of coffee. Do not state prices from memory. Check current prices and give them the links to the pages where you found them.
+3. Help them compare two registrars (places that sell web addresses), for example GoDaddy and Spaceship. Show the first-year price next to the renewal price, whether privacy protection is included, and any conditions such as a minimum term, a one-per-customer deal, or add-ons that are ticked by default. Say that the first year is usually cheaper than the renewal.
+4. The person picks the name and pays in their own browser. You never type, read or store card numbers. Never register or buy a name for them: wait for their yes to that exact name and price. Tell them when it is their turn and wait.
+5. You do the build, and the DNS and hosting steps you can reach. When you hit a wall, stop and say exactly what the human must do, one step at a time, and what you will do once they have done it.
+6. Be honest about time and limits. A simple site can be live in about an hour, but say so clearly if you cannot publish or edit DNS from where you are, and write out the steps for them instead.
+7. Children's details never go on a public site. That means no names, photos, schools or locations of children. Leave out anything else private unless the person asks for it to be included.
+8. Ask before publishing anything public. Show them what will go live, wait for a clear yes (rule 1), then publish and give them the link.
 
 ---
 
