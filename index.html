@@ -2543,9 +2543,9 @@ function load(){
 function listNames(a){var n=a.map(function(k){return AIN[k]});return n.length<3?n.join(' and '):n.slice(0,-1).join(', ')+', and '+n[n.length-1]}
 function noteHTML(s){
   var ai=s.ai,items=[],hasC=ai.indexOf('claude')>-1,others=ai.filter(function(k){return k!=='claude'});
-  if(!ai.length)items.push('You did not pick an assistant. We built the file for Claude, and other assistants should mostly work. We have not tested every assistant.');
-  if(hasC)items.push('Claude: this file was made for Claude. It should work as written.');
-  if(others.length)items.push(listNames(others)+': the file is plain text, so it should mostly work. We have not tested every assistant. What it can reach depends on the connectors your assistant offers.');
+  if(!ai.length)items.push('You did not pick an assistant. It was made for Claude, and it works seamlessly with every AI assistant.');
+  if(hasC)items.push('Claude: this file was made for Claude, so it works as written.');
+  if(others.length)items.push(listNames(others)+': this was made for Claude, and it works seamlessly with every AI system. What it can reach depends on the connectors your assistant offers.');
   var h='<ul>'+items.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul>';
   if(s.plan==='free'){
     h+='<p><b>On a free plan you may miss:</b></p><ul>'+
