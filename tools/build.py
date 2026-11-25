@@ -171,7 +171,7 @@ idx += '''<main>
   <h2 id="others-h">One of many prompt galleries, all linked here</h2>
   <p class="lead">claudebomb is one prompt gallery among many, so here is every one we know of. Use them all. What we add, as far as we could find in November 2026: every gallery linked in one place, and you can improve any prompt right on its page with no account and no GitHub, with every change kept in public.</p>
   <div class="gal">
-   <article><h3><a href="https://prompts.chat">prompts.chat</a></h3><p>Free. About 3,000 prompts, public domain. With an account you can add prompts and propose changes, and it keeps versions.</p><p class="mut">All of them are in our open library, with credit.</p></article>
+   <article><h3><a href="https://prompts.chat">prompts.chat</a></h3><p>Free. About 3,000 prompts, public domain. With an account you can add prompts and propose changes, and it keeps versions.</p><p class="mut">All but 13 are in our open library, with credit. We left out jailbreak and sexual prompts.</p></article>
    <article><h3><a href="https://github.com/danielmiessler/fabric">Fabric</a></h3><p>Free, MIT licence. About 270 prompts for a command-line tool. Changes go through GitHub.</p><p class="mut">All of them are in our open library, with credit.</p></article>
    <article><h3><a href="https://docs.langchain.com/langsmith/manage-prompts">LangChain Prompt Hub</a></h3><p>Free to browse. Prompts are saved as versions. Built for developers.</p><p class="mut">Linked, not copied.</p></article>
    <article><h3><a href="https://godofprompt.ai/prompt-library">God of Prompt</a></h3><p>Free to browse and copy, with paid bundles. Its terms do not allow its prompts in another library.</p><p class="mut">Linked, not copied.</p></article>
