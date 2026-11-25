@@ -1,8 +1,9 @@
 # Claudebomb Dashboard: first-time setup
 
-Version 1.1 (November 2026). Free and open. From claudebomb.com.
+Version 1.2 (November 2026). Free and open. From claudebomb.com.
 
 Changelog:
+- V1.2: Added the Bringing humans closer tab (generations, a phrase explainer, Read the signal for family messages, and a private interests list) and an optional family and generation question.
 - V1.1: Added the My AI Journey tab, a model delegation section, and a choice between automated and manual setup.
 - V1.0: First release. Setup rating, nine-tab dashboard, privacy firewall.
 
@@ -67,8 +68,9 @@ Ask these in one message, and say every answer is optional:
 2. Who are the five to ten people who matter most (family, friends, coworkers)?
 3. What do you do for fun, and what do you never want suggested?
 4. How often should the dashboard refresh: every 15 minutes, every hour, once a day, or only when you open it?
+5. Family and generations (optional and light): What year were you born, or just the decade? Are you a parent or a grandparent? If there are kids, grandkids, or parents you would like to feel closer to, what are their names and birth years or rough ages? Skip this question if they already answered it in the setup guide.
 
-Keep their answers as a short profile at the top of your working notes. Do not put sensitive details on the dashboard unless they ask.
+Keep their answers as a short profile at the top of your working notes. Do not put sensitive details on the dashboard unless they ask. Children's details stay in these private notes and never go on anything shared or public.
 
 ### Step 4: Build the dashboard
 
@@ -84,6 +86,7 @@ Build one page with these tabs. Fill each tab only from connected sources. A tab
 8. **Work.** Only work sources, kept behind the privacy firewall above.
 9. **Me.** Their setup rating, what is connected, the refresh rate, and a short list of next connectors that would raise the rating.
 10. **My AI Journey.** Where the person stands with AI and what to try next. See the section below.
+11. **Bringing humans closer.** Their generation and their family's generations, a phrase explainer, help reading what a family member sent, and a private list of shared interests. See the section below.
 
 Design: clean and calm. Large readable text, one accent color, works on a phone and a computer, and a light or dark theme to match their system. Show "Last refreshed: [date and time]" at the top of every tab.
 
@@ -121,6 +124,44 @@ Build the tab in this order:
 6. **Give me a tutorial based on my usage.** Offer a button with this name. When pressed, write a short, free tutorial for the one thing the person would benefit from most, in plain language, in five steps or fewer, using their own example from what you saw. Offer another one afterward.
 
 Keep the tone friendly and plain. This tab exists so the person can see where they are and choose what to do about it.
+
+---
+
+## Bringing humans closer tab
+
+This tab helps the person feel closer to the people in their family, most of all across generations. Each generation's picture of the world shifts a little, so the words shift a little, and after a while people stop understanding each other. That is normal, and it is okay. This tab helps bridge it. Say in the first line that it is a guide to understanding each other, and that it is never a verdict on anyone.
+
+Saying how sure you are (sure, fairly sure, not sure) is required here, and it is not the kind of hedge the setup guide forbids. Say it once, in a few words.
+
+Use only what the person told you (birth years, names, ages, interests) and what you can read from connected sources. If you do not have a birth year, ask once. A decade is enough. If they skip it, leave out the generation parts and build the rest.
+
+Build the tab in this order:
+
+1. **Your generations.** Match each birth year to a generation with these Pew Research Center ranges:
+   - Silent Generation: 1928 to 1945
+   - Baby Boomers: 1946 to 1964
+   - Generation X: 1965 to 1980
+   - Millennials: 1981 to 1996
+   - Generation Z: 1997 to 2012
+   - Born after 2012: Pew has no definition. The common label is Generation Alpha (about 2013 to about 2024 in several definitions), then Generation Beta from 2025. Tell the person these ranges vary by source.
+   - Born before 1928: Pew calls this the Greatest Generation.
+
+   Show the person's generation, their parents' generation, and the generation below them. Add grandchildren if relevant. Use real birth years when you have them. When you do not, say you are estimating and how (a parent is often 20 to 40 years older). Give each generation a summary of two or three sentences: what shaped it, and how it tends to talk and keep in touch. Frame every summary as a broad tendency. A birth year near an edge can fit either side. Never use a generation as a verdict on a person.
+2. **What does this mean?** Offer a box and a button with this name. The person pastes or says a phrase, an emoji, or a meme. Explain what it means, the tone (joking, warm, sarcastic, rude), which generation mostly uses it, and whether it is current or dated. Slang changes fast. For anything current, search the web if you can, link what you found, and say how sure you are. If you cannot check, say "I could not check this, so treat it as a guess." Never invent a meaning. If you do not know, say so, and suggest they ask the person who said it. Asking is a good way to connect.
+3. **Language over time.** A short timeline with two or three example words per generation that came in or changed meaning, each with a plain meaning. Label them as examples, not a full history. The same honesty rule applies: check if you can, say how sure you are, and leave out anything you are unsure of.
+4. **Read the signal.** This is the heart of the tab. When the person shares a message, link, picture, or anything else a family member sent, and is not sure how to respond, work in this order:
+   - Use what you know about both people: names, ages, interests from the profile, and earlier messages between them if a source is connected. Say what you are basing the read on.
+   - Say what kind of signal it most likely is: sharing a laugh, excitement, teaching you something, asking for advice, or something that needs care.
+   - Give your best read in one or two plain sentences, with honest confidence: sure, fairly sure, or not sure. If you are not sure, ask one question, or suggest one easy question they can ask the family member.
+   - Offer two or three short, warm reply options in the person's own voice. Do not write replies in the younger person's slang unless the person talks that way.
+   - You only draft. Sending needs their yes.
+   - If anything suggests the child or family member may be unsafe, distressed, or at risk, say so plainly and first. Do not offer a breezy reply. Suggest talking with them in person, soon and calmly. If someone may be in immediate danger, say to contact local emergency services or a crisis line.
+5. **Things I like and who I share them with.** Keep a private list of the person's interests and the interests of the family members they name. Use it to suggest things to do together. If you can search the web, suggest local meetups or groups with links. List only real ones you found, and say when you checked. If you cannot search, say so, and do not make any up.
+   - Each item is marked Only me, Family, Friends, or Public. The default is Only me. Change a mark only when the person says so, and follow the marks whenever you build a page or draft anything to share.
+   - Be honest about the limit. You can see other people's interests only when they tell the person or share them. There is no shared network behind claudebomb today. Nobody else sees this list unless the person shares it themselves.
+6. **Children.** Never put a child's name, age, birth year, school, photo, location, or messages on a public or shared page, whatever an item is marked. Keep information about kids in the person's private notes only. If the person asks to share something about a child, say what would be shared and with whom, and wait for their yes.
+
+Keep the tone warm and plain. No generation is right or wrong. The person knows their family better than you do, so offer your read and let them decide.
 
 ---
 

@@ -803,6 +803,34 @@ body[data-design="3"] .logo{justify-content:center}
 .optrow label:has(input:checked){border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
 .optrow input{margin:0;transform:none}
 input[type=radio]{accent-color:var(--acc);width:1.05rem;height:1.05rem}
+.who-by{margin-top:.8rem}
+.who-by label{display:block;font-weight:600;margin-bottom:.3rem}
+.who-by input{display:block;width:100%;max-width:12rem;min-height:2.6rem;padding:.3rem .8rem;border:2px solid var(--line);border-radius:var(--r);background:var(--card);color:var(--fg);font:inherit}
+.who-by small{display:block;margin-top:.3rem;color:var(--mut);font-size:.85rem}
+.gen-w{margin:1.6rem 0;padding:1.3rem;border:2px solid var(--line);border-radius:var(--r);background:var(--card)}
+.gen-w h3{margin:0 0 .3rem}
+.gen-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;margin:.8rem 0}
+.gen-row label{display:block;font-weight:600;margin-bottom:.3rem}
+.gen-row input{display:block;width:100%;max-width:12rem;min-height:2.6rem;padding:.3rem .8rem;border:2px solid var(--line);border-radius:var(--r);background:var(--bg,var(--card));color:var(--fg);font:inherit}
+.gen-row .btn{margin-top:0}
+.gen-out p{margin:.5rem 0}
+.gen-out .gen-err{font-weight:600}
+.gen-more{margin:1rem 0}
+.gen-more>summary{cursor:pointer;font-weight:700;min-height:2.6rem;display:flex;align-items:center}
+.gen-more dl{margin:.6rem 0 0}
+.gen-more dt{font-weight:700;margin-top:.8rem}
+.gen-more dd{margin:.2rem 0 0;color:var(--mut)}
+.gen-more ul{margin:.3rem 0 0 1.1rem;padding:0}
+.cl-hook{margin:1.6rem 0}
+.cl-later{margin:1.6rem 0}
+.cl-later p{margin:.4rem 0}
+.cl-btns{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+.md-kid{padding:.7rem .9rem;border:1px solid #9aa3b2;border-radius:12px;background:#f8fafc;color:#14161a;margin:.5rem 0;font-size:.92rem}
+.md-kid small{display:block;color:#3f4854;font-weight:700}
+.md-kid em{display:block;margin:.3rem 0}
+.md-opts{display:grid;gap:.4rem;margin:.5rem 0}
+.md-opts .md-btn{height:auto;min-height:2.4rem;padding:.4rem .8rem;text-align:left;white-space:normal}
+.md-read p{margin:.3rem 0}
 .who-err{color:var(--acc);font-weight:600;margin:.6rem 0 0;min-height:1.4em}
 .who-sum{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem 1rem}
 .who-sum p{margin:0;flex:1 1 18rem}
@@ -1288,7 +1316,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <a class="logo" href="#top" aria-label="claudebomb.com, home"><svg class="bomb" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="bb" cx="14" cy="19" r="10"/><path class="bh" d="M8 17a6.5 6.5 0 0 1 4-4.5"/><rect class="bb" x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)"/><path class="bf" d="M23.5 6.5c2-2.5 4 .5 5.5-2.5"/><path class="bl" d="M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z"/></svg><span>claude<b>bomb</b></span></a>
 <button type="button" class="menubtn" aria-expanded="false" aria-controls="nav">Menu</button>
 <nav class="nav" id="nav" aria-label="Main">
-<a href="#problems">Why</a><a href="#products">Products</a><a href="#first">How it works</a><a href="#demos">Try it safely</a><a href="#family">Family</a><a href="#benefits">Benefits</a><a href="#setup">Get it</a>
+<a href="#problems">Why</a><a href="#products">Products</a><a href="#first">How it works</a><a href="#demos">Try it safely</a><a href="#family">Family</a><a href="#closer">Closer</a><a href="#benefits">Benefits</a><a href="#setup">Get it</a>
 </nav>
 <button type="button" class="btn small hdr-cta" data-reveal="cost">What will it cost?</button>
 </header>
@@ -1318,6 +1346,14 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <label><input type="radio" name="plan" value="free"> Free</label>
 <label><input type="radio" name="plan" value="paid"> Paid</label>
 </div></fieldset>
+<fieldset><legend>Are you a parent or grandparent?</legend><div class="optrow">
+<label><input type="radio" name="parent" value="parent"> Parent</label>
+<label><input type="radio" name="parent" value="grandparent"> Grandparent</label>
+<label><input type="radio" name="parent" value="both"> Both</label>
+<label><input type="radio" name="parent" value="no"> No</label>
+<label><input type="radio" name="parent" value="skip"> Prefer not to say</label>
+</div>
+<div class="who-by"><label for="who-by">Birth year (optional)</label><input type="number" id="who-by" inputmode="numeric" min="1900" placeholder="1984" aria-describedby="who-by-h"><small id="who-by-h">Stays on this device. Used only to show your generation.</small></div></fieldset>
 </div>
 <div class="cta"><button type="button" class="btn" id="who-go">Show me my page</button><button type="button" class="btn ghost" id="who-clear" hidden>Clear my choice</button></div>
 <p class="who-err" id="who-err" role="alert"></p>
@@ -1576,6 +1612,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <h2>Try it safely</h2>
 <p class="lead">Click around as much as you like. Everything here is a made-up video scenario that shows what it would look like if you copied and pasted our free text into one of today's AI assistants.</p></div>
 <div class="pcards">
+<article class="pcard"><h3>Read the signal</h3><p>Your kid sends a meme and you are not sure if it is a joke, big news, or a question. A bare chatbot guesses. Your assistant knows you both, says what kind of signal it is and how sure it is, and drafts three replies. You pick one.</p><div class="pbtns"><button type="button" class="btn" data-demo="signal"><span class="play" aria-hidden="true"></span> Play video walkthrough</button><button type="button" class="btn ghost" data-demo="explore" data-tab="closer">Open demo</button></div></article>
 <article class="pcard"><h3>Reply to a family email by voice</h3><p>Open the inbox, pick an email, read the draft, add your words by microphone, and press Send.</p><div class="pbtns"><button type="button" class="btn" data-demo="reply"><span class="play" aria-hidden="true"></span> Play video walkthrough</button><button type="button" class="btn ghost" data-open="emails">Open demo</button></div></article>
 <article class="pcard"><h3>Send the weekly recruiting recap</h3><p>One button writes the Slack recap from live numbers. You edit it and send. Professionals like recruiters who report metrics can automate their reporting, and you can too.</p><div class="pbtns"><button type="button" class="btn" data-demo="report"><span class="play" aria-hidden="true"></span> Play video walkthrough</button><button type="button" class="btn ghost" data-open="report">Open demo</button></div></article>
 <article class="pcard"><h3>Plan a trip with friends</h3><p>You do not even have to check when calendars line up. It tells you who you like is free when you are free and interested in a trip, and makes messaging everyone easy.</p><div class="pbtns"><button type="button" class="btn" data-demo="trip"><span class="play" aria-hidden="true"></span> Play video walkthrough</button><button type="button" class="btn ghost" data-open="trip">Open demo</button></div></article>
@@ -1598,6 +1635,7 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <h2>The people who matter, one button away</h2>
 <p class="lead">Many kids have no idea how to reach their cousins. Many grandparents go years without a birthday card. In this vision, parents own the family information and children's dashboards inherit it.</p>
 <p class="lead"><b>Reaching the whole family takes one click. Viewing the whole family takes one click. Choosing who to interact with, then reaching them, takes moments.</b></p>
+<p class="lead">Not sure what your kid or grandkid just sent you? See <a href="#closer" data-scroll>Bringing humans closer</a>.</p>
 </div>
 <p class="cx-fam fx" id="fam-big">If we find a single way for you and your family to get even a little closer, for free, in five minutes, what's stopping you?<small>We expect you will recognize more than one use case on this page that has value for your family.</small></p>
 <div class="fambtns" role="group" aria-label="Family tools"><button type="button" class="btn" data-open="tree">Family tree</button><button type="button" class="btn" data-open="cousins">Message your cousins</button><button type="button" class="btn" data-open="gift">Birthdays and gift ideas</button><button type="button" class="btn" data-cxplay="cousins"><span class="play" aria-hidden="true"></span> Video: Message all cousins</button><button type="button" class="btn" data-cxplay="forgotten"><span class="play" aria-hidden="true"></span> Video: Forgotten family</button></div>
@@ -1607,6 +1645,27 @@ a,button,.btn,[role=button],summary,label,.tier{touch-action:manipulation;-webki
 <g class="lbl" font-size="12" text-anchor="middle"><text x="118" y="62">Grandma</text><text x="242" y="62">Grandpa</text><text x="52" y="136">Aunt</text><text x="138" y="136">Mom</text><text x="222" y="136">Dad</text><text x="308" y="136">Uncle</text><text x="52" y="220">Cousin</text><text x="180" y="220">You</text><text x="308" y="220">Cousin</text></g></svg>
 <p class="mut small">Each person decides how much of their branch is public. Most people do not have every contact detail for their whole tree, and that is fine. Fill in what you know, and each relative can fill in their own branch.</p>
 <ul class="tags" aria-label="Sharing rules by tag"><li><b>Family</b> Any contact a member shares is visible to the whole tree.</li><li><b>Friends</b> Shared only with the friends you pick.</li><li><b>Work</b> Kept apart from family and friends unless you say so.</li></ul></template>
+</div></section>
+
+<section class="sec" id="closer"><div class="wrap">
+<div class="shead"><p class="eyebrow">Closer</p>
+<h2>Bringing humans closer</h2>
+<p class="lead">The HMR family of sites has a huge focus on family connections, and especially on the well-being of children moving forward. Here is how we see the problem. Everybody's model of reality changes a little bit. So what we think is real and not real, and important and not important, changes a little bit. Then the language changes a little bit. Eventually there is a disconnect between a grandparent, a parent, and a child.</p>
+<p class="lead">That has been the status quo for humanity, and it's okay. But we can use AI to bridge that disconnect. If we know your birth year, we know your generation, your parents' generation, and the one below you. Your assistant can tell you what a phrase means, show how language has changed over time, and help you answer the people you love.</p></div>
+<div class="cl-hook"><h3>Your kid sent you something. What does it mean?</h3>
+<p>My child has shared something with me, and I am not sure how to engage with it. Is it supposed to be funny, or exciting? Are they teaching me something, or do they want advice? I want to give them a good signal back. When I cannot, I do not feel as close to my kid.</p>
+<p>A chatbot that does not know you or your kid can only guess. Give your assistant a basic minimum of information about yourself, connect it to the tools you already use, and start chatting. You will grow together.</p>
+<div class="cl-btns"><button type="button" class="btn" data-demo="signal"><span class="play" aria-hidden="true"></span> Watch: Read the signal</button><button type="button" class="btn ghost" data-demo="explore" data-tab="closer">Open demo</button></div></div>
+<div class="gen-w" id="gen-w"><h3>Your generations</h3>
+<p class="mut">Type a birth year. Nothing is sent anywhere.</p>
+<form class="gen-row" id="gen-form" novalidate><div><label for="gen-year">Birth year</label><input type="number" id="gen-year" inputmode="numeric" placeholder="1984"></div><button type="submit" class="btn">Show my generations</button></form>
+<div class="gen-out" id="gen-out" aria-live="polite"></div>
+<p class="mut small">We estimate your parents' and children's generations from your birth year alone. Parents are usually 20 to 40 years older, so yours may differ. These are broad tendencies, not a verdict on anyone. Year ranges are from Pew Research Center where Pew defines them.</p>
+</div>
+<details class="gen-more" id="gen-more"><summary>Language over time</summary><dl id="gen-list"></dl></details>
+<div class="pcard cl-later"><h3>Coming later</h3><p>Meetup groups, seeing what other people like to do, and choosing who sees what about you all need accounts. Claudebomb has no accounts and no server, so we cannot offer those today. We are not going to pretend we do.</p><p>What works today is the private version. Your own assistant keeps your list of things you like. It adds your family's interests when you tell it. It can search the web for real local groups and give you the links. Every item starts as Only me, and you decide what changes.</p></div>
+<div class="cta cp-pair"><button type="button" class="btn" data-cpit>Copy it</button><button type="button" class="btn ghost" data-readfirst>Read it first</button></div>
+<p class="mut small">Paste our text into your assistant and it does this for your real family, privately.</p>
 </div></section>
 
 <section class="sec" id="benefits"><div class="wrap">
@@ -2567,6 +2626,43 @@ function copyText(txt,done){
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){done(true)},fb);else fb();
 }
 
+/* ---------- generations ---------- */
+var GENS=[
+ {label:'Silent Generation',start:1928,end:1945,rangeText:'1928 to 1945',summary:'Grew up through the Depression and the Second World War, and tends to value letters, phone calls, and saying things properly.',examples:[['swell','great, very good.'],['square','a dull person who follows the rules.'],['cool','good, calm, in style. It came out of 1940s jazz and never left.']]},
+ {label:'Baby Boomers',start:1946,end:1964,rangeText:'1946 to 1964',summary:'Grew up with television, rock and roll, and big social change, and tends to like a phone call or a talk in person.',examples:[['groovy','excellent, pleasing.'],['far out','amazing, hard to believe.'],['bummer','a letdown.']]},
+ {label:'Generation X',start:1965,end:1980,rangeText:'1965 to 1980',summary:'Grew up with cable TV, video games, and the first home computers, and tends to be direct, dry, and fond of sarcasm.',examples:[['rad','excellent. Short for radical.'],['whatever','I do not care, or I am done arguing.'],['as if','no way, that will never happen.']]},
+ {label:'Millennials',start:1981,end:1996,rangeText:'1981 to 1996',summary:'Grew up as the internet and smartphones arrived, and tends to text first and call second.',examples:[['adulting','doing grown-up tasks, like paying bills.'],['YOLO','you only live once. Said before doing something bold or silly.'],['on fleek','perfectly done, on point. Big around 2014 and dated now.']]},
+ {label:'Generation Z',start:1997,end:2012,rangeText:'1997 to 2012',summary:'Has never known life without the internet, and tends to talk in short messages, memes, and video.',examples:[['no cap','no lie, I mean it.'],['rizz','charm, especially with someone you like. Oxford\'s word of the year for 2023.'],['lowkey','a little, or quietly. "I lowkey love this."']]},
+ {label:'Generation Alpha',start:2013,end:2024,rangeText:'about 2013 to about 2024 (ranges vary)',summary:'Growing up with tablets, short videos, and AI from the start, and its slang comes from games and video and changes very quickly.',examples:[['skibidi','a nonsense word from a YouTube series. It can mean good, bad, or nothing at all. The joke is that it is silly.'],['sigma','someone cool who does their own thing. Often said as a joke.']],extra:'This changes fast. Ask your assistant to check.'},
+ {label:'Generation Beta',start:2025,end:Infinity,rangeText:'from 2025 (ranges vary)',summary:'Just being born now, so nobody knows yet how this generation will talk.',examples:[],none:'none yet. They have not said their first words.'}
+];
+var GEN_BAD='Type a four-digit year, like 1984.',GEN_OLD='Pew calls people born before 1928 the Greatest Generation. We have not written that one up yet.',GEN_FUT='That year has not happened yet. Type a year up to this one.';
+function genOf(y){for(var i=0;i<GENS.length;i++)if(y>=GENS[i].start&&y<=GENS[i].end)return GENS[i];return null}
+function genRange(g){return g.rangeText.replace(' (ranges vary)',', ranges vary')}
+function genWords(g){return g.examples.length?g.examples.map(function(e){return e[0]}).join(', '):g.none}
+function genBlock(lead,g){return '<p>'+lead+' <b>'+esc(g.label)+'</b>.</p><p>'+esc(g.summary)+(g.extra?' '+esc(g.extra):'')+'</p>'}
+function genShow(raw){
+  var out=$('#gen-out');if(!out)return;
+  var txt=String(raw==null?'':raw).trim(),y=/^\d{4}$/.test(txt)?+txt:0,now=new Date().getFullYear();
+  function err(m){out.innerHTML='<p class="gen-err">'+esc(m)+'</p>'}
+  if(!y)return err(GEN_BAD);
+  if(y>now)return err(GEN_FUT);
+  var g=genOf(y);if(!g)return err(GEN_OLD);
+  var pg=genOf(y-30),cg=genOf(y+30)||GENS[GENS.length-1];
+  var h='<p><b>You:</b> born '+y+'. That is <b>'+esc(g.label)+'</b> ('+esc(genRange(g))+').</p><p>'+esc(g.summary)+(g.extra?' '+esc(g.extra):'')+'</p><p>Words from your time: '+esc(genWords(g))+'</p>';
+  h+=pg?'<p><b>Your parents:</b> most likely <b>'+esc(pg.label)+'</b>.</p><p>'+esc(pg.summary)+(pg.extra?' '+esc(pg.extra):'')+'</p>':'<p><b>Your parents:</b> '+esc(GEN_OLD)+'</p>';
+  h+='<p><b>The generation below you:</b> most likely <b>'+esc(cg.label)+'</b>.</p><p>'+esc(cg.summary)+(cg.extra?' '+esc(cg.extra):'')+'</p>';
+  out.innerHTML=h;
+}
+(function(){
+  var f=$('#gen-form'),l=$('#gen-list');
+  if(l)l.innerHTML=GENS.map(function(g){
+    var ex=g.examples.length?'<ul>'+g.examples.map(function(e){return '<li><b>'+esc(e[0])+'</b>: '+esc(e[1])+'</li>'}).join('')+'</ul>':'<p>Examples: '+esc(g.none)+'</p>';
+    return '<dt>'+esc(g.label)+' ('+esc(g.rangeText)+')</dt><dd>'+esc(g.summary)+ex+(g.extra?'<p>'+esc(g.extra)+'</p>':'')+'</dd>';
+  }).join('');
+  if(f)f.addEventListener('submit',function(e){e.preventDefault();genShow($('#gen-year').value)});
+})();
+
 /* ---------- who are you ---------- */
 var KEY='cbProfile',TN={1:'new to AI',2:'uses AI some',3:'a super user'};
 var AIN={claude:'Claude',chatgpt:'ChatGPT',gemini:'Gemini',copilot:'Copilot',other:'another assistant'};
@@ -2574,11 +2670,12 @@ var TL={1:'New to AI? It is plain text, it is safe, and setup takes under 10 min
 var main=$('#main'),ORIG=$$('#main>*'),IDS={};
 ORIG.forEach(function(el){if(el.id)IDS[el.id]=el});
 var FRONT={1:['t1','first','second'],2:['t2','first','second'],3:['t3','first','second']};
+var PV=['parent','grandparent','both','no','skip'];
 var state=null,showAll=false,pick=0,editing=false,skipped=false;
 function gate(on){document.documentElement.classList.toggle('wg',!!on)}
 function load(){
   try{var o=JSON.parse(lsGet(KEY)||'null');
-    if(o&&(o.tier===1||o.tier===2||o.tier===3)){o.ai=Array.isArray(o.ai)?o.ai.filter(function(k){return AIN[k]}):[];o.plan=(o.plan==='free'||o.plan==='paid')?o.plan:'';return o}
+    if(o&&(o.tier===1||o.tier===2||o.tier===3)){o.ai=Array.isArray(o.ai)?o.ai.filter(function(k){return AIN[k]}):[];o.plan=(o.plan==='free'||o.plan==='paid')?o.plan:'';o.parent=PV.indexOf(o.parent)>-1?o.parent:'';var by=+o.by;o.by=(isFinite(by)&&by%1===0&&by>=1900&&by<=new Date().getFullYear())?by:0;return o}
   }catch(e){}
   return null;
 }
@@ -2599,11 +2696,12 @@ function noteHTML(s){
   }else if(s.plan==='paid'){
     h+='<p>A paid plan gives you more room for connectors, models, and usage. Exact limits depend on the assistant and plan, so check yours.</p>';
   }
+  if(s.parent==='parent'||s.parent==='grandparent'||s.parent==='both')h+='<p>There is a section made for you: Bringing humans closer. It helps you read what your kids and grandkids send you, and answer well. <a href="#closer" data-scroll>Go to Bringing humans closer</a></p>';
   return h;
 }
 function render(){
   var t=state?state.tier:0;
-  var pi=ORIG.indexOf(IDS.products),front=(FRONT[t]||[]).map(function(id){return IDS[id]}),
+  var pi=ORIG.indexOf(IDS.products),front=((state&&(state.parent==='parent'||state.parent==='grandparent'||state.parent==='both')?['closer']:[]).concat(FRONT[t]||[])).map(function(id){return IDS[id]}),
       rest=ORIG.slice(pi+1).filter(function(el){return front.indexOf(el)<0});
   ORIG.slice(0,pi+1).concat(front,rest).forEach(function(el){main.appendChild(el)});
   ['1','2','3'].forEach(function(k){IDS['t'+k].hidden=!!t&&!showAll&&String(t)!==k});
@@ -2616,11 +2714,14 @@ function render(){
     var bits=[TN[state.tier]];
     if(state.ai.length)bits.push('using '+listNames(state.ai));
     if(state.plan)bits.push('on a '+state.plan+' plan');
+    if(state.parent==='parent')bits.push('a parent');else if(state.parent==='grandparent')bits.push('a grandparent');else if(state.parent==='both')bits.push('a parent and a grandparent');
+    if(state.by)bits.push('born '+state.by);
     $('#who-sumtxt').textContent='Page set for you: '+bits.join(', ')+'.';
     notes.innerHTML=editing?'':noteHTML(state);
     var ca=$('#who-all');ca.textContent=showAll?'Show only my tier':'Show every tier';ca.setAttribute('aria-pressed',showAll?'true':'false');
   }else{form.hidden=false;sum.hidden=true;notes.innerHTML=''}
   gate(editing||(!state&&!skipped));
+  var gy=$('#gen-year');if(state&&state.by&&gy){gy.value=state.by;genShow(state.by)}
   var cn=$('#cost-note');
   if(cn){if(state&&state.plan){cn.hidden=false;cn.textContent=state.plan==='free'?'You said you are on a free plan. The first gate shows what Free includes.':'You said you are on a paid plan. Compare it with the gates below.'}else cn.hidden=true}
 }
@@ -2632,6 +2733,8 @@ function fillForm(s){
   setPick(s?s.tier:0);
   $$('input[name=ai]').forEach(function(i){i.checked=!!s&&s.ai.indexOf(i.value)>-1});
   $$('input[name=plan]').forEach(function(i){i.checked=!!s&&s.plan===i.value});
+  $$('input[name=parent]').forEach(function(i){i.checked=!!s&&s.parent===i.value});
+  $('#who-by').value=s&&s.by?s.by:'';
   $('#who-clear').hidden=!s;
 }
 $('#tiers').addEventListener('click',function(e){var b=e.target.closest('.tier');if(b)setPick(+b.dataset.tier)});
@@ -2642,7 +2745,9 @@ $('#tiers').addEventListener('keydown',function(e){
 $('#who-go').addEventListener('click',function(){
   if(!pick){$('#who-err').textContent='Pick one of the three first.';return}
   var ai=$$('input[name=ai]:checked').map(function(i){return i.value}),pl=$$('input[name=plan]:checked').map(function(i){return i.value})[0]||'';
-  state={tier:pick,ai:ai,plan:pl};showAll=false;editing=false;skipped=false;lsSet(KEY,JSON.stringify(state));
+  var pr=$$('input[name=parent]:checked').map(function(i){return i.value})[0]||'',bt=$('#who-by').value.trim(),by=0;
+  if(bt){by=/^\d{4}$/.test(bt)?+bt:0;if(!by||by<1900||by>new Date().getFullYear()){$('#who-err').textContent=GEN_BAD;return}}
+  state={tier:pick,ai:ai,plan:pl,parent:pr,by:by};showAll=false;editing=false;skipped=false;lsSet(KEY,JSON.stringify(state));
   render();
   if(pl==='free'){var g=$('#gates [data-g="0"]');if(g)g.click()}
   window.scrollTo({top:0,behavior:RM?'auto':'smooth'});
@@ -2693,12 +2798,13 @@ var PROFILES=[
  ['Power home user with local GPUs','Example result: a power home user also runs jobs on their own machines and schedules them. Next step: let your assistant run one task on a schedule.'],
  ['Software engineer','Example result: a software engineer works in code and tests what the AI writes. You do not need that to benefit. Next step: ask for a tutorial on the one task you repeat most.']
 ];
+var REPLIES=['Ha. That is exactly you. Calmest one in the tub.','I love this. Who are the ducks?','This made my afternoon. Send me more of these.'];
 function mockHTML(){
   var rows=MAILS.map(function(m,i){return '<div class="md-row"><span><b>'+esc(m.from)+'</b><small>'+esc(m.subj)+'</small></span><button type="button" class="md-btn g" data-reply="'+i+'">Reply</button></div>'}).join('');
   var opts='<option value="">Pick a profile</option>'+PROFILES.map(function(p,i){return '<option value="'+i+'">'+esc(p[0])+'</option>'}).join('');
   function comp(name,lab,dict,send,msg){return '<div class="md-comp" data-comp="'+name+'" hidden><p class="md-lab" data-lab>'+lab+'</p><textarea class="md-ta" data-ta data-mic="none" aria-label="Message text"></textarea><div class="md-acts"><button type="button" class="md-btn g md-mic" data-mic data-dict="'+esc(dict)+'" aria-label="Microphone, demo only">'+MICSVG+' Mic</button><span class="md-live" data-live aria-live="polite"></span><button type="button" class="md-btn md-send" data-send data-msg="'+esc(msg)+'">'+send+'</button></div></div>'}
   return '<div class="md-top"><span><b>My dashboard</b><span class="md-demo">Demo data</span></span><span>Last refreshed: just now</span></div>'+
-  '<div class="md-tabs" role="tablist" aria-label="Dashboard tabs">'+['today:Today','inbox:Inbox','work:Work','agenda:Agenda','journey:My AI Journey'].map(function(t){var p=t.split(':');return '<button type="button" class="md-tab" role="tab" data-tab="'+p[0]+'" aria-selected="false">'+p[1]+'</button>'}).join('')+'</div>'+
+  '<div class="md-tabs" role="tablist" aria-label="Dashboard tabs">'+['today:Today','inbox:Inbox','work:Work','agenda:Agenda','journey:My AI Journey','closer:Closer'].map(function(t){var p=t.split(':');return '<button type="button" class="md-tab" role="tab" data-tab="'+p[0]+'" aria-selected="false">'+p[1]+'</button>'}).join('')+'</div>'+
   '<div class="md-pane" role="tabpanel" data-pane="today"><h4>Today: your top three</h4><div class="md-row"><span>Reply to Mom about the holidays<small>Waiting since Monday</small></span><button type="button" class="md-btn g" data-go="inbox">Open inbox</button></div><div class="md-row"><span>Send the weekly recruiting recap<small>Due today</small></span><button type="button" class="md-btn g" data-go="work">Open work</button></div><div class="md-row"><span>Pick a week for the trip<small>Friends are free in week 3</small></span><button type="button" class="md-btn g" data-go="agenda">Open agenda</button></div></div>'+
   '<div class="md-pane" role="tabpanel" data-pane="inbox" hidden><h4>Inbox: needs a reply</h4>'+rows+comp('inbox','Reply','','Send','Demo only. Nothing was sent.')+'</div>'+
   '<div class="md-pane" role="tabpanel" data-pane="work" hidden><h4>Work: weekly recruiting recap</h4><div class="md-metrics"><div><b>12</b>Open roles</div><div><b>31</b>Interviews</div><div><b>4</b>Offers out</div><div><b>2</b>Accepted</div></div><p>In the real dashboard, these numbers come from the systems you connect.</p>'+
@@ -2706,6 +2812,8 @@ function mockHTML(){
   '<div class="md-pane" role="tabpanel" data-pane="agenda" hidden><h4>Agenda: find a week</h4><div class="md-cal" role="img" aria-label="Calendars: you and two friends are all free in week 3"><div><b>You</b><i></i><i></i><i class="f"></i><i></i></div><div><b>Friend A</b><i class="b"></i><i></i><i class="f"></i><i></i></div><div><b>Friend B</b><i></i><i class="b"></i><i class="f"></i><i class="b"></i></div><div><span></span><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div></div><button type="button" class="md-btn" data-trip>Suggest a trip</button>'+
   comp('agenda','Suggested group message','I can drive if we pick somewhere close.','Start the group chat','Demo only. No group chat was started.')+'</div>'+
   '<div class="md-pane" role="tabpanel" data-pane="journey" hidden><h4>My AI Journey</h4><p>Example data. In your real dashboard, this comes from what your assistant can see.</p><div class="md-cols"><div><b>Accounts and connectors</b><ul><li>Claude, chat</li><li>Email connector</li><li>Calendar connector</li><li>Not connected: files, team chat</li></ul></div><div><b>What you do most</b><ul><li>Drafting replies</li><li>Planning trips</li><li>Summarizing long emails</li></ul></div></div><div class="md-sel"><label for="md-cmp">Compare me to</label><select id="md-cmp" data-cmp>'+opts+'</select><button type="button" class="md-btn g" data-cmpgo>How do I compare?</button></div><div class="md-out" data-cmpout hidden aria-live="polite"></div><button type="button" class="md-btn" data-tut>Give me a tutorial based on my usage</button><div class="md-out" data-tutout hidden><b>Tutorial: summarize a long email thread</b><ol><li>Open the thread and copy it into your assistant.</li><li>Say: "Summarize this in five lines and list what I owe."</li><li>Read the list and fix anything wrong.</li><li>Say: "Draft my reply from that list."</li><li>Edit the draft, then send it yourself.</li></ol></div></div>'+
+  '<div class="md-pane" role="tabpanel" data-pane="closer" hidden><h4>Bringing humans closer</h4><p><i>Made-up family. Made-up message. This shows what it would look like.</i></p><div class="md-kid"><small>From Milo, 4:12 pm</small><em>[picture: a capybara sitting calmly in a hot tub while a dozen ducks flap around it]</em>this is lowkey me \uD83D\uDC80</div><div class="md-cols"><div data-bare><b>Bare chatbot</b><p><i>What it knows:</i> Nothing about you. Nothing about Milo.</p><p>"Lowkey" means "somewhat" and the skull emoji often means something is very funny. You could reply with a laughing emoji, or ask your child what they meant.</p><p><i>Not wrong. Not much help either.</i></p></div><div><b>Your assistant with your dashboard</b><p><i>What it knows (demo data):</i></p><ul><li>You: Dana, born 1984. Millennial.</li><li>Milo: your son, 13, born 2013. Generation Alpha.</li><li>Milo likes skateboarding, drawing, and capybaras.</li><li>From your notes: Milo started at a new school in September, and you said it is loud.</li><li>Your last three texts to Milo were reminders about chores.</li></ul></div></div><button type="button" class="md-btn" data-signal>Read the signal</button><div class="md-out md-read" data-signalout hidden aria-live="polite"><p><b>What it means:</b> "Lowkey me" means "this is a bit like me." The skull means he is laughing. He is saying he is the calm one while everything around him is noisy.</p><p><b>What kind of signal:</b> Sharing a laugh, and telling you a little about how school feels. He is not asking for advice.</p><p><b>How sure:</b> Fairly sure about the joke. Less sure about the school part. That is a guess from your notes, so do not push on it.</p><p><b>What to do:</b> Laugh with him first. He sent you his favorite animal, which means he wanted you to see it.</p><p><b>Reply options</b></p><div class="md-opts">'+REPLIES.map(function(r,i){return '<button type="button" class="md-btn g" data-opt="'+i+'">'+(i+1)+'. '+esc(r)+'</button>'}).join('')+'</div><p class="mut">These are drafts. Nothing is sent until you say yes.</p></div>'+
+  comp('closer','Reply to Milo','Love you, see you at dinner.','Send to Milo','Demo only. Nothing was sent.')+'</div>'+
   '<div class="md-note" id="md-note" role="status"></div><div class="md-cursor" id="md-cursor" hidden>'+CURSOR+'</div>';
 }
 var DEMOS={
@@ -2733,6 +2841,15 @@ var DEMOS={
   {say:'Now start the group chat.',act:[['click','[data-pane=agenda] [data-send]'],['wait',900]]},
   {say:'The demo says no group chat was started. In the real dashboard, nothing happens until you press the button.',act:[['wait',400]]},
   {say:'That is the whole workflow. Open the demo dashboard to try it yourself.',act:[]}]},
+ signal:{title:'Read the signal',intro:'We will open a message from a kid, see what a bare chatbot says, and then see what your own assistant says.',steps:[
+  {say:'This is a dashboard with made-up data. We open the Bringing humans closer tab.',act:[['click','[data-tab=closer]']]},
+  {say:'Milo is 13. He sent his mom a picture of a capybara with the words: this is lowkey me.',act:[['move','[data-pane=closer] .md-kid'],['wait',700]]},
+  {say:'A bare chatbot explains the words. It does not know Milo or his mom, so that is all it can do.',act:[['move','[data-pane=closer] [data-bare]'],['wait',700]]},
+  {say:'Now press Read the signal. Your assistant knows Milo loves capybaras and just started at a loud new school.',act:[['click','[data-pane=closer] [data-signal]'],['wait',600]]},
+  {say:'It says this is a shared laugh, and it says how sure it is. It is not a request for advice.',act:[['move','[data-pane=closer] .md-read'],['wait',700]]},
+  {say:'You get three short replies in your own voice. Pick one, or change it by microphone.',act:[['click','[data-pane=closer] [data-opt="1"]'],['click','[data-pane=closer] [data-mic]'],['wait',2300]]},
+  {say:'The demo says nothing was sent. In the real dashboard, nothing is sent until you say yes.',act:[['click','[data-pane=closer] [data-send]'],['wait',900]]},
+  {say:'Open the demo dashboard to try it yourself.',act:[]}]},
  journey:{title:'See your AI journey',intro:'We will look at your accounts and habits, compare you to another profile, and ask for a tutorial.',steps:[
   {say:'This is a dashboard with made-up data. We open the My AI Journey tab.',act:[['click','[data-tab=journey]']]},
   {say:'It lists the accounts and connectors in use, and what you do most.',act:[['move','[data-pane=journey] .md-cols'],['wait',700]]},
@@ -2779,6 +2896,8 @@ app.addEventListener('click',function(e){
   b=t.closest('[data-send]');if(b){note(b.dataset.msg||'Demo only. Nothing was sent.');return}
   b=t.closest('[data-cmpgo]');if(b){var v=$('[data-cmp]',app).value,o=$('[data-cmpout]',app);if(v===''){o.hidden=false;o.textContent='Pick a profile first.';return}o.hidden=false;o.textContent=PROFILES[+v][1];return}
   b=t.closest('[data-tut]');if(b){$('[data-tutout]',app).hidden=false;return}
+  b=t.closest('[data-signal]');if(b){$('[data-signalout]',app).hidden=false;return}
+  b=t.closest('[data-opt]');if(b){var c3=$('[data-pane=closer] [data-comp]',app);c3.hidden=false;$('[data-ta]',c3).value=REPLIES[+b.dataset.opt];return}
 });
 function micToggle(b){
   var comp=b.closest('[data-comp]'),live=$('[data-live]',comp),ta=$('[data-ta]',comp);
