@@ -1235,11 +1235,7 @@ html:not(.wg) #who .who-note{max-width:none}
 </style></head>
 <body class="citrus">
 <script>try{if(!localStorage.getItem("cbProfile"))document.documentElement.classList.add("wg")}catch(e){}</script>
-<script>(function(){var F={1:"Inter:wght@400;500;600;700;800",2:"Manrope:wght@400;500;600;700;800",3:"Playfair+Display:wght@500;700;800;900",4:"Fredoka:wght@400;500;600;700",6:"Nunito:wght@400;600;700;800",7:"JetBrains+Mono:wght@400;500;700",8:"Space+Grotesk:wght@400;500;600;700"};
-window.__dzApply=function(n){var b=document.body;if(n>0&&n<=8){b.setAttribute("data-design",n);if(F[n]&&!document.getElementById("dzf"+n)){var l=document.createElement("link");l.id="dzf"+n;l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family="+F[n]+"&display=swap";document.head.appendChild(l)}}else b.removeAttribute("data-design")};
-var n=null;try{var p=new URLSearchParams(location.search).get("design");if(p!==null&&/^[0-8]$/.test(p))n=+p}catch(e){}
-if(n===null){try{var s=localStorage.getItem("cbDesign");if(s!==null&&/^[0-8]$/.test(s))n=+s}catch(e){}}
-window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
+<script>try{localStorage.removeItem("cbDesign");document.body.removeAttribute("data-design")}catch(e){}window.__dzInit=0;</script>
 <canvas id="bg" aria-hidden="true"></canvas><canvas id="fx" aria-hidden="true"></canvas>
 <a class="skip" href="#setup">Skip to content</a>
 <header class="hdr" id="top">
@@ -1728,20 +1724,6 @@ window.__dzInit=n||0;window.__dzApply(window.__dzInit)})();</script>
 <p class="mut small">Works with AI assistants such as Claude. Not affiliated with, or endorsed by, any AI company. Some screens on this page are demos that send nothing.</p>
 </div></footer>
 
-<div class="dz" id="dz">
-<button type="button" class="dz-btn" id="dzbtn" aria-expanded="false" aria-controls="dzpanel">Design</button>
-<div class="dz-panel" id="dzpanel" role="group" aria-label="Design shuffle" hidden>
-<div class="dz-th"><p class="dz-title" id="dztitle" aria-live="polite">Original</p><button type="button" class="dz-x" data-dz="close" aria-label="Close design panel">&times;</button></div>
-<div class="dz-row"><button type="button" data-dz="shuffle">Shuffle</button><button type="button" data-dz="back" id="dzback" disabled>Back</button><button type="button" data-dz="prev">Previous</button><button type="button" data-dz="next">Next</button><button type="button" data-dz="orig">Original</button></div>
-<div class="dz-row"><button type="button" data-dz="text">Text only / proofread</button></div>
-<p class="dz-lab" id="dzratelab">Your rating of this design</p>
-<div class="dz-rate" id="dzrate" role="radiogroup" aria-labelledby="dzratelab"><button type="button" role="radio" aria-checked="false" data-r="sl">Strong like</button><button type="button" role="radio" aria-checked="false" data-r="l">Like</button><button type="button" role="radio" aria-checked="false" data-r="d">Dislike</button><button type="button" role="radio" aria-checked="false" data-r="sd">Strong dislike</button></div>
-<label for="dznote">What do you like or dislike about this design?</label>
-<textarea id="dznote" rows="4"></textarea>
-<div class="dz-row"><button type="button" data-dz="copy">Copy all notes</button><button type="button" data-dz="close">Close</button></div>
-<p class="dz-status" id="dzstatus" role="status" aria-live="polite"></p>
-<p class="dz-keys">Keys: S shuffles. B goes back to the design you just left. Left and right arrows step through designs while this panel is open.</p>
-</div></div>
 
 <div class="dm-ov" id="dmov" hidden><div class="dm" id="dm" role="dialog" aria-modal="true" aria-labelledby="dm-title" tabindex="-1">
 <div class="vbar" role="note"><b aria-hidden="true">!</b><span>Demo only. Nothing is actually happening on your computer. <a href="#setup" data-closeall>Copy the text at the bottom of the page</a> to begin using this tool immediately.</span></div>
@@ -2413,84 +2395,6 @@ if(fzp)fzp.addEventListener('click',function(e){
 if(window.__bg)window.__bg({rm:RM});
 })();
 </script>
-<script>(function(){
-'use strict';
-var NAMES=["Clean white SaaS","Midnight glass","Editorial","Bold playful","Swiss grid","Warm calm","Terminal","Cinematic"];
-var RM=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
-function $(s){return document.querySelector(s)}
-function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
-var btn=$("#dzbtn"),panel=$("#dzpanel"),title=$("#dztitle"),note=$("#dznote"),status=$("#dzstatus"),cur=window.__dzInit||0,rvObs=null,stT,hist=[];
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-function notes(){try{var o=JSON.parse(lsGet("cbDesignNotes")||"{}");return o&&typeof o==="object"?o:{}}catch(e){return {}}}
-var RL={sd:"Strong dislike",d:"Dislike",l:"Like",sl:"Strong like"};
-function rates(){try{var o=JSON.parse(lsGet("cbDesignRatings")||"{}");return o&&typeof o==="object"?o:{}}catch(e){return {}}}
-function updRate(){var r=rates()[cur]||"";$$("#dzrate [data-r]").forEach(function(b){b.setAttribute("aria-checked",b.getAttribute("data-r")===r?"true":"false")})}
-function label(n){return n?"Design "+n+" of 8: "+NAMES[n-1]:"Original (the current look)"}
-function say(m){status.textContent=m;clearTimeout(stT);stT=setTimeout(function(){status.textContent=""},3000)}
-function clearRv(){$$(".rv").forEach(function(e){e.classList.remove("rv","in")});if(rvObs){rvObs.disconnect();rvObs=null}}
-function setRv(){clearRv();if(cur!==8||RM||!("IntersectionObserver" in window))return;
-  rvObs=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){var t=en.target;t.classList.add("in");rvObs.unobserve(t);setTimeout(function(){t.classList.remove("rv","in")},1100)}})},{rootMargin:"0px 0px -6% 0px"});
-  $$("#main .shead,#main .cards>*,#main .wf>*,#main .tl>li,#main .demo>div,#main .hsteps>li,#main .fam>*,#main .soc>*,#main .wform,#main .prof-box").forEach(function(e){var r=e.getBoundingClientRect();if(r.bottom<0||r.top<innerHeight*.9)return;e.classList.add("rv");rvObs.observe(e)})}
-function updBack(){var b=$("#dzback");if(b)b.disabled=!hist.length}
-function back(){if(!hist.length)return;set(hist.pop(),false,true)}
-function set(n,quiet,noHist){
-  n=((n%9)+9)%9;if(!noHist&&n!==cur){hist.push(cur);if(hist.length>80)hist.shift()}cur=n;window.__dzApply(n);updBack();
-  title.textContent=label(n);btn.setAttribute("aria-label","Design shuffle, "+label(n));
-  note.value=notes()[n]||"";updRate();
-  lsSet("cbDesign",String(n));
-  if(!quiet)try{var u=new URL(location.href);u.searchParams.set("design",n);history.replaceState(null,"",u.pathname+u.search+u.hash)}catch(e){}
-  setRv();
-}
-function shuffle(){var n;do{n=1+Math.floor(Math.random()*8)}while(n===cur&&cur!==0?true:false);set(n)}
-function open(o){panel.hidden=!o;btn.setAttribute("aria-expanded",o?"true":"false");if(o)note.focus({preventScroll:true})}
-btn.addEventListener("click",function(){open(panel.hidden)});
-panel.addEventListener("click",function(e){var rb=e.target.closest("[data-r]");if(rb){var rt=rates(),v=rb.getAttribute("data-r");if(rt[cur]===v)delete rt[cur];else rt[cur]=v;lsSet("cbDesignRatings",JSON.stringify(rt));updRate();say(rt[cur]?"Rated: "+RL[rt[cur]]+".":"Rating cleared.");return}var b=e.target.closest("[data-dz]");if(!b)return;var k=b.getAttribute("data-dz");
-  if(k==="shuffle")shuffle();else if(k==="back")back();else if(k==="text")openText();else if(k==="prev")set(cur-1);else if(k==="next")set(cur+1);else if(k==="orig")set(0);
-  else if(k==="close"){open(false);btn.focus()}
-  else if(k==="copy"){var n=notes(),rt=rates(),out=["claudebomb.com design notes and ratings"];for(var i=0;i<9;i++){var t=(n[i]||"").trim();out.push((i?"Design "+i+" ("+NAMES[i-1]+")":"Original")+":\nRating: "+(RL[rt[i]]||"not rated")+"\nNotes: "+(t||"(no notes)"))}
-    var txt=out.join("\n\n");
-    function fb(){var ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="position:fixed;left:-999px;top:0";document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand("copy")}catch(x){}document.body.removeChild(ta);say(ok?"Copied all notes.":"Copy failed. Select the text in the box and copy it by hand.")}
-    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){say("Copied all notes.")},fb);else fb()}
-  if(k==="shuffle"||k==="prev"||k==="next"||k==="orig"||(k==="back"&&!b.disabled))b.focus({preventScroll:true});
-});
-note.addEventListener("input",function(){var n=notes();n[cur]=note.value;lsSet("cbDesignNotes",JSON.stringify(n))});
-document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"&&!panel.hidden&&$("#winov").hidden&&$("#dmov").hidden){open(false);btn.focus();return}
-  if(e.ctrlKey||e.metaKey||e.altKey)return;
-  var t=e.target,tag=t&&t.tagName;if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"||(t&&t.isContentEditable))return;
-  var ov=$("#winov");if(ov&&!ov.hidden)return;
-  if(e.key==="s"||e.key==="S"){e.preventDefault();shuffle()}
-  else if((e.key==="b"||e.key==="B")&&hist.length){e.preventDefault();back()}
-  else if(!panel.hidden&&e.key==="ArrowLeft"){e.preventDefault();set(cur-1)}
-  else if(!panel.hidden&&e.key==="ArrowRight"){e.preventDefault();set(cur+1)}
-});
-function openText(){
-  var body=$("#txbody");body.innerHTML="";var all=[];
-  var sel="h1,h2,h3,h4,p,li,summary,figcaption,label,button.btn,a.btn";
-  function hid(el,root){for(var n=el;n&&n!==root;n=n.parentNode){if(n.hidden)return true}return false}
-  function chunk(sec,title){
-    var items=[],prev="";
-    Array.prototype.slice.call(sec.querySelectorAll(sel)).forEach(function(el){
-      if(el.querySelector(sel)||hid(el,sec)||el.closest(".vbar,svg,textarea,select,.dz"))return;
-      var t=el.textContent.replace(/\s+/g," ").trim();if(!t||t===prev)return;prev=t;items.push(t)});
-    if(!items.length)return;
-    var d=document.createElement("section");d.className="tx-chunk";
-    var h=document.createElement("h3");h.textContent=title;d.appendChild(h);
-    var ol=document.createElement("ol");items.forEach(function(t){var li=document.createElement("li");li.textContent=t;ol.appendChild(li)});d.appendChild(ol);
-    body.appendChild(d);all.push(title.toUpperCase()+"\n"+items.join("\n"));
-  }
-  function nameOf(sec,fb){var h=sec.querySelector("h2");return h?h.textContent.replace(/\s+/g," ").trim():fb}
-  Array.prototype.slice.call(document.querySelectorAll("#main>section")).forEach(function(sec){if(!sec.hidden)chunk(sec,nameOf(sec,sec.id))});
-  var ft=document.querySelector(".foot");if(ft)chunk(ft,nameOf(ft,"Footer"));
-  ["cost","secure-pop"].forEach(function(id){var p=document.getElementById(id);if(p)chunk(p,"Pop-up: "+nameOf(p,id))});
-  $("#tx-copy").onclick=function(){var t=all.join("\n\n"),b=this;function done(ok){b.textContent=ok?"Copied":"Copy failed";setTimeout(function(){b.textContent="Copy all text"},1800)}
-    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){done(true)},function(){done(false)});else done(false)};
-  open(false);
-  if(window.__openPop)window.__openPop("txov");
-}
-set(cur,cur===0&&location.search.indexOf("design=")<0);
-})();</script>
 <script>
 (function(){var g=document.getElementById('gates');if(!g)return;
 var D=[
@@ -3336,5 +3240,5 @@ document.addEventListener('keydown',function(e){
 })();
 </script>
 <script src="/v6/funsies.js?v=1" defer></script>
-<script src="hmr-dock.js?v=6.0" data-site="claudebomb.com" data-design="#dzbtn" data-design-panel="#dzpanel" defer></script>
+<script src="hmr-dock.js?v=6.1" data-site="claudebomb.com" defer></script>
 </body></html>
