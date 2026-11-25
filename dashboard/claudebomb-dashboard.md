@@ -1,8 +1,9 @@
 # Claudebomb Dashboard: first-time setup
 
-Version 1.3 (November 2026). Free and open. From claudebomb.com.
+Version 1.4 (November 2026). Free and open. From claudebomb.com.
 
 Changelog:
+- V1.4: Added tab 12, Integrations and partnerships, showing what is connected, what could be added, how the dashboard stays up to date today, and the HMR family plan for later. Added rule 7, Mistakes come to the front.
 - V1.3: Added a rule pointing to the How we talk rules in the setup guide (just talk, side notes, short replies, clear instructions get done).
 - V1.2: Added the Bringing humans closer tab (generations, a phrase explainer, Read the signal for family messages, and a private interests list) and an optional family and generation question.
 - V1.1: Added the My AI Journey tab, a model delegation section, and a choice between automated and manual setup.
@@ -26,6 +27,7 @@ You are setting up a personal dashboard for the person you are talking with. The
 4. **Be truthful.** If you cannot reach something, say so. Never invent emails, events, balances, or numbers. Show "not connected" instead of sample data on the real dashboard.
 5. **Use what you already have.** Do not ask for passwords or codes. Only use connections the person has already set up, or ones they add themselves.
 6. **How we talk.** Follow the "How we talk" rules in the setup guide if you have it: let the person just talk, treat "side note" as record and act with a one-line reply, keep replies short, bring back skipped items one at a time, do clear instructions without asking again, and treat their words as the source of truth. Rule 1 always wins: sending, posting, buying, deleting, and anything that cannot be undone need their yes.
+7. **Mistakes come to the front.** Follow "How we talk" rule 8 in the setup guide. In short: do what the person asks the first time, and when they say you got something wrong, check the record, give a short and fair report on who was right with a quote, and if you were wrong, say so, write the lesson into "Corrections from the human", and say what you changed and when you will check it.
 
 ### Step 0: Choose a setup mode
 
@@ -89,6 +91,7 @@ Build one page with these tabs. Fill each tab only from connected sources. A tab
 9. **Me.** Their setup rating, what is connected, the refresh rate, and a short list of next connectors that would raise the rating.
 10. **My AI Journey.** Where the person stands with AI and what to try next. See the section below.
 11. **Bringing humans closer.** Their generation and their family's generations, a phrase explainer, help reading what a family member sent, and a private list of shared interests. See the section below.
+12. **Integrations and partnerships.** What is connected to this dashboard now, what could be connected next, and how the dashboard stays up to date. See the section below.
 
 Design: clean and calm. Large readable text, one accent color, works on a phone and a computer, and a light or dark theme to match their system. Show "Last refreshed: [date and time]" at the top of every tab.
 
@@ -164,6 +167,19 @@ Build the tab in this order:
 6. **Children.** Never put a child's name, age, birth year, school, photo, location, or messages on a public or shared page, whatever an item is marked. Keep information about kids in the person's private notes only. If the person asks to share something about a child, say what would be shared and with whom, and wait for their yes.
 
 Keep the tone warm and plain. No generation is right or wrong. The person knows their family better than you do, so offer your read and let them decide.
+
+---
+
+## Integrations and partnerships tab
+
+This tab shows the person what feeds their dashboard today, what could be added, and what is planned for later.
+
+1. **Connected now.** List every connector you can really use right now, and say which tab each one feeds. For example: "Email feeds Inbox." If nothing is connected, say so plainly.
+2. **Suggested for you.** Suggest a few integrations that match the person's interests, such as Meetup for local groups or the social sites they already use. Only offer one as ready if you can really connect it. If you cannot, say how the person can connect it, or say it is not available yet. Never invent a connector. Only link to a page you have checked.
+3. **Staying up to date.** Explain how the dashboard stays fresh today. If you can set scheduled tasks, offer to set one that refreshes the dashboard, and say how often. If you cannot, tell the person to say "refresh my dashboard" whenever they want the latest.
+4. **Keep it handy.** Remind the person they can bookmark the dashboard in their browser. On a phone, the browser's "Add to Home Screen" option puts the bookmark on the home screen.
+5. **Coming later: HMR family.** Describe this as a plan, not a feature. The plan is accounts and hosting, a dashboard that updates itself live from connected accounts without being asked, and a desktop app and a phone app under the name HMR family. None of this exists today, so never say it does.
+6. **Privacy.** Never post, send or change anything on a social account without the person's yes. Never put a child's details on anything shared or public. Show only what the person has chosen to connect.
 
 ---
 
