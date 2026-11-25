@@ -60,7 +60,7 @@ function addRule(a,b){var r=C.el('div','rule'),n=rules.children.length+1;
  r.innerHTML='<label>If <input type="text" aria-label="If, rule '+n+'" placeholder="this happens"></label><label>then <input type="text" aria-label="Then, rule '+n+'" placeholder="do this"></label>';
  var x=C.el('button','btn ghost sm','Remove');x.type='button';x.addEventListener('click',function(){r.remove();saveRules();draw()});r.appendChild(x);
  var ins=r.querySelectorAll('input');ins[0].value=a||'';ins[1].value=b||'';Array.prototype.forEach.call(ins,function(i){i.addEventListener('input',function(){saveRules();draw()})});rules.appendChild(r)}
-function text(){var g=v('goal');if(!g)return '';var t='I need your help with this: '+g+'\n\nBefore you start, ask me up to 3 short questions if anything important is missing. If nothing is missing, start right away.';
+function text(){var g=v('goal');if(!g)return '';var t='I need your help with this: '+g+(/[.!?]$/.test(g)?'':'.')+'\n\nBefore you start, ask me up to 3 short questions if anything important is missing. If nothing is missing, start right away.';
  if(v('ctx'))t+='\n\nWhat you should know:\n'+v('ctx');
  t+='\n\nWhat I want back:\n'+(v('shape')||'A clear, finished result I can use as it is.');
  if(v('tone'))t+='\n\nTone: '+v('tone');

@@ -102,7 +102,7 @@ C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty
  <div class="wrap">
   <p class="eyebrow"><span class="no">Free</span> Openly licensed, credited</p>
   <h1 id="h1">Search every prompt</h1>
-  <p class="lead">%s free prompts from other open galleries, in one place: %s from <a href="%s">prompts.chat</a> (public domain) and %s from <a href="%s">Fabric</a> (MIT licence). Each page credits its source. You can improve any of them with no account.</p>
+  <p class="lead">One search over our own prompts and %s free prompts from other open galleries: %s from <a href="%s">prompts.chat</a> (public domain) and %s from <a href="%s">Fabric</a> (MIT licence). Each page credits its source. You can improve any of them with no account.</p>
   <form class="find" role="search" onsubmit="return false">
    <div><label for="q">Search the library</label><input id="q" type="search" placeholder="Try: interview, excel, summary, travel" autocomplete="off"></div>
    <div><label for="src">Source</label><select id="src"><option value="">All sources</option><option value="cb">claudebomb</option><option value="pc">prompts.chat</option><option value="fb">Fabric</option><option value="dev">For developers</option></select></div>
@@ -146,10 +146,12 @@ var lt=0;q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(ru
 
     # ---------- /council/ ----------
     STEPS = [
+        ('Know each other', 'Before any prompt, each seat writes how it is best prompted, from its maker\'s own guide, and its strengths and weaknesses. The other seats push back where they disagree. Results from real runs are added over time, so every seat knows the others.'),
         ('Gather every free version', 'Collect every public, openly licensed version of a prompt: ours, the open library, and improvements people send in. Paid prompts are never used.'),
         ('Four seats review alone', 'The most capable model from Anthropic (Claude), OpenAI (ChatGPT), Google (Gemini), and xAI (Grok) each read every version on its own and list its strengths, pitfalls, and what is missing.'),
         ('They debate', 'Each seat reads the other three reviews and answers them: where it agrees, where it disagrees, and why.'),
         ('One merged version', 'A chair writes the best version from the debate. The seats vote, and any disagreement is written down.'),
+        ('Tuned for each AI', 'Each seat then tunes the merged version for its own model, changing form, never content. Another seat checks that nothing was lost. These are what "Copy for your AI" will copy.'),
         ('Published in the open', 'The new version goes on the prompt page with the full debate, as a new entry in its public history. Your improvements go into the next round.'),
     ]
     steps = ''.join('<li><b>%s.</b> %s</li>' % (E(t), E(s)) for t, s in STEPS)
@@ -160,7 +162,7 @@ var lt=0;q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(ru
  <div class="wrap">
   <p class="eyebrow"><span class="no">Planned</span> Not running yet</p>
   <h1 id="h1">The council: four top AIs, one best prompt</h1>
-  <p class="lead">Many sites post the same prompts, and none of them checks which version is best. The council will: the most capable model from four AI companies reads every free version of a prompt, they argue it out, and one best version is published here for free, with the whole debate.</p>
+  <p class="lead">Many sites post the same prompts, and none of them checks which version is best. The council will: the most capable model from four AI companies reads every free version of a prompt, they argue it out, and one best version is published here for free, with the whole debate. Then each one tunes it for its own AI.</p>
  </div>
 </section>
 <section class="sec bank" id="how" aria-labelledby="how-h">
@@ -169,6 +171,15 @@ var lt=0;q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(ru
   <ol class="cl">%s</ol>
   <h3>Where it stands today</h3>
   <p>The council has not reviewed any prompt yet. The program that runs it is open on <a href="https://github.com/AtlasJumped/claudebomb.com/blob/main/tools/council.py">GitHub</a>. When a prompt has been through the council, its page will say so and link the debate.</p>
+  <h3>What it costs to run</h3>
+  <p>Our estimate at today's prices for the top model from each company: about $7 to $8 per prompt, both rounds included. Reviewing 100 prompts a month would cost about $750. It starts once we have paid access to all four, and the cost is ours: the site stays free.</p>
+  <h3>Each maker's prompting guide</h3>
+  <ul>
+   <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview">Anthropic, for Claude</a></li>
+   <li><a href="https://developers.openai.com/api/docs/guides/prompt-engineering">OpenAI, for ChatGPT</a></li>
+   <li><a href="https://ai.google.dev/gemini-api/docs/prompting-strategies">Google, for Gemini</a></li>
+   <li><a href="https://docs.x.ai/developers/model-capabilities/text/best-practices">xAI, for Grok</a></li>
+  </ul>
   <h3>The rules it follows</h3>
   <ul>
    <li>Only free, openly licensed prompts go in, with credit to where they came from.</li>

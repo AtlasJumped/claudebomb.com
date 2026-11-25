@@ -237,7 +237,7 @@ function render(){
   grid.appendChild(a);
  });
  none.hidden=n>0||!!term;
- count.textContent=n+(n===1?' prompt':' prompts')+(c?' in '+c:'')+(term?' matching "'+q.value.trim()+'"':'');
+ var qt=q.value.trim();count.textContent=!term?n+(n===1?' prompt':' prompts')+(c?' in '+c:''):(!n?'None of our own long prompts match "'+qt+'". Here is the best from every prompt:':n+(n===1?' of our prompts matches "':' of our prompts match "')+qt+'"'+(c?' in '+c:'')+'.');
  try{var u=new URL(location.href);term?u.searchParams.set('q',q.value.trim()):u.searchParams.delete('q');c?u.searchParams.set('type',c):u.searchParams.delete('type');history.replaceState(null,'',u)}catch(e){}
 }
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-copy]');if(t)doCopy(t.getAttribute('data-copy'))});
