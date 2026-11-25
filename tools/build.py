@@ -33,6 +33,9 @@ FAV = open(os.path.join(R, 'tools/favicon.html')).read().strip()
 LOGO = '<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>'
 MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>'
 V = '4'
+# Keep whatever dock version is live (another job bumps it in the built pages).
+import re as _re
+DOCKV = (_re.search(r'hmr-dock\.js\?v=([0-9.]+)', open(os.path.join(R, 'index.html')).read()) or [0, '6.6.1'])[1]
 
 def head(title, desc, url):
     return ('<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n'
@@ -56,7 +59,7 @@ FOOT = '''<footer class="foot">
 <div class="toast" id="toast" role="status"></div>
 '''
 TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n%s<script src="/v6/funsies.js?v=1" defer></script>\n'
-        '<script src="/hmr-dock.js?v=6.5.9" data-site="claudebomb.com" defer></script>\n</body></html>\n')
+        '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
     return '<div class="microw"><button class="mic" type="button" data-mic="%s" data-st="%s">%s</button><p class="st" id="%s" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div>' % (ta, st, MIC, st)
