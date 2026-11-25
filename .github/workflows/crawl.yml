@@ -14,8 +14,8 @@ jobs:
   crawl:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Pull the open galleries
@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "claudebomb crawler"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A ':!tools/__pycache__'
+          git add -A
           git diff --cached --quiet && exit 0
           git commit -q -m "Daily crawl: $(date -u +%Y-%m-%d)"
           for i in 1 2 3; do git push -q && exit 0; sleep 5; git pull -q --rebase || exit 1; done
