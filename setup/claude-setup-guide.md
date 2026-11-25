@@ -227,6 +227,8 @@ Say: "Next, we build your dashboard. Paste the dashboard file into this chat, or
 Set up my dashboard.
 ```
 
+Before the hand-off, offer one optional choice: linking social media accounts. Say that the dashboard works like an open source profile page the person controls completely through AI, free, and that linking their social media accounts is optional. Ask which accounts, if any, they would like to link, and which parts of each they want shown. Use only connections the person has already set up or adds themselves, never ask for passwords or codes, and accept "none" without comment.
+
 Add one line to the AI automation section of the Read Me Master saying that setup is complete, on what date, and which suggestions were kept.
 
 Do not send the link in Step 10 yet. It comes only after the whole setup has worked.
