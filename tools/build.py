@@ -51,7 +51,7 @@ def hdr(nav, home='/'):
 FOOT = '''<footer class="foot">
  <div class="wrap">
   <h2>claudebomb</h2>
-  <p class="mut">A prompt so big it needs its own website. The prompts on this site are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">A prompt so big it needs its own website. Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
   <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
   <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
  </div>
@@ -103,6 +103,7 @@ idx += '''<main>
    <div><label for="q">Search prompts</label><input id="q" type="search" placeholder="Try: scam, tutor, contract, family" autocomplete="off"></div>
    <div><label for="cat">Type of prompt</label><select id="cat"><option value="">All types</option>''' + opts + '''</select></div>
    <p class="count" id="count" aria-live="polite"></p>
+   <p class="others-top">Other prompt galleries: <a href="https://prompts.chat">prompts.chat</a>, <a href="https://github.com/danielmiessler/fabric">Fabric</a>, <a href="https://docs.langchain.com/langsmith/manage-prompts">LangChain Prompt Hub</a>, <a href="https://godofprompt.ai/prompt-library">God of Prompt</a>, <a href="https://promptbase.com">PromptBase</a>, <a href="https://code.claude.com/docs/en/prompt-library">Claude Code</a>, <a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/prompt-gallery">Google</a>. <a href="#others">How they compare</a>.</p>
   </form>
  </div>
 </section>
