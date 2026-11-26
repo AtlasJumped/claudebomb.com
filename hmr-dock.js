@@ -3061,7 +3061,7 @@
       'html.hmr-has-hmr .hmr-dock>.hmr-fzbtn,html.hmr-has-hmr #hmr-funsies{display:none!important}',
       '.hmr-dock>#hmr-back,.hmr-dock>#hmr-hmr,.hmr-dock>#hmr-speak,.hmr-dock>#hmr-react,.hmr-dock>#hmr-fwd{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}',
       '.hmr-dock>.hmr-moved{position:fixed!important;margin:0!important;right:auto!important;bottom:auto!important;z-index:99991}',
-      '.hmr-dock>.hmr-dragging{cursor:grabbing!important;transition:none!important;transform:scale(1.12)!important;box-shadow:0 12px 34px rgba(0,0,0,.5)!important}',
+      '.hmr-dock>.hmr-dragging{cursor:grabbing!important;transition:none!important;transform:none!important;box-shadow:0 0 0 4px #fff,0 12px 34px rgba(0,0,0,.55)!important}',
       '.hmr-mw{position:relative!important;max-width:100%}',
       '.hmr-fmic{position:absolute;top:6px;right:6px;z-index:2;width:30px;height:30px;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;border-radius:50%;border:2px solid #fff;background:linear-gradient(135deg,#ec4899,#f59e0b 55%,#22c55e);color:#fff!important;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);-webkit-tap-highlight-color:transparent;touch-action:manipulation;line-height:1}',
       '.hmr-fmic.one{top:50%;transform:translateY(-50%)}',
@@ -3081,10 +3081,13 @@
     function place(b, x, y) {
       var p = clampTo(b, x, y);
       b.classList.add('hmr-moved');
+      // inline !important beats the bar's own '#hmr-... {position:relative!important}' rules
+      [['position', 'fixed'], ['right', 'auto'], ['bottom', 'auto'], ['margin', '0'], ['z-index', '99991']].forEach(function (kv) { b.style.setProperty(kv[0], kv[1], 'important'); });
       b.style.setProperty('left', p[0] + 'px', 'important'); b.style.setProperty('top', p[1] + 'px', 'important');
+      try { var r = b.getBoundingClientRect(), ex = p[0] - r.left, ey = p[1] - r.top; if (Math.abs(ex) > .5 || Math.abs(ey) > .5) { b.style.setProperty('left', (p[0] + ex) + 'px', 'important'); b.style.setProperty('top', (p[1] + ey) + 'px', 'important'); } } catch (e) { }
       return p;
     }
-    function unplace(b) { b.classList.remove('hmr-moved'); b.style.removeProperty('left'); b.style.removeProperty('top'); }
+    function unplace(b) { b.classList.remove('hmr-moved'); ['position', 'right', 'bottom', 'margin', 'z-index', 'left', 'top'].forEach(function (k) { b.style.removeProperty(k); }); }
     function applySaved() {
       var o = lsg(), vw = root.clientWidth || innerWidth, vh = innerHeight;
       IDS.forEach(function (id) {
