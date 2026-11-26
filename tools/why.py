@@ -142,3 +142,44 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
 ''' % (E(last), items)
     pg += FOOT + TAIL % (V, '')
     _w(R, 'library/changes', pg)
+
+# Wikimedia's yearly donation records (Leo's Gmail, donate@wikimedia.org). Amounts only; no name, address or IDs.
+WIKI_GIFTS = [('2021', 'August to December', 5, 22.50), ('2022', '10 months', 10, 45.00), ('2023', 'Every month', 12, 54.00),
+              ('2024', 'Every month', 12, 54.00), ('2025', 'Every month', 12, 54.00)]
+
+def build_wiki(R, E, head, hdr, FOOT, TAIL, V):
+    nav = [('/#bank', 'Our prompts'), ('/library/', 'Search all'), ('/build/', 'Build'), ('/why/', 'Why us')]
+    rows = ''.join('<tr><th scope="row">%s</th><td>%s</td><td>%d gifts of $4.50</td><td>$%.2f</td></tr>' % (y, E(w), n, t) for y, w, n, t in WIKI_GIFTS)
+    tot = sum(t for _, _, _, t in WIKI_GIFTS); cnt = sum(n for _, _, n, _ in WIKI_GIFTS)
+    pg = head('Have you heard of Wikipedia? | claudebomb.com', 'We think Wikipedia is a better version of us: free, ad-free and hugely useful. Here is how we support it, and how you can.', 'https://claudebomb.com/wikipedia/')
+    pg += '<body id="top">\n<a class="skip" href="#give">Skip to the donate buttons</a>\n' + hdr(nav)
+    pg += '''<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <h1 id="h1" class="sm">Have you heard of Wikipedia?</h1>
+  <p class="lead">We think <a href="https://www.wikipedia.org/">Wikipedia</a> is a better version of us.</p>
+  <p style="max-width:46rem">It inspires us. Its work has added a huge amount to humanity's productivity, and it has kept all of it free. We have never had to pay to read it, never had to hand anything over, and never seen an ad on it. It's great, and we have been taking part.</p>
+ </div>
+</section>
+<section class="sec" aria-labelledby="h2">
+ <div class="wrap">
+  <h2 id="h2">How we've been taking part</h2>
+  <div class="cmpw" role="region" aria-labelledby="h2" tabindex="0"><table class="cmp" style="min-width:30rem">
+   <thead><tr><th scope="col">Year</th><th scope="col">When</th><th scope="col">Gifts</th><th scope="col">Total</th></tr></thead>
+   <tbody>%s<tr class="us"><th scope="row">Since 2021</th><td>Monthly</td><td>%d gifts</td><td><b>$%.2f</b></td></tr></tbody>
+  </table></div>
+  <p class="mut sm">From the yearly donation records the Wikimedia Foundation sent us for 2021 to 2025. Amounts in US dollars.</p>
+ </div>
+</section>
+<section class="sec" aria-labelledby="give">
+ <div class="wrap">
+  <h2 id="give">Our ask</h2>
+  <p style="max-width:46rem">If you're not already donating to Wikipedia, please donate to one of us.</p>
+  <div class="btns"><a class="btn cta" href="https://donate.wikimedia.org/">Donate to Wikipedia</a><a class="btn ghost cta" href="#us">Donate to us</a></div>
+  <p id="us" class="mut" style="max-width:46rem">Donating to us is coming soon. We are setting up a way to give where every dollar goes straight back to the cause, and we'll put it here. Until then, Wikipedia is a great choice.</p>
+ </div>
+</section>
+</main>
+''' % (rows, cnt, tot)
+    pg += FOOT + TAIL % (V, '')
+    _w(R, 'wikipedia', pg)

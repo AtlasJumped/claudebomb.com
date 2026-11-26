@@ -53,13 +53,14 @@ FOOT = '''<footer class="foot">
  <div class="wrap">
   <h2>claudebomb</h2>
   <p class="mut">A prompt so big it needs its own website. Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p><a class="btn ghost" href="/wikipedia/">Have you heard of Wikipedia?</a></p>
   <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
   <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
  </div>
 </footer>
 <div class="toast" id="toast" role="status"></div>
 '''
-TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=1"></script>\n%s<script src="/v6/funsies.js?v=1" defer></script>\n'
+TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=2"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/v6/funsies.js?v=1" defer></script>\n'
         '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
@@ -99,6 +100,7 @@ idx += '''<main>
  <div class="wrap">
   <p class="eyebrow"><span class="no">Free</span> Open source. For every AI.</p>
   <h1 id="h1">A prompt so big it needs its own website</h1>
+  <p class="best">The best place on the internet, now and forever, for prompts for any AI, not just Claude. <button class="chip" type="button" data-boom>We just like the name</button></p>
   <p class="lead">Prompting is now a skill, and a great prompt can be copied and pasted. When a few people do the hard work and share it, everyone else gets the time back. Search for a prompt that is already built, ask for one that is not, and help make them all better.</p>
   <form class="find" role="search" onsubmit="return false">
    <div><label for="q">Search prompts</label><input id="q" type="search" placeholder="Try: scam, tutor, contract, family" autocomplete="off"></div>
@@ -401,8 +403,9 @@ LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=[dict(page=p[
 print('library prompts:', LIBN)
 from pages2 import build as build_pages2
 build_pages2(R, E, head, hdr, FOOT, TAIL, V, microw)
-from why import build as build_why
+from why import build as build_why, build_wiki
 build_why(R, E, head, hdr, FOOT, TAIL, V)
+build_wiki(R, E, head, hdr, FOOT, TAIL, V)
 
 bad = []
 for root, _, fs in os.walk(R):
