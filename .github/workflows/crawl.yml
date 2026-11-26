@@ -1,6 +1,7 @@
 name: Daily crawl of open galleries
 # Every day: re-pull the openly licensed galleries (prompts.chat, CC0; Fabric, MIT),
-# record what changed in library/changes.json, rebuild the site and publish.
+# record what changed in library/changes.json, check every other gallery's public page
+# (tools/track_galleries.py, plain script, no AI), rebuild the site and publish.
 on:
   schedule:
     - cron: '17 6 * * *'
@@ -27,6 +28,10 @@ jobs:
           mkdir -p "$RUNNER_TEMP/old" && cp library/sources/*.json "$RUNNER_TEMP/old/"
           python3 tools/import_library.py "$RUNNER_TEMP/pc" "$RUNNER_TEMP/fb"
           python3 tools/crawl_changes.py "$RUNNER_TEMP/old"
+      - name: Check every other gallery (robots.txt first, one visit per site)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/track_galleries.py || echo "tracker failed, site still rebuilds"
       - name: Rebuild the site
         run: python3 tools/build.py
       - name: Publish

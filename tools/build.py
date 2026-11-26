@@ -413,9 +413,10 @@ LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=[dict(page=p[
 print('library prompts:', LIBN)
 from pages2 import build as build_pages2
 build_pages2(R, E, head, hdr, FOOT, TAIL, V, microw)
-from why import build as build_why, build_wiki
+from why import build as build_why, build_wiki, build_tracker
 build_why(R, E, head, hdr, FOOT, TAIL, V)
 build_wiki(R, E, head, hdr, FOOT, TAIL, V)
+build_tracker(R, E, head, hdr, FOOT, TAIL, V)
 
 bad = []
 for root, _, fs in os.walk(R):

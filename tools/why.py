@@ -113,7 +113,7 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
   <h2 id="w2">2. One best place, so you don't have to hunt</h2>
   <p style="max-width:46rem">One search covers our own prompts and %s free prompts from the open galleries. We also link every other gallery we know of, paid ones too, which none of the sites below does as far as we have seen. If a better prompt is somewhere else, we want you to find it.</p>
   <h2 id="w3">3. Updated every day</h2>
-  <p style="max-width:46rem">Every day we pull the openly licensed galleries (<a href="https://prompts.chat/">prompts.chat</a> and <a href="https://github.com/danielmiessler/Fabric">Fabric</a>) and record every prompt that was added, changed or removed. Last checked: %s. <a href="/library/changes/">See what changed</a>. Paid galleries are linked, never copied.</p>
+  <p style="max-width:46rem">Every day we pull the openly licensed galleries (<a href="https://prompts.chat/">prompts.chat</a> and <a href="https://github.com/danielmiessler/Fabric">Fabric</a>) and record every prompt that was added, changed or removed. Last checked: %s. <a href="/library/changes/">See what changed</a>. Paid galleries are linked, never copied. We also log the public changes and new versions of every other gallery on our <a href="/tracker/">gallery tracker</a>.</p>
   <h2 id="w4">4. The best AIs, working on your prompts</h2>
   <p style="max-width:46rem">We are adding the top model from each leading AI company, so they can check each other's work. We are also training models to write better prompts, and we will show the whole workflow here as it runs. These are being added now, and this page will say when each one is live.</p>
   <ol class="flow" aria-label="How a prompt gets better">
@@ -253,3 +253,48 @@ def build_wiki(R, E, head, hdr, FOOT, TAIL, V):
 ''' % (rows, cnt, tot)
     pg += FOOT + TAIL % (V, '')
     _w(R, 'wikipedia', pg)
+
+def build_tracker(R, E, head, hdr, FOOT, TAIL, V):
+    nav = [('/#bank', 'Our prompts'), ('/library/', 'Search all'), ('/build/', 'Build'), ('/why/', 'Why us')]
+    def load(p, d):
+        try: return json.load(open(os.path.join(R, p)))
+        except Exception: return d
+    st = load('library/tracker.json', {'sites': {}}); log = load('library/tracker-log.json', []); finds = load('library/gallery-finds.json', [])
+    rows = ''
+    for s in sorted(st.get('sites', {}).values(), key=lambda x: x.get('name', '').lower()):
+        if s.get('note'): now = s['note']
+        elif s.get('release') or s.get('commit'):
+            now = ('Latest release %s' % s['release'] if s.get('release') else 'No releases') + ('. Last code push %s' % _date(s['commit_date']) if s.get('commit_date') else '')
+        else: now = 'Page loads%s' % (': "%s"' % s['title'] if s.get('title') else '')
+        rows += '<tr><th scope="row"><a href="%s">%s</a></th><td>%s</td><td>%s</td></tr>\n' % (E(s['url']), E(s['name']), E(now), E(_date(s.get('checked', ''))))
+    items = ''
+    for e in log[:60]:
+        for c in e['changes']:
+            items += '<li><b>%s, <a href="%s">%s</a>:</b> %s</li>\n' % (E(_date(e['date'])), E(c['url']), E(c['name']), E(' '.join(c['what'])))
+    fl = ''.join('<li><a href="%s">%s</a> <span class="mut">(%s, found %s)</span></li>\n' % (E(f['url']), E(f['name']), E(f['where']), E(_date(f['found']))) for f in finds[:40])
+    pg = head('Prompt gallery tracker | claudebomb.com', 'A public daily log of what changes on every other prompt gallery: new versions, releases and page changes.', 'https://claudebomb.com/tracker/')
+    pg += '<body id="top">\n<a class="skip" href="#t-h">Skip to the tracker</a>\n' + hdr(nav)
+    pg += '''<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <h1 id="h1">Prompt gallery tracker</h1>
+  <p class="lead">Every day a plain script checks each prompt gallery we know of and logs what changed: new releases, code pushes, new page titles and headings. Every week another script looks for new galleries and adds them here. Last checked: %s.</p>
+  <p class="mut" style="max-width:46rem">It reads each site's robots.txt first, makes one visit per site per day, and never copies anyone's prompts. Prompts from open galleries are in <a href="/library/">our library</a>, with <a href="/library/changes/">their daily changes</a>. How we compare: <a href="/why/">Why claudebomb</a>.</p>
+ </div>
+</section>
+<section class="sec" aria-labelledby="t-h">
+ <div class="wrap">
+  <h2 id="t-h">Every gallery, today</h2>
+  <div class="cmpw" role="region" aria-labelledby="t-h" tabindex="0"><table class="cmp"><thead><tr><th scope="col">Gallery</th><th scope="col">What we see</th><th scope="col">Checked</th></tr></thead><tbody>
+%s</tbody></table></div>
+  <h2 id="l-h">What changed</h2>
+  <ul class="hist">%s</ul>
+  <h2 id="f-h">New galleries found by our weekly search</h2>
+  <ul class="hist">%s</ul>
+ </div>
+</section>
+</main>
+''' % (E(_date(st.get('checked', ''))) or 'not yet', rows or '<tr><td colspan="3">The first check runs tonight.</td></tr>\n',
+       items or '<li>No changes logged yet. The first check records where every gallery stands.</li>', fl or '<li>The first weekly search has not run yet.</li>')
+    pg += FOOT + TAIL % (V, '')
+    _w(R, 'tracker', pg)

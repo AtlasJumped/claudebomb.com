@@ -1,0 +1,35 @@
+name: Weekly search for new prompt galleries
+# Every Monday: search GitHub and Hacker News for new prompt galleries (plain script, no AI),
+# add new finds to the daily tracker's watch list, rebuild and publish.
+on:
+  schedule:
+    - cron: '41 7 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Search for new galleries
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/find_galleries.py
+      - name: Rebuild the site
+        run: python3 tools/build.py
+      - name: Publish
+        run: |
+          git config user.name "claudebomb crawler"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Weekly gallery search: $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git push -q && exit 0; sleep 5; git pull -q --rebase || exit 1; done
+          exit 1
