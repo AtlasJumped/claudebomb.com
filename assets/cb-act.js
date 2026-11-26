@@ -71,12 +71,22 @@
       row.appendChild(l);
     });
     box.appendChild(row);
+    var ua = navigator.userAgent || '', ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), and = /Android/.test(ua);
+    if (ios || and) {
+      var gp = el('p', 'actget');
+      var g = el('a', 'chip', 'No Claude app yet? Get it free'); g.target = '_blank'; g.rel = 'noopener';
+      g.href = ios ? 'https://apps.apple.com/app/id6473753684' : 'https://play.google.com/store/apps/details?id=com.anthropic.claude';
+      g.addEventListener('click', function () { var t = text(); if (t) copy(t).then(function () { toast('Opening the Claude download page. The prompt is on your clipboard.'); }); });
+      gp.appendChild(g);
+      gp.appendChild(el('span', 'actgetn', ' As soon as you can type a message, paste this into the chat. (Pressing this button already puts the text on your clipboard.)'));
+      box.appendChild(gp);
+    }
     var how = el('p', 'acthow');
     how.appendChild(el('b', '', 'After you press one of these, all you do is paste. '));
     how.appendChild(document.createTextNode('Your AI opens. Press and hold your finger in the chat box and tap Paste (on a computer, click in the box and press Ctrl+V, or Cmd+V on a Mac), then press send. Some apps fill the box for you, so then you just press send. (Pressing one of these buttons already puts the text on your clipboard.)'));
     box.appendChild(how);
     box.appendChild(el('p', 'mut small', 'Nothing is sent until you press send there. Votes count for everyone when you are logged in.'));
-    if (!document.getElementById('acthow-css')) { var cs = el('style'); cs.id = 'acthow-css'; cs.textContent = '.acthow{margin:.6rem 0 .3rem;padding:.6rem .75rem;border:2px solid currentColor;border-radius:10px;font-size:.95rem;line-height:1.45}'; document.head.appendChild(cs); }
+    if (!document.getElementById('acthow-css')) { var cs = el('style'); cs.id = 'acthow-css'; cs.textContent = '.acthow{margin:.6rem 0 .3rem;padding:.6rem .75rem;border:2px solid currentColor;border-radius:10px;font-size:.95rem;line-height:1.45}.actget{margin:.55rem 0 .2rem;font-weight:700;line-height:1.45}'; document.head.appendChild(cs); }
   }
   function init() { Array.prototype.forEach.call(document.querySelectorAll('[data-act]'), mount); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

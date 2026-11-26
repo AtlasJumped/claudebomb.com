@@ -188,7 +188,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
-<script src="/assets/cb-act.js?v=3"></script>
+<script src="/assets/cb-act.js?v=4"></script>
 <script src="/assets/cb-gate.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.8.2" data-site="claudebomb.com" defer></script>
