@@ -160,9 +160,9 @@ I am not sure of other specific sources, so I leave them out. A recent systemati
 </footer>
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/cb.js?v=6"></script>
-<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb-config.js?v=2"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=3"></script>
+<script src="/assets/cb-account.js?v=4"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "research-brief", "title": "A research brief that grades its own sources", "text": "Research this question for me: [QUESTION]. Why I am asking and what I will do with the answer: [CONTEXT]. If you can search the web, do; if not, say so and work only from what you know, with your knowledge cutoff stated.\n\nMethod:\n1. Restate the question precisely and list the 3 to 6 sub-questions that together answer it.\n2. For each sub-question, gather evidence from the strongest sources available: systematic reviews and official data first, then peer-reviewed studies, then expert bodies, then reputable journalism. Use other sources only if nothing better exists, and label them.\n3. For every claim, give the source, the year, and a grade: Strong (consistent, high-quality evidence), Moderate, Weak, or Disputed.\n4. Show where good sources disagree, and the most likely reason (different populations, methods, dates, or interests).\n5. Separate what is known, what is likely, and what is unknown.\n\nDeliver:\n- A one-paragraph answer up top, with your confidence.\n- A table of key claims: claim, grade, sources.\n- What would change the answer.\n- A short list of the 5 best sources to read myself, with links if you have them.\n\nRules: never invent a source, a quote, a number, or a link. If you are not sure a source exists, leave it out and say what kind of source would settle the point. Plain words; define any technical term once.\n", "load": false, "paths": ["prompts/research-brief.md"], "feats": [{"name": "Recent only", "want": "Prefer sources from the last 2 years and say the date of each."}, {"name": "One-page brief", "want": "Fit the final brief on one page.", "dont": "Give the full brief with every source."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -201,8 +201,8 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
-<script src="/assets/cb-act.js?v=1"></script>
+<script src="/assets/cb-act.js?v=2"></script>
 <script src="/assets/cb-gate.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
-<script src="/hmr-dock.js?v=6.6.3" data-site="claudebomb.com" defer></script>
+<script src="/hmr-dock.js?v=6.7.0" data-site="claudebomb.com" defer></script>
 </body></html>

@@ -164,9 +164,9 @@ This is general information, not legal advice. For a large or long contract, a c
 </footer>
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/cb.js?v=6"></script>
-<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb-config.js?v=2"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=3"></script>
+<script src="/assets/cb-account.js?v=4"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "paperwork-explainer", "title": "Explain this bill, contract, or letter line by line", "text": "Read the document I am giving you and explain it to me in plain language. I am not a lawyer or accountant. Treat this as general information, not legal or financial advice, and tell me when I should ask a professional.\n\n[PASTE THE TEXT OR ATTACH THE FILE. SAY WHAT IT IS AND WHAT I AM BEING ASKED TO DO, FOR EXAMPLE SIGN, PAY, OR RENEW.]\n\nGive me:\n1. The point in two sentences: what this is, and what it wants from me.\n2. Money: every amount, fee, rate, penalty, and charge, in a table with what it is for and when it applies. Point out anything that can go up, renews by itself, or is charged later.\n3. Dates: every deadline, notice period, and renewal date, soonest first.\n4. My obligations and theirs, side by side.\n5. Traps: clauses that are unusual, one-sided, hard to cancel, or easy to miss, with the exact words quoted and why they matter.\n6. What is missing that I would expect to see.\n7. Questions to ask before I sign or pay, worded so I can send them as they are.\n8. A short draft reply or email if I need to dispute, cancel, or ask for changes.\n\nQuote the exact text for every claim you make about the document. If a part is unclear or you cannot read it, say so instead of guessing.\n", "load": false, "paths": ["prompts/paperwork-explainer.md"], "feats": [{"name": "Compare two versions", "want": "I will give you two versions. Show what changed between them, line by line."}, {"name": "Draft a reply", "want": "After the explanation, draft a short, polite reply asking my questions."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -205,8 +205,8 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
-<script src="/assets/cb-act.js?v=1"></script>
+<script src="/assets/cb-act.js?v=2"></script>
 <script src="/assets/cb-gate.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
-<script src="/hmr-dock.js?v=6.6.3" data-site="claudebomb.com" defer></script>
+<script src="/hmr-dock.js?v=6.7.0" data-site="claudebomb.com" defer></script>
 </body></html>

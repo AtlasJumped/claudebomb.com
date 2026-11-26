@@ -105,9 +105,9 @@
 </footer>
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/cb.js?v=6"></script>
-<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb-config.js?v=2"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=3"></script>
+<script src="/assets/cb-account.js?v=4"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "personal-dashboard", "title": "Personal dashboard (flagship)", "text": "", "load": true, "paths": ["setup/claude-setup-guide.md", "dashboard/claudebomb-dashboard.md"], "feats": [{"name": "Automated setup", "want": "Use automated setup: do every step for me and ask yes or no on each choice.", "dont": "Use manual setup: let me pick every step myself."}, {"name": "Money tab", "want": "Include the read-only Money tab if you can reach my spending.", "dont": "Leave out the Money tab entirely."}, {"name": "Family question", "want": "Ask the optional family and generations question.", "dont": "Skip the family and generations question."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -146,8 +146,8 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
-<script src="/assets/cb-act.js?v=1"></script>
+<script src="/assets/cb-act.js?v=2"></script>
 <script src="/assets/cb-gate.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
-<script src="/hmr-dock.js?v=6.6.3" data-site="claudebomb.com" defer></script>
+<script src="/hmr-dock.js?v=6.7.0" data-site="claudebomb.com" defer></script>
 </body></html>
