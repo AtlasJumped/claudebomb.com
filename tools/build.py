@@ -195,6 +195,7 @@ idx += '''<main>
   <h2 id="vision-h">2036: everyone's prompt bank</h2>
   <p class="lead">Picture 2036. Humanity has a free, public prompt bank that everyone owns and everyone upgrades. When you have something complicated to ask an AI, this is the first place you go.</p>
   <p style="max-width:46rem">One-sentence requests will keep getting easier. A specific workflow will still do better. "Make me a dashboard" gets you a dashboard. A long prompt gets you the exact dashboard, with the features and tools you want. That gap is why this site will stay useful.</p>
+  <p style="max-width:46rem">This page is about prompts. For the bigger picture, where all of this is heading by 2036, visit <a href="https://endgame.life">endgame.life</a>.</p>
   <h3>How it works, step by step</h3>
   <div class="demo">
    <ol class="steps" id="steps">''' + steps_btns + '''</ol>
