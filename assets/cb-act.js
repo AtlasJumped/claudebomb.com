@@ -66,12 +66,17 @@
         var u = a.q ? a.q + encodeURIComponent(t) : '';
         var pre = u && u.length <= a.max;
         l.href = pre ? u : a.home;
-        copy(t).then(function () { toast(pre ? 'Opening ' + a.n + '. The prompt is also copied, so paste it if the box is empty.' : 'Prompt copied. Paste it into ' + a.n + '.'); });
+        copy(t).then(function () { toast(pre ? 'Opening ' + a.n + '. The prompt is on your clipboard too. If the box is empty, just paste it.' : 'Opening ' + a.n + '. The prompt is on your clipboard. Just paste it: press and hold in the chat box, then tap Paste.'); });
       });
       row.appendChild(l);
     });
     box.appendChild(row);
-    box.appendChild(el('p', 'mut small', 'Open in fills the AI’s box where that app allows it and always copies the prompt too. Nothing is sent until you press send there. Votes count for everyone when you are logged in.'));
+    var how = el('p', 'acthow');
+    how.appendChild(el('b', '', 'After you press one of these, all you do is paste. '));
+    how.appendChild(document.createTextNode('Your AI opens. Press and hold your finger in the chat box and tap Paste (on a computer, click in the box and press Ctrl+V, or Cmd+V on a Mac), then press send. Some apps fill the box for you, so then you just press send. (Pressing one of these buttons already puts the text on your clipboard.)'));
+    box.appendChild(how);
+    box.appendChild(el('p', 'mut small', 'Nothing is sent until you press send there. Votes count for everyone when you are logged in.'));
+    if (!document.getElementById('acthow-css')) { var cs = el('style'); cs.id = 'acthow-css'; cs.textContent = '.acthow{margin:.6rem 0 .3rem;padding:.6rem .75rem;border:2px solid currentColor;border-radius:10px;font-size:.95rem;line-height:1.45}'; document.head.appendChild(cs); }
   }
   function init() { Array.prototype.forEach.call(document.querySelectorAll('[data-act]'), mount); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
