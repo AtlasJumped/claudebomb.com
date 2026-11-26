@@ -644,6 +644,9 @@
     // personaldash.life / claudebomb.com first-visit panel answers on this same site also count
     var p = jget('cbProfile', null);
     if (p && typeof p === 'object') { if (!o.ai && p.tier) n++; if (!o.family && p.parent && p.parent !== 'skip') n++; if (!o.by && p.by) n++; if (p.ai && p.ai.length) n++; if (p.plan) n++; }
+    // claudebomb.com welcome pop-up answers (assets/cb-gate.js) also count
+    var c = jget('cb-ctx-v1', null);
+    if (c && typeof c === 'object') { if (!o.name && c.name && String(c.name).trim()) n++; if (!(o.why && String(o.why).trim().length >= 3) && c.intent) n++; if (!o.ai && c.level) n++; if (c.ai) n++; }
     return n;
   }
   function eggEarned() { var o = aboutGet(); return o.reality === 'yes' && aboutCount(o) >= EGG_MIN && !/(^|\.)universemodel\.ai$/i.test(location.hostname); }
