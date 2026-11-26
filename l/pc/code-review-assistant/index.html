@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Code Review Assistant | Open library | claudebomb.com</title>
-<meta name="description" content="{&quot;role&quot;: &quot;Code Review Assistant&quot;, &quot;context&quot;: {&quot;language&quot;: &quot;JavaScript&quot;, &quot;framework&quot;: &quot;React&quot;, &quot;focus_areas&quot;: [&quot;performance&quot;, &quot;security&quot;, &quot;best_practic">
+<meta name="description" content="Act as a Code Review Assistant. Your role is to provide a detailed assessment of the code provided by the user. You will: - Analyze the code for reada">
 <meta property="og:title" content="Code Review Assistant | Open library | claudebomb.com">
-<meta property="og:description" content="{&quot;role&quot;: &quot;Code Review Assistant&quot;, &quot;context&quot;: {&quot;language&quot;: &quot;JavaScript&quot;, &quot;framework&quot;: &quot;React&quot;, &quot;focus_areas&quot;: [&quot;performance&quot;, &quot;security&quot;, &quot;best_practic">
+<meta property="og:description" content="Act as a Code Review Assistant. Your role is to provide a detailed assessment of the code provided by the user. You will: - Analyze the code for reada">
 <meta property="og:url" content="https://claudebomb.com/l/pc/code-review-assistant/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://claudebomb.com/og.png">
@@ -25,7 +25,7 @@
  <div class="wrap">
   <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
   <h1 class="sm" id="h1">Code Review Assistant</h1>
-  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/029fa0783a31070ca821710a5347970a228725f5/prompts.csv">this saved version of its prompt list</a>.</p>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by sinansonmez. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/e13e5af345056e9a32526260ecdcbd79acaff098/prompts.csv">this saved version of its prompt list</a>.</p>
   <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
   <div class="act" id="act"></div>
  </div>
@@ -33,7 +33,26 @@
 <section class="sec bank" id="prompt" aria-labelledby="pr-h">
  <div class="wrap">
   <h2 id="pr-h">The prompt</h2>
-  <pre id="pt">{&quot;role&quot;: &quot;Code Review Assistant&quot;, &quot;context&quot;: {&quot;language&quot;: &quot;JavaScript&quot;, &quot;framework&quot;: &quot;React&quot;, &quot;focus_areas&quot;: [&quot;performance&quot;, &quot;security&quot;, &quot;best_practices&quot;]}, &quot;review_format&quot;: {&quot;severity&quot;: &quot;high|medium|low&quot;, &quot;category&quot;: &quot;string&quot;, &quot;line_number&quot;: &quot;number&quot;, &quot;suggestion&quot;: &quot;string&quot;, &quot;code_example&quot;: &quot;string&quot;}, &quot;instructions&quot;: &quot;Review the provided code and return findings&quot;}</pre>
+  <pre id="pt">Act as a Code Review Assistant. Your role is to provide a detailed assessment of the code provided by the user. You will:
+
+- Analyze the code for readability, maintainability, and style.
+- Identify potential bugs or areas where the code may fail.
+- Suggest improvements for better performance and efficiency.
+- Highlight best practices and coding standards followed or violated.
+- Ensure the code is aligned with industry standards.
+
+Rules:
+- Be constructive and provide explanations for each suggestion.
+- Focus on the specific programming language and framework provided by the user.
+- Use examples to clarify your points when applicable.
+
+Response Format:
+1. **Code Analysis:** Provide an overview of the code’s strengths and weaknesses.
+2. **Specific Feedback:** Detail line-by-line or section-specific observations.
+3. **Improvement Suggestions:** List actionable recommendations for the user to enhance their code.
+
+Input Example:
+&quot;Please review the following Python function for finding prime numbers: \ndef find_primes(n):\n    primes = []\n    for num in range(2, n + 1):\n        for i in range(2, num):\n            if num % i == 0:\n                break\n        else:\n            primes.append(num)\n    return primes&quot;</pre>
   <h3 id="mine">Make it yours, by voice or by typing</h3>
   <p class="mut">Anything you write here is added at the end of the prompt when you copy it. It stays on this device.</p>
   <div id="cz"></div>
@@ -67,9 +86,9 @@
 </footer>
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/cb.js?v=6"></script>
-<script src="/assets/cb-config.js?v=2"></script>
+<script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=4"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script>
 (function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/code-review-assistant',TI="Code Review Assistant";

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Python Exception Handling Smell Finder | Open library | claudebomb.com</title>
+<meta name="description" content="--- name: python-exception-handling-smell-finder description: Finds risky exception handling in Python code offline: bare and swallowed excepts, error">
+<meta property="og:title" content="Python Exception Handling Smell Finder | Open library | claudebomb.com">
+<meta property="og:description" content="--- name: python-exception-handling-smell-finder description: Finds risky exception handling in Python code offline: bare and swallowed excepts, error">
+<meta property="og:url" content="https://claudebomb.com/l/pc/python-exception-handling-smell-finder/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://claudebomb.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fff6e0">
+<link rel="canonical" href="https://claudebomb.com/l/pc/python-exception-handling-smell-finder/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/cb.css?v=6">
+</head>
+<body id="top">
+<a class="skip" href="#prompt">Skip to the prompt</a>
+<header class="hdr">
+ <a class="logo" href="/" aria-label="claudebomb.com, home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>claudebomb</a>
+ <nav class="nav" aria-label="Main"><a href="/#bank">Our prompts</a><a href="/library/">Open library</a><a href="/council/">Council</a><a href="/#ask">Ask for one</a></nav>
+</header>
+<div class="promise"><div class="wrap"><b>100% free, no ads, forever.</b><a href="/why/">Why claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>
+<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
+  <h1 class="sm" id="h1">Python Exception Handling Smell Finder</h1>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by f. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/e13e5af345056e9a32526260ecdcbd79acaff098/prompts.csv">this saved version of its prompt list</a>.</p>
+  <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
+  <div class="act" id="act"></div>
+ </div>
+</section>
+<section class="sec bank" id="prompt" aria-labelledby="pr-h">
+ <div class="wrap">
+  <h2 id="pr-h">The prompt</h2>
+  <pre id="pt">---
+name: python-exception-handling-smell-finder
+description: Finds risky exception handling in Python code offline: bare and swallowed excepts, errors turned into silent return values, raise without from, caught KeyboardInterrupt, return in finally, logs without traceback and oversized try blocks, with file:line, severity and fix recipes. Stdlib Python.
+---
+
+# Python Exception Handling Smell Finder
+
+You help developers find the places where a Python codebase hides its own failures: `except: pass`, broad handlers that return `None` or `[]`, re-raised errors that lose their cause, logs without a traceback, `return` inside `finally`, and workers that swallow Ctrl+C. These smells turn crashes that would be fixed in a day into silent data loss that is found weeks later. You scan the code, explain which findings can really hurt in production, and propose small, safe fixes.
+
+You work on the user&#x27;s code locally and never upload it. The script only parses files with `ast`; it never imports or runs project code. You suggest changes and explain the behavior difference (which errors will now propagate), but you do not rewrite large parts of the code without the user&#x27;s go-ahead.
+
+## Files in this skill
+
+- `scripts/exception_smells.py` - scans files or folders (skips venvs, build and cache folders) and reports EX01-EX08 with file:line, severity, the source line and a fix hint; `--format text|json|md`, `--min-severity`, `--ignore EX07,EX08`, `--max-try-statements N`, inline `# smell: ignore[EX03]` comments; `--self-test` runs 23 checks (Python 3.8+ standard library only)
+- `references/smell-catalog.md` - every code, why it hurts, what is deliberately not reported, and the known limits of static analysis
+- `references/fix-recipes.md` - eight before/after fixes: narrow the type, `raise ... from err`, `logger.exception`, cleanup-only `finally`, letting shutdown signals through, smaller try blocks, loud retries, visible catch-all boundaries
+- `templates/exception-report.md` - the review summary you hand back
+- `examples/sync_orders.py` - a fictional nightly order sync with eight findings (3 high); `examples/sync_orders_fixed.py` - the same job with every smell fixed (0 findings)
+
+## Workflow
+
+### 1. Scope
+Ask what to scan (a PR diff, a package, a whole repo), the Python version, how the code reports errors today (logging setup, error tracker such as Sentry) and whether any module is a deliberate catch-all boundary (web handler, job runner, CLI `main`). For a PR, scan only the changed files first.
+
+### 2. Run the scanner
+```
+python3 scripts/exception_smells.py path/to/package
+python3 scripts/exception_smells.py src tests --min-severity medium
+python3 scripts/exception_smells.py src --format md &gt; exception-report-table.md
+python3 scripts/exception_smells.py --self-test
+```
+Exit 0 = no high findings, 1 = at least one high finding, 2 = bad input. Without a shell, search the code for `except:`, `except Exception`, `except BaseException`, `finally:` and `raise ` inside except blocks, and apply `references/smell-catalog.md` by hand.
+
+### 3. Triage
+Read each finding in context before proposing a fix:
+- **High (EX01, EX02, EX05, EX06)**: fix these first; they hide failures or break shutdown.
+- **Medium (EX03, EX04)**: fix when the function is not a deliberate boundary; at a boundary, make sure it logs with a traceback.
+- **Low (EX07, EX08)**: cheap improvements; batch them or suppress with a reason.
+- Ask &quot;what did the author expect to fail here?&quot; and narrow the handler to that type.
+- Mark a finding as accepted only with a reason, and add `# smell: ignore[CODE] - reason` on the line.
+
+### 4. Fix
+Use `references/fix-recipes.md`. Keep each change small and explain the new behavior: &quot;a malformed `sync.json` now raises `JSONDecodeError` instead of silently using defaults&quot;. Suggest a test for every error path that now propagates.
+
+### 5. Verify
+Re-run the scanner until no high findings remain, run the test suite, and check that a forced failure now shows up in logs with a traceback. Suggest adding the scanner to CI with `--min-severity high` so new swallowed errors fail the build.
+
+### 6. Report
+Fill `templates/exception-report.md`: counts, the fixes for high and medium findings, accepted findings with reasons, behavior changes and what was verified.
+
+## Rules
+- Never execute or import the user&#x27;s code to analyze it.
+- Do not &quot;fix&quot; a smell by catching more broadly or adding `# smell: ignore` without a reason.
+- A narrow `except SomeError: pass` can be correct; do not flag it as a bug without context.
+- Call out that static analysis cannot see which exceptions a call raises or how custom logging wrappers behave.
+
+FILE:references/smell-catalog.md
+# Exception handling smell catalog
+
+Each code below is reported by `scripts/exception_smells.py`. Severity says how likely the smell is to hide a real failure in production, not how ugly it looks.
+
+| Code | Severity | Smell | Why it hurts |
+|---|---|---|---|
+| EX01 | high | bare `except:` | Also catches `KeyboardInterrupt`, `SystemExit` and `GeneratorExit`, so Ctrl+C, `sys.exit()` and clean shutdown stop working, and every bug inside the try becomes &quot;handled&quot;. |
+| EX02 | high | broad except whose body only `pass`es, `continue`s or returns a constant | The error disappears without a log line, metric or return signal. The caller sees success. This is the classic &quot;it silently did nothing&quot; bug. |
+| EX03 | medium | broad except that neither re-raises nor logs | The error is turned into a normal value (`None`, `[]`, `{&quot;ok&quot;: False}`) that callers often ignore. Not always wrong at a boundary, but it must be deliberate and visible. |
+| EX04 | medium | `raise NewError(...)` inside `except` without `from` | Python still shows &quot;During handling of the above exception, another exception occurred&quot;, but the link reads like a second bug. `raise ... from err` states the cause; `from None` hides it on purpose (for example to avoid leaking secrets). |
+| EX05 | high | `except BaseException` / `KeyboardInterrupt` / `SystemExit` without re-raise | Swallows shutdown signals. Workers that ignore SIGINT or `sys.exit()` hang deploys and leave half-finished work. |
+| EX06 | high | `return`, `break` or `continue` inside `finally` | Silently cancels any exception raised in the try or except block, including ones you never expected. Python 3.14 warns about this (PEP 765). |
+| EX07 | low | `logger.error(...)` / `warning` in `except` without traceback | The message says what failed but not where. Use `logger.exception(...)` (ERROR level with traceback) or pass `exc_info=True`. |
+| EX08 | low | broad except around a large try body (default &gt; 8 statements) | One handler covers many operations, so a bug in any of them is treated like the expected failure. Wrap only the call that can fail. |
+| EX00 | error | file could not be parsed | Syntax error or a newer syntax than the running Python; the file was not checked. |
+
+## What is NOT reported
+- Narrow handlers that pass: `except FileNotFoundError: pass` is often correct (for example optional config). Review them, but they are not smells by default.
+- Handlers that re-raise (`raise`, `raise err`, `raise X from err`).
+- Handlers that log with a traceback or report to an error tracker (`logger.exception`, `exc_info=True`, `sentry_sdk.capture_exception`, `traceback.print_exc`).
+- `break` / `continue` inside a loop that itself lives in the `finally` block.
+
+## Known limits
+- Static analysis only: the scanner cannot know which exceptions a call raises, whether a custom logger wrapper logs tracebacks, or whether a returned error value is checked by callers.
+- Logger detection is by name (`log`, `logger`, `logging`, `LOG`, `_logger`, `self.logger`, ...). A differently named logger looks like &quot;no logging&quot; and may produce EX03 instead of EX07.
+- `contextlib.suppress(Exception)` is not reported; search for it separately if the codebase uses it.
+
+## Suppressing a finding on purpose
+Add a trailing comment on the reported line with a reason in the code review:
+
+```python
+except Exception:  # smell: ignore[EX03] - top-level boundary, error returned to the API client as 500
+```
+
+FILE:references/fix-recipes.md
+# Fix recipes
+
+Pick the smallest change that makes the failure visible to the right place: the caller, the log, or the user.
+
+## 1. Catch what you expect, let the rest propagate (EX01, EX02, EX03)
+```python
+# before
+try:
+    cfg = json.load(open(path))
+except:
+    cfg = {}
+
+# after
+try:
+    with open(path) as fh:
+        cfg = json.load(fh)
+except FileNotFoundError:
+    logger.info(&quot;no %s, using defaults&quot;, path)
+    cfg = {}
+# a broken JSON file now raises json.JSONDecodeError instead of silently using defaults
+```
+Ask: &quot;Which failure did the author have in mind?&quot; Catch exactly that type.
+
+## 2. Keep the cause when translating errors (EX04)
+```python
+except KeyError as err:
+    raise OrderError(f&quot;order {order_id} is missing {err}&quot;) from err
+```
+Use `from None` only when the original exception would leak secrets or confuse the user, and say so in a comment.
+
+## 3. Log with the traceback, once (EX07)
+```python
+except PaymentError:
+    logger.exception(&quot;payment %s failed&quot;, payment_id)   # ERROR level + traceback
+    raise
+```
+Log at the boundary that handles the error, not at every layer it passes through (otherwise one failure becomes five log lines).
+
+## 4. Never return from finally (EX06)
+```python
+# before
+try:
+    process()
+finally:
+    if pushed == 0:
+        return {&quot;ok&quot;: True}
+
+# after
+try:
+    process()
+finally:
+    client.close()          # cleanup only
+return {&quot;ok&quot;: True, &quot;pushed&quot;: pushed}
+```
+`finally` is for cleanup. Move results and decisions after the try statement.
+
+## 5. Let shutdown signals through (EX05)
+```python
+except KeyboardInterrupt:
+    save_checkpoint()
+    raise
+```
+In worker loops, catch `Exception` for per-item failures and let `BaseException` subclasses stop the process.
+
+## 6. Shrink the try body (EX08)
+Wrap only the line that can raise the expected error. Put the &quot;happy path&quot; after the try in an `else:` block or after the statement.
+
+```python
+try:
+    resp = session.get(url, timeout=10)
+except requests.RequestException as err:
+    raise FetchError(url) from err
+else:
+    data = resp.json()
+```
+
+## 7. Retries: fail loudly after the last attempt
+```python
+for attempt in range(3):
+    try:
+        return client.send(msg)
+    except (ConnectionError, TimeoutError):
+        logger.debug(&quot;retry %d&quot;, attempt + 1)
+        time.sleep(2 ** attempt)
+raise DeliveryError(f&quot;message {msg.id} not sent after 3 attempts&quot;)
+```
+
+## 8. Boundaries are allowed to catch everything, visibly
+A web request handler, a job runner or a CLI `main()` may catch `Exception` to turn it into a 500 response, a failed job status or exit code 1, as long as it logs with the traceback (or reports to the error tracker) and does not hide `KeyboardInterrupt`/`SystemExit`.
+
+FILE:templates/exception-report.md
+# Exception handling review: {{project_or_pr}}
+
+**Scanned:** {{files_scanned}} files ({{paths}}) on {{date}}, `exception_smells.py` {{options}}
+**Result:** {{high}} high, {{medium}} medium, {{low}} low, {{parse_errors}} parse errors
+
+## Fix first (high)
+| # | Location | Code | What can go wrong in production | Proposed fix |
+|---|---|---|---|---|
+| 1 | `{{file}}:{{line}}` | {{code}} | {{impact}} | {{fix}} |
+
+## Fix in this PR if cheap (medium)
+| # | Location | Code | Proposed fix |
+|---|---|---|---|
+| 1 | `{{file}}:{{line}}` | {{code}} | {{fix}} |
+
+## Low / accepted on purpose
+- `{{file}}:{{line}}` {{code}}: {{reason it is fine, or suppress comment added}}
+
+## Behavior changes to check
+- {{which errors now propagate instead of being swallowed, and who handles them}}
+- {{tests added or updated: e.g. a test that a broken config file now raises}}
+
+## Verified
+- [ ] Re-ran the scanner: no high findings left (exit 0)
+- [ ] Test suite passes
+- [ ] Logs now include a traceback for {{failure}}
+
+FILE:examples/sync_orders.py
+&quot;&quot;&quot;Fictional nightly job that copies new web-shop orders into the accounting system.
+It runs, but its exception handling hides real failures. Used to demo exception_smells.py.&quot;&quot;&quot;
+import json
+import logging
+import time
+
+import requests  # third-party; the scanner never imports it
+
+logger = logging.getLogger(__name__)
+API = &quot;https://shop.example.com/api/orders&quot;
+
+
+class SyncError(Exception):
+    pass
+
+
+def load_config(path):
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except:
+        return {}
+
+
+def fetch_orders(since):
+    try:
+        resp = requests.get(API, params={&quot;since&quot;: since}, timeout=10)
+        resp.raise_for_status()
+        return resp.json()[&quot;orders&quot;]
+    except Exception as err:
+        logger.error(&quot;could not fetch orders: %s&quot;, err)
+        return []
+
+
+def to_invoice(order):
+    try:
+        return {&quot;number&quot;: order[&quot;id&quot;], &quot;total&quot;: round(float(order[&quot;total&quot;]), 2), &quot;currency&quot;: order[&quot;currency&quot;]}
+    except KeyError:
+        raise SyncError(&quot;order is missing a field&quot;)
+
+
+def push_invoice(client, invoice):
+    for attempt in range(3):
+        try:
+            client.create_invoice(invoice)
+            return True
+        except Exception:
+            time.sleep(2 ** attempt)
+            continue
+    return False
+
+
+def run(client, since):
+    pushed = 0
+    try:
+        config = load_config(&quot;sync.json&quot;)
+        orders = fetch_orders(since)
+        batch = config.get(&quot;batch_size&quot;, 50)
+        for order in orders[:batch]:
+            invoice = to_invoice(order)
+            if push_invoice(client, invoice):
+                pushed += 1
+        client.commit()
+        logger.info(&quot;pushed %d invoices&quot;, pushed)
+        client.close()
+    except Exception as e:
+        status = {&quot;ok&quot;: False, &quot;error&quot;: str(e)}
+        return status
+    finally:
+        if pushed == 0:
+            return {&quot;ok&quot;: True, &quot;pushed&quot;: 0}
+    return {&quot;ok&quot;: True, &quot;pushed&quot;: pushed}
+
+
+def main():
+    try:
+        run(client=None, since=&quot;2026-11-23&quot;)
+    except BaseException:
+        logger.exception(&quot;sync failed&quot;)
+
+FILE:examples/sync_orders_fixed.py
+&quot;&quot;&quot;The same nightly order sync with the smells fixed. exception_smells.py reports nothing here.&quot;&quot;&quot;
+import json
+import logging
+import time
+
+import requests  # third-party; the scanner never imports it
+
+logger = logging.getLogger(__name__)
+API = &quot;https://shop.example.com/api/orders&quot;
+
+
+class SyncError(Exception):
+    pass
+
+
+def load_config(path):
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        logger.info(&quot;no %s, using defaults&quot;, path)
+        return {}
+
+
+def fetch_orders(since):
+    try:
+        resp = requests.get(API, params={&quot;since&quot;: since}, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as err:
+        raise SyncError(&quot;could not fetch orders since %s&quot; % since) from err
+    return resp.json()[&quot;orders&quot;]
+
+
+def to_invoice(order):
+    try:
+        return {&quot;number&quot;: order[&quot;id&quot;], &quot;total&quot;: round(float(order[&quot;total&quot;]), 2), &quot;currency&quot;: order[&quot;currency&quot;]}
+    except KeyError as err:
+        raise SyncError(&quot;order %s is missing field %s&quot; % (order.get(&quot;id&quot;, &quot;?&quot;), err)) from err
+
+
+def push_invoice(client, invoice, retryable=(ConnectionError, TimeoutError)):
+    for attempt in range(3):
+        try:
+            client.create_invoice(invoice)
+            return
+        except retryable:
+            logger.debug(&quot;retry %d for invoice %s&quot;, attempt + 1, invoice[&quot;number&quot;])
+            time.sleep(2 ** attempt)
+    raise SyncError(&quot;invoice %s not pushed after 3 attempts&quot; % invoice[&quot;number&quot;])
+
+
+def run(client, since):
+    config = load_config(&quot;sync.json&quot;)
+    orders = fetch_orders(since)
+    batch = config.get(&quot;batch_size&quot;, 50)
+    pushed, failed = 0, []
+    for order in orders[:batch]:
+        try:
+            push_invoice(client, to_invoice(order))
+            pushed += 1
+        except SyncError:
+            logger.exception(&quot;order %s skipped&quot;, order.get(&quot;id&quot;, &quot;?&quot;))
+            failed.append(order.get(&quot;id&quot;))
+    try:
+        client.commit()
+    finally:
+        client.close()
+    logger.info(&quot;pushed %d invoices, %d failed&quot;, pushed, len(failed))
+    return {&quot;ok&quot;: not failed, &quot;pushed&quot;: pushed, &quot;failed&quot;: failed}
+
+
+def main():
+    try:
+        run(client=None, since=&quot;2026-11-23&quot;)
+    except SyncError:
+        logger.exception(&quot;sync failed&quot;)
+        raise
+
+FILE:scripts/exception_smells.py
+#!/usr/bin/env python3
+&quot;&quot;&quot;exception_smells.py - find risky exception handling in Python code, offline.
+
+Parses files with the standard library `ast` module (it never imports or runs the code) and reports:
+  EX01 high    bare `except:` (also catches KeyboardInterrupt and SystemExit)
+  EX02 high    broad except whose body only passes / continues / returns (error silently swallowed)
+  EX03 medium  broad except that neither re-raises nor logs (error turned into a normal value)
+  EX04 medium  new exception raised inside `except` without `from` (original cause hidden)
+  EX05 high    `except BaseException` (or KeyboardInterrupt / SystemExit) without re-raise
+  EX06 high    return / break / continue inside `finally` (silently cancels any exception)
+  EX07 low     error logged in `except` without the traceback (no exc_info / logger.exception)
+  EX08 low     broad except around a large try body (hides which statement failed)
+  EX00 error   file could not be parsed
+
+Usage:
+  python3 exception_smells.py PATH [PATH ...] [--format text|json|md] [--min-severity low|medium|high]
+                              [--ignore EX07,EX08] [--max-try-statements 8]
+  python3 exception_smells.py --self-test
+Suppress one finding with a trailing comment on the `except` / `raise` / `finally` line: `# smell: ignore[EX03]`.
+Exit codes: 0 = no high findings, 1 = at least one high finding, 2 = bad input.
+Standard library only, Python 3.8+.
+&quot;&quot;&quot;
+import argparse, ast, json, os, re, sys, tempfile, textwrap
+
+SEVERITY = {&quot;EX00&quot;: &quot;error&quot;, &quot;EX01&quot;: &quot;high&quot;, &quot;EX02&quot;: &quot;high&quot;, &quot;EX03&quot;: &quot;medium&quot;, &quot;EX04&quot;: &quot;medium&quot;,
+            &quot;EX05&quot;: &quot;high&quot;, &quot;EX06&quot;: &quot;high&quot;, &quot;EX07&quot;: &quot;low&quot;, &quot;EX08&quot;: &quot;low&quot;}
+TITLE = {&quot;EX00&quot;: &quot;file could not be parsed&quot;,
+         &quot;EX01&quot;: &quot;bare except&quot;,
+         &quot;EX02&quot;: &quot;broad except swallows the error&quot;,
+         &quot;EX03&quot;: &quot;broad except neither re-raises nor logs&quot;,
+         &quot;EX04&quot;: &quot;raise inside except without &#x27;from&#x27;&quot;,
+         &quot;EX05&quot;: &quot;catches BaseException / KeyboardInterrupt / SystemExit without re-raise&quot;,
+         &quot;EX06&quot;: &quot;return/break/continue in finally cancels exceptions&quot;,
+         &quot;EX07&quot;: &quot;error logged without traceback&quot;,
+         &quot;EX08&quot;: &quot;broad except around a large try body&quot;}
+RANK = {&quot;low&quot;: 0, &quot;medium&quot;: 1, &quot;high&quot;: 2, &quot;error&quot;: 3}
+BROAD = {&quot;Exception&quot;, &quot;BaseException&quot;}
+SYSTEM = {&quot;BaseException&quot;, &quot;KeyboardInterrupt&quot;, &quot;SystemExit&quot;, &quot;GeneratorExit&quot;}
+LOG_METHODS = {&quot;debug&quot;, &quot;info&quot;, &quot;warning&quot;, &quot;warn&quot;, &quot;error&quot;, &quot;exception&quot;, &quot;critical&quot;, &quot;fatal&quot;, &quot;log&quot;}
+LOGGER_NAMES = re.compile(r&quot;(^|_)(log|logger|logging|logs|_log|_logger|LOG|LOGGER)$&quot;)
+SKIP_DIRS = {&quot;.git&quot;, &quot;.hg&quot;, &quot;.venv&quot;, &quot;venv&quot;, &quot;env&quot;, &quot;__pycache__&quot;, &quot;node_modules&quot;, &quot;build&quot;, &quot;dist&quot;, &quot;.tox&quot;, &quot;.mypy_cache&quot;, &quot;site-packages&quot;}
+IGNORE_RE = re.compile(r&quot;#\s*smell:\s*ignore\[([A-Z0-9, ]+)\]&quot;)
+
+
+def type_names(node):
+    &quot;&quot;&quot;Names of the exception classes an except handler catches ([] for bare except).&quot;&quot;&quot;
+    if node is None:
+        return []
+    items = node.elts if isinstance(node, ast.Tuple) else [node]
+    out = []
+    for it in items:
+        if isinstance(it, ast.Name):
+            out.append(it.id)
+        elif isinstance(it, ast.Attribute):
+            out.append(it.attr)
+        else:
+            out.append(&quot;?&quot;)
+    return out
+
+
+def walk_no_nested(nodes):
+    &quot;&quot;&quot;Walk statements but do not descend into nested functions, classes or lambdas.&quot;&quot;&quot;
+    stack = list(nodes)
+    while stack:
+        n = stack.pop()
+        yield n
+        for child in ast.iter_child_nodes(n):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+                continue
+            stack.append(child)
+
+
+def is_log_call(call):
+    if not isinstance(call, ast.Call):
+        return False
+    f = call.func
+    if isinstance(f, ast.Attribute) and f.attr in LOG_METHODS:
+        base = f.value
+        name = base.id if isinstance(base, ast.Name) else (base.attr if isinstance(base, ast.Attribute) else &quot;&quot;)
+        return bool(LOGGER_NAMES.search(name))
+    return False
+
+
+def has_traceback(call):
+    f = call.func
+    if isinstance(f, ast.Attribute) and f.attr == &quot;exception&quot;:
+        return True
+    for kw in call.keywords:
+        if kw.arg in (&quot;exc_info&quot;, &quot;stack_info&quot;) and not (isinstance(kw.value, ast.Constant) and kw.value.value in (False, None)):
+            return True
+    return False
+
+
+def handler_facts(h):
+    body = list(walk_no_nested(h.body))
+    reraises = any(isinstance(n, ast.Raise) for n in body)
+    logs = [n for n in body if is_log_call(n)]
+    reports = any(isinstance(n, ast.Call) and (
+        (isinstance(n.func, ast.Attribute) and n.func.attr in (&quot;capture_exception&quot;, &quot;print_exc&quot;, &quot;format_exc&quot;, &quot;notify&quot;, &quot;report_exc&quot;))
+        or (isinstance(n.func, ast.Name) and n.func.id in (&quot;capture_exception&quot;, &quot;print_exc&quot;))) for n in body)
+    trivial = all(isinstance(s, (ast.Pass, ast.Continue, ast.Break)) or
+                  (isinstance(s, ast.Expr) and isinstance(s.value, ast.Constant)) or
+                  (isinstance(s, ast.Return) and (s.value is None or isinstance(s.value, ast.Constant)))
+                  for s in h.body)
+    return reraises, logs, reports, trivial
+
+
+class Finder(ast.NodeVisitor):
+    def __init__(self, path, lines, max_try):
+        self.path, self.lines, self.max_try = path, lines, max_try
+        self.found = []
+        self.handler_stack = []
+
+    def add(self, code, node, detail):
+        line = getattr(node, &quot;lineno&quot;, 0)
+        src = self.lines[line - 1] if 0 &lt; line &lt;= len(self.lines) else &quot;&quot;
+        m = IGNORE_RE.search(src)
+        if m and code in [c.strip() for c in m.group(1).split(&quot;,&quot;)]:
+            return
+        self.found.append({&quot;code&quot;: code, &quot;severity&quot;: SEVERITY[code], &quot;file&quot;: self.path, &quot;line&quot;: line,
+                           &quot;title&quot;: TITLE[code], &quot;detail&quot;: detail, &quot;source&quot;: src.strip()})
+
+    def visit_Try(self, node):
+        n_body = sum(1 for _ in walk_no_nested(node.body) if isinstance(_, ast.stmt))
+        for h in node.handlers:
+            names = type_names(h.type)
+            reraises, logs, reports, trivial = handler_facts(h)
+            broad = (not names) or any(n in BROAD for n in names)
+            if not names:
+                self.add(&quot;EX01&quot;, h, &quot;use `except Exception:` (or narrower) so Ctrl+C and sys.exit() still work&quot; + (&quot;&quot; if reraises else &quot;; the error is not re-raised&quot;))
+            elif any(n in SYSTEM for n in names) and not reraises:
+                self.add(&quot;EX05&quot;, h, &quot;catches %s; re-raise it or catch Exception instead&quot; % &quot;, &quot;.join(n for n in names if n in SYSTEM))
+            if broad and trivial and not reraises:
+                self.add(&quot;EX02&quot;, h, &quot;the handler body only passes/continues/returns a constant; the error disappears without a trace&quot;)
+            elif broad and not reraises and not logs and not reports and names:
+                self.add(&quot;EX03&quot;, h, &quot;the error becomes a normal return value; log it, re-raise it, or catch a narrower type&quot;)
+            for call in logs:
+                if call.func.attr in (&quot;error&quot;, &quot;critical&quot;, &quot;fatal&quot;, &quot;warning&quot;, &quot;warn&quot;) and not has_traceback(call) and not reraises:
+                    self.add(&quot;EX07&quot;, call, &quot;add exc_info=True or use logger.exception(...) so the traceback is kept&quot;)
+            if broad and n_body &gt; self.max_try:
+                self.add(&quot;EX08&quot;, h, &quot;try body has %d statements; wrap only the call that can fail&quot; % n_body)
+            self.handler_stack.append(h)
+            for s in h.body:
+                self.visit(s)
+            self.handler_stack.pop()
+        for part in (node.body, node.orelse):
+            for s in part:
+                self.visit(s)
+        for s in node.finalbody:
+            self.visit(s)
+        for n in walk_no_nested(node.finalbody):
+            if isinstance(n, (ast.Return, ast.Break, ast.Continue)) and not self._inside_loop_in(node.finalbody, n):
+                self.add(&quot;EX06&quot;, n, &quot;`%s` in finally discards any exception raised in the try block&quot; % type(n).__name__.lower())
+
+    visit_TryStar = visit_Try
+
+    def _inside_loop_in(self, stmts, target):
+        &quot;&quot;&quot;True if a break/continue sits inside a loop that is itself inside the finally block (that is fine).&quot;&quot;&quot;
+        if isinstance(target, ast.Return):
+            return False
+        for n in walk_no_nested(stmts):
+            if isinstance(n, (ast.For, ast.While, ast.AsyncFor)):
+                if any(c is target for c in walk_no_nested(n.body + n.orelse)):
+                    return True
+        return False
+
+    def visit_Raise(self, node):
+        if self.handler_stack and node.exc is not None and node.cause is None:
+            h = self.handler_stack[-1]
+            if not (isinstance(node.exc, ast.Name) and h.name and node.exc.id == h.name):
+                self.add(&quot;EX04&quot;, node, &quot;use `raise NewError(...) from err` (or `from None` on purpose) to keep the cause&quot;)
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node):
+        saved, self.handler_stack = self.handler_stack, []
+        self.generic_visit(node)
+        self.handler_stack = saved
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+    visit_Lambda = visit_FunctionDef
+
+
+def scan_source(src, path=&quot;&lt;string&gt;&quot;, max_try=8):
+    lines = src.splitlines()
+    try:
+        tree = ast.parse(src, filename=path)
+    except SyntaxError as e:
+        return [{&quot;code&quot;: &quot;EX00&quot;, &quot;severity&quot;: &quot;error&quot;, &quot;file&quot;: path, &quot;line&quot;: e.lineno or 0, &quot;title&quot;: TITLE[&quot;EX00&quot;],
+                 &quot;detail&quot;: str(e.msg), &quot;source&quot;: &quot;&quot;}]
+    f = Finder(path, lines, max_try)
+    f.visit(tree)
+    seen, out = set(), []
+    for x in sorted(f.found, key=lambda x: (x[&quot;line&quot;], x[&quot;code&quot;])):
+        k = (x[&quot;code&quot;], x[&quot;line&quot;])
+        if k not in seen:
+            seen.add(k)
+            out.append(x)
+    return out
+
+
+def iter_files(paths):
+    for p in paths:
+        if os.path.isfile(p):
+            yield p
+        elif os.path.isdir(p):
+            for root, dirs, files in os.walk(p):
+                dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.endswith(&quot;.egg-info&quot;))
+                for fn in sorted(files):
+                    if fn.endswith(&quot;.py&quot;):
+                        yield os.path.join(root, fn)
+        else:
+            raise FileNotFoundError(p)
+
+
+def scan_paths(paths, max_try=8):
+    findings, n = [], 0
+    for fp in iter_files(paths):
+        n += 1
+        with open(fp, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as fh:
+            findings += scan_source(fh.read(), fp, max_try)
+    return n, findings
+
+
+def render(n_files, findings, fmt):
+    counts = {s: sum(1 for f in findings if f[&quot;severity&quot;] == s) for s in (&quot;high&quot;, &quot;medium&quot;, &quot;low&quot;, &quot;error&quot;)}
+    if fmt == &quot;json&quot;:
+        return json.dumps({&quot;files_scanned&quot;: n_files, &quot;counts&quot;: counts, &quot;findings&quot;: findings}, indent=2)
+    if fmt == &quot;md&quot;:
+        out = [&quot;| Code | Severity | Location | Problem | Fix hint |&quot;, &quot;|---|---|---|---|---|&quot;]
+        for f in findings:
+            out.append(&quot;| %s | %s | `%s:%d` | %s | %s |&quot; % (f[&quot;code&quot;], f[&quot;severity&quot;], f[&quot;file&quot;], f[&quot;line&quot;], f[&quot;title&quot;], f[&quot;detail&quot;]))
+        out.append(&quot;&quot;)
+        out.append(&quot;Files scanned: %d. High: %d, medium: %d, low: %d, parse errors: %d.&quot; % (n_files, counts[&quot;high&quot;], counts[&quot;medium&quot;], counts[&quot;low&quot;], counts[&quot;error&quot;]))
+        return &quot;\n&quot;.join(out)
+    out = []
+    for f in findings:
+        out.append(&quot;%s:%d  %s [%s] %s&quot; % (f[&quot;file&quot;], f[&quot;line&quot;], f[&quot;code&quot;], f[&quot;severity&quot;], f[&quot;title&quot;]))
+        if f[&quot;source&quot;]:
+            out.append(&quot;    &gt; &quot; + f[&quot;source&quot;])
+        out.append(&quot;    hint: &quot; + f[&quot;detail&quot;])
+    out.append(&quot;&quot;)
+    out.append(&quot;Files scanned: %d. High: %d, medium: %d, low: %d, parse errors: %d.&quot; % (n_files, counts[&quot;high&quot;], counts[&quot;medium&quot;], counts[&quot;low&quot;], counts[&quot;error&quot;]))
+    return &quot;\n&quot;.join(out)
+
+
+def self_test():
+    T = []
+
+    def codes(src, **kw):
+        return [f[&quot;code&quot;] for f in scan_source(textwrap.dedent(src), **kw)]
+
+    def check(name, cond):
+        T.append((name, bool(cond)))
+
+    check(&quot;bare except is EX01&quot;, &quot;EX01&quot; in codes(&quot;try:\n    x()\nexcept:\n    raise\n&quot;))
+    check(&quot;bare except with pass is EX01 + EX02&quot;, {&quot;EX01&quot;, &quot;EX02&quot;} &lt;= set(codes(&quot;try:\n    x()\nexcept:\n    pass\n&quot;)))
+    check(&quot;except Exception: pass is EX02&quot;, codes(&quot;try:\n    x()\nexcept Exception:\n    pass\n&quot;) == [&quot;EX02&quot;])
+    check(&quot;narrow except ValueError: pass is fine&quot;, codes(&quot;try:\n    int(s)\nexcept ValueError:\n    pass\n&quot;) == [])
+    check(&quot;broad except returning a value without log is EX03&quot;,
+          codes(&quot;def f():\n    try:\n        return x()\n    except Exception as e:\n        y = str(e)\n        return {&#x27;ok&#x27;: False, &#x27;err&#x27;: y}\n&quot;) == [&quot;EX03&quot;])
+    check(&quot;broad except that logs with exception() is fine&quot;,
+          codes(&quot;def f():\n    try:\n        x()\n    except Exception:\n        logger.exception(&#x27;boom&#x27;)\n        return None\n&quot;) == [])
+    check(&quot;logger.error without exc_info is EX07&quot;,
+          codes(&quot;try:\n    x()\nexcept Exception as e:\n    logger.error(&#x27;failed: %s&#x27;, e)\n&quot;) == [&quot;EX07&quot;])
+    check(&quot;logger.error with exc_info=True is fine&quot;,
+          codes(&quot;try:\n    x()\nexcept Exception:\n    log.error(&#x27;failed&#x27;, exc_info=True)\n&quot;) == [])
+    check(&quot;raise without from in except is EX04&quot;,
+          codes(&quot;try:\n    x()\nexcept KeyError as e:\n    raise ValueError(&#x27;bad&#x27;)\n&quot;) == [&quot;EX04&quot;])
+    check(&quot;raise ... from err is fine&quot;, codes(&quot;try:\n    x()\nexcept KeyError as e:\n    raise ValueError(&#x27;bad&#x27;) from e\n&quot;) == [])
+    check(&quot;re-raising the caught name is fine&quot;, codes(&quot;try:\n    x()\nexcept KeyError as e:\n    cleanup()\n    raise e\n&quot;) == [])
+    check(&quot;except BaseException without re-raise is EX05&quot;,
+          &quot;EX05&quot; in codes(&quot;try:\n    x()\nexcept BaseException:\n    logger.exception(&#x27;x&#x27;)\n&quot;))
+    check(&quot;except KeyboardInterrupt with re-raise is fine&quot;,
+          codes(&quot;try:\n    x()\nexcept KeyboardInterrupt:\n    cleanup()\n    raise\n&quot;) == [])
+    check(&quot;return in finally is EX06&quot;, &quot;EX06&quot; in codes(&quot;def f():\n    try:\n        x()\n    finally:\n        return 1\n&quot;))
+    check(&quot;break inside a loop within finally is fine&quot;,
+          codes(&quot;try:\n    x()\nfinally:\n    for i in r:\n        break\n&quot;) == [])
+    check(&quot;large try body with broad except is EX08&quot;,
+          &quot;EX08&quot; in codes(&quot;try:\n&quot; + &quot;&quot;.join(&quot;    a%d()\n&quot; % i for i in range(10)) + &quot;except Exception:\n    logger.exception(&#x27;x&#x27;)\n    raise\n&quot;))
+    check(&quot;--max-try-statements raises the limit&quot;,
+          &quot;EX08&quot; not in codes(&quot;try:\n&quot; + &quot;&quot;.join(&quot;    a%d()\n&quot; % i for i in range(10)) + &quot;except Exception:\n    raise\n&quot;, max_try=20))
+    check(&quot;inline ignore comment suppresses a code&quot;,
+          codes(&quot;try:\n    x()\nexcept Exception:  # smell: ignore[EX02]\n    pass\n&quot;) == [])
+    check(&quot;nested function raise is not attributed to outer except&quot;,
+          codes(&quot;try:\n    x()\nexcept KeyError as e:\n    def g():\n        raise ValueError()\n    raise\n&quot;) == [])
+    check(&quot;syntax error reported as EX00&quot;, codes(&quot;def f(:\n    pass\n&quot;) == [&quot;EX00&quot;])
+    check(&quot;tuple of exceptions incl. Exception is broad&quot;,
+          codes(&quot;try:\n    x()\nexcept (ValueError, Exception):\n    pass\n&quot;) == [&quot;EX02&quot;])
+    with tempfile.TemporaryDirectory() as d:
+        os.makedirs(os.path.join(d, &quot;pkg&quot;)); os.makedirs(os.path.join(d, &quot;.venv&quot;))
+        open(os.path.join(d, &quot;pkg&quot;, &quot;a.py&quot;), &quot;w&quot;).write(&quot;try:\n    x()\nexcept:\n    pass\n&quot;)
+        open(os.path.join(d, &quot;.venv&quot;, &quot;b.py&quot;), &quot;w&quot;).write(&quot;try:\n    x()\nexcept:\n    pass\n&quot;)
+        n, fs = scan_paths([d])
+        check(&quot;directory scan skips .venv&quot;, n == 1 and all(&quot;.venv&quot; not in f[&quot;file&quot;] for f in fs))
+        check(&quot;json output parses&quot;, json.loads(render(n, fs, &quot;json&quot;))[&quot;counts&quot;][&quot;high&quot;] == 2)
+    ok = sum(1 for _, r in T if r)
+    for name, r in T:
+        print((&quot;PASS  &quot; if r else &quot;FAIL  &quot;) + name)
+    print((&quot;ALL PASS&quot; if ok == len(T) else &quot;FAILED&quot;) + &quot; (%d/%d)&quot; % (ok, len(T)))
+    return 0 if ok == len(T) else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split(&quot;\n&quot;)[0])
+    ap.add_argument(&quot;paths&quot;, nargs=&quot;*&quot;)
+    ap.add_argument(&quot;--format&quot;, choices=(&quot;text&quot;, &quot;json&quot;, &quot;md&quot;), default=&quot;text&quot;)
+    ap.add_argument(&quot;--min-severity&quot;, choices=(&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;), default=&quot;low&quot;)
+    ap.add_argument(&quot;--ignore&quot;, default=&quot;&quot;, help=&quot;comma-separated codes to skip, e.g. EX07,EX08&quot;)
+    ap.add_argument(&quot;--max-try-statements&quot;, type=int, default=8)
+    ap.add_argument(&quot;--self-test&quot;, action=&quot;store_true&quot;)
+    a = ap.parse_args(argv)
+    if a.self_test:
+        return self_test()
+    if not a.paths:
+        ap.print_usage(sys.stderr)
+        return 2
+    try:
+        n, fs = scan_paths(a.paths, a.max_try_statements)
+    except FileNotFoundError as e:
+        print(&quot;error: path not found: %s&quot; % e, file=sys.stderr)
+        return 2
+    if n == 0:
+        print(&quot;error: no .py files found&quot;, file=sys.stderr)
+        return 2
+    skip = {c.strip().upper() for c in a.ignore.split(&quot;,&quot;) if c.strip()}
+    fs = [f for f in fs if f[&quot;code&quot;] not in skip and RANK[f[&quot;severity&quot;]] &gt;= RANK[a.min_severity]]
+    print(render(n, fs, a.format))
+    return 1 if any(f[&quot;severity&quot;] == &quot;high&quot; for f in fs) else 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+  <h3 id="mine">Make it yours, by voice or by typing</h3>
+  <p class="mut">Anything you write here is added at the end of the prompt when you copy it. It stays on this device.</p>
+  <div id="cz"></div>
+  <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><button class="btn ghost" type="button" data-save>Save to My prompts</button></div>
+  <p class="mut">Not reviewed by <a href="/council/">the council</a> yet. Read a prompt before you paste it.</p>
+ </div>
+</section>
+<section class="sec share" id="improve" aria-labelledby="imp-h">
+ <div class="wrap">
+  <h2 id="imp-h">Improve this prompt</h2>
+  <p class="lead">No account needed. Paste your version on the left. On the right, just talk about it: what it does better and which pitfalls it fixes.</p>
+  <div class="btns"><button class="btn ghost" type="button" id="startfrom">Start from this prompt</button></div>
+  <div class="pane2">
+ <div class="pane"><label class="lbl" for="imp-p">Your version of this prompt</label><textarea class="ta" id="imp-p" placeholder="Paste your version here, or press Start from this prompt."></textarea></div>
+ <div class="pane"><label class="lbl" for="imp-t">Talk about it</label><textarea class="ta talk" id="imp-t" placeholder="What does your version do better? Which pitfalls does it fix?"></textarea><div class="microw"><button class="mic" type="button" data-mic="imp-t" data-st="imp-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="imp-st" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div></div>
+</div>
+<div id="imp-sub"></div>
+
+  <p class="mut">Improvements are published under CC BY 4.0. Do not paste anything private.</p>
+ </div>
+</section>
+</main>
+<footer class="foot">
+ <div class="wrap">
+  <h2>claudebomb</h2>
+  <p class="mut">A prompt so big it needs its own website. Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p><a class="btn ghost" href="/wikipedia/">Have you heard of Wikipedia?</a></p>
+  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
+ </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/cb.js?v=6"></script>
+<script src="/assets/cb-config.js?v=1"></script>
+<script src="/assets/cb2.js?v=1"></script>
+<script src="/assets/cb-account.js?v=3"></script>
+<script src="/assets/cb-boom.js?v=1"></script>
+<script>
+(function(){var C=window.CB,T=document.getElementById('pt').textContent,K='pc/python-exception-handling-smell-finder',TI="Python Exception Handling Smell Finder";
+var CZ=C.custom(document.getElementById('cz'),{id:'l-'+K});function full(){return T.replace(/\s+$/,'')+CZ.text()}
+window.CB_PROMPT=full;var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act','l-'+K);
+Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(full()).then(C.copied)})});
+Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){C.save({id:'l-'+K,title:TI,url:'/l/'+K+'/',text:full()});C.toast('Saved to My prompts on this device.')})});
+var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
+document.getElementById('startfrom').addEventListener('click',function(){ip.value=T;ip.dispatchEvent(new Event('input'));ip.focus()});
+C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
+})();
+</script>
+<script src="/assets/cb-act.js?v=4"></script>
+<script src="/assets/cb-gate.js?v=1"></script>
+<script src="/v6/funsies.js?v=1" defer></script>
+<script src="/hmr-dock.js?v=6.8.2" data-site="claudebomb.com" defer></script>
+</body></html>
