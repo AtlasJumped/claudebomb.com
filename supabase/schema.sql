@@ -42,6 +42,12 @@ do $$ begin
   end if;
 end $$;
 
+-- Table permissions for signed-in people (row level security still limits them to their own rows).
+-- Nobody outside gets table access to dog_signups; the site uses the two functions below.
+grant select, insert, update, delete on public.saved_prompts to authenticated;
+grant select, insert, delete on public.prompt_votes to authenticated;
+revoke all on public.dog_signups from anon, authenticated;
+
 create or replace function public.prompt_vote_counts()
 returns table (prompt_id text, votes bigint)
 language sql stable security definer set search_path = public
