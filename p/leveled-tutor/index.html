@@ -29,6 +29,7 @@
   <p class="saves">Replaces a semester of trial and error with a course built around you.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -109,6 +110,39 @@ Start with the placement test.
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Subject: basic music theory. Goal: read chord charts and play along with friends on guitar. Time: 15 minutes a day. (Placement test already taken: got questions 1 to 3 right on note names and the musical alphabet, missed 4 to 8 on intervals, keys and chord numbers.)</p>
+  <pre class="exo">Your level: you know the musical alphabet and note names, but not yet how notes build into scales and chords.
+
+Your learning map
+1. Sharps and flats
+2. Half steps and whole steps on the fretboard
+3. The major scale pattern
+4. The C major scale
+5. Keys: what &quot;in the key of G&quot; means
+6. Major and minor chords: how they are built
+7. The chords that live in one key
+8. Chord numbers (I, IV, V)
+9. Reading a chord chart: bars and slashes
+10. The I IV V progression in three keys
+11. The vi chord and common pop progressions
+12. Changing key on the spot (transposing)
+
+Does this goal and map look right? Say yes, or tell me what to change.
+
+When you say yes, here is skill 1, starting with a puzzle:
+
+On a piano, between C and D there is a black key. Between E and F there is none. What do you think that black key is called, and why might E and F be different?
+
+Take a guess before I explain.
+(Shortened for this page.)</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -123,7 +157,7 @@ Start with the placement test.
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "leveled-tutor", "title": "Teach me anything, with a placement test and real mastery checks", "text": "Be my private tutor for this subject: [SUBJECT]. My goal: [WHY I WANT TO LEARN IT, OR WHAT I WANT TO BE ABLE TO DO]. Time I can give: [MINUTES PER DAY].\n\nStep 1, placement. Give me a short placement test: 8 questions that start easy and get harder, one at a time. Do not tell me the answers yet. From my answers, tell me my level in one sentence and what I already know.\n\nStep 2, the map. Make a learning map of 10 to 20 small skills, in the order they build on each other, starting from my level. Show it as a numbered list with one line each. Ask me if the goal and map look right before we start.\n\nStep 3, lessons. For each skill:\n- Start with a small real problem or question, before any explanation.\n- Ask me one or two pointed questions that lead me toward the idea.\n- Then explain it in plain words, with one everyday example, and give the proper name for it.\n- Check me with 3 questions: one easy, one that applies it to something new, one that mixes it with an earlier skill.\n- If I miss one, explain it a different way and ask a new question on the same point. Do not move on until I get two right in a row.\n\nStep 4, memory. At the start of each session, quiz me on 3 earlier skills, picked from the ones I found hardest. Keep a running list of my weak spots and tell me when one becomes a strength.\n\nRules: one idea at a time. Short messages. Never just hand me the answer to a check question; give a hint first. Say so plainly if something I believe is wrong. If I am tired or stuck, offer a 5 minute version.\n\nStart with the placement test.\n", "load": false, "paths": ["prompts/leveled-tutor.md"], "feats": [{"name": "Exam prep", "want": "I am studying for an exam. Use questions in the style of that exam and track my likely score."}, {"name": "Kid friendly", "want": "I am teaching a child with this. Use short sentences, warm encouragement, and examples from a child's day."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -131,7 +165,9 @@ Start with the placement test.
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -160,6 +196,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

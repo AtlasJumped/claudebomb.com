@@ -29,6 +29,7 @@
   <p class="saves">Days of tutorials, done in an afternoon.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -104,6 +105,36 @@ Rules: explain each new term in one sentence. Never ask me for passwords; I will
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> About the site: my dog walking business, Sunny Paws, for busy neighbours in my town. It must say my prices, the areas I cover, and how to book. Look and feel: bright, friendly, simple, lots of white space.</p>
+  <pre class="exo">Great, let&#x27;s build the Sunny Paws site together. We will go one step at a time, and I will wait for you to say &quot;done&quot; after each step.
+
+Here is the plan:
+1. Write the text for your page.
+2. Turn it into one web page file.
+3. Preview it on your computer.
+4. Publish it for free on GitHub Pages (a free hosting service that puts your page online).
+5. Optional: connect your own web address (a domain).
+6. Learn how to make changes later.
+
+Nothing here costs money unless you choose a domain in step 5, and I will tell you the price first. I will never ask for your passwords. You type those yourself on the real websites.
+
+Step 1. Five short questions about your content. Answer them in one message:
+
+1. What are your prices? For example, per 30 minute walk, and any discount for regular bookings.
+2. Which neighbourhoods or streets do you cover?
+3. How should people book: phone, email, or a form?
+4. What makes Sunny Paws different? One or two sentences, in your own words.
+5. Is there anything people must know first, such as dog size limits or that you meet each dog before the first walk?
+
+When you have answered, I will write all the text for the page: a headline, what this is, why it matters, how to get in touch, and a footer. You can edit it before we build anything.</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -118,7 +149,7 @@ Rules: explain each new term in one sentence. Never ask me for passwords; I will
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "build-website", "title": "Build and publish your own website with your AI, step by step", "text": "Help me build and publish my own simple website. I have never done this before. Go one step at a time and wait for me to say \"done\" after each step.\n\nAbout the site: [WHAT IT IS FOR, WHO WILL VISIT, 3 THINGS IT MUST SAY OR DO]. Look and feel: [WORDS OR SITES I LIKE].\n\nPlan to follow, unless I say otherwise:\n1. Ask me 5 short questions to pin down the content. Then write all the text for a one-page site with these parts: a clear headline, what this is, why it matters, how to get in touch, and a footer. Let me edit it.\n2. Build the page as one HTML file with the styles inside it. It must be fast, readable on a phone, accessible (good contrast, alt text, large tap targets), and use no tracking scripts. Show me the full file.\n3. Show me how to preview it on my own computer by saving the file and opening it in my browser.\n4. Publish it for free: walk me through creating a free GitHub account, a new public repository, uploading the file as index.html, and turning on GitHub Pages. Describe every button by its exact label and where it is on the screen.\n5. Optional: connect my own domain. Explain what a domain is, what it usually costs per year, and how to point it at GitHub Pages, including the DNS records and turning on HTTPS.\n6. Teach me how to make a change later: edit, save, upload, and check the live site.\n\nRules: explain each new term in one sentence. Never ask me for passwords; I will type them myself on the real websites. Before anything costs money, tell me the price and wait for my yes.\n", "load": false, "paths": ["prompts/build-website.md"], "feats": [{"name": "No domain yet", "want": "I do not own a domain yet. Help me pick one and compare first-year and renewal prices."}, {"name": "Business site", "want": "It is a small business site. Include contact details, hours, and a simple way to get in touch."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -126,7 +157,9 @@ Rules: explain each new term in one sentence. Never ask me for passwords; I will
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -155,6 +188,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

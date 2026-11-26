@@ -27,6 +27,7 @@
   <h1 class="sm" id="h1">Create better frame</h1>
   <p class="saves">From <a href="https://github.com/danielmiessler/fabric">Fabric</a> by Daniel Miessler and contributors, under the <a href="/library/LICENSE-fabric.txt">MIT licence</a>. Copied from <a href="https://github.com/danielmiessler/fabric/tree/d3ee2c3bfbc63da0a25f4a485ad1aad0b29b88aa/data/patterns/create_better_frame">this saved version of the pattern</a>.</p>
   <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="https://github.com/danielmiessler/fabric/tree/d3ee2c3bfbc63da0a25f4a485ad1aad0b29b88aa/data/patterns/create_better_frame">Open the source</a></div>
+  <div class="act" id="act"></div>
  </div>
 </section>
 <section class="sec bank" id="prompt" aria-labelledby="pr-h">
@@ -212,11 +213,12 @@ INPUT:</pre>
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script>
 (function(){var C=window.CB,T=document.getElementById('pt').textContent,K='fb/create-better-frame',TI="Create better frame";
 var CZ=C.custom(document.getElementById('cz'),{id:'l-'+K});function full(){return T.replace(/\s+$/,'')+CZ.text()}
+window.CB_PROMPT=full;var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act','l-'+K);
 Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(full()).then(C.copied)})});
 Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){C.save({id:'l-'+K,title:TI,url:'/l/'+K+'/',text:full()});C.toast('Saved to My prompts on this device.')})});
 var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
@@ -224,6 +226,7 @@ document.getElementById('startfrom').addEventListener('click',function(){ip.valu
 C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty:'Paste your version, or talk about it, first.',text:function(){var a=ip.value.trim(),b=it.value.trim();if(!a&&!b)return'';return'Improvement for library prompt: '+TI+' (https://claudebomb.com/l/'+K+'/)\n\nWhat they said:\n'+(b||'(nothing)')+'\n\nTheir version:\n'+(a||'(none pasted)')},details:function(){return{library:K}},onSent:function(){ip.value=it.value='';C.ls('cb-imp-p-'+K,null);C.ls('cb-imp-t-'+K,null)}});
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

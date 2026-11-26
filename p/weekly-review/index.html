@@ -29,6 +29,7 @@
   <p class="saves">The habit that productivity coaches charge for.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -102,6 +103,50 @@ If I have a calendar, task list, or email connected, offer to read them for step
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Review done by voice; condensed answers. Went well: finished the grant draft. Not well: skipped the gym. On my mind: reply to landlord about the leak, book car service, Ben owes me the budget numbers, plan Mum&#x27;s birthday, learn Spanish app streak. Fixed next week: Tue and Thu evening classes. Feeling: tired. Want to reach out to Ben.</p>
+  <pre class="exo">Your week on one screen
+
+Top 3 outcomes for next week
+1. Landlord has a date to fix the leak.
+2. Budget numbers from Ben are in the grant draft.
+3. Mum&#x27;s birthday dinner is booked.
+
+Do next week
+Email the landlord about the leak (Monday).
+Book the car service.
+Book the birthday restaurant.
+Two gym sessions, on Monday and Wednesday, since Tuesday and Thursday evenings are taken by class.
+
+Schedule for later
+Car service if no slot this week.
+
+Hand off or ask
+Budget numbers: ask Ben.
+
+Drop
+Spanish app streak, for now. You said you are tired; you are keeping a lot. This one can wait without cost.
+
+Waiting on
+Ben: budget numbers.
+Landlord: repair date.
+
+Messages to send
+Ben: &quot;Hi Ben, could you send the budget numbers by Wednesday so I can finish the grant? Thanks.&quot;
+Landlord: &quot;Hi, the leak is still there. Could you let me know a repair date this week?&quot;
+
+One small change
+Go to bed 30 minutes earlier on class nights.
+
+Something to look forward to
+The grant draft is done, and the birthday dinner is coming.</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -116,7 +161,7 @@ If I have a calendar, task list, or email connected, offer to read them for step
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "weekly-review", "title": "A 20 minute weekly review that keeps your life on track", "text": "Run my weekly review with me. Keep it to about 20 minutes. Ask one question at a time and wait for my answer. I may answer by voice.\n\n1. Look back: Ask what went well this week, what did not, and what I learned. Reflect each answer back in one line.\n2. Loose ends: Ask me to list everything on my mind, big or small: tasks, worries, promises I made, things I am waiting on from others. Do not judge; just collect.\n3. Sort: Put each item into one of four groups and show me the result: Do next week, Schedule for later, Hand off or ask someone, Drop. Suggest a group for each and let me change it. Be honest if I am keeping too much.\n4. Next week: Ask about my fixed commitments next week. Then help me choose my top 3 outcomes for the week, worded as results, not activities. Check they fit the time I actually have.\n5. People: Ask who I want to reach out to this week and why. Suggest a one-line message for each.\n6. Energy: Ask how I am feeling and what would make next week easier. Offer one small change, not a lecture.\n7. Close: Give me a one-screen summary: top 3 outcomes, the do-next-week list, the waiting-on list, messages to send, and one thing to look forward to.\n\nIf I have a calendar, task list, or email connected, offer to read them for step 2 and 4, and ask before you change anything.\n", "load": false, "paths": ["prompts/weekly-review.md"], "feats": [{"name": "Health check", "want": "Include one question on sleep, movement, and energy."}, {"name": "Family time", "want": "Include one question on time with the people who matter most."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -124,7 +169,9 @@ If I have a calendar, task list, or email connected, offer to read them for step
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -153,6 +200,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

@@ -46,6 +46,7 @@ def build(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=()):
   <h1 class="sm" id="h1">%s</h1>
   <p class="saves">%s</p>
   <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="%s">Open the source</a></div>
+  <div class="act" id="act"></div>
  </div>
 </section>
 <section class="sec bank" id="prompt" aria-labelledby="pr-h">
@@ -75,6 +76,7 @@ def build(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=()):
             js = '''<script>
 (function(){var C=window.CB,T=document.getElementById('pt').textContent,K='%s',TI=%s;
 var CZ=C.custom(document.getElementById('cz'),{id:'l-'+K});function full(){return T.replace(/\\s+$/,'')+CZ.text()}
+window.CB_PROMPT=full;var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act','l-'+K);
 Array.prototype.forEach.call(document.querySelectorAll('[data-copyl]'),function(b){b.addEventListener('click',function(){C.copyText(full()).then(C.copied)})});
 Array.prototype.forEach.call(document.querySelectorAll('[data-save]'),function(b){b.addEventListener('click',function(){C.save({id:'l-'+K,title:TI,url:'/l/'+K+'/',text:full()});C.toast('Saved to My prompts on this device.')})});
 var ip=document.getElementById('imp-p'),it=document.getElementById('imp-t');C.keep(ip,'cb-imp-p-'+K);C.keep(it,'cb-imp-t-'+K);
@@ -116,6 +118,7 @@ C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty
   <form class="find" role="search" onsubmit="return false">
    <div><label for="q">Search the library</label><input id="q" type="search" placeholder="Try: interview, excel, summary, travel" autocomplete="off"></div>
    <div><label for="src">Source</label><select id="src"><option value="">All sources</option><option value="cb">claudebomb</option><option value="pc">prompts.chat</option><option value="fb">Fabric</option><option value="dev">For developers</option></select></div>
+   <div><label for="sort">Sort</label><select id="sort"><option value="">Best match</option><option value="mine">My votes first</option><option value="az">A to Z</option><option value="votes" disabled>Most votes (starts with free sign-in)</option></select></div>
    <p class="count" id="count" aria-live="polite">Loading the library...</p>
   </form>
  </div>
@@ -134,7 +137,7 @@ C.submitPair(document.getElementById('imp-sub'),{kind:'prompt improvement',empty
     pg = pg.replace('@@CHECKED@@', _checked(R))
     pg += FOOT
     js = '''<script>
-(function(){var C=window.CB,q=document.getElementById('q'),src=document.getElementById('src'),list=document.getElementById('list'),count=document.getElementById('count'),more=document.getElementById('more'),bi=document.getElementById('buildit'),IX=null,ALL=[],hits=[],shown=0,N={cb:'claudebomb',pc:'prompts.chat',fb:'Fabric'};
+(function(){var C=window.CB,q=document.getElementById('q'),src=document.getElementById('src'),list=document.getElementById('list'),count=document.getElementById('count'),more=document.getElementById('more'),bi=document.getElementById('buildit'),so=document.getElementById('sort'),IX=null,ALL=[],hits=[],shown=0,N={cb:'claudebomb',pc:'prompts.chat',fb:'Fabric'};
 function row(r){var li=C.el('li'),a=C.el('a',null,r.title);a.href=r.url;li.appendChild(a);li.appendChild(C.el('span','tag',N[r.src]));li.appendChild(C.el('p','mut',r.excerpt+(r.excerpt.length>=150?'...':'')));return li}
 function page(n){var end=Math.min(shown+n,hits.length);for(var i=shown;i<end;i++)list.appendChild(row(hits[i]));shown=end;more.hidden=shown>=hits.length;more.textContent=shown<=3&&hits.length>shown?'Show all '+hits.length.toLocaleString()+' results':'Show more'}
 function keep(r,s){return !(s==='dev'?!r.dev:(s&&r.src!==s))}
@@ -142,13 +145,15 @@ function run(){var t=q.value.trim(),s=src.value;
  if(!t)hits=ALL.filter(function(r){return keep(r,s)});
  list.textContent='';shown=0;var k=0;
  if(t){var res=C.search(IX,t).filter(function(x){return keep(x.r,s)});hits=res.map(function(x){return x.r});k=C.shortPick(res)}
+ var o=so.value;if(o){var V2=window.CBVotes?CBVotes.all():{};function vk(r){var u=r.url;return u.indexOf('/l/')===0?'l-'+u.slice(3).replace(/\/$/,''):u.replace(/^\/p\//,'').replace(/\/$/,'')}
+  hits=hits.slice().sort(o==='az'?function(a,b){return a.title.localeCompare(b.title)}:function(a,b){return (V2[vk(b)]?1:0)-(V2[vk(a)]?1:0)});k=Math.max(k,Math.min(hits.length,50))}
  page(t?Math.max(k,1):50);
  count.textContent=t?(hits.length?(k===1?'Best match':'Best matches')+' for "'+t+'", out of '+hits.length.toLocaleString():'No prompt for "'+t+'" yet'):hits.length.toLocaleString()+' prompts';
  bi.hidden=!t;var a=bi.querySelector('a');a.href='/build/?q='+encodeURIComponent(t);
- try{var u=new URL(location.href);t?u.searchParams.set('q',t):u.searchParams.delete('q');s?u.searchParams.set('src',s):u.searchParams.delete('src');history.replaceState(null,'',u)}catch(e){}}
-try{var sp=new URLSearchParams(location.search);if(sp.get('q'))q.value=sp.get('q');if(sp.get('src'))src.value=sp.get('src')}catch(e){}
+ try{var u=new URL(location.href);t?u.searchParams.set('q',t):u.searchParams.delete('q');s?u.searchParams.set('src',s):u.searchParams.delete('src');so.value?u.searchParams.set('sort',so.value):u.searchParams.delete('sort');history.replaceState(null,'',u)}catch(e){}}
+try{var sp=new URLSearchParams(location.search);if(sp.get('q'))q.value=sp.get('q');if(sp.get('src'))src.value=sp.get('src');if(sp.get('sort'))so.value=sp.get('sort')}catch(e){}
 fetch('/library/index.json?v=%s').then(function(r){return r.json()}).then(function(d){ALL=d.map(function(x){return{url:x[0],title:x[1],src:x[2],excerpt:x[3],dev:x[4],kw:x[5],cat:x[6]||''}});IX=C.prep(ALL);run()},function(){count.textContent='The library could not load. Reload the page to try again.'});
-var lt=0;q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(run,150)});src.addEventListener('change',run);more.addEventListener('click',function(){page(50)});
+var lt=0;q.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(run,150)});src.addEventListener('change',run);so.addEventListener('change',run);more.addEventListener('click',function(){page(50)});
 })();
 </script>
 ''' % V

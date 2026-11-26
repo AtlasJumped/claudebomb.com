@@ -29,6 +29,7 @@
   <p class="saves">Saves the hour after every meeting.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -105,6 +106,46 @@ Use people&#x27;s names as they appear. Keep anything sensitive (pay, health, pe
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Willow Lane Community Garden committee, 4 May. Attended: Priya, Tom, Jess, me. Notes: water bill up again, Tom will get two quotes for a rain tank by end of month. Jess to post plot rules on noticeboard. Maybe move workdays to Sundays? Priya worried volunteers are dropping off. Tom mentioned he has a hospital appointment next week. Agreed: no new plots until autumn.</p>
+  <pre class="exo">1. Summary
+Committee met on 4 May about costs, rules and volunteers.
+Agreed to pause new plots until autumn.
+Water costs and volunteer numbers need follow-up.
+
+2. Decisions
+No new plots until autumn. Agreed by the committee.
+
+3. Action items
+| Task | Owner | Due | From the notes |
+| Get two rain tank quotes | Tom | End of May | &quot;Tom will get two quotes for a rain tank by end of month&quot; |
+| Post plot rules on noticeboard | Jess | not stated | &quot;Jess to post plot rules on noticeboard&quot; |
+
+4. Open questions
+Move workdays to Sundays? Raised by: not stated.
+Volunteers dropping off. Raised by Priya.
+
+5. Risks
+Rising water bill. Watcher: Tom, via the quotes.
+Volunteer drop off. Watcher: Priya.
+
+6. Follow-up messages
+To Tom: Hi Tom, thanks for taking on the rain tank. Could you send two quotes by the end of May? Cheers, [your name]
+To Jess: Hi Jess, thanks for posting the plot rules on the noticeboard. Let me know when they are up. Cheers, [your name]
+
+7. Next agenda
+1. Rain tank quotes
+2. Sunday workdays: yes or no
+3. Ideas to keep volunteers
+
+Flagged to you only: Tom&#x27;s hospital appointment is personal, so I kept it out of the messages. His deadline may need flexibility.</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -119,7 +160,7 @@ Use people&#x27;s names as they appear. Keep anything sensitive (pay, health, pe
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "meeting-to-actions", "title": "Turn a messy meeting into decisions, owners, and drafted follow-ups", "text": "Below are the notes or transcript from a meeting. Turn them into something people can act on today.\n\n[PASTE NOTES OR TRANSCRIPT. ADD THE MEETING TITLE, DATE, AND WHO ATTENDED IF YOU KNOW.]\n\nProduce:\n1. Summary: the purpose and the outcome in 3 lines.\n2. Decisions made: each as one sentence, with who made or agreed to it. If something sounded decided but nobody said so, list it under open questions instead.\n3. Action items: a table with task, owner, due date, and the exact words from the notes that support it. If the owner or date is missing, write \"not stated\" and do not guess.\n4. Open questions and disagreements, with who raised them.\n5. Risks or dependencies mentioned, and who should watch each one.\n6. Follow-up messages: one short message per owner, in a friendly, direct tone, listing only their items and dates, ready to paste into email or chat. Sign them as me.\n7. A suggested agenda for the next meeting, built from the open questions.\n\nUse people's names as they appear. Keep anything sensitive (pay, health, performance, personal matters) out of the follow-up messages and flag it to me separately.\n", "load": false, "paths": ["prompts/meeting-to-actions.md"], "feats": [{"name": "Email follow-ups", "want": "Draft the follow-ups as emails.", "dont": "Draft the follow-ups as short chat messages."}, {"name": "Risks list", "want": "Add a short list of risks and blockers someone mentioned."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -127,7 +168,9 @@ Use people&#x27;s names as they appear. Keep anything sensitive (pay, health, pe
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -156,6 +199,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

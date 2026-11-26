@@ -12,21 +12,21 @@ NS, NSEEN = N('Not stated'), N('Not seen')
 # columns: collects other galleries daily, promises free forever, promises no ads, tunes each prompt for your AI, links other galleries
 L0 = N('None seen')
 GALLERIES = [
-    ('prompts.chat', 'https://prompts.chat/', [NSEEN, N('Open licence (CC0), no promise'), X('Sponsor block'), NSEEN, L0]),
-    ('PromptBase', 'https://promptbase.com/', [NSEEN, X('Sells prompts'), X('Ad banner'), NSEEN, N('One ad link only')]),
-    ('God of Prompt', 'https://godofprompt.ai/prompt-library', [NSEEN, X('Paid premium'), NS, NSEEN, L0]),
-    ('Fabric', 'https://github.com/danielmiessler/Fabric', [NSEEN, N('Open licence (MIT), no promise'), NS, NSEEN, L0]),
-    ('LangChain Hub', 'https://docs.langchain.com/langsmith/manage-prompts', [NSEEN, NS, NS, NSEEN, L0]),
-    ('PromptHero', 'https://prompthero.com/', [NSEEN, X('Paid plans'), X('Referral ads'), NSEEN, L0]),
-    ('FlowGPT', 'https://flowgpt.com/', [NSEEN, Q, Q, NSEEN, Q]),
-    ('AIPRM', 'https://www.aiprm.com/', [NSEEN, X('Paid plans'), NS, NSEEN, L0]),
-    ('Snack Prompt', 'https://snackprompt.com/', [NSEEN, NS, NS, NSEEN, L0]),
-    ('Anthropic (Claude only)', 'https://code.claude.com/docs/en/prompt-library', [NSEEN, NS, NS, NSEEN, L0]),
-    ('Google Vertex AI (Gemini only)', 'https://docs.cloud.google.com/vertex-ai/generative-ai/docs/prompt-gallery', [NSEEN, NS, NS, NSEEN, L0]),
-    ('Microsoft Copilot (Copilot only)', 'https://adoption.microsoft.com/en-us/copilot/prompt-gallery/', [NSEEN, NS, NS, NSEEN, L0]),
-    ('OpenAI Academy (ChatGPT only)', 'https://academy.openai.com/public/resources/chatgpt-for-any-role', [NSEEN, NS, NS, NSEEN, L0]),
+    ('prompts.chat', 'https://prompts.chat/', [NSEEN, N('Open licence (CC0), no promise'), X('Sponsor block'), NSEEN, L0, Y()]),
+    ('PromptBase', 'https://promptbase.com/', [NSEEN, X('Sells prompts'), X('Ad banner'), NSEEN, N('One ad link only'), Y()]),
+    ('God of Prompt', 'https://godofprompt.ai/prompt-library', [NSEEN, X('Paid premium'), NS, NSEEN, L0, N('Account, saving not seen')]),
+    ('Fabric', 'https://github.com/danielmiessler/Fabric', [NSEEN, N('Open licence (MIT), no promise'), NS, NSEEN, L0, N('No')]),
+    ('LangChain Hub', 'https://docs.langchain.com/langsmith/manage-prompts', [NSEEN, NS, NS, NSEEN, L0, Y()]),
+    ('PromptHero', 'https://prompthero.com/', [NSEEN, X('Paid plans'), X('Referral ads'), NSEEN, L0, Y()]),
+    ('FlowGPT', 'https://flowgpt.com/', [NSEEN, Q, Q, NSEEN, Q, Y()]),
+    ('AIPRM', 'https://www.aiprm.com/', [NSEEN, X('Paid plans'), NS, NSEEN, L0, X('Saving is paid')]),
+    ('Snack Prompt', 'https://snackprompt.com/', [NSEEN, NS, NS, NSEEN, L0, Y()]),
+    ('Anthropic (Claude only)', 'https://code.claude.com/docs/en/prompt-library', [NSEEN, NS, NS, NSEEN, L0, N('No')]),
+    ('Google Vertex AI (Gemini only)', 'https://docs.cloud.google.com/vertex-ai/generative-ai/docs/prompt-gallery', [NSEEN, NS, NS, NSEEN, L0, N('Cloud account, no saving seen')]),
+    ('Microsoft Copilot (Copilot only)', 'https://adoption.microsoft.com/en-us/copilot/prompt-gallery/', [NSEEN, NS, NS, NSEEN, L0, Y()]),
+    ('OpenAI Academy (ChatGPT only)', 'https://academy.openai.com/public/resources/chatgpt-for-any-role', [NSEEN, NS, NS, NSEEN, L0, NSEEN]),
 ]
-COLS = ['Collects other galleries’ prompts every day', 'Promises free forever', 'Promises no ads', 'Tunes each prompt for your AI', 'Links the other galleries']
+COLS = ['Collects other galleries’ prompts every day', 'Promises free forever', 'Promises no ads', 'Tunes each prompt for your AI', 'Links the other galleries', 'Free login that saves your prompts']
 
 def _w(R, sub, pg):
     os.makedirs(os.path.join(R, sub), exist_ok=True)
@@ -38,6 +38,47 @@ def _date(iso):
         return d.strftime('%B ') + str(d.day) + d.strftime(', %Y')
     except Exception:
         return 'not yet'
+
+FBJS = """<script>
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-fb]');if(!b)return;var q=b.getAttribute('data-fb')+': "Our aim is that nobody ever needs another prompt site."';
+if(window.HMRDock&&HMRDock.openFeedback)HMRDock.openFeedback({quote:q});else if(window.CB&&CB.toast)CB.toast('Use the HMR button at the bottom of the page to tell us.')});
+</script>
+"""
+
+# our own column for the feature table: (feature name in the matrix or new, our value)
+OURS = [
+ ('Keyword search','yes'),('AI or semantic search','Being added'),('Category or topic browse','yes'),('Pick your AI or model per run','yes'),
+ ('Variables or placeholders','yes'),('Interactive fill-in fields in the page','yes'),('Copy button','yes'),('Open or run in an AI with one click','yes'),
+ ('Example output shown','Our own prompts'),('"Why it works" or tips per prompt','yes'),('Votes, likes or ratings','On this device'),('Sort popular or trending','Being added'),
+ ('Save, favourites or collections','On this device'),('Accounts','Being added'),('Private prompts','On this device'),('Prompt builder or generator','yes'),
+ ('Public submission','yes'),('Voice input (speak instead of typing)','yes'),('Open data export or dataset','yes'),('Comments or reviews','no'),
+ ('Version history','no'),('Public API','no'),('Sell prompts or creator earnings','Never'),('Ads','Never'),
+]
+
+def _feats(E):
+    try: M = json.load(open(os.path.join(os.path.dirname(__file__), 'gallery_features.json')))
+    except Exception: return ''
+    names = [g[0] for g in GALLERIES]
+    def c(v, us=False):
+        v = (v or '?').strip(); lv = v.lower()
+        if lv == 'yes': return '<td class="y">✓</td>'
+        if lv == 'no': return '<td class="q">no</td>'
+        if lv == 'not seen' or v == '?': return '<td class="q">?</td>'
+        if lv == 'paid': return '<td class="x">Paid</td>'
+        if us and lv == 'never': return '<td class="y">Never</td>'
+        return '<td class="n">%s</td>' % E(v)
+    body = ''
+    for f, ours in OURS:
+        theirs = M['features'].get(f)
+        label = {'Ads': 'Ads on the site'}.get(f, f)
+        if f == 'Ads':
+            theirs = ['Sponsors', 'yes', '?', 'no', '?', 'yes', '?', '?', '?', 'no', 'no', 'no', 'no']
+        cells = ''.join(c(v) for v in (theirs or ['?'] * len(names)))
+        body += '<tr><th scope="row">%s</th>%s%s</tr>\n' % (E(label.replace('"', '')), c(ours, True), cells)
+    short = ['prompts.chat', 'PromptBase', 'God of Prompt', 'Fabric', 'LangChain', 'PromptHero', 'FlowGPT', 'AIPRM', 'Snack', 'Anthropic', 'Vertex AI', 'Copilot', 'OpenAI']
+    return ('<h3 id="feat-h">Every feature, side by side</h3>\n<div class="cmpw" role="region" aria-labelledby="feat-h" tabindex="0"><table class="cmp feat"><thead><tr><th scope="col">Feature</th><th scope="col">claudebomb</th>%s</tr></thead><tbody>\n%s</tbody></table></div>\n'
+            '<p class="mut sm" style="max-width:46rem">✓ means we saw it on the site on %s. ? means we did not see it, which is not proof it is missing. On this device means it works today without an account. Being added means we are building it now.</p>') % (
+            ''.join('<th scope="col">%s</th>' % E(x) for x in short), body, E(M.get('checked', CHECKED)))
 
 def build(R, E, head, hdr, FOOT, TAIL, V):
     nav = [('/#bank', 'Our prompts'), ('/library/', 'Search all'), ('/build/', 'Build'), ('/why/', 'Why us')]
@@ -52,7 +93,7 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
         k, t = c
         return '<td class="%s">%s</td>' % (k, E(t))
     rows = ('<tr class="us"><th scope="row">claudebomb</th><td class="y">Yes, daily (the open ones)</td><td class="y">Yes</td><td class="y">Yes</td>'
-            '<td class="n">Being added</td><td class="y">Yes, every one here</td></tr>\n')
+            '<td class="n">Being added</td><td class="y">Yes, every one here</td><td class="n">Coming. Saves on this device today</td></tr>\n')
     for name, url, cells in GALLERIES:
         rows += '<tr><th scope="row"><a href="%s">%s</a></th>%s</tr>\n' % (url, E(name), ''.join(cell(c) for c in cells))
     pg = head('Why claudebomb | claudebomb.com', 'One free place for every prompt, for every AI, updated every day. No ads, free forever. How claudebomb compares with every other prompt gallery.', 'https://claudebomb.com/why/')
@@ -83,9 +124,34 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
    <li><b>Publish</b>The best version, free, with the whole debate.<span class="st on">Live for our own prompts</span></li>
   </ol>
   <h2 id="w5">5. Serious hardware, given to this</h2>
-  <p style="max-width:46rem">Our home server runs two NVIDIA RTX 5090s, the most powerful graphics card made for home PCs. About 4 in 1,000 Steam gamers have even one (<a href="https://www.digitalcitizen.life/steam-hardware-survey-october-2026-rtx-5070-steam-frame/">Steam survey, October 2026</a>). Most people with a machine like this play games on it or use it to make money. We are putting ours to work on prompts, starting with AI search and prompt testing, because we like doing this.</p>
+  <p style="max-width:46rem">Our home server runs two NVIDIA RTX 5090s, the most powerful graphics card made for home PCs. Claude estimated how rare that is: fewer than 1 in 100,000 people own a machine like it (the top 0.001%%), and among people who run AI on their own computers, it is roughly the top 1%%. Most people with a machine like this use it to make money. We are putting ours to work on prompts, starting with AI search and prompt testing, because we like doing this.</p>
+  <details class="note" style="max-width:46rem"><summary>How Claude estimated this</summary>
+  <p>No one publishes how many RTX 5090s exist, so this is an estimate with wide error bars. About 0.41%% of computers in the <a href="https://www.digitalcitizen.life/steam-hardware-survey-october-2026-rtx-5070-steam-frame/">Steam Hardware Survey for October 2026</a> have one RTX 5090. Steam has about <a href="https://www.gamesradar.com/games/steam-is-more-than-50-percent-larger-than-playstation-according-to-experts-estimate-which-puts-valves-store-around-200-million-monthly-active-users/">198 million monthly users</a>, so about 0.8 million cards there. Adding AI and workstation buyers Steam misses gives 0.5 to 2 million cards worldwide.</p>
+  <p>Two in one machine is much rarer than one. We assumed 1%% to 5%% of cards sit in two-card home machines (no survey counts this), which gives about 2,500 to 50,000 such machines. Out of about 8.3 billion people, that is at most 1 in 160,000.</p>
+  <p>For people who run AI at home, estimates of that group run from about 733,000 (<a href="https://usefulai.com/subreddits">r/LocalLLaMA members</a>) to 8.9 million (<a href="https://techcrunch.com/2026/07/09/popular-open-source-ai-developer-tool-ollama-raises-65m-grows-to-nearly-9m-users/">Ollama's own user count</a>). That puts two RTX 5090s anywhere from the top 0.03%% to the top 7%%, and roughly the top 1%% in the middle case. Spot a better number? Tell us with the HMR button below.</p>
+  </details>
   <h2 id="w6">6. Free forever, with no ads</h2>
   <p style="max-width:46rem">We promise claudebomb will stay 100%% free, with no ads, forever. We pay for the AI and the hardware ourselves. Our own prompts are free to use under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, so they stay free even if we are gone. Our aim is that nobody ever needs another prompt site.</p>
+  <p class="agree"><b>Do you agree?</b> <button class="btn ghost" type="button" data-fb="Agree">Agree</button><button class="btn ghost" type="button" data-fb="Disagree">Disagree</button><button class="btn ghost" type="button" data-fb="I have a question">I have a question</button></p>
+  <h2 id="w7">7. Why this can stay free</h2>
+  <figure class="peak" aria-labelledby="peakc">
+   <svg viewBox="0 0 600 220" role="img" aria-label="Prompt galleries climbing a mountain. The ones that must make money slip back; claudebomb stands at the peak.">
+    <path d="M10 210 L300 30 L590 210 Z" fill="currentColor" opacity=".08"/>
+    <path d="M10 210 L300 30 L590 210" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>
+    <g fill="currentColor" opacity=".45"><circle cx="90" cy="160" r="9"/><circle cx="150" cy="123" r="9"/><circle cx="205" cy="89" r="9"/><circle cx="440" cy="117" r="9"/><circle cx="500" cy="154" r="9"/></g>
+    <g font-size="13" fill="currentColor" opacity=".75"><text x="40" y="190">Ads</text><text x="120" y="110">Paywalls</text><text x="455" y="100">Sponsors</text></g>
+    <line x1="300" y1="30" x2="300" y2="2" stroke="currentColor" stroke-width="2"/>
+    <path d="M300 2 L345 11 L300 20 Z" fill="#2fbf71"/>
+    <circle cx="300" cy="30" r="11" fill="#2fbf71"/>
+    <text x="318" y="44" font-size="15" font-weight="700" fill="currentColor">claudebomb</text>
+   </svg>
+   <figcaption id="peakc">In the past, a prompt gallery had to make money to stay on top, with ads, paywalls or sponsors. We already paid for our hardware and use AI every day anyway, so claudebomb is a side project we keep free for everyone, forever. We want to settle the best place for prompts once and for all, while we work on other problems.</figcaption>
+  </figure>
+  <ul class="fam">
+   <li><a href="#family-soon">Our family of websites, free and ad-free forever</a> <span class="mut">(list coming soon)</span></li>
+   <li><a href="#family-soon">Sites free for at least the first year (we may not afford them forever)</a> <span class="mut">(list coming soon)</span></li>
+  </ul>
+  <p id="family-soon" class="mut sm">We are putting both lists together now. They will appear here.</p>
  </div>
 </section>
 <section class="sec" aria-labelledby="cmp-h">
@@ -99,12 +165,16 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
   </table>
   </div>
   <p class="mut sm" style="max-width:46rem">We read each gallery's main page on %s. Yes means the site says or shows it. ✗ marks paid plans or ads we saw. Not stated means the site makes no such promise. None seen and Not seen mean we looked and did not find it. ? means the site would not load for us. Spot a mistake? Tell us with the HMR button below and we will fix it.</p>
-  <div class="btns"><a class="btn cta" href="/library/">Search for your prompt now</a></div>
+  @@FEATS@@
+  <p class="close"><b>You're already here. Just bookmark this page and create a free-forever login.</b></p>
+  <div class="btns"><a class="btn cta" href="/library/">Search for your prompt now</a><a class="btn ghost cta" href="/my/">Create a free-forever login</a></div>
+  <p class="mut sm">Sign-in is being set up. Until it is live, My prompts saves on this device.</p>
  </div>
 </section>
 </main>
 ''' % ('{:,}'.format(nopen), E(last), E(CHECKED), ''.join('<th scope="col">%s</th>' % E(c) for c in COLS), rows, E(CHECKED))
-    pg += FOOT + TAIL % (V, '')
+    pg = pg.replace('@@FEATS@@', _feats(E))
+    pg += FOOT + TAIL % (V, FBJS)
     _w(R, 'why', pg)
 
     # ---------- /library/changes/ ----------

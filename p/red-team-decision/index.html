@@ -29,6 +29,7 @@
   <p class="saves">What a sharp advisor would charge hours for.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -108,6 +109,42 @@ Keep it tight. Plain words. No flattery.
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Decision: leave my salaried bookkeeping job to run a coffee cart full time. Current choice: quit in March. What matters: keep at least 6 months of savings, evenings with my kids, low money risk. My answers to its questions: 9 months of savings, partner has steady income, no permit yet, sold coffee at 2 weekend markets with good sales.</p>
+  <pre class="exo">1. Decision: should you quit your job in March to run a coffee cart full time?
+Options: quit in March; go part time and run the cart on weekends; wait until the permit and a regular spot are secured; do nothing.
+
+3. Strongest case for each
+Quit: full attention, faster growth, real test of demand.
+Part time: keeps income while you learn weekday sales.
+Wait: removes the biggest unknown, the permit, at no cost.
+Do nothing: zero risk, but the idea may fade.
+
+4. Pre-mortem, most likely first
+1. The permit or spot took months, burning savings.
+2. Weekday sales were far below weekend markets.
+3. Bad weather cut whole weeks of income.
+4. Early mornings and events ate your evenings.
+
+5. Base rates: many small food businesses close within a few years. I am not sure of exact figures for coffee carts and will not guess one.
+
+6. Scores
+| Goal | Quit | Part time | Wait |
+| Savings | 2, burns cash | 4, income stays | 4, no cost |
+| Evenings | 2, events at night | 3, weekends busy | 3, unchanged |
+| Low risk | 1, all in | 4, testable | 4, safe |
+
+7. What would flip it: a confirmed permit and weekday sales near weekend levels. Check this week: call the city permit office, and sell on two weekday mornings.
+
+8. Verdict: do not quit in March; go part time first. Confidence: moderate. Safest first step: apply for the permit now.
+(Shortened for this page.)</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -122,7 +159,7 @@ Keep it tight. Plain words. No flattery.
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "red-team-decision", "title": "Red-team my decision before I make it", "text": "I am about to make a decision and I want you to stress-test it. Be honest, not polite. Disagree with me where the evidence does.\n\nThe decision: [WHAT I AM DECIDING]\nMy current choice: [WHAT I PLAN TO DO]\nWhat matters most to me: [MY GOALS AND LIMITS: MONEY, TIME, PEOPLE, RISK]\n\nDo these, in order:\n1. Restate the decision in one sentence and list the options, including ones I did not mention, such as waiting, doing a smaller version, or doing nothing.\n2. Ask me up to 5 questions whose answers would change your view. Wait for my answers.\n3. Steelman each option: the strongest honest case for it.\n4. Pre-mortem: imagine it is one year later and my choice failed badly. Write the 5 most likely reasons why, most likely first.\n5. Base rates: what usually happens to people who make this kind of choice? Say what you know, how sure you are, and what you do not know. Do not make up numbers.\n6. Score the options in a small table: each of my goals as a row, each option as a column, a 1 to 5 score with a reason of a few words in each cell.\n7. Name the one or two facts that would flip the result, and how I could check them cheaply this week.\n8. Give your verdict in one sentence, your confidence, and the safest first step that keeps my options open.\n\nKeep it tight. Plain words. No flattery.\n", "load": false, "paths": ["prompts/red-team-decision.md"], "feats": [{"name": "Money focus", "want": "Weigh cost and cash flow heavily, and show the worst case in money terms."}, {"name": "Ask before scoring", "want": "Wait for my answers to your questions before you score anything.", "dont": "Do not wait for my answers; give your best read with what you have, then ask."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -130,7 +167,9 @@ Keep it tight. Plain words. No flattery.
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -159,6 +198,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

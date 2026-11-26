@@ -43,6 +43,7 @@
     if (!box) return; box.textContent = '';
     if (A.user) {
       box.appendChild(C.el('p', null, 'Signed in as ' + A.user.email + '. Your saved prompts follow you to any device.'));
+      box.appendChild(C.el('p', 'mut', 'claudebomb.com is part of the HMR family of websites. Your login will also work on the other HMR family sites as they join, and we will list them here. All of them are free forever, with never any ads.'));
       var lb = C.el('label', 'lbl', 'Name to credit you with (leave blank for no credit)'), nm = C.el('input', 'inp');
       nm.id = 'credit'; lb.setAttribute('for', 'credit'); nm.value = C.ls('cb-credit') || '';
       nm.addEventListener('change', function () { C.ls('cb-credit', nm.value.trim() || null); A.push(C.mine()); });

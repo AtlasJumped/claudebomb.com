@@ -29,6 +29,7 @@
   <p class="saves">What an hour with a patient expert would give you.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -106,6 +107,51 @@ Quote the exact text for every claim you make about the document. If a part is u
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Gym membership from IronLeaf Fitness. They want me to sign. Key text: &quot;Monthly dues of $39.99. Annual maintenance fee of $59, billed 60 days after joining. Minimum term 12 months. Membership renews automatically month to month. Cancellation requires 30 days written notice delivered in person or by certified mail. Early termination fee: $150.&quot;</p>
+  <pre class="exo">1. The point
+This is a 12 month gym contract. They want you to sign and agree to monthly payments.
+
+2. Money
+| Charge | What for | When |
+| $39.99 | Monthly dues | Every month |
+| $59 | &quot;Annual maintenance fee&quot; | &quot;60 days after joining&quot;, then yearly |
+| $150 | &quot;Early termination fee&quot; | If you leave before 12 months |
+Renews by itself: &quot;renews automatically month to month.&quot;
+
+3. Dates
+Day 60: maintenance fee.
+Month 12: minimum term ends.
+30 days before you want to stop: notice must arrive.
+
+4. Obligations
+You: pay monthly, give 30 days notice.
+They: the text you gave says nothing about what they provide.
+
+5. Traps
+&quot;delivered in person or by certified mail&quot;: hard to cancel; no email or online option.
+&quot;billed 60 days after joining&quot;: easy to miss.
+
+6. Missing
+Hours, freezing for illness or moving, price increase limits, refund rules.
+
+7. Questions to send
+&quot;Can I cancel by email instead of certified mail?&quot;
+&quot;Can the $59 fee be waived?&quot;
+&quot;Can you freeze the membership if I am ill or move?&quot;
+
+8. Draft email
+Hello, before I sign, could you confirm whether I can cancel by email and whether the annual maintenance fee can be waived? Thank you.
+
+This is general information, not legal advice. For a large or long contract, a consumer advice service can review it.
+(Shortened for this page.)</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -120,7 +166,7 @@ Quote the exact text for every claim you make about the document. If a part is u
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "paperwork-explainer", "title": "Explain this bill, contract, or letter line by line", "text": "Read the document I am giving you and explain it to me in plain language. I am not a lawyer or accountant. Treat this as general information, not legal or financial advice, and tell me when I should ask a professional.\n\n[PASTE THE TEXT OR ATTACH THE FILE. SAY WHAT IT IS AND WHAT I AM BEING ASKED TO DO, FOR EXAMPLE SIGN, PAY, OR RENEW.]\n\nGive me:\n1. The point in two sentences: what this is, and what it wants from me.\n2. Money: every amount, fee, rate, penalty, and charge, in a table with what it is for and when it applies. Point out anything that can go up, renews by itself, or is charged later.\n3. Dates: every deadline, notice period, and renewal date, soonest first.\n4. My obligations and theirs, side by side.\n5. Traps: clauses that are unusual, one-sided, hard to cancel, or easy to miss, with the exact words quoted and why they matter.\n6. What is missing that I would expect to see.\n7. Questions to ask before I sign or pay, worded so I can send them as they are.\n8. A short draft reply or email if I need to dispute, cancel, or ask for changes.\n\nQuote the exact text for every claim you make about the document. If a part is unclear or you cannot read it, say so instead of guessing.\n", "load": false, "paths": ["prompts/paperwork-explainer.md"], "feats": [{"name": "Compare two versions", "want": "I will give you two versions. Show what changed between them, line by line."}, {"name": "Draft a reply", "want": "After the explanation, draft a short, polite reply asking my questions."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -128,7 +174,9 @@ Quote the exact text for every claim you make about the document. If a part is u
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -157,6 +205,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

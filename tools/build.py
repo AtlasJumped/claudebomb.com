@@ -60,7 +60,7 @@ FOOT = '''<footer class="foot">
 </footer>
 <div class="toast" id="toast" role="status"></div>
 '''
-TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=2"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/v6/funsies.js?v=1" defer></script>\n'
+TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=3"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=1"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
         '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
@@ -303,6 +303,7 @@ for p in ALL:
   <p class="saves">%s</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -357,6 +358,13 @@ for p in ALL:
 ''' % (E(p['category']), E(p['category']), E(p['title']), E(p['summary']), E(p['saves']), E(p['does']), pits,
        feat_rows(feats, 'f'), E(p.get('text', '') if not p.get('load') else 'Loading the text...'),
        twopane('imp', 'Your version of this prompt', 'Paste your version here, or press Start from this prompt.', 'Talk about it', 'What does your version do well? Which pitfalls does it fix? Anything else.'), src)
+    EX = json.load(open(os.path.join(R, 'prompts/examples.json'))) if os.path.exists(os.path.join(R, 'prompts/examples.json')) else {}
+    ex = EX.get(p['id'])
+    if ex:
+        exs = ('<section class="sec" aria-labelledby="ex-h">\n <div class="wrap">\n  <h2 id="ex-h">Example answer</h2>\n'
+               '  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>\n'
+               '  <details class="ex"><summary>See the example</summary>\n  <p><b>What we gave it:</b> %s</p>\n  <pre class="exo">%s</pre>\n  </details>\n </div>\n</section>\n') % (E(ex['input']), E(ex['output']))
+        pg = pg[:pg.rindex('</main>')] + exs + pg[pg.rindex('</main>'):]
     pg += FOOT
     js = '''<script id="pdata" type="application/json">%s</script>
 <script>
@@ -364,7 +372,9 @@ for p in ALL:
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\\s+$/,'');var v=a.length?t+'\\n\\n---\\n\\nMy adjustments. These win over anything above where they differ:\\n- '+a.join('\\n- ')+'\\n':t+'\\n';return v.replace(/\\s+$/,'')+CZ.text()+(CZ.count()?'':'\\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}

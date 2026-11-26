@@ -29,6 +29,7 @@
   <p class="saves">A day of reading, organized in minutes.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -107,6 +108,46 @@ Rules: never invent a source, a quote, a number, or a link. If you are not sure 
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Question: Do standing desks improve the health of office workers? Context: my team asked for them and I need to decide whether to spend part of our budget on them. (Example run without web search.)</p>
+  <pre class="exo">No web search in this run. Working only from what I know, which stops at my training cutoff.
+
+Answer
+Sit stand desks reliably cut sitting time, but good evidence that they improve health outcomes like weight, blood pressure or back pain is thin. Confidence: moderate.
+
+Sub-questions
+1. Do they reduce sitting?
+2. Does less sitting improve health?
+3. Is standing itself healthy?
+4. Do people keep using them?
+
+Key claims
+| Claim | Grade | Source |
+| Sit stand desks reduce sitting at work in the short term | Moderate | Cochrane review on workplace sitting interventions, 2018 |
+| Long sitting is linked to worse health | Moderate | WHO guidelines on physical activity and sedentary behaviour, 2020 |
+| Standing all day is not better than sitting | Weak | Mixed studies; I cannot name a single settled source |
+| Use drops after a few months | Weak | Small follow-up studies |
+
+Known, likely, unknown
+Known: they reduce sitting.
+Likely: moving more matters more than standing still.
+Unknown: long term health effects.
+
+What would change the answer
+A large trial of 12 months or more showing health gains.
+
+Best sources to read
+1. The 2018 Cochrane review on reducing sitting at work.
+2. The WHO 2020 physical activity guidelines.
+I am not sure of other specific sources, so I leave them out. A recent systematic review of long term trials would settle the point.
+(Shortened for this page.)</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -121,7 +162,7 @@ Rules: never invent a source, a quote, a number, or a link. If you are not sure 
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "research-brief", "title": "A research brief that grades its own sources", "text": "Research this question for me: [QUESTION]. Why I am asking and what I will do with the answer: [CONTEXT]. If you can search the web, do; if not, say so and work only from what you know, with your knowledge cutoff stated.\n\nMethod:\n1. Restate the question precisely and list the 3 to 6 sub-questions that together answer it.\n2. For each sub-question, gather evidence from the strongest sources available: systematic reviews and official data first, then peer-reviewed studies, then expert bodies, then reputable journalism. Use other sources only if nothing better exists, and label them.\n3. For every claim, give the source, the year, and a grade: Strong (consistent, high-quality evidence), Moderate, Weak, or Disputed.\n4. Show where good sources disagree, and the most likely reason (different populations, methods, dates, or interests).\n5. Separate what is known, what is likely, and what is unknown.\n\nDeliver:\n- A one-paragraph answer up top, with your confidence.\n- A table of key claims: claim, grade, sources.\n- What would change the answer.\n- A short list of the 5 best sources to read myself, with links if you have them.\n\nRules: never invent a source, a quote, a number, or a link. If you are not sure a source exists, leave it out and say what kind of source would settle the point. Plain words; define any technical term once.\n", "load": false, "paths": ["prompts/research-brief.md"], "feats": [{"name": "Recent only", "want": "Prefer sources from the last 2 years and say the date of each."}, {"name": "One-page brief", "want": "Fit the final brief on one page.", "dont": "Give the full brief with every source."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -129,7 +170,9 @@ Rules: never invent a source, a quote, a number, or a link. If you are not sure 
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -158,6 +201,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>

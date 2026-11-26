@@ -29,6 +29,7 @@
   <p class="saves">Replaces weeks of correcting your AI one chat at a time.</p>
   <div class="btns"><button class="btn" type="button" data-copyv data-copym>Copy prompt</button><a class="btn ghost" href="#prompt">Make it yours</a></div>
   <p class="st" id="vinfo"></p>
+  <div class="act" id="act"></div>
  </div>
 </section>
 
@@ -109,6 +110,61 @@ Start now with your first question.
   <p class="mut" id="contrib"></p>
  </div>
 </section>
+<section class="sec" aria-labelledby="ex-h">
+ <div class="wrap">
+  <h2 id="ex-h">Example answer</h2>
+  <p class="mut">Written by Claude from this prompt and a made-up example. Your answer will differ.</p>
+  <details class="ex"><summary>See the example</summary>
+  <p><b>What we gave it:</b> Interview finished. Condensed answers from Maya, who runs a small home bakery: wants short answers in bullet lists, hates &quot;great question&quot; and long intros, sleeps on big decisions, thinks best 6 to 9 am, keeps her family&#x27;s health private, wants mistakes owned in one line. Goal this year: open a weekend stall. Tool: a chat assistant with a Custom instructions box.</p>
+  <pre class="exo">How to work with Maya
+
+Who I am
+I run a small home bakery.
+I like plain talk.
+
+What I am working toward
+Open a weekend market stall this year.
+
+How to answer me
+Short. Bullet lists, not paragraphs.
+Answer first, then reasons if I ask.
+
+Always
+Give me the next concrete step.
+Tell me when you are unsure.
+
+Never
+Start with &quot;great question&quot; or praise.
+Write long intros or recaps.
+
+When I am deciding
+Lay out two or three options with costs.
+Do not push me to decide today. I sleep on big choices.
+
+Timing
+I think best 6 to 9 am. Save big questions for then.
+
+Privacy
+Do not ask about or store my family&#x27;s health.
+
+When something goes wrong
+Own your mistake in one line, then fix it.
+Point out my mistakes plainly.
+
+Short version (for small boxes)
+Maya, home baker, opening a weekend stall. Short bullet answers, answer first. No praise, no long intros. Say when unsure. Give options with costs on decisions; she sleeps on big ones. Best hours 6 to 9 am. Never ask about family health. Own mistakes in one line.
+
+Where to paste it
+1. Open Settings in your assistant.
+2. Find the Personalization or Custom instructions section.
+3. Paste the full manual in the main box, or the short version if the box is small.
+4. Click Save, then start a new chat to test it.
+
+Reminder: review this every three months.
+(Shortened for this page.)</pre>
+  </details>
+ </div>
+</section>
 </main>
 <footer class="foot">
  <div class="wrap">
@@ -123,7 +179,7 @@ Start now with your first question.
 <script src="/assets/cb.js?v=6"></script>
 <script src="/assets/cb-config.js?v=1"></script>
 <script src="/assets/cb2.js?v=1"></script>
-<script src="/assets/cb-account.js?v=2"></script>
+<script src="/assets/cb-account.js?v=3"></script>
 <script src="/assets/cb-boom.js?v=1"></script>
 <script id="pdata" type="application/json">{"id": "operating-manual", "title": "Interview me into a personal operating manual", "text": "You are going to interview me and then write my personal operating manual: one page that tells any AI assistant how to work with me. I will paste the result into the custom instructions or memory of every AI I use.\n\nHow to run the interview:\n1. Ask me one question at a time. Wait for my answer before the next one. Keep each question short. I may answer by voice, so forgive typos and filler.\n2. Cover these areas, in this order, about 25 questions in all: what I do and what I am working toward this year; how I like answers (length, tone, lists or prose, how much detail); what annoys me in AI answers; what I want you to always do and never do; how I make decisions and what I want from you when I am deciding; my schedule and energy (when I think best, when I should not be bothered); the people and projects that matter most; what I want to keep private; how I want you to handle mistakes, yours and mine.\n3. After each area, say back in one sentence what you heard, and let me correct it.\n4. If an answer is vague, ask one follow-up with two or three concrete options to pick from.\n5. Never guess facts about me. If I skip a question, leave that part out.\n\nThen write the manual:\n- Title: \"How to work with [my first name]\".\n- Sections: Who I am (3 lines), What I am working toward, How to answer me, Always, Never, When I am deciding, Timing, Privacy, When something goes wrong.\n- Use my own words where you can. Each rule is one line. Under 450 words in all.\n- End with a short version under 1,500 characters for tools with small instruction boxes.\n\nFinally, tell me exactly where to paste it in the AI tool I name, step by step, and remind me to review it every three months.\n\nStart now with your first question.\n", "load": false, "paths": ["prompts/operating-manual.md"], "feats": [{"name": "Shorter interview", "want": "Keep the interview to about 12 questions, the most important ones first.", "dont": "Do the full interview, about 25 questions."}, {"name": "Work and home split", "want": "Write two versions: one for work tools and one for personal tools."}, {"name": "Short replies", "want": "Keep each reply short, under 150 words, unless I ask for more.", "dont": "Give full, detailed replies."}, {"name": "Plain words", "want": "I am new to this. Use plain words and explain any term the first time.", "dont": "I know this area well. Skip the basics."}, {"name": "I will talk, not type", "want": "I will often answer by voice. Forgive typos and filler, and ask if you cannot tell what I meant."}, {"name": "Tables", "want": "Use tables when you compare things.", "dont": "Do not use tables. I read on a phone."}, {"name": "One question at a time", "want": "Ask me one question at a time.", "dont": "Put all your questions in one message so I can answer them together."}, {"name": "Say where facts come from", "want": "When you state a fact, say where it comes from, or say plainly that you are not sure."}], "fields": []}</script>
 <script>
@@ -131,7 +187,9 @@ Start now with your first question.
 var C=window.CB,D=JSON.parse(document.getElementById('pdata').textContent),ed=document.getElementById('ed'),ORIG=D.text,KEY='cb-ed-'+D.id,KF='cb-f-'+D.id;
 function feats(){var out=[];D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');var v=r?r.value:'';if(v==='want')out.push(f.want);else if(v==='dont'&&f.dont)out.push(f.dont)});return out}
 var CZ=C.custom(document.getElementById('cz'),{id:D.id,fields:D.fields});CZ.on(function(){info()});
+var AB=document.getElementById('act');if(AB)AB.setAttribute('data-act',D.id);
 function version(){var a=feats(),t=ed.value.replace(/\s+$/,'');var v=a.length?t+'\n\n---\n\nMy adjustments. These win over anything above where they differ:\n- '+a.join('\n- ')+'\n':t+'\n';return v.replace(/\s+$/,'')+CZ.text()+(CZ.count()?'':'\n')}
+window.CB_PROMPT=version;
 function info(){var a=feats(),edited=ed.value!==ORIG&&ORIG;var s=[];if(a.length)s.push(a.length+(a.length===1?' feature':' features')+' picked');if(edited)s.push('your edits');if(CZ.count())s.push('your details');document.getElementById('adj').textContent=a.length?'Added at the end: '+a.join(' '):'No features picked. The prompt copies as written.';document.getElementById('vinfo').textContent=s.length?'Copy prompt includes '+s.join(' and ')+'.':''}
 function saveF(){var o={};D.feats.forEach(function(f,i){var r=document.querySelector('input[name="f'+i+'"]:checked');if(r&&r.value)o[i]=r.value});C.ls(KF,JSON.stringify(o))}
 try{var o=JSON.parse(C.ls(KF)||'{}');Object.keys(o).forEach(function(i){var r=document.querySelector('input[name="f'+i+'"][value="'+o[i]+'"]');if(r)r.checked=true})}catch(e){}
@@ -160,6 +218,7 @@ try{var c=JSON.parse(sessionStorage.getItem(HK)||'null');if(c){draw(c)}}catch(e)
 if(!c)Promise.all(D.paths.map(function(pa){return fetch('https://api.github.com/repos/AtlasJumped/claudebomb.com/commits?per_page=30&path='+encodeURIComponent(pa)).then(function(r){if(!r.ok)throw 0;return r.json()})})).then(function(rs){var seen={},list=[];rs.forEach(function(r){r.forEach(function(x){if(seen[x.sha])return;seen[x.sha]=1;var n=(x.author&&x.author.login)||(x.commit.author&&x.commit.author.name)||'unknown';list.push({t:x.commit.author.date,date:new Date(x.commit.author.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),who:n,msg:x.commit.message.split('\n')[0],url:x.html_url})})});list.sort(function(a,b){return a.t<b.t?1:-1});try{sessionStorage.setItem(HK,JSON.stringify(list))}catch(e){}draw(list)}).catch(fail);
 })();
 </script>
+<script src="/assets/cb-act.js?v=1"></script>
 <script src="/v6/funsies.js?v=1" defer></script>
 <script src="/hmr-dock.js?v=6.6.1" data-site="claudebomb.com" defer></script>
 </body></html>
