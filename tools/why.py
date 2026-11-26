@@ -245,8 +245,8 @@ def build_wiki(R, E, head, hdr, FOOT, TAIL, V):
  <div class="wrap">
   <h2 id="give">Our ask</h2>
   <p style="max-width:46rem">If you're not already donating to Wikipedia, please donate to one of us.</p>
-  <div class="btns"><a class="btn cta" href="https://donate.wikimedia.org/">Donate to Wikipedia</a><a class="btn ghost cta" href="#us">Donate to us</a></div>
-  <p id="us" class="mut" style="max-width:46rem">Donating to us is coming soon. We are setting up a way to give where every dollar goes straight back to the cause, and we'll put it here. Until then, Wikipedia is a great choice.</p>
+  <div class="btns"><a class="btn cta" href="https://donate.wikimedia.org/">Donate to Wikipedia</a><a class="btn ghost cta" href="/donate/">Donate to us</a></div>
+  <p class="mut" style="max-width:46rem">Giving to us is not open yet. <a href="/donate/">See the three ways it will work</a>. Until then, Wikipedia is a great choice.</p>
  </div>
 </section>
 </main>
@@ -298,3 +298,41 @@ def build_tracker(R, E, head, hdr, FOOT, TAIL, V):
        items or '<li>No changes logged yet. The first check records where every gallery stands.</li>', fl or '<li>The first weekly search has not run yet.</li>')
     pg += FOOT + TAIL % (V, '')
     _w(R, 'tracker', pg)
+
+
+def build_donate(R, E, head, hdr, FOOT, TAIL, V):
+    nav = [('/#bank', 'Our prompts'), ('/library/', 'Search all'), ('/wikipedia/', 'Wikipedia'), ('/why/', 'Why us')]
+    tiers = [
+        ('Recommended', 'Spend it however you see fit', 'Choose this and you let us spend the money on whatever we decide, including now and then a reward for ourselves for the many hours a week we put in.', 'hl'),
+        ('Upkeep', 'The piggy bank', 'Everything goes into a piggy bank that keeps the sites running: hardware, software, the subscriptions we pay for every month, and in the future, people we hire.', ''),
+        ('You choose', 'Tell us what it is for', 'Like the piggy bank, everything goes back into the work, but you pick where. Love one of our sites in particular, or just love dogs? Choose this and tell us.', ''),
+    ]
+    cards = ''.join('<div class="card%s"><p class="mut sm"><b>%s</b></p><h3>%s</h3><p>%s</p><p><button class="btn ghost" type="button" disabled>Coming soon</button></p></div>' % ((' ' + c) if c else '', E(a), E(b), E(t)) for a, b, t, c in tiers)
+    pg = head('Support us | claudebomb.com', 'Three ways to give to the small team behind claudebomb.com and the HMR family of websites, coming soon.', 'https://claudebomb.com/donate/')
+    pg += '<body id="top">\n<a class="skip" href="#ways">Skip to the ways to give</a>\n' + hdr(nav)
+    pg += '''<main>
+<section class="sec hero" aria-labelledby="h1">
+ <div class="wrap">
+  <h1 id="h1" class="sm">Support us</h1>
+  <p class="lead">Our mission: find humanity's problems and build solutions that stay free forever.</p>
+  <p style="max-width:46rem">In full transparency, we are a very small team that just wants to do good things for humanity. Everyone on the team works a full-time job, and we have no plans to stop. Everything so far has been paid for out of our own pockets, and we plan to keep it that way, but it would be really nice if we did not have to.</p>
+ </div>
+</section>
+<section class="sec" aria-labelledby="ways">
+ <div class="wrap">
+  <h2 id="ways">Three ways to give</h2>
+  <p class="mut" style="max-width:46rem">Giving to us is not open yet. When it is, you will pick one of these.</p>
+  <div class="grid">%s</div>
+ </div>
+</section>
+<section class="sec" aria-labelledby="wiki-h">
+ <div class="wrap">
+  <h2 id="wiki-h">Have you heard of Wikipedia?</h2>
+  <p style="max-width:46rem">We have given to Wikipedia 51 times since August 2021. Humanity needs open, free projects like it to be rewarded so they can keep going forever. If you have heard of Wikipedia, please donate to them or to us.</p>
+  <div class="btns"><a class="btn cta" href="https://donate.wikimedia.org/">Donate to Wikipedia</a><a class="btn ghost" href="/wikipedia/">See our receipts</a></div>
+ </div>
+</section>
+</main>
+''' % cards
+    pg += FOOT + TAIL % (V, '')
+    _w(R, 'donate', pg)

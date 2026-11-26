@@ -60,7 +60,7 @@ FOOT = '''<footer class="foot">
 </footer>
 <div class="toast" id="toast" role="status"></div>
 '''
-TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=3"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=1"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
+TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=3"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=1"></script>\n<script src="/assets/cb-gate.js?v=1"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
         '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
@@ -413,9 +413,10 @@ LIBN = build_library(R, E, head, hdr, FOOT, TAIL, V, twopane, ours=[dict(page=p[
 print('library prompts:', LIBN)
 from pages2 import build as build_pages2
 build_pages2(R, E, head, hdr, FOOT, TAIL, V, microw)
-from why import build as build_why, build_wiki, build_tracker
+from why import build as build_why, build_wiki, build_tracker, build_donate
 build_why(R, E, head, hdr, FOOT, TAIL, V)
 build_wiki(R, E, head, hdr, FOOT, TAIL, V)
+build_donate(R, E, head, hdr, FOOT, TAIL, V)
 build_tracker(R, E, head, hdr, FOOT, TAIL, V)
 
 bad = []
