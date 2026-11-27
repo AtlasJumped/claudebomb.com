@@ -76,14 +76,14 @@
     world = new FS.World(); G.world = world; world.platforms = [{ x0: -500, x1: cliffEdge }, { x0: islandX0, x1: viewW + 500 }]; world.bounds = { x0: -400, x1: viewW + 600 };
     world.gScale = save.fun.g; P.clear(); SP.stop(); strikes = [];
     world.cb.onBreak = onBreak; world.cb.onHit = onHit; world.cb.onExplode = onExplode; world.cb.onSplash = onSplash; world.cb.onGround = onGround; world.cb.onThud = function () { A.play('thud'); }; world.cb.onThunder = onThunder; fxq = []; arcs = [];
-    FS.buildStructure(world, level.spec, level.mat, structCx, level.hs);
+    FS.buildStructure(world, level.spec, level.mat, structCx, level.hs); spawnMinions();
     totalLinks = world.links.length; broken = 0; pct = 0; score = 0; shownScore = 0; shotsLeft = 3; shotsUsed = 0; goalMet = false; combo = 0; settleT = 0; endT = 0; resultShown = false; totalFired = false;
     phase = 'aim'; anyFun = funOn(); spawnMeteorT = 1.5; world.t = 0;
     var ws = unlockedWeapons(); if (ws.indexOf(weapon) < 0) weapon = ws[0];     setWeapon(weapon, true); buildWeaponBar(); defaultAim(); closeModals(); updateHud(true);
     $('lvlTitle').textContent = 'Level ' + (levelIdx + 1) + ': ' + level.name; $('dgoal').style.left = level.goal + '%';
     if (!quiet) say('Level ' + (levelIdx + 1) + ', ' + level.name + '. Destroy ' + level.goal + ' percent in three shots.');
     $('hint').hidden = true;
-    if (!save.seenHint && levelIdx === 0) { $('hint').textContent = 'Drag back anywhere to aim and let go to fire, or use the sliders and Fire.'; $('hint').hidden = false; }
+    if (!save.seenHint && levelIdx === 0) { $('hint').textContent = 'Hold and drag back anywhere to pull back, let go to launch, right click to reset. Or use Easy aim at the bottom.'; $('hint').hidden = false; }
   }
   function defaultAim() {
     aim.angle = 0.75; aim.power = 0.72; aim.tx = structCx; aim.ty = 150; syncSliders();
@@ -231,6 +231,7 @@
   function toWorld(px, py) { return { x: px / s, y: (gy - py) / s }; }
   cv.addEventListener('pointerdown', function (e) {
     if (mode !== 'play' || paused || modal) return; if (!A.on) {} e.preventDefault();
+    if (e.button === 2) { ptr = null; dragging = false; defaultAim(); say('Aim reset'); return; } // right click resets the aim
     try { cv.setPointerCapture(e.pointerId); } catch (er) {}
     ptr = { id: e.pointerId, sx: e.clientX, sy: e.clientY, moved: false };
     if (weapon === 'drone') { var w = toWorld(e.clientX, e.clientY - 56); aim.tx = Math.max(islandX0 - 40, Math.min(viewW - 10, w.x)); aim.ty = Math.max(20, w.y); }
@@ -410,7 +411,7 @@
   function step(dt) {
     simT += dt; var gdt = dt;
     world.gScale = save.fun.g;
-    world.step(dt); SP.update(dt, G);
+    world.step(dt); SP.update(dt, G); stepMinions(dt);
     P.step(dt, world.g * world.gScale, world);
     // strikes (drone airstrike)
     for (var i = strikes.length - 1; i >= 0; i--) {
@@ -600,6 +601,70 @@
     }
   }
 
+
+  // ---------------------------------------------------------------- evil little minions living in the camp
+  // They ride the joints of the tensegrity. When a joint loses its last link, sinks, or is thrown hard, the minion falls off.
+  var minions = [];
+  function nodeHeld(n) { if (n.dead) return false; for (var i = 0; i < world.links.length; i++) { var l = world.links[i]; if (!l.broken && (l.a === n || l.b === n)) return true; } return false; }
+  function spawnMinions() {
+    minions = [];
+    var cand = world.nodes.filter(function (n) { return !n.fixed && n.inv !== 0 && nodeHeld(n) && n.y > 12; });
+    if (!cand.length) return;
+    cand.sort(function (a, b) { return a.x - b.x; });
+    var want = Math.min(cand.length, 4 + Math.floor(levelIdx / 4)), used = {};
+    for (var k = 0; k < want; k++) {
+      var n = cand[Math.floor((k + 0.5) * cand.length / want)]; if (used[n.id]) continue; used[n.id] = 1;
+      minions.push({ n: n, x: n.x, y: n.y, vx: 0, vy: 0, rot: 0, vr: 0, free: false, gone: false, ph: Math.random() * 6.3, said: false });
+    }
+  }
+  function stepMinions(dt) {
+    var g = world.g * world.gScale;
+    for (var i = 0; i < minions.length; i++) {
+      var m = minions[i]; if (m.gone) continue;
+      if (!m.free) {
+        var n = m.n, vx = (n.x - n.px) / (1 / 120), vy = (n.y - n.py) / (1 / 120);
+        if (!nodeHeld(n) || Math.abs(vx) + Math.abs(vy) > 900) {
+          m.free = true; m.vx = Math.max(-500, Math.min(500, vx * 0.6)); m.vy = Math.max(-300, Math.min(600, vy * 0.6 + 140)); m.vr = (Math.random() - 0.5) * 14;
+          if (!m.said) { m.said = true; P.text(m.x, m.y + 30, 'Minion down!', '#e7c6ff', false); }
+        } else { m.x = n.x; m.y = n.y; }
+      } else {
+        m.vy -= g * dt; m.x += m.vx * dt; m.y += m.vy * dt; m.rot += m.vr * dt;
+        var onLand = m.x < cliffEdge || m.x > islandX0;
+        if (onLand && m.y <= 0 && m.vy < 0) { m.y = 0; m.vy = -m.vy * 0.25; m.vx *= 0.6; m.vr *= 0.5; if (Math.abs(m.vy) < 30) { m.vy = 0; m.vx = 0; m.vr = 0; m.rot = 0; } }
+        if (!onLand && m.y < -30) { m.gone = true; if (P.splash) P.splash(m.x, -10, 220, 2); }
+        if (m.x < -300 || m.x > viewW + 300) m.gone = true;
+      }
+    }
+  }
+  function drawMinions(c, t) {
+    if (!minions.length) return;
+    setWorldT(c, shakeX, shakeY);
+    for (var i = 0; i < minions.length; i++) {
+      var m = minions[i]; if (m.gone) continue;
+      var bob = m.free ? 0 : Math.sin(t * 3 + m.ph) * 1.2;
+      c.save(); c.translate(m.x, m.y + 4 + bob); c.rotate(m.rot);
+      // legs and arms (arms wave while falling)
+      c.strokeStyle = '#2a1636'; c.lineWidth = 2; c.lineCap = 'round'; c.beginPath();
+      c.moveTo(-2.5, 1); c.lineTo(-3, -3); c.moveTo(2.5, 1); c.lineTo(3, -3);
+      var wave = m.free ? Math.sin(t * 30 + m.ph) * 4 : Math.sin(t * 2 + m.ph);
+      c.moveTo(-5, 9); c.lineTo(-9, 12 + wave); c.moveTo(5, 9); c.lineTo(9, 12 - wave); c.stroke();
+      // purple body with dark overalls
+      c.fillStyle = '#7b3fa0'; c.beginPath(); c.ellipse(0, 9, 5.6, 9, 0, 0, 6.3); c.fill();
+      c.fillStyle = '#2f3e74'; c.beginPath(); c.moveTo(-5.4, 6); c.lineTo(5.4, 6); c.lineTo(5, 2); c.quadraticCurveTo(0, -1.5, -5, 2); c.closePath(); c.fill();
+      // wild hair
+      c.strokeStyle = '#1b0f22'; c.lineWidth = 1.2; c.beginPath();
+      for (var h = -3; h <= 3; h += 1.5) { c.moveTo(h, 17.5); c.lineTo(h * 1.6, 21.5 + (h % 3 === 0 ? 1 : 0)); } c.stroke();
+      // one goggle eye with an angry brow
+      c.fillStyle = '#9aa3ad'; c.beginPath(); c.arc(0, 12, 3.6, 0, 6.3); c.fill();
+      c.fillStyle = '#fff6d0'; c.beginPath(); c.arc(0, 12, 2.5, 0, 6.3); c.fill();
+      c.fillStyle = '#c0182a'; c.beginPath(); c.arc(0.4, 11.6, 1.1, 0, 6.3); c.fill();
+      c.strokeStyle = '#1b0f22'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-3.4, 16.4); c.lineTo(3.4, 14.6); c.stroke();
+      // grin
+      c.strokeStyle = '#1b0f22'; c.lineWidth = 1; c.beginPath(); c.moveTo(-2, 7.6); c.lineTo(2, 7.2); c.stroke();
+      c.restore();
+    }
+  }
+
   var shakeX = 0, shakeY = 0;
 
   function drawLauncher(c, t) {
@@ -661,8 +726,9 @@
       for (var o = -1; o <= 1; o++) { c.fillStyle = 'rgba(255,107,92,0.6)'; c.beginPath(); c.arc(x + o * 40, 4, 4, 0, 6.3); c.fill(); }
       return;
     }
-    var pts = previewPath(), i; for (i = 0; i < pts.length; i += 2) { var p = pts[i], a = 1 - i / pts.length * 0.8; c.fillStyle = 'rgba(255,255,255,' + (0.9 * a) + ')'; c.beginPath(); c.arc(p.x, p.y, 2.4 + a * 1.2, 0, 6.3); c.fill(); c.fillStyle = 'rgba(79,227,193,' + (0.35 * a) + ')'; c.beginPath(); c.arc(p.x, p.y, 5, 0, 6.3); c.fill(); }
-    if (pts.hit) { c.strokeStyle = 'rgba(255,181,71,0.95)'; c.lineWidth = 2; c.beginPath(); c.arc(pts.hit.x, pts.hit.y, 12 + Math.sin(t * 8) * 1.5, 0, 6.3); c.stroke(); c.beginPath(); c.moveTo(pts.hit.x - 7, pts.hit.y); c.lineTo(pts.hit.x + 7, pts.hit.y); c.moveTo(pts.hit.x, pts.hit.y - 7); c.lineTo(pts.hit.x, pts.hit.y + 7); c.stroke(); }
+    // Easy aim (the panel, no drag) shows the whole path and the target; aiming by dragging at the slingshot is harder: only the start of the path.
+    var pts = previewPath(), i, upto = dragging ? Math.ceil(pts.length / 3) : pts.length; for (i = 0; i < upto; i += 2) { var p = pts[i], a = 1 - i / pts.length * 0.8; c.fillStyle = 'rgba(255,255,255,' + (0.9 * a) + ')'; c.beginPath(); c.arc(p.x, p.y, 2.4 + a * 1.2, 0, 6.3); c.fill(); c.fillStyle = 'rgba(79,227,193,' + (0.35 * a) + ')'; c.beginPath(); c.arc(p.x, p.y, 5, 0, 6.3); c.fill(); }
+    if (pts.hit && !dragging) { c.strokeStyle = 'rgba(255,181,71,0.95)'; c.lineWidth = 2; c.beginPath(); c.arc(pts.hit.x, pts.hit.y, 12 + Math.sin(t * 8) * 1.5, 0, 6.3); c.stroke(); c.beginPath(); c.moveTo(pts.hit.x - 7, pts.hit.y); c.lineTo(pts.hit.x + 7, pts.hit.y); c.moveTo(pts.hit.x, pts.hit.y - 7); c.lineTo(pts.hit.x, pts.hit.y + 7); c.stroke(); }
     // power and angle readout next to the launcher
     setScreenT(c); c.font = '700 ' + Math.max(12, 13) + 'px ui-sans-serif,system-ui,sans-serif'; c.fillStyle = 'rgba(255,255,255,0.9)'; c.textAlign = 'left';
     var sxx = (launcher.x + 24) * s, syy = gy - 78 * s; c.fillText(Math.round(aim.angle * 57.2958) + '°  ' + Math.round(aim.power * 100) + '%', sxx, syy);
@@ -723,7 +789,7 @@
   function render(t) {
     shakeX = 0; shakeY = 0; if (shake > 0.1 && !reduced) { shakeX = (Math.random() - 0.5) * shake * pr; shakeY = (Math.random() - 0.5) * shake * pr; }
     drawBackground(ctx, t); drawWater(ctx, t); drawPlatforms(ctx, t);
-    drawLauncher(ctx, t); drawStructure(ctx, t); drawProj(ctx, t);
+    drawLauncher(ctx, t); drawStructure(ctx, t); drawMinions(ctx, t); drawProj(ctx, t);
     setWorldT(ctx, shakeX, shakeY); SP.draw(ctx, G);
     drawAim(ctx, t);
     drawParticles(ctx, t);
