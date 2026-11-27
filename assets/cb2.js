@@ -31,7 +31,7 @@
   function wireModel() {
     var c = d.getElementById('aichip'); if (c) c.addEventListener('click', function () { picker(true); });
     paintChip();
-    if (!model() && !ls('cb-model-asked')) picker(true);
+    // Leo 2026-11-26: ask which AI only once, in the welcome pop-up (cb-gate.js sets cb-model). No second picker here.
   }
 
   // ---------- ranked search ----------
