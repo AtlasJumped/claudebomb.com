@@ -32,7 +32,7 @@ json.dump(dict(shared=SHARED, dashboard={k: v for k, v in DASH.items() if k != '
 FAV = open(os.path.join(R, 'tools/favicon.html')).read().strip()
 LOGO = '<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="19" r="10" fill="#151515"/><rect x="18" y="6.5" width="6" height="5" rx="1.2" transform="rotate(40 21 9)" fill="#151515"/><path d="M23.5 6.5c2-2.5 4 .5 5.5-2.5" fill="none" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/></svg>'
 MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>'
-V = '6'
+V = '7'
 # Keep whatever dock version is live (another job bumps it in the built pages).
 import re as _re
 DOCKV = (_re.search(r'hmr-dock\.js\?v=([0-9.]+)', open(os.path.join(R, 'index.html')).read()) or [0, '6.6.1'])[1]
@@ -46,25 +46,25 @@ def head(title, desc, url):
 
 def hdr(nav, home='/'):
     links = ''.join('<a href="%s">%s</a>' % (h, E(t)) for h, t in nav)
+    # Leo 2026-11-26: no top menu on phones (cb.css hides .nav under 40rem), and "Which AI do you use?" is asked only in the welcome pop-up.
     return ('<header class="hdr">\n <a class="logo" href="%s" aria-label="claudebomb.com, home">%sclaudebomb</a>\n <nav class="nav" aria-label="Main">%s</nav>\n</header>\n'
-            '<div class="promise"><div class="wrap"><b>100%% free, no ads, forever.</b><a href="/why/">Why claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a><button class="chip" type="button" id="aichip">Which AI do you use?</button></div></div>\n') % (home, LOGO, links)
+            '<div class="promise"><div class="wrap"><b>100%% free, no ads, forever.</b><a href="/#what">What is claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a></div></div>\n') % (home, LOGO, links)
 
 FOOT = '''<footer class="foot">
  <div class="wrap">
   <h2>claudebomb</h2>
-  <p class="mut">A prompt so big it needs its own website. Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
-  <p><a class="btn ghost" href="/wikipedia/">Have you heard of Wikipedia?</a></p>
-  <p class="mut">Part of the <a href="https://hmrfamily.life">HMR family</a> of websites. Personal dashboard: <a href="https://personaldash.life">personaldash.life</a>. Work dashboard: <a href="https://workdash.life">workdash.life</a>.</p>
+  <p class="mut">Our own prompts are free to use, share, and change under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit claudebomb.com. Prompts in the <a href="/library/">open library</a> keep their own licence, shown on each page. Source and every change on <a href="https://github.com/AtlasJumped/claudebomb.com">GitHub</a>.</p>
+  <p class="mut">Part of the <a href="https://elevat.ing">elevat.ing family of websites</a>.</p>
   <p class="mut">Prompts give general help, not legal, medical, or financial advice. Read a prompt before you paste it, and check what your AI does.</p>
  </div>
 </footer>
 <div class="toast" id="toast" role="status"></div>
 '''
-TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=1"></script>\n<script src="/assets/cb-account.js?v=3"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=4"></script>\n<script src="/assets/cb-gate.js?v=1"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
+TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=2"></script>\n<script src="/assets/cb-account.js?v=4"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=5"></script>\n<script src="/assets/cb-gate.js?v=2"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
         '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
-    return '<div class="microw"><button class="mic" type="button" data-mic="%s" data-st="%s">%s</button><p class="st" id="%s" role="status" aria-live="polite">Tap the microphone and talk, or type.</p></div>' % (ta, st, MIC, st)
+    return '<div class="microw"><button class="mic" type="button" data-mic="%s" data-st="%s">%s</button><p class="st" id="%s" role="status" aria-live="polite">Tap the microphone, wait half a second, then talk. Or type.</p></div>' % (ta, st, MIC, st)
 
 def twopane(pfx, left_label, left_ph, right_label, right_ph):
     return ('<div class="pane2">\n <div class="pane"><label class="lbl" for="%s-p">%s</label><textarea class="ta" id="%s-p" placeholder="%s"></textarea></div>\n'
@@ -90,17 +90,59 @@ STEPS = [
 steps_btns = ''.join('<li><button type="button" data-step="%d"%s>%d. %s</button></li>' % (i, ' aria-current="step"' if i == 0 else '', i + 1, E(t)) for i, (t, _, _) in enumerate(STEPS))
 steps_json = json.dumps([dict(t=t, s=s, m=m) for t, s, m in STEPS]).replace('</', '<\\/')
 
-idx = head('claudebomb.com | A prompt so big it needs its own website',
-           'claudebomb is a free, open-source prompt bank for every AI. Search for a prompt that is already built, ask for one by voice, copy it in one click, and help make every prompt better. CC BY 4.0.',
+idx = head('claudebomb.com | Your helping hand into the blossoming world of artificial intelligence',
+           'claudebomb is your helping hand into the blossoming world of artificial intelligence: a free, open-source prompt bank for every AI. Press one button to set up your AI, search for a prompt, ask for one by voice, and help make every prompt better.',
            'https://claudebomb.com/')
-idx += '<body id="top">\n<a class="skip" href="#bank">Skip to the prompts</a>\n'
-idx += hdr([('#bank', 'Prompts'), ('/library/', 'Open library'), ('#ask', 'Ask for one'), ('#share', 'Share yours'), ('#others', 'Other galleries'), ('/council/', 'Council')], '#top')
+idx += '<body id="top">\n<a class="skip" href="#what">Skip to what claudebomb is</a>\n'
+idx += hdr([('#what', 'What is claudebomb'), ('#bank', 'Prompts'), ('/library/', 'Open library'), ('#ask', 'Ask for one'), ('#share', 'Share yours'), ('#others', 'Other galleries')], '#top')
 idx += '''<main>
 <section class="sec hero" aria-labelledby="h1">
  <div class="wrap">
   <p class="eyebrow"><span class="no">Free</span> Open source. For every AI.</p>
-  <h1 id="h1">A prompt so big it needs its own website</h1>
-  <p class="best">The best place on the internet, now and forever, for prompts for any AI, not just Claude. <button class="chip" type="button" data-boom>We just like the name</button></p>
+  <h1 id="h1">Your helping hand into the blossoming world of artificial intelligence</h1>
+  <p class="best">claudebomb: free forever, with no ads. <button class="chip" type="button" data-boom>We just like the name</button></p>
+ </div>
+</section>
+
+<section class="sec" id="exist" aria-labelledby="exist-h">
+ <div class="wrap">
+  <h2 id="exist-h">Why does this site exist?</h2>
+  <p class="lead">Our generation has been experiencing incredible benefits from the blossoming world of artificial intelligence. Many people still feel it is out of reach for them. This site exists so that anyone can get the same head start, for free.</p>
+  <p style="max-width:46rem">Right now the bar is either you don't use AI at all, or you use it at about ninety out of a hundred. The learning curve from zero to ninety is what our buttons remove. If you are at zero and you press one, you will be at ninety when it is done. If you are at twenty, you will be at ninety too. Behind each button is someone at ninety, handing you everything learned from hours and days of fine tuning.</p>
+  <p style="max-width:46rem">This isn't just a site that makes people more efficient. It does that, but it also changes how people learn from each other: children helping their parents, parents learning from their children, and all of us elevating together. Unless you give it a chance, you'll never know.</p>
+ </div>
+</section>
+
+<section class="sec flag" id="what" aria-labelledby="what-h">
+ <div class="wrap">
+  <h2 id="what-h">What is claudebomb</h2>
+  <p class="lead">Talking to AI is harder than it looks. Out of the box, an AI nobody has prepared can tell you straight-up nonsense, or half-truths that sound completely true. Some just tell you what you want to hear. It's right to be concerned about that.</p>
+  <p style="max-width:46rem">What's also true: when people spend hours and days writing pages and pages of instructions for these assistants, it whips them into shape. They become much more powerful and much more tame. The buttons below are those hours and days of work, free, in one press. It's not a magic cure, and we all still need to be responsible. But at the very least, you get a well-behaved, extremely smart, and capable assistant.</p>
+  <div class="card hl what-go">
+   <h3>If you already use AI</h3>
+   <p>Want to turbocharge it for free in five minutes? Press one of these buttons. It copies our setup text and opens your AI. Then just paste.</p>
+   <div id="what-act" data-act="personal-dashboard" data-act-novote="1"></div>
+   <h3>If you've never used AI before, press this button</h3>
+   <p><a class="btn cta" id="first-ai" href="https://claude.ai/login" target="_blank" rel="noopener">Get Claude, free</a></p>
+   <p class="mut sm" id="first-ai-note">It opens the free sign-up page for Claude, the AI assistant we recommend. As soon as you can type a message there, come back and press Claude above.</p>
+  </div>
+  <p style="max-width:46rem">Once you press one, you might never have to come back here. We automate everything for you inside your AI app, unless you want to come back and become even more of an expert.</p>
+  <p style="max-width:46rem"><b>Come back with any questions or feedback. This window will be here when you get back.</b></p>
+ </div>
+</section>
+
+<section class="sec" id="care" aria-labelledby="care-h">
+ <div class="wrap">
+  <h2 id="care-h">Why do we care so much?</h2>
+  <p style="max-width:46rem">Why do we care so much that we bought our own website and built this whole system just to introduce people to AI, free forever? Because it brings people closer together. Your AI can teach you anything you ask, explain a new term you just heard, and help you use your new powers, just like the kids already do. Most people have no idea how easy it is.</p>
+  <p style="max-width:46rem">Everybody who uses AI a lot knows that the words you give it decide how good its answer is. That is why there are so many websites called prompt galleries. Below is ours: one place for every prompt, for every AI. <a href="/why/">More on why we built it</a>.</p>
+ </div>
+</section>
+
+<section class="sec" id="search" aria-labelledby="search-h">
+ <div class="wrap">
+  <h2 id="search-h">A prompt so big it needs its own website</h2>
+  <p class="best">The best place on the internet, now and forever, for prompts for any AI, not just Claude.</p>
   <p class="lead">Prompting is now a skill, and a great prompt can be copied and pasted. When a few people do the hard work and share it, everyone else gets the time back. Search for a prompt that is already built, ask for one that is not, and help make them all better.</p>
   <form class="find" role="search" onsubmit="return false">
    <div><label for="q">Search prompts</label><input id="q" type="search" placeholder="Try: scam, tutor, contract, family" autocomplete="off"></div>
@@ -145,7 +187,7 @@ idx += '''<main>
    <article class="card hl">
     <span class="tag">Available now, free forever</span>
     <h3><a href="/p/personal-dashboard/">Personal dashboard</a></h3>
-    <p>Paste it into your AI assistant. Within minutes it audits your setup and suggests fixes, sets things up from your instructions, and builds one calm page for your day: a ranked to-do list, your inbox with drafted replies, your calendar, and the people who matter.</p>
+    <p>Paste it into your AI assistant. Within minutes it audits your setup and suggests fixes, sets things up from your instructions, and builds one calm page for your day: a ranked to-do list, your inbox with drafted replies, your calendar, and the people who matter. It is a text your AI reads: it looks at what your AI can already reach and builds from there. None of what it finds comes back to us.</p>
     <div class="btns"><button class="btn" type="button" data-copy="personal-dashboard">Copy it</button><a class="btn ghost" href="/p/personal-dashboard/">Open its page</a></div>
    </article>
    <article class="card">
@@ -221,6 +263,11 @@ idx_js = '''<script id="prompt-data" type="application/json">''' + data + '''</s
 <script>
 (function(){
 var C=window.CB,P=JSON.parse(document.getElementById('prompt-data').textContent);
+// What is claudebomb: the app buttons copy the setup text, so load it now (a copy must happen inside the tap)
+var SETUP='';C.loadDash().then(function(t){SETUP=t});window.CB_PROMPT=function(){return SETUP};
+(function(){var ua=navigator.userAgent||'',ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),and=/Android/.test(ua),f=document.getElementById('first-ai'),n=document.getElementById('first-ai-note');if(!f||!(ios||and))return;
+ f.href=ios?'https://apps.apple.com/app/id6473753684':'https://play.google.com/store/apps/details?id=com.anthropic.claude';
+ n.textContent="It opens the Claude app in your phone's app store. Installing it may ask for your app store password or your fingerprint. That is your phone's own security, not ours. As soon as you can type a message in the app, come back and press Claude above."})();
 var grid=document.getElementById('grid'),q=document.getElementById('q'),cat=document.getElementById('cat'),count=document.getElementById('count'),none=document.getElementById('none');
 function byId(id){for(var i=0;i<P.length;i++)if(P[i].id===id)return P[i]}
 function doCopy(id){var p=byId(id);if(!p)return;if(p.load)C.loadDash().then(function(t){return C.copyText(t)}).then(C.copied,function(){C.toast('We could not load the text. Try again in a moment.')});else C.copyText(p.text).then(C.copied)}

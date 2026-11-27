@@ -177,3 +177,18 @@ textarea.ta.talk{font-family:var(--sans);font-size:1rem}
 .cmp.feat td{text-align:center}
 .note summary{cursor:pointer}
 .close{margin-top:18px}
+/* 2026-11-27: no top menu on phones (M-0394, M-0406) */
+@media(max-width:40rem){.nav,.promise a{display:none}}
+.what-go{max-width:46rem;margin:1rem 0}
+.what-go h3{margin-top:0}
+/* Feature comparison: on phones show claudebomb beside one gallery at a time, no sideways scroll (M-0388, M-0396) */
+.cmppick{display:none;margin:.8rem 0 0}
+.cmppick select{font:inherit;min-height:2.75rem;border:2px solid var(--fg);border-radius:10px;padding:.3rem .5rem;max-width:100%}
+@media(max-width:40rem){
+ .cmppick{display:block}
+ .cmp.feat{min-width:0;table-layout:fixed}
+ .cmp.feat th,.cmp.feat td{padding:.5rem .45rem;white-space:normal;word-wrap:break-word}
+ .cmp.feat tbody th{white-space:normal;width:44%}
+ .cmp.feat [data-g]{display:none}
+ .cmp.feat[data-g="0"] [data-g="0"],.cmp.feat[data-g="1"] [data-g="1"],.cmp.feat[data-g="2"] [data-g="2"],.cmp.feat[data-g="3"] [data-g="3"],.cmp.feat[data-g="4"] [data-g="4"],.cmp.feat[data-g="5"] [data-g="5"],.cmp.feat[data-g="6"] [data-g="6"],.cmp.feat[data-g="7"] [data-g="7"],.cmp.feat[data-g="8"] [data-g="8"],.cmp.feat[data-g="9"] [data-g="9"],.cmp.feat[data-g="10"] [data-g="10"],.cmp.feat[data-g="11"] [data-g="11"],.cmp.feat[data-g="12"] [data-g="12"]{display:table-cell}
+}

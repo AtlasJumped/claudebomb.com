@@ -6,7 +6,7 @@ def _w(R, sub, pg):
     open(os.path.join(R, sub, 'index.html'), 'w').write(pg)
 
 def build(R, E, head, hdr, FOOT, TAIL, V, microw):
-    nav = [('/#bank', 'Our prompts'), ('/library/', 'Search all'), ('/build/', 'Build'), ('/my/', 'My prompts')]
+    nav = [('/#what', 'What is claudebomb'), ('/#bank', 'Our prompts'), ('/library/', 'Search all'), ('/build/', 'Build')]
     def fld(i, label, ph, rows=3):
         return ('<div class="fld"><label for="%s">%s</label><textarea id="%s" rows="%d" placeholder="%s"></textarea>%s</div>'
                 % (i, label, i, rows, E(ph), microw(i, i + '-st')))
@@ -103,10 +103,8 @@ draw()})();
 <section class="sec" aria-labelledby="acct">
  <div class="wrap">
   <h2 id="acct">Your account</h2>
-  <div id="acctbox"><p>Sign in is coming soon. Until then, what you save stays in this browser on this device, and nobody else can see it.</p></div>
+  <div id="acctbox"><p>If you only operate from this device without logging in, your prompts stay in a browser that can be cleared of its data, and you'll lose your data. When you're logged in, your data will be saved in a secure place where you can control it.</p></div>
   <h3>What happens to what you save</h3>
-  <p>On this device, your prompts stay in this browser. Clearing your browser data deletes them.</p>
-  <p>Once you have an account, we keep your saved prompts so they follow you to any device. We also read saved prompts together, with everyone's, to find changes that make a shared prompt better for everyone. If one of your changes makes it into a shared prompt, we credit you in that prompt's history under the name you choose, or not at all if you leave it blank. You can turn this off for your account.</p>
   <p>No ads, ever. We never sell what you save. Don't save passwords or private details in a prompt.</p>
  </div>
 </section>
