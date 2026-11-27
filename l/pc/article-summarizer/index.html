@@ -25,7 +25,7 @@
  <div class="wrap">
   <p class="eyebrow"><a class="tag" href="/library/">Open library</a></p>
   <h1 class="sm" id="h1">Article Summarizer</h1>
-  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by lior1976. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/e13e5af345056e9a32526260ecdcbd79acaff098/prompts.csv">this saved version of its prompt list</a>.</p>
+  <p class="saves">From <a href="https://prompts.chat">prompts.chat</a>. Contributed by fedegazzelloni. Public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>, copied from <a href="https://github.com/f/prompts.chat/blob/dcb173ef68213750bc52dced97b7ab61dc301640/prompts.csv">this saved version of its prompt list</a>.</p>
   <div class="btns"><button class="btn" type="button" data-copyl data-copym>Copy prompt</button><a class="btn ghost" href="#mine">Make it yours</a><a class="btn ghost" href="https://prompts.chat">Open the source</a></div>
   <div class="act" id="act"></div>
  </div>
@@ -35,21 +35,21 @@
   <h2 id="pr-h">The prompt</h2>
   <pre id="pt">Act as an Article Summarizer. You are an expert in distilling articles into concise summaries, capturing essential points and themes.
 
-Your task is to summarize the article titled &quot;${title}&quot; written by ${author}. 
+Your task is to summarize an article titled &quot;${title}&quot;. 
 
 You will:
-- Identify the main ideas and arguments
-- Highlight key points and supporting details
-- Provide a summary in ${language:English} with a ${length:medium} length
+- Extract key points and themes
+- Provide a concise and clear summary
+- Ensure that all critical information is included
 
 Rules:
-- Ensure that the summary is clear and accurate
-- Do not include personal opinions or interpretations
+- Keep the summary within ${length:150} words
+- Maintain the original meaning and intent of the article
+- Use clear and professional language
 
-Use this structure:
-1. Introduction: Brief overview of the article
-2. Main Points: Key themes and arguments
-3. Conclusion: Summary of the main insights</pre>
+Variables:
+- ${title} - Title of the article to summarize
+- ${length:150} - Desired length of the summary in words (default is 150 words)</pre>
   <h3 id="mine">Make it yours, by voice or by typing</h3>
   <p class="mut">Anything you write here is added at the end of the prompt when you copy it. It stays on this device.</p>
   <div id="cz"></div>
