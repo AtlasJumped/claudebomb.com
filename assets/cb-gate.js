@@ -74,14 +74,16 @@
     box.appendChild(el('p', '', 'This is that moment.'));
     var ul2 = el('ul');
     ['claudebomb.com is a free, open bank of long prompts for any AI, not just Claude.',
-      'It is part of the elevat.ing family of websites: free forever, with never any ads.',
+      'It is part of the elevat.ing family of websites.',
+      'We are a very, very small team. We use the highest paid models of Claude, GPT, Grok, and Gemini every day, and any feedback you give is fed through a council of these four.',
       'Our goal is to elevate humanity, and to show everybody that a small team can make a big difference in the pursuit of truth and harmony.'].forEach(function (t) { ul2.appendChild(el('li', '', t)); });
     box.appendChild(ul2);
     var col = el('div', 'col'), go = el('button', 'go', 'Enter claudebomb.com'), why = el('button', 'ghost2', 'Why we built it');
     go.type = why.type = 'button';
     go.addEventListener('click', function () { close('enter'); });
     why.addEventListener('click', function () { close('enter'); location.href = '/why/'; });
-    col.appendChild(go); col.appendChild(why); box.appendChild(col);
+    var sup = el('button', 'ghost2', 'Support us'); sup.type = 'button'; sup.addEventListener('click', function () { close('enter'); location.href = '/support/'; });
+    col.appendChild(go); col.appendChild(why); col.appendChild(sup); box.appendChild(col);
     go.focus();
   }
   function open() {

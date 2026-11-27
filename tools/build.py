@@ -48,7 +48,7 @@ def hdr(nav, home='/'):
     links = ''.join('<a href="%s">%s</a>' % (h, E(t)) for h, t in nav)
     # Leo 2026-11-26: no top menu on phones (cb.css hides .nav under 40rem), and "Which AI do you use?" is asked only in the welcome pop-up.
     return ('<header class="hdr">\n <a class="logo" href="%s" aria-label="claudebomb.com, home">%sclaudebomb</a>\n <nav class="nav" aria-label="Main">%s</nav>\n</header>\n'
-            '<div class="promise"><div class="wrap"><b>100%% free, no ads, forever.</b><a href="/#what">What is claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a></div></div>\n') % (home, LOGO, links)
+            '<div class="promise"><div class="wrap"><a href="/#what">What is claudebomb</a><a href="/my/">My prompts</a><a href="/build/">Build a prompt</a></div></div>\n') % (home, LOGO, links)
 
 FOOT = '''<footer class="foot">
  <div class="wrap">
@@ -60,7 +60,7 @@ FOOT = '''<footer class="foot">
 </footer>
 <div class="toast" id="toast" role="status"></div>
 '''
-TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=2"></script>\n<script src="/assets/cb-account.js?v=4"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=5"></script>\n<script src="/assets/cb-gate.js?v=2"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
+TAIL = ('<script src="/assets/cb.js?v=%s"></script>\n<script src="/assets/cb-config.js?v=1"></script>\n<script src="/assets/cb2.js?v=2"></script>\n<script src="/assets/cb-account.js?v=4"></script>\n<script src="/assets/cb-boom.js?v=1"></script>\n%s<script src="/assets/cb-act.js?v=5"></script>\n<script src="/assets/cb-gate.js?v=3"></script>\n<script src="/v6/funsies.js?v=1" defer></script>\n'
         '<script src="/hmr-dock.js?v=' + DOCKV + '" data-site="claudebomb.com" defer></script>\n</body></html>\n')
 
 def microw(ta, st):
@@ -100,7 +100,7 @@ idx += '''<main>
  <div class="wrap">
   <p class="eyebrow"><span class="no">Free</span> Open source. For every AI.</p>
   <h1 id="h1">Your helping hand into the blossoming world of artificial intelligence</h1>
-  <p class="best">claudebomb: free forever, with no ads. <button class="chip" type="button" data-boom>We just like the name</button></p>
+  <p class="best">claudebomb is an AI booster: a prompt you put into your AI assistant that optimizes your entire setup. <button class="chip" type="button" data-boom>We just like the name</button></p>
  </div>
 </section>
 

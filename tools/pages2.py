@@ -84,7 +84,7 @@ draw()})();
     _w(R, 'build', pg)
 
     # ---------- /my/ ----------
-    pg = head('My prompts | claudebomb.com', 'The prompts you saved on claudebomb.com, ready to edit and copy. Free, no ads, forever.', 'https://claudebomb.com/my/')
+    pg = head('My prompts | claudebomb.com', 'The prompts you saved on claudebomb.com, ready to edit and copy.', 'https://claudebomb.com/my/')
     pg += '<body id="top">\n<a class="skip" href="#mylist">Skip to your prompts</a>\n' + hdr(nav)
     pg += '''<main>
 <section class="sec hero" aria-labelledby="h1">

@@ -103,7 +103,7 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
     src = crawl.get('sources', {})
     nopen = sum(s.get('count', 0) for s in src.values())
     last = _date(crawl.get('checked', ''))
-    pg = head('Why claudebomb | claudebomb.com', 'One free place for every prompt, for every AI, updated every day. No ads, free forever. How claudebomb compares with every other prompt gallery.', 'https://claudebomb.com/why/')
+    pg = head('Why claudebomb | claudebomb.com', 'One free place for every prompt, for every AI, updated every day. How claudebomb compares with every other prompt gallery.', 'https://claudebomb.com/why/')
     pg += '<body id="top">\n<a class="skip" href="#cmp-h">Skip to the comparison</a>\n' + hdr(nav)
     pg += '''<main>
 <section class="sec hero" aria-labelledby="h1">
@@ -205,11 +205,11 @@ def build(R, E, head, hdr, FOOT, TAIL, V):
     pg += FOOT + TAIL % (V, '')
     _w(R, 'library/changes', pg)
 
-# Removed pages: nothing on claudebomb asks for money. Old links land on the home page.
+# The support page is support/index.html (kept by hand, not built here). The old donate and Wikipedia addresses land on it.
 def _redirect(R, sub):
     _w(R, sub, '<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-              '<title>claudebomb.com</title><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url=/">'
-              '<link rel="canonical" href="https://claudebomb.com/"></head><body><p><a href="/">Go to claudebomb.com</a></p></body></html>\n')
+              '<title>Support us | claudebomb.com</title><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url=/support/">'
+              '<link rel="canonical" href="https://claudebomb.com/support/"></head><body><p><a href="/support/">Go to the support page</a></p></body></html>\n')
 
 def build_wiki(R, E, head, hdr, FOOT, TAIL, V):
     _redirect(R, 'wikipedia')
