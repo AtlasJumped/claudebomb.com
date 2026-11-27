@@ -39,7 +39,7 @@
   // weapons unlock by level
   FS.WEAPONS = {
     sling:  { name: 'Slingshot', unlock: 0, speed: 880, m: 1.0, r: 7, pierce: 2, slow: 0.55 },
-    cannon: { name: 'Cannon', unlock: 0, speed: 980, m: 3.2, r: 10, pierce: 3, slow: 0.82 },
+    cannon: { name: 'Cannon', unlock: 0, speed: 980, m: 2.6, r: 10, pierce: 2, slow: 0.72 }, // middle tier: about two shots; the cannonball does not explode and should not clear a level in one shot
     rocket: { name: 'Rocket', unlock: 0, speed: 520, m: 2, r: 8, acc: 950, thr: 0.55, R: 78, D: 3.3, imp: 520 },
     hammer: { name: 'Thunder hammer', unlock: 0, speed: 840, m: 3, r: 12, R: 190, D: 1.7, chain: 7, bolts: 5 },
     drone:  { name: 'Drone strike', unlock: 0, bombs: 3, R: 58, D: 2.3, imp: 380 }
