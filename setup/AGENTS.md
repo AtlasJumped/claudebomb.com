@@ -1,4 +1,4 @@
-# HMR written instructions for human and AI interaction
+# Written instructions for human and AI interaction
 
 Open and free, from claudebomb.com. This is a plain-text agreement between a person and their AI assistant or agent about how the two work together. It is written for any AI. Read all of it before you reply.
 
