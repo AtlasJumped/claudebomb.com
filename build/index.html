@@ -12,6 +12,27 @@
 <link rel="canonical" href="https://claudebomb.com/build/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='19' r='10' fill='%23151515'/%3E%3Crect x='18' y='6.5' width='6' height='5' rx='1.2' transform='rotate(40 21 9)' fill='%23151515'/%3E%3Cpath d='M23.5 6.5c2-2.5 4 .5 5.5-2.5' fill='none' stroke='%23151515' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M29.6 1.2c1.6 2.2 2.4 3.6 1.2 5.4-1 1.3-3.2 1.3-4 0-.9-1.6.6-2.7 1-3.6.3-.6.9-1.1 1.8-1.8z' fill='%23ff5a36'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/assets/cb.css?v=7">
+<style>
+/* prompt builder layout (live check 2026-11-27) */
+.bld{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:2rem 3rem;align-items:start}
+.bld>.outp{position:sticky;top:6.5rem}
+.bld .h3{font-size:1.5rem;margin:1.6rem 0 .5rem}
+.bld .outp .h3:first-child{margin-top:0}
+.bld .fld{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.45rem .6rem;align-items:start;margin:0 0 1.4rem}
+.bld .fld>label{grid-column:1/-1;display:block;font-weight:800;font-size:1.05rem;line-height:1.3}
+.bld .fld>textarea{grid-column:1;grid-row:2;width:100%;min-height:3.1rem;font:1rem/1.5 var(--sans);background:#fff;color:var(--fg);border:2px solid var(--fg);border-radius:1rem;padding:.7rem 1rem;resize:vertical}
+.bld .fld>textarea::placeholder{color:#6b665c}
+.bld .fld .microw{display:contents}
+.bld .fld .mic{grid-column:2;grid-row:2}
+.bld .fld .st{grid-column:1/-1;grid-row:3;margin:0;min-height:0;font-size:.85rem}
+.bld #out{min-height:12rem;margin:0}
+.bld .rule{align-items:center;background:#fff;border:2px solid var(--fg);border-radius:1rem;padding:.6rem .8rem}
+.bld .rule label{display:flex;align-items:center;gap:.5rem;font-weight:800;min-width:0}
+.bld .rule input{flex:1;min-width:0;font:inherit;font-weight:400;min-height:2.75rem;padding:.4rem .8rem;border:2px solid var(--fg);border-radius:99px;background:var(--bg);color:var(--fg)}
+.bld .rule .btn{min-height:2.75rem}
+@media(max-width:56rem){.bld{grid-template-columns:minmax(0,1fr)}.bld>.outp{position:static}}
+</style>
+
 </head>
 <body id="top">
 <a class="skip" href="#goal">Skip to the builder</a>
@@ -28,8 +49,8 @@
  </div>
 </section>
 <section class="sec" aria-label="Prompt builder">
- <div class="wrap two">
-  <div>
+ <div class="wrap two bld">
+  <div class="inp-col">
    <div class="fld"><label for="goal">What do you want the AI to do?</label><textarea id="goal" rows="3" placeholder="Example: plan a week of dinners for a family of four, under $100"></textarea><div class="microw"><button class="mic" type="button" data-mic="goal" data-st="goal-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="goal-st" role="status" aria-live="polite">Tap the microphone, wait half a second, then talk. Or type.</p></div></div>
    <div class="fld"><label for="ctx">What should it know?</label><textarea id="ctx" rows="3" placeholder="Who it is for, what you have tried, anything it would get wrong without being told"></textarea><div class="microw"><button class="mic" type="button" data-mic="ctx" data-st="ctx-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="ctx-st" role="status" aria-live="polite">Tap the microphone, wait half a second, then talk. Or type.</p></div></div>
    <div class="fld"><label for="shape">What should you get back?</label><textarea id="shape" rows="2" placeholder="Example: a table with one row per day, then a shopping list"></textarea><div class="microw"><button class="mic" type="button" data-mic="shape" data-st="shape-st"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button><p class="st" id="shape-st" role="status" aria-live="polite">Tap the microphone, wait half a second, then talk. Or type.</p></div></div>
@@ -40,7 +61,7 @@
    <div id="rules"></div>
    <div class="btns"><button class="btn ghost" type="button" id="addrule">Add a rule</button><button class="btn ghost" type="button" id="clearb">Start over</button></div>
   </div>
-  <div>
+  <div class="outp">
    <h2 class="h3">Your prompt</h2>
    <pre id="out" aria-live="polite"></pre>
    <div class="btns"><button class="btn" type="button" id="copyb" data-copym>Copy prompt</button><button class="btn ghost" type="button" id="saveb">Save to My prompts</button></div>
