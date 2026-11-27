@@ -44,7 +44,7 @@
         rec.onresult = function (ev) { strip(); var fin = '', itm = ''; for (var i = ev.resultIndex; i < ev.results.length; i++) { var r = ev.results[i]; if (r.isFinal) fin += r[0].transcript; else itm += r[0].transcript; } if (fin.trim()) ta.value += sep() + fin.trim(); if (itm.trim()) { interim = sep() + itm.trim(); ta.value += interim; } ta.dispatchEvent(new Event('input')); };
         rec.onerror = function (ev) { var er = ev && ev.error; if (er === 'not-allowed' || er === 'service-not-allowed') { want = false; say('The microphone is blocked. Allow it in your browser, or type. Your words are saved.'); } else if (er === 'audio-capture') { want = false; say('No microphone found. You can type instead.'); } };
         rec.onend = function () { interim = ''; if (want) setTimeout(function () { if (want) begin(); }, 250); else { lab(false); if (!/blocked|found/.test(st ? st.textContent : '')) say(ta.value ? 'Stopped. Your words are saved.' : ''); } };
-        rec.start(); lab(true); say('Listening. Talk as long as you like.');
+        rec.start(); lab(true); say('Listening. Wait half a second after pressing, then talk as long as you like.');
       } catch (e) { want = false; lab(false); say('Voice typing could not start. You can type instead.'); }
     }
     btn.addEventListener('click', function () { if (want) { want = false; try { rec.stop(); } catch (e) { } lab(false); } else { want = true; begin(); } });

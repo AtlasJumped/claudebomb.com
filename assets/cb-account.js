@@ -1,4 +1,4 @@
-/* claudebomb accounts: the shared HMR family account (/hmr-auth.js). Logging in, creating an account and resetting a
+/* claudebomb accounts: the shared family account (/hmr-auth.js). Logging in, creating an account and resetting a
    password happen in the HMR dashboard's Log in view (every HMR site). This file syncs saved prompts to the
    saved_prompts table (supabase/schema.sql) and draws the account box on /my/. */
 (function () {
@@ -44,7 +44,7 @@
     if (!box) return; box.textContent = '';
     if (A.user) {
       box.appendChild(C.el('p', null, 'Logged in as ' + A.user.email + '. Your saved prompts follow you to any device where you log in.'));
-      box.appendChild(C.el('p', 'mut', 'claudebomb.com is part of the HMR family of websites. The same account works on every HMR family site. All of them are free, with no ads.'));
+      box.appendChild(C.el('p', 'mut', 'claudebomb.com is part of the elevat.ing family of websites. All of them are free, with no ads.'));
       var lb = C.el('label', 'lbl', 'Name to credit you with (leave blank for no credit)'), nm = C.el('input', 'inp');
       nm.id = 'credit'; lb.setAttribute('for', 'credit'); nm.value = C.ls('cb-credit') || '';
       nm.addEventListener('change', function () { C.ls('cb-credit', nm.value.trim() || null); A.push(C.mine()); });
@@ -55,9 +55,10 @@
       out.addEventListener('click', function () { H.signOut(); });
       bs.appendChild(out); [lb, nm, cl, bs].forEach(function (e) { box.appendChild(e); });
     } else {
-      box.appendChild(C.el('p', null, 'Log in to keep your prompts on every device and add your votes to the shared counts. Until then, what you save stays in this browser on this device, and nobody else can see it.'));
       var b2 = C.el('div', 'btns'), b = C.el('button', 'btn', 'Log in or create a free account'); b.type = 'button';
       b.addEventListener('click', openLogin); b2.appendChild(b); box.appendChild(b2);
+      // Leo 2026-11-26, his words for under the button
+      box.appendChild(C.el('p', null, 'If you only operate from this device without logging in, your prompts stay in a browser that can be cleared of its data, and you\u2019ll lose your data. When you\u2019re logged in, your data will be saved in a secure place where you can control it.'));
     }
   }
   A.mount = function (el) { box = el; draw(); };
